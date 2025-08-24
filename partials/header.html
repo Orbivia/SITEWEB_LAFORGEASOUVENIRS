@@ -1,0 +1,27 @@
+<header>
+  <div class="container topbar">
+    <a class="brand" href="/" aria-label="Aller en haut de page">
+      <img src="/assets/logo.jpg" alt="Logo La Forge à Souvenirs"><span></span>
+    </a>
+    <div class="burger" id="burger" aria-label="Ouvrir le menu"><i class="fa-solid fa-bars"></i></div>
+    <nav id="nav">
+      <ul>
+        <li><a href="/#prestations">Prestations</a></li>
+        <li><a href="/#qui-sommes-nous">Qui sommes-nous</a></li>
+        <li><a href="/#contact">Contact</a></li>
+        <li><a href="/#faq">FAQ</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+<script>
+const burger = document.getElementById('burger');
+const nav = document.getElementById('nav');
+burger?.addEventListener('click', ()=> nav.classList.toggle('open'));
+function setHeaderOffset(){
+  const h = document.querySelector('header')?.offsetHeight || 80;
+  document.documentElement.style.setProperty('--header-h', h + 'px');
+}
+setHeaderOffset();
+window.addEventListener('resize', setHeaderOffset);
+</script>
