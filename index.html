@@ -978,4 +978,70 @@ textarea{min-height:110px; resize:vertical}
 
 
 </body>
+
+  <script>
+(function(){
+  const form = document.getElementById('contact-form');
+  if (!form) return;
+
+  const success = document.getElementById('form-success');
+  const error   = document.getElementById('form-error');
+
+  function esc(v){ return encodeURIComponent(v || '').replace(/%0A/g, '\n'); }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    success.style.display = 'none';
+    error.style.display = 'none';
+
+    // Champs
+    const nom     = form.querySelector('#cf-nom')?.value.trim();
+    const prenom  = form.querySelector('#cf-prenom')?.value.trim();
+    const region  = form.querySelector('#cf-region')?.value;
+    const date    = form.querySelector('#cf-date')?.value;
+    const message = form.querySelector('#cf-message')?.value.trim();
+    const consent = form.querySelector('#cf-consent')?.checked;
+
+    const interetInput = form.querySelector('input[name="interet"]:checked');
+    const interet = interetInput ? interetInput.value : '';
+
+    // Validation minimale
+    if (!nom || !prenom || !region || !date || !interet || !consent){
+      error.textContent = "Merci de compléter tous les champs obligatoires marqués d’un astérisque.";
+      error.style.display = 'block';
+      return;
+    }
+
+    // Objet + corps du mail
+    const sujet = `Demande d'information – ${prenom} ${nom} – ${date}`;
+    const lignes = [
+      `Nom: ${nom}`,
+      `Prénom: ${prenom}`,
+      `Région de l'évènement: ${region}`,
+      `Date de l'évènement: ${date}`,
+      `Intérêt: ${interet}`,
+      message ? `` : null,
+      message ? `Précisions:\n${message}` : null,
+      ``,
+      `— Formulaire site La Forge à Souvenirs —`
+    ].filter(Boolean);
+
+    const corps = lignes.join('\n');
+
+    // Mailto
+    const to = 'laforgeasouvenirs@gmail.com';
+    const mailto = `mailto:${to}?subject=${esc(sujet)}&body=${esc(corps)}`;
+
+    // Tentative d’ouverture
+    try{
+      window.location.href = mailto;
+      success.style.display = 'block';
+    }catch(err){
+      error.innerHTML = 'Impossible d’ouvrir votre messagerie automatiquement. Envoyez-nous un mail à <a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a>.';
+      error.style.display = 'block';
+    }
+  });
+})();
+</script>
+
 </html>
