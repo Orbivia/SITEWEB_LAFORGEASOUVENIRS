@@ -128,15 +128,21 @@
     #contact .split.two-col{grid-template-columns:1fr}
   }
 
-  #contact .map-card,
+ #contact .map-card{
+  display:flex;
+  flex:1;              /* le parent prend la place dispo */
+}
+
+#contact .map-card iframe{
+  flex:1;               /* occupe toute la hauteur du parent */
+  height:100%;          /* adapte la hauteur à l’encart */
+  min-height:220px;     /* garde un minimum */
+}
   #contact .info-card{
     background:var(--surface);
     border-radius:14px;
     box-shadow:0 12px 28px rgba(0,0,0,.06);
     padding:16px;
-  }
-  #contact .map-card iframe{
-    width:100%;height:220px;min-height:220px;border:0;border-radius:10px
   }
 
   #contact .info-card{
