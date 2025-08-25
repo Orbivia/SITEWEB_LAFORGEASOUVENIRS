@@ -153,10 +153,41 @@
     .details-close{display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer;background:#fff}
     .details-close:hover{background:#f7f7f7}
 
-
-
-
-
+/* === Formulaire de contact === */
+.contact-card form{
+  display:grid;
+  gap:12px;
+  text-align:left;
+}
+.form-row{display:grid;gap:10px}
+@media (min-width:640px){
+  .form-row.two{
+    grid-template-columns:1fr 1fr;
+  }
+}
+.label{font-weight:600}
+input[type="text"], input[type="email"], input[type="date"], select, textarea{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  background:#fff;
+  font:inherit;
+}
+textarea{min-height:110px; resize:vertical}
+.helper{font-size:.92rem;color:#555}
+.radio-group{display:grid; gap:8px}
+.radio-item{display:flex; align-items:center; gap:8px}
+.form-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:4px}
+.btn-primary{
+  background:var(--brand); color:#fff; font-weight:700;
+  padding:10px 14px; border:0; border-radius:10px; cursor:pointer;
+  box-shadow:0 6px 16px rgba(199,160,82,.28)
+}
+.btn-primary:hover{ background:var(--brand-600) }
+.form-note{font-size:.9rem;color:#666}
+.success-msg{display:none; padding:10px; border:1px solid #d9ebd9; background:#f2fbf2; border-radius:10px; color:#2a662a}
+.error-msg{display:none; padding:10px; border:1px solid #f4d0d0; background:#fff3f3; border-radius:10px; color:#8a1f1f}
 
   </style>
 </head>
@@ -323,13 +354,103 @@
         allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade">
       </iframe>
     </div>
-    <aside class="contact-card">
-      <img src="assets/logoRound.webp" alt="Logo rond La Forge à Souvenirs">
-      <p>Une question, une date à réserver, un devis ?</p>
-      <p><strong>Adresse</strong><br>27 rue du Général Boufflers<br>59139 Wattignies</p>
-      <p><a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a><br>SIRET&nbsp;: 815&nbsp;101&nbsp;050&nbsp;00038</p>
-      <p><a class="cta" href="mailto:laforgeasouvenirs@gmail.com?subject=Contact%20depuis%20le%20site">Écrire un message</a></p>
-    </aside>
+<aside class="contact-card">
+  <img src="assets/logoRound.webp" alt="Logo rond La Forge à Souvenirs" style="max-width:120px">
+
+  <h3 style="text-align:center;margin:6px 0 2px">Demande d’information</h3>
+  <p class="helper" style="text-align:center;margin-top:0">Dites-nous l’essentiel sur votre évènement.</p>
+
+  <div id="form-success" class="success-msg" role="status" aria-live="polite">
+    Merci ! Votre logiciel de messagerie va s’ouvrir pour envoyer la demande.
+  </div>
+  <div id="form-error" class="error-msg" role="alert">
+    Impossible d’ouvrir votre messagerie automatiquement. Envoyez-nous un mail à
+    <a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a>.
+  </div>
+
+  <form id="contact-form" novalidate>
+    <!-- Identité -->
+    <div class="form-row two">
+      <div>
+        <label for="cf-nom" class="label">Nom *</label>
+        <input type="text" id="cf-nom" name="nom" required autocomplete="family-name" />
+      </div>
+      <div>
+        <label for="cf-prenom" class="label">Prénom *</label>
+        <input type="text" id="cf-prenom" name="prenom" required autocomplete="given-name" />
+      </div>
+    </div>
+
+    <!-- Région + Date -->
+    <div class="form-row two">
+      <div>
+        <label for="cf-region" class="label">Région de l’évènement *</label>
+        <select id="cf-region" name="region" required>
+          <option value="" selected disabled>— Sélectionnez —</option>
+          <option>Hauts-de-France</option>
+          <option>Île-de-France</option>
+          <option>Normandie</option>
+          <option>Grand Est</option>
+          <option>Bretagne</option>
+          <option>Pays de la Loire</option>
+          <option>Centre-Val de Loire</option>
+          <option>Bourgogne-Franche-Comté</option>
+          <option>Nouvelle-Aquitaine</option>
+          <option>Auvergne-Rhône-Alpes</option>
+          <option>Occitanie</option>
+          <option>Provence-Alpes-Côte d’Azur</option>
+          <option>Corse</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <div>
+        <label for="cf-date" class="label">Date de l’évènement *</label>
+        <input type="date" id="cf-date" name="date" required />
+      </div>
+    </div>
+
+    <!-- Intérêt -->
+    <fieldset class="form-row" style="margin:0;padding:0;border:0">
+      <legend class="label" style="margin-bottom:6px">Je suis intéressé·e par *</legend>
+      <div class="radio-group" role="group" aria-labelledby="intitule-interet">
+        <label class="radio-item">
+          <input type="radio" name="interet" value="Livre d’or audio" required> Livre d’or audio
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="interet" value="Livre d’or vidéo"> Livre d’or vidéo
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="interet" value="Photobooth"> Photobooth
+        </label>
+        <label class="radio-item">
+          <input type="radio" name="interet" value="Autre" id="cf-autre-radio"> Autre
+        </label>
+      </div>
+    </fieldset>
+
+    <!-- Précisions / autre -->
+    <div>
+      <label for="cf-message" class="label">Précisions (optionnel)</label>
+      <textarea id="cf-message" name="message" placeholder="Ex. : nombre d’invités, horaires, lieu précis, configuration souhaitée…"></textarea>
+    </div>
+
+    <!-- Consentement -->
+    <div class="form-row">
+      <label class="radio-item" style="align-items:flex-start">
+        <input type="checkbox" id="cf-consent" required>
+        <span>J’accepte d’être recontacté·e par La Forge à Souvenirs au sujet de ma demande.</span>
+      </label>
+      <div class="form-note">Vos informations ne sont utilisées que pour répondre à votre demande.</div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button type="submit" class="btn-primary">Envoyer ma demande</button>
+      <a class="cta" href="mailto:laforgeasouvenirs@gmail.com?subject=Contact%20depuis%20le%20site">Ou écrire un email</a>
+    </div>
+  </form>
+</aside>
+
   </div>
 </section>
 
