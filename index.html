@@ -189,6 +189,56 @@ textarea{min-height:110px; resize:vertical}
 .success-msg{display:none; padding:10px; border:1px solid #d9ebd9; background:#f2fbf2; border-radius:10px; color:#2a662a}
 .error-msg{display:none; padding:10px; border:1px solid #f4d0d0; background:#fff3f3; border-radius:10px; color:#8a1f1f}
 
+    /* Mise en page contact : formulaire plus large que la carte */
+.split{
+  grid-template-columns: .8fr 1.2fr; /* carte .8 / formulaire 1.2 */
+}
+@media (max-width:900px){
+  .split{ grid-template-columns: 1fr; }
+}
+
+/* Carte + iframe un peu plus compacts */
+.map-card iframe{
+  min-height: 300px; /* au lieu de 360px */
+}
+
+/* Formulaire */
+.contact-card form{
+  display:grid;
+  gap:12px;
+  text-align:left;
+}
+.form-row{display:grid;gap:10px}
+@media (min-width:640px){
+  .form-row.two{ grid-template-columns:1fr 1fr; }
+}
+.label{font-weight:600}
+input[type="text"], input[type="email"], input[type="date"], select, textarea{
+  width:100%; padding:10px 12px; border:1px solid var(--border);
+  border-radius:10px; background:#fff; font:inherit;
+}
+textarea{min-height:110px; resize:vertical}
+.helper{font-size:.92rem;color:#555}
+.checkbox-group{display:grid; gap:8px}
+.checkbox-item{display:flex; align-items:center; gap:8px}
+.form-actions{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:4px}
+.btn-primary{
+  background:var(--brand); color:#fff; font-weight:700;
+  padding:10px 14px; border:0; border-radius:10px; cursor:pointer;
+  box-shadow:0 6px 16px rgba(199,160,82,.28)
+}
+.btn-primary:hover{ background:var(--brand-600) }
+.success-msg,.error-msg{display:none; padding:10px; border-radius:10px}
+.success-msg{ border:1px solid #d9ebd9; background:#f2fbf2; color:#2a662a }
+.error-msg{ border:1px solid #f4d0d0; background:#fff3f3; color:#8a1f1f }
+
+/* Bloc d'infos (mail, SIRET...) séparé visuellement */
+.contact-info{
+  margin-top:14px; padding-top:12px; border-top:1px dashed var(--border);
+  text-align:center;
+}
+.contact-info p{ margin:6px 0; }
+
   </style>
 </head>
 <body>
@@ -387,20 +437,12 @@ textarea{min-height:110px; resize:vertical}
         <label for="cf-region" class="label">Région de l’évènement *</label>
         <select id="cf-region" name="region" required>
           <option value="" selected disabled>— Sélectionnez —</option>
-          <option>Hauts-de-France</option>
-          <option>Île-de-France</option>
-          <option>Normandie</option>
-          <option>Grand Est</option>
-          <option>Bretagne</option>
-          <option>Pays de la Loire</option>
-          <option>Centre-Val de Loire</option>
-          <option>Bourgogne-Franche-Comté</option>
-          <option>Nouvelle-Aquitaine</option>
-          <option>Auvergne-Rhône-Alpes</option>
-          <option>Occitanie</option>
-          <option>Provence-Alpes-Côte d’Azur</option>
-          <option>Corse</option>
-          <option>Autre</option>
+          <option>Hauts-de-France</option><option>Île-de-France</option><option>Normandie</option>
+          <option>Grand Est</option><option>Bretagne</option><option>Pays de la Loire</option>
+          <option>Centre-Val de Loire</option><option>Bourgogne-Franche-Comté</option>
+          <option>Nouvelle-Aquitaine</option><option>Auvergne-Rhône-Alpes</option>
+          <option>Occitanie</option><option>Provence-Alpes-Côte d’Azur</option>
+          <option>Corse</option><option>Autre</option>
         </select>
       </div>
       <div>
@@ -409,38 +451,29 @@ textarea{min-height:110px; resize:vertical}
       </div>
     </div>
 
-    <!-- Intérêt -->
+    <!-- Intérêts (plusieurs choix possibles) -->
     <fieldset class="form-row" style="margin:0;padding:0;border:0">
       <legend class="label" style="margin-bottom:6px">Je suis intéressé·e par *</legend>
-      <div class="radio-group" role="group" aria-labelledby="intitule-interet">
-        <label class="radio-item">
-          <input type="radio" name="interet" value="Livre d’or audio" required> Livre d’or audio
+      <div class="checkbox-group" role="group">
+        <label class="checkbox-item">
+          <input type="checkbox" name="interets" value="Livre d’or audio"> Livre d’or audio
         </label>
-        <label class="radio-item">
-          <input type="radio" name="interet" value="Livre d’or vidéo"> Livre d’or vidéo
+        <label class="checkbox-item">
+          <input type="checkbox" name="interets" value="Livre d’or vidéo"> Livre d’or vidéo
         </label>
-        <label class="radio-item">
-          <input type="radio" name="interet" value="Photobooth"> Photobooth
+        <label class="checkbox-item">
+          <input type="checkbox" name="interets" value="Photobooth"> Photobooth
         </label>
-        <label class="radio-item">
-          <input type="radio" name="interet" value="Autre" id="cf-autre-radio"> Autre
+        <label class="checkbox-item">
+          <input type="checkbox" name="interets" value="Autre"> Autre
         </label>
       </div>
     </fieldset>
 
-    <!-- Précisions / autre -->
+    <!-- Précisions -->
     <div>
       <label for="cf-message" class="label">Précisions (optionnel)</label>
       <textarea id="cf-message" name="message" placeholder="Ex. : nombre d’invités, horaires, lieu précis, configuration souhaitée…"></textarea>
-    </div>
-
-    <!-- Consentement -->
-    <div class="form-row">
-      <label class="radio-item" style="align-items:flex-start">
-        <input type="checkbox" id="cf-consent" required>
-        <span>J’accepte d’être recontacté·e par La Forge à Souvenirs au sujet de ma demande.</span>
-      </label>
-      <div class="form-note">Vos informations ne sont utilisées que pour répondre à votre demande.</div>
     </div>
 
     <!-- Actions -->
@@ -449,6 +482,13 @@ textarea{min-height:110px; resize:vertical}
       <a class="cta" href="mailto:laforgeasouvenirs@gmail.com?subject=Contact%20depuis%20le%20site">Ou écrire un email</a>
     </div>
   </form>
+
+  <!-- Infos restaurées -->
+  <div class="contact-info">
+    <p><strong>Adresse</strong><br>27 rue du Général Boufflers<br>59139 Wattignies</p>
+    <p><a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a><br>
+       SIRET&nbsp;: 815&nbsp;101&nbsp;050&nbsp;00038</p>
+  </div>
 </aside>
 
   </div>
@@ -979,7 +1019,7 @@ textarea{min-height:110px; resize:vertical}
 
 </body>
 
-  <script>
+<script>
 (function(){
   const form = document.getElementById('contact-form');
   if (!form) return;
@@ -987,52 +1027,54 @@ textarea{min-height:110px; resize:vertical}
   const success = document.getElementById('form-success');
   const error   = document.getElementById('form-error');
 
-  function esc(v){ return encodeURIComponent(v || '').replace(/%0A/g, '\n'); }
+  // Encode avec CRLF pour Outlook/clients stricts
+  function encCRLF(str){
+    return encodeURIComponent((str || '').replace(/\r?\n/g, '\r\n'));
+  }
 
   form.addEventListener('submit', function(e){
     e.preventDefault();
     success.style.display = 'none';
     error.style.display = 'none';
 
-    // Champs
     const nom     = form.querySelector('#cf-nom')?.value.trim();
     const prenom  = form.querySelector('#cf-prenom')?.value.trim();
     const region  = form.querySelector('#cf-region')?.value;
     const date    = form.querySelector('#cf-date')?.value;
     const message = form.querySelector('#cf-message')?.value.trim();
-    const consent = form.querySelector('#cf-consent')?.checked;
 
-    const interetInput = form.querySelector('input[name="interet"]:checked');
-    const interet = interetInput ? interetInput.value : '';
+    // Récupère toutes les cases cochées
+    const interets = Array.from(form.querySelectorAll('input[name="interets"]:checked')).map(i => i.value);
 
     // Validation minimale
-    if (!nom || !prenom || !region || !date || !interet || !consent){
+    if (!nom || !prenom || !region || !date || interets.length === 0){
       error.textContent = "Merci de compléter tous les champs obligatoires marqués d’un astérisque.";
       error.style.display = 'block';
       return;
     }
 
-    // Objet + corps du mail
+    // Construction du mail
     const sujet = `Demande d'information – ${prenom} ${nom} – ${date}`;
     const lignes = [
-      `Nom: ${nom}`,
-      `Prénom: ${prenom}`,
-      `Région de l'évènement: ${region}`,
-      `Date de l'évènement: ${date}`,
-      `Intérêt: ${interet}`,
+      `Nom : ${nom}`,
+      `Prénom : ${prenom}`,
+      `Région de l’évènement : ${region}`,
+      `Date de l’évènement : ${date}`,
+      `Intérêt(s) : ${interets.join(', ')}`,
       message ? `` : null,
-      message ? `Précisions:\n${message}` : null,
+      message ? `Précisions :` : null,
+      message ? message : null,
       ``,
-      `— Formulaire site La Forge à Souvenirs —`
+      `— Formulaire site La Forge à Souvenirs —`,
+      `Contact direct : laforgeasouvenirs@gmail.com`,
+      `SIRET : 815 101 050 00038`
     ].filter(Boolean);
 
-    const corps = lignes.join('\n');
+    const corps = lignes.join('\r\n'); // CRLF
 
-    // Mailto
     const to = 'laforgeasouvenirs@gmail.com';
-    const mailto = `mailto:${to}?subject=${esc(sujet)}&body=${esc(corps)}`;
+    const mailto = `mailto:${to}?subject=${encCRLF(sujet)}&body=${encCRLF(corps)}`;
 
-    // Tentative d’ouverture
     try{
       window.location.href = mailto;
       success.style.display = 'block';
@@ -1043,5 +1085,6 @@ textarea{min-height:110px; resize:vertical}
   });
 })();
 </script>
+
 
 </html>
