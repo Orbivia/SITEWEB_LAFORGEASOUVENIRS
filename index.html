@@ -190,9 +190,18 @@ textarea{min-height:110px; resize:vertical}
 .error-msg{display:none; padding:10px; border:1px solid #f4d0d0; background:#fff3f3; border-radius:10px; color:#8a1f1f}
 
     /* Mise en page contact : formulaire plus large que la carte */
+/* Nouvelle disposition contact : vertical */
 .split{
-  grid-template-columns: .8fr 1.2fr; /* carte .8 / formulaire 1.2 */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
+.map-card iframe{
+  min-height: 220px; /* plus courte qu'avant */
+  height: 220px;
+  border-radius: 10px;
+}
+
 @media (max-width:900px){
   .split{ grid-template-columns: 1fr; }
 }
@@ -404,92 +413,7 @@ textarea{min-height:110px; resize:vertical}
         allowfullscreen loading="lazy" referrerpolicy="no-referrer-when-downgrade">
       </iframe>
     </div>
-<aside class="contact-card">
-  <img src="assets/logoRound.webp" alt="Logo rond La Forge à Souvenirs" style="max-width:120px">
-
-  <h3 style="text-align:center;margin:6px 0 2px">Demande d’information</h3>
-  <p class="helper" style="text-align:center;margin-top:0">Dites-nous l’essentiel sur votre évènement.</p>
-
-  <div id="form-success" class="success-msg" role="status" aria-live="polite">
-    Merci ! Votre logiciel de messagerie va s’ouvrir pour envoyer la demande.
-  </div>
-  <div id="form-error" class="error-msg" role="alert">
-    Impossible d’ouvrir votre messagerie automatiquement. Envoyez-nous un mail à
-    <a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a>.
-  </div>
-
-  <form id="contact-form" novalidate>
-    <!-- Identité -->
-    <div class="form-row two">
-      <div>
-        <label for="cf-nom" class="label">Nom *</label>
-        <input type="text" id="cf-nom" name="nom" required autocomplete="family-name" />
-      </div>
-      <div>
-        <label for="cf-prenom" class="label">Prénom *</label>
-        <input type="text" id="cf-prenom" name="prenom" required autocomplete="given-name" />
-      </div>
-    </div>
-
-    <!-- Région + Date -->
-    <div class="form-row two">
-      <div>
-        <label for="cf-region" class="label">Région de l’évènement *</label>
-        <select id="cf-region" name="region" required>
-          <option value="" selected disabled>— Sélectionnez —</option>
-          <option>Hauts-de-France</option><option>Île-de-France</option><option>Normandie</option>
-          <option>Grand Est</option><option>Bretagne</option><option>Pays de la Loire</option>
-          <option>Centre-Val de Loire</option><option>Bourgogne-Franche-Comté</option>
-          <option>Nouvelle-Aquitaine</option><option>Auvergne-Rhône-Alpes</option>
-          <option>Occitanie</option><option>Provence-Alpes-Côte d’Azur</option>
-          <option>Corse</option><option>Autre</option>
-        </select>
-      </div>
-      <div>
-        <label for="cf-date" class="label">Date de l’évènement *</label>
-        <input type="date" id="cf-date" name="date" required />
-      </div>
-    </div>
-
-    <!-- Intérêts (plusieurs choix possibles) -->
-    <fieldset class="form-row" style="margin:0;padding:0;border:0">
-      <legend class="label" style="margin-bottom:6px">Je suis intéressé·e par *</legend>
-      <div class="checkbox-group" role="group">
-        <label class="checkbox-item">
-          <input type="checkbox" name="interets" value="Livre d’or audio"> Livre d’or audio
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" name="interets" value="Livre d’or vidéo"> Livre d’or vidéo
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" name="interets" value="Photobooth"> Photobooth
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" name="interets" value="Autre"> Autre
-        </label>
-      </div>
-    </fieldset>
-
-    <!-- Précisions -->
-    <div>
-      <label for="cf-message" class="label">Précisions (optionnel)</label>
-      <textarea id="cf-message" name="message" placeholder="Ex. : nombre d’invités, horaires, lieu précis, configuration souhaitée…"></textarea>
-    </div>
-
-    <!-- Actions -->
-    <div class="form-actions">
-      <button type="submit" class="btn-primary">Envoyer ma demande</button>
-      <a class="cta" href="mailto:laforgeasouvenirs@gmail.com?subject=Contact%20depuis%20le%20site">Ou écrire un email</a>
-    </div>
-  </form>
-
-  <!-- Infos restaurées -->
-  <div class="contact-info">
-    <p><strong>Adresse</strong><br>27 rue du Général Boufflers<br>59139 Wattignies</p>
-    <p><a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a><br>
-       SIRET&nbsp;: 815&nbsp;101&nbsp;050&nbsp;00038</p>
-  </div>
-</aside>
+<aside class=
 
   </div>
 </section>
