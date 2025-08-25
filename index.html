@@ -14,230 +14,223 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
 
   <!-- Styles -->
-  <style>
-    :root{
-      --brand:#C7A052;
-      --brand-600:#B58E3F;
-      --bg:#FFFEFB;
-      --surface:#FFFFFF;
-      --text:#171717;
-      --muted:#4A4A4A;
-      --border:#EBEBEB;
-      --overlay:rgba(0,0,0,.55);
-      --header-h:80px;
-    }
+<style>
+  :root{
+    --brand:#C7A052;
+    --brand-600:#B58E3F;
+    --bg:#FFFEFB;
+    --surface:#FFFFFF;
+    --text:#171717;
+    --muted:#4A4A4A;
+    --border:#EBEBEB;
+    --overlay:rgba(0,0,0,.55);
+    --header-h:80px;
+  }
 
-    *{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{
-      margin:0; font-family:Inter,sans-serif; color:var(--text);
-      background:var(--bg); line-height:1.7
-    }
-    a{color:inherit;text-decoration:none}
-    .container{max-width:1180px;margin:0 auto;padding:0 20px}
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; font-family:Inter,sans-serif; color:var(--text);
+    background:var(--bg); line-height:1.7
+  }
+  a{color:inherit;text-decoration:none}
+  .container{max-width:1180px;margin:0 auto;padding:0 20px}
 
-    h1,h2,h3,.brand span{
-      font-family:"Cormorant Garamond",serif;
-      letter-spacing:.2px; color:var(--text)
-    }
-    h1{
-      font-weight:700;font-size:clamp(30px,4.4vw,48px);
-      line-height:1.15;margin:0 0 12px;text-align:center
-    }
-    h2{
-      font-weight:700;font-size:clamp(24px,3.2vw,36px);
-      line-height:1.2;margin:0 0 8px;text-align:center
-    }
-    h3{font-weight:600;margin:0 0 6px}
+  h1,h2,h3,.brand span{
+    font-family:"Cormorant Garamond",serif;
+    letter-spacing:.2px; color:var(--text)
+  }
+  h1{
+    font-weight:700;font-size:clamp(30px,4.4vw,48px);
+    line-height:1.15;margin:0 0 12px;text-align:center
+  }
+  h2{
+    font-weight:700;font-size:clamp(24px,3.2vw,36px);
+    line-height:1.2;margin:0 0 8px;text-align:center
+  }
+  h3{font-weight:600;margin:0 0 6px}
 
-    /* --- Header / Nav --- */
-    header{
-      position:sticky;top:0;z-index:50;background:var(--surface);
-      border-bottom:1px solid var(--border);
-      box-shadow:0 6px 20px rgba(0,0,0,.05)
-    }
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
-    .brand{display:flex;align-items:center;gap:12px}
-    .brand img{height:52px;width:auto}
-    .brand span{display:none}
-    nav ul{list-style:none;display:flex;gap:6px;margin:0;padding:0}
-    nav a{
-      display:block;padding:10px 12px;border-radius:10px;
-      font-weight:600;color:#2A2A2A
-    }
-    nav a:hover, nav a.active{background:var(--brand);color:#fff}
-    .burger{display:none;font-size:22px;cursor:pointer}
-    @media (max-width:900px){
-      nav{display:none;position:absolute;left:0;right:0;top:72px;
-        background:var(--surface);border-top:1px solid var(--border)}
-      nav.open{display:block}
-      nav ul{flex-direction:column;padding:10px}
-      .burger{display:block}
-    }
+  /* --- Header --- */
+  header{
+    position:sticky;top:0;z-index:50;background:var(--surface);
+    border-bottom:1px solid var(--border);
+    box-shadow:0 6px 20px rgba(0,0,0,.05)
+  }
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand img{height:52px;width:auto}
+  .brand span{display:none}
+  nav ul{list-style:none;display:flex;gap:6px;margin:0;padding:0}
+  nav a{
+    display:block;padding:10px 12px;border-radius:10px;
+    font-weight:600;color:#2A2A2A
+  }
+  nav a:hover, nav a.active{background:var(--brand);color:#fff}
+  .burger{display:none;font-size:22px;cursor:pointer}
+  @media (max-width:900px){
+    nav{display:none;position:absolute;left:0;right:0;top:72px;
+      background:var(--surface);border-top:1px solid var(--border)}
+    nav.open{display:block}
+    nav ul{flex-direction:column;padding:10px}
+    .burger{display:block}
+  }
 
-    /* Décalage des ancres (header sticky) */
-    [id]{scroll-margin-top:calc(var(--header-h) + 12px)}
+  /* Décalage des ancres */
+  [id]{scroll-margin-top:calc(var(--header-h) + 12px)}
 
-    /* --- Sections --- */
-    section.alt-bg{background:#FFFAF3;padding:40px 0}
-    section.white-bg{background:var(--surface);padding:40px 0}
+  /* --- Sections --- */
+  section.alt-bg{background:#FFFAF3;padding:40px 0}
+  section.white-bg{background:var(--surface);padding:40px 0}
 
-    .hero{
-      padding:54px 0 26px;
-      background:linear-gradient(180deg,var(--surface), var(--surface) 68%, var(--bg))
-    }
-    .hero p{
-      font-size:clamp(16px,1.6vw,19px);
-      color:var(--muted);max-width:920px;margin:auto;text-align:center
-    }
+  .hero{
+    padding:54px 0 26px;
+    background:linear-gradient(180deg,var(--surface), var(--surface) 68%, var(--bg))
+  }
+  .hero p{
+    font-size:clamp(16px,1.6vw,19px);
+    color:var(--muted);max-width:920px;margin:auto;text-align:center
+  }
 
-    .cta{
-      display:inline-block;background:var(--brand);color:#fff;
-      padding:10px 14px;border-radius:10px;font-weight:700;
-      text-decoration:none;box-shadow:0 6px 16px rgba(199,160,82,.28)
-    }
-    .cta:hover{background:var(--brand-600)}
+  .cta{
+    display:inline-block;background:var(--brand);color:#fff;
+    padding:10px 14px;border-radius:10px;font-weight:700;
+    text-decoration:none;box-shadow:0 6px 16px rgba(199,160,82,.28)
+  }
+  .cta:hover{background:var(--brand-600)}
 
-    /* --- Prestations --- */
-    .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:24px auto;max-width:1180px;padding:0 20px}
-    @media (max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:640px){.cards{grid-template-columns:1fr}}
+  /* --- Prestations --- */
+  .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:24px auto;max-width:1180px;padding:0 20px}
+  @media (max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:640px){.cards{grid-template-columns:1fr}}
 
-    .card{
-      background:var(--surface);border:1px solid var(--border);
-      border-radius:16px;overflow:hidden;
-      box-shadow:0 12px 28px rgba(0,0,0,.06);
-      display:flex;flex-direction:column;text-align:center;
-      transform-origin:center;
-      transition:transform .35s ease, box-shadow .35s ease;
-      position:relative;padding-bottom:78px;min-height:500px;cursor:pointer
-    }
-    .card img{width:100%;height:280px;object-fit:cover;display:block}
-    .card .body{display:flex;flex-direction:column;gap:8px;padding:18px;flex:1 1 auto}
-    .price{font-weight:700;color:var(--brand);margin-top:auto}
-    .service-card:hover{transform:scale(1.03);box-shadow:0 18px 36px rgba(0,0,0,.12)}
-    .service-card .cta{position:absolute;left:16px;right:16px;bottom:16px;text-align:center;pointer-events:none;z-index:1}
-    .service-card:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
+  .card{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:16px;overflow:hidden;
+    box-shadow:0 12px 28px rgba(0,0,0,.06);
+    display:flex;flex-direction:column;text-align:center;
+    transform-origin:center;
+    transition:transform .35s ease, box-shadow .35s ease;
+    position:relative;padding-bottom:78px;min-height:500px;cursor:pointer
+  }
+  .card img{width:100%;height:280px;object-fit:cover;display:block}
+  .card .body{display:flex;flex-direction:column;gap:8px;padding:18px;flex:1 1 auto}
+  .price{font-weight:700;color:var(--brand);margin-top:auto}
+  .service-card:hover{transform:scale(1.03);box-shadow:0 18px 36px rgba(0,0,0,.12)}
+  .service-card .cta{position:absolute;left:16px;right:16px;bottom:16px;text-align:center;pointer-events:none;z-index:1}
+  .service-card:focus-visible{outline:3px solid var(--brand);outline-offset:3px}
 
-    /* --- Services --- */
-    .services .lead{text-align:center;color:#5A5A5A;margin:0 auto 18px;max-width:860px}
-    .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-    @media (max-width:900px){.pillars{grid-template-columns:1fr}}
-    .pillar{background:var(--surface);border-left:6px solid var(--brand);border-radius:14px;padding:18px;box-shadow:0 12px 28px rgba(0,0,0,.06);text-align:center}
-    .pillar i{color:var(--brand);font-size:26px;margin-bottom:6px}
+  /* --- Contact --- */
+  #contact .split.two-col{
+    display:grid;grid-template-columns:1.2fr .8fr;
+    gap:18px;align-items:stretch;max-width:980px;margin:auto;
+  }
+  @media (max-width:900px){
+    #contact .split.two-col{grid-template-columns:1fr}
+  }
 
-    /* --- Clients --- */
-    .clients{background:var(--surface);border-radius:16px;padding:22px;box-shadow:0 12px 28px rgba(0,0,0,.06);margin:26px auto;max-width:980px;text-align:center}
-    .gallery{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;justify-items:center;justify-content:center}
-    @media (max-width:900px){.gallery{grid-template-columns:1fr}}
-    .shot{background:#FAFAFA;border:1px solid var(--border);border-radius:12px;overflow:hidden;text-align:center;width:100%}
-    .shot img{width:100%;height:300px;object-fit:cover;display:block}
-    .shot figcaption{padding:10px 12px;font-weight:600}
+  #contact .map-card,
+  #contact .info-card{
+    background:var(--surface);
+    border-radius:14px;
+    box-shadow:0 12px 28px rgba(0,0,0,.06);
+    padding:16px;
+  }
+  #contact .map-card iframe{
+    width:100%;height:220px;min-height:220px;border:0;border-radius:10px
+  }
 
-    /* --- Contact --- */
-    #contact .split{
-      display:flex;flex-direction:column;gap:20px;
-      max-width:980px;margin:auto;
-    }
-    #contact .map-card,
-    #contact .contact-card{
-      background:var(--surface);
-      border-radius:14px;
-      box-shadow:0 12px 28px rgba(0,0,0,.06);
-    }
-    #contact .map-card{padding:12px}
-    #contact .map-card iframe{
-      width:100%;height:220px;min-height:220px;
-      border:0;border-radius:10px
-    }
-    #contact .contact-card{padding:16px;text-align:center}
-    #contact .contact-card img{max-width:140px;display:block;margin:0 auto 12px}
-    #contact .contact-card h3{font-size:clamp(22px,2.2vw,28px)}
+  #contact .info-card{
+    text-align:center;display:flex;flex-direction:column;justify-content:center
+  }
+  #contact .info-card img{max-width:120px;margin:0 auto 12px}
+  #contact .info-card p{margin:6px 0}
 
-    #contact .contact-info{
-      margin-top:14px;padding-top:12px;
-      border-top:1px dashed var(--border);text-align:center
-    }
-    #contact .contact-info p{margin:6px 0}
+  #contact .form-wrapper{max-width:980px;margin:30px auto 0}
 
-    #contact form{display:grid;gap:12px;text-align:left;margin-top:10px}
-    #contact .form-row{display:grid;gap:10px}
-    @media (min-width:640px){
-      #contact .form-row.two{grid-template-columns:1fr 1fr}
-    }
-    #contact .label{font-weight:600}
-    #contact input[type="text"],
-    #contact input[type="email"],
-    #contact input[type="date"],
-    #contact select,
-    #contact textarea{
-      width:100%;padding:10px 12px;border:1px solid var(--border);
-      border-radius:10px;background:#fff;font:inherit;
-    }
-    #contact textarea{min-height:110px;resize:vertical}
-    #contact .helper{font-size:.92rem;color:#555}
-    #contact .checkbox-group{display:grid;gap:8px}
-    #contact .checkbox-item{display:flex;align-items:center;gap:8px}
-    #contact .form-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:4px}
-    #contact .btn-primary{
-      background:var(--brand);color:#fff;font-weight:700;
-      padding:10px 14px;border:0;border-radius:10px;cursor:pointer;
-      box-shadow:0 6px 16px rgba(199,160,82,.28)
-    }
-    #contact .btn-primary:hover{background:var(--brand-600)}
-    #contact .success-msg,
-    #contact .error-msg{display:none;padding:10px;border-radius:10px}
-    #contact .success-msg{border:1px solid #d9ebd9;background:#f2fbf2;color:#2a662a}
-    #contact .error-msg{border:1px solid #f4d0d0;background:#fff3f3;color:#8a1f1f}
+  #contact form{display:grid;gap:12px;text-align:left;margin-top:10px}
+  #contact .form-row{display:grid;gap:10px}
+  @media (min-width:640px){
+    #contact .form-row.two{grid-template-columns:1fr 1fr}
+    #contact .form-row.uneven{grid-template-columns:0.8fr 1.2fr}
+  }
+  #contact .label{font-weight:600}
+  #contact input[type="text"],
+  #contact input[type="email"],
+  #contact input[type="date"],
+  #contact select,
+  #contact textarea{
+    width:100%;padding:10px 12px;border:1px solid var(--border);
+    border-radius:10px;background:#fff;font:inherit;
+  }
+  #contact textarea{min-height:110px;resize:vertical}
+  #contact .helper{font-size:.92rem;color:#555}
+  #contact .checkbox-group{display:grid;gap:8px}
+  #contact .checkbox-item{display:flex;align-items:center;gap:8px}
+  #contact .form-actions{display:flex;justify-content:center;margin-top:10px}
+  #contact .btn-primary{
+    background:var(--brand);color:#fff;font-weight:700;
+    font-size:1.1rem;padding:14px 22px;border:0;border-radius:10px;cursor:pointer;
+    box-shadow:0 6px 16px rgba(199,160,82,.28)
+  }
+  #contact .btn-primary:hover{background:var(--brand-600)}
+  #contact .success-msg,
+  #contact .error-msg{display:none;padding:10px;border-radius:10px}
+  #contact .success-msg{border:1px solid #d9ebd9;background:#f2fbf2;color:#2a662a}
+  #contact .error-msg{border:1px solid #f4d0d0;background:#fff3f3;color:#8a1f1f}
 
-    /* --- About --- */
-    .about-card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 12px 28px rgba(0,0,0,.06);max-width:100%;margin:0 auto;text-align:center}
-    .about-card img{width:100%;max-width:520px;height:auto;border-radius:12px;display:block;margin:0 auto 14px}
+  /* --- About --- */
+  .about-card{
+    background:#fff;border-radius:14px;padding:18px;
+    box-shadow:0 12px 28px rgba(0,0,0,.06);
+    max-width:100%;margin:0 auto;text-align:center
+  }
+  .about-card img{width:100%;max-width:520px;height:auto;border-radius:12px;display:block;margin:0 auto 14px}
 
-    /* --- Footer --- */
-    footer{background:#111;color:#EEE;padding:18px 0;margin-top:32px}
-    .footerbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
-    .social a{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#222;color:#fff;margin-left:6px}
-    .social a:hover{background:var(--brand)}
-    .legal{font-size:.92rem}
-    .legal a{color:#ddd;text-decoration:underline}
+  /* --- Footer --- */
+  footer{background:#111;color:#EEE;padding:18px 0;margin-top:32px}
+  .footerbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .social a{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#222;color:#fff;margin-left:6px}
+  .social a:hover{background:var(--brand)}
+  .legal{font-size:.92rem}
+  .legal a{color:#ddd;text-decoration:underline}
 
-    /* --- Détails prestations --- */
-    .tabs{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 28px rgba(0,0,0,.06);padding:14px}
-    .tablist{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px}
-    .tab-btn{appearance:none;background:#F7F7F7;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
-    .tab-btn[aria-selected="true"], .tab-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
-    .tabpanel{display:none}
-    .tabpanel.active{display:block}
-    .equip-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,280px));gap:16px;justify-content:center;justify-items:center}
-    @media (max-width:900px){.equip-grid{grid-template-columns:repeat(2,1fr)}}
-    @media (max-width:520px){.equip-grid{grid-template-columns:1fr}}
-    .equip-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff;text-align:center}
-    .equip-card .thumb{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:#f7f7f7;border-bottom:1px solid var(--border)}
-    .equip-card .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block}
-    .equip-card .cap{padding:10px 12px;font-weight:700}
-    .equip-card .desc{padding:0 12px 12px;color:#555;font-size:.95rem;line-height:1.5}
-    .empty-note{padding:12px;background:#FFF7E6;border:1px dashed var(--brand);border-radius:10px}
+  /* --- Détails prestations --- */
+  .tabs{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:0 12px 28px rgba(0,0,0,.06);padding:14px}
+  .tablist{display:flex;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px}
+  .tab-btn{appearance:none;background:#F7F7F7;border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-weight:700;cursor:pointer}
+  .tab-btn[aria-selected="true"], .tab-btn.active{background:var(--brand);color:#fff;border-color:var(--brand)}
+  .tabpanel{display:none}
+  .tabpanel.active{display:block}
+  .equip-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,280px));gap:16px;justify-content:center;justify-items:center}
+  @media (max-width:900px){.equip-grid{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:520px){.equip-grid{grid-template-columns:1fr}}
+  .equip-card{border:1px solid var(--border);border-radius:12px;overflow:hidden;background:#fff;text-align:center}
+  .equip-card .thumb{position:relative;width:100%;aspect-ratio:1/1;overflow:hidden;background:#f7f7f7;border-bottom:1px solid var(--border)}
+  .equip-card .thumb img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block}
+  .equip-card .cap{padding:10px 12px;font-weight:700}
+  .equip-card .desc{padding:0 12px 12px;color:#555;font-size:.95rem;line-height:1.5}
+  .empty-note{padding:12px;background:#FFF7E6;border:1px dashed var(--brand);border-radius:10px}
 
-    .intro{margin-bottom:12px}
-    .section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px}
-    .section + .section{margin-top:12px}
-    .section-title{margin:0 0 8px;font-weight:700}
-    .feature-list,.bullet-list{list-style:none;padding:0;margin:0}
-    .feature-list li,.bullet-list li{display:flex;align-items:flex-start;gap:8px;margin:6px 0}
-    .feature-list i.fi{font-size:1.05rem;margin-top:2px;color:var(--brand);min-width:1.2rem;display:inline-block}
-    .bullet-list li::before{content:'•';color:var(--brand);margin-top:2px;margin-right:6px}
-    .sub-list{list-style:none;padding-left:18px;margin-top:6px}
-    .sub-list li::before{content:'–';color:var(--brand);margin-right:6px}
-    .section-subtitle{margin:16px 0 8px;font-weight:700}
+  .intro{margin-bottom:12px}
+  .section{background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px 14px}
+  .section + .section{margin-top:12px}
+  .section-title{margin:0 0 8px;font-weight:700}
+  .feature-list,.bullet-list{list-style:none;padding:0;margin:0}
+  .feature-list li,.bullet-list li{display:flex;align-items:flex-start;gap:8px;margin:6px 0}
+  .feature-list i.fi{font-size:1.05rem;margin-top:2px;color:var(--brand);min-width:1.2rem;display:inline-block}
+  .bullet-list li::before{content:'•';color:var(--brand);margin-top:2px;margin-right:6px}
+  .sub-list{list-style:none;padding-left:18px;margin-top:6px}
+  .sub-list li::before{content:'–';color:var(--brand);margin-right:6px}
+  .section-subtitle{margin:16px 0 8px;font-weight:700}
 
-    .o-accent{color:#B30000;font-weight:800}
+  .o-accent{color:#B30000;font-weight:800}
 
-    #details-prestations{display:none}
-    .show-details #details-prestations{display:block}
-    .details-close{display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer;background:#fff}
-    .details-close:hover{background:#f7f7f7}
-  </style>
+  #details-prestations{display:none}
+  .show-details #details-prestations{display:block}
+  .details-close{display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer;background:#fff}
+  .details-close:hover{background:#f7f7f7}
+</style>
+
 </head>
 
   
@@ -397,8 +390,10 @@
 
 <section class="white-bg contact-section" id="contact">
   <h2>Nous écrire</h2>
-  <div class="split">
-    <!-- Carte : unique -->
+
+  <!-- Ligne carte + infos -->
+  <div class="split two-col">
+    <!-- Carte -->
     <div class="map-card" aria-label="Localisation">
       <iframe
         src="https://www.google.com/maps?q=27%20Rue%20du%20G%C3%A9n%C3%A9ral%20Boufflers%2C%2059139%20Wattignies&output=embed"
@@ -406,84 +401,77 @@
       </iframe>
     </div>
 
-    <!-- Infos + Formulaire -->
-    <aside class="contact-card">
-      <img src="assets/logoRound.webp" alt="Logo rond La Forge à Souvenirs" style="max-width:120px;margin-bottom:10px">
-
-      <div class="contact-info" style="margin-top:0;border-top:0">
-        <p><strong>Adresse</strong><br>27 rue du Général Boufflers<br>59139 Wattignies</p>
-        <p><a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a><br>
-           SIRET&nbsp;: 815&nbsp;101&nbsp;050&nbsp;00038</p>
-      </div>
-
-      <h3 style="text-align:center;margin:20px 0 4px">Demande d’information</h3>
-      <p class="helper" style="text-align:center;margin-top:0">Dites-nous l’essentiel sur votre évènement.</p>
-
-      <div id="form-success" class="success-msg" role="status" aria-live="polite">
-        Merci ! Votre logiciel de messagerie va s’ouvrir pour envoyer la demande.
-      </div>
-      <div id="form-error" class="error-msg" role="alert">
-        Impossible d’ouvrir votre messagerie automatiquement. Envoyez-nous un mail à
-        <a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a>.
-      </div>
-
-      <form id="contact-form" novalidate>
-        <!-- Identité -->
-        <div class="form-row two">
-          <div>
-            <label for="cf-nom" class="label">Nom *</label>
-            <input type="text" id="cf-nom" name="nom" required autocomplete="family-name" />
-          </div>
-          <div>
-            <label for="cf-prenom" class="label">Prénom *</label>
-            <input type="text" id="cf-prenom" name="prenom" required autocomplete="given-name" />
-          </div>
-        </div>
-
-        <!-- Région + Date -->
-        <div class="form-row two">
-          <div>
-            <label for="cf-region" class="label">Région de l’évènement *</label>
-            <select id="cf-region" name="region" required>
-              <option value="" selected disabled>— Sélectionnez —</option>
-              <option>Hauts-de-France</option><option>Île-de-France</option><option>Normandie</option>
-              <option>Grand Est</option><option>Bretagne</option><option>Pays de la Loire</option>
-              <option>Centre-Val de Loire</option><option>Bourgogne-Franche-Comté</option>
-              <option>Nouvelle-Aquitaine</option><option>Auvergne-Rhône-Alpes</option>
-              <option>Occitanie</option><option>Provence-Alpes-Côte d’Azur</option>
-              <option>Corse</option><option>Autre</option>
-            </select>
-          </div>
-          <div>
-            <label for="cf-date" class="label">Date de l’évènement *</label>
-            <input type="date" id="cf-date" name="date" required />
-          </div>
-        </div>
-
-        <!-- Intérêts (multi-choix) -->
-        <fieldset class="form-row" style="margin:0;padding:0;border:0">
-          <legend class="label" style="margin-bottom:6px">Je suis intéressé·e par *</legend>
-          <div class="checkbox-group" role="group">
-            <label class="checkbox-item"><input type="checkbox" name="interets" value="Livre d’or audio"> Livre d’or audio</label>
-            <label class="checkbox-item"><input type="checkbox" name="interets" value="Livre d’or vidéo"> Livre d’or vidéo</label>
-            <label class="checkbox-item"><input type="checkbox" name="interets" value="Photobooth"> Photobooth</label>
-            <label class="checkbox-item"><input type="checkbox" name="interets" value="Autre"> Autre</label>
-          </div>
-        </fieldset>
-
-        <!-- Précisions -->
-        <div>
-          <label for="cf-message" class="label">Précisions (optionnel)</label>
-          <textarea id="cf-message" name="message" placeholder="Ex. : nombre d’invités, horaires, lieu précis, configuration souhaitée…"></textarea>
-        </div>
-
-        <!-- Actions -->
-        <div class="form-actions">
-          <button type="submit" class="btn-primary">Envoyer ma demande</button>
-          <a class="cta" href="mailto:laforgeasouvenirs@gmail.com?subject=Contact%20depuis%20le%20site">Ou écrire un email</a>
-        </div>
-      </form>
+    <!-- Infos utiles -->
+    <aside class="info-card">
+      <img src="assets/logoRound.webp" alt="Logo rond La Forge à Souvenirs">
+      <p><strong>Adresse</strong><br>27 rue du Général Boufflers<br>59139 Wattignies</p>
+      <p><a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a><br>
+         SIRET&nbsp;: 815&nbsp;101&nbsp;050&nbsp;00038</p>
     </aside>
+  </div>
+
+  <!-- Formulaire en dessous -->
+  <div class="form-wrapper">
+    <h3 style="text-align:center;margin:20px 0 4px">Demande d’information</h3>
+    <p class="helper" style="text-align:center;margin-top:0">
+      Dites-nous l’essentiel sur votre évènement.
+    </p>
+
+    <form id="contact-form" novalidate>
+      <!-- Identité -->
+      <div class="form-row two">
+        <div>
+          <label for="cf-nom" class="label">Nom *</label>
+          <input type="text" id="cf-nom" name="nom" required />
+        </div>
+        <div>
+          <label for="cf-prenom" class="label">Prénom *</label>
+          <input type="text" id="cf-prenom" name="prenom" required />
+        </div>
+      </div>
+
+      <!-- Région + Date -->
+      <div class="form-row two uneven">
+        <div class="small">
+          <label for="cf-region" class="label">Région de l’évènement *</label>
+          <select id="cf-region" name="region" required>
+            <option value="" selected disabled>— Sélectionnez —</option>
+            <option>Hauts-de-France</option><option>Île-de-France</option><option>Normandie</option>
+            <option>Grand Est</option><option>Bretagne</option><option>Pays de la Loire</option>
+            <option>Centre-Val de Loire</option><option>Bourgogne-Franche-Comté</option>
+            <option>Nouvelle-Aquitaine</option><option>Auvergne-Rhône-Alpes</option>
+            <option>Occitanie</option><option>Provence-Alpes-Côte d’Azur</option>
+            <option>Corse</option><option>Autre</option>
+          </select>
+        </div>
+        <div class="large">
+          <label for="cf-date" class="label">Date de l’évènement *</label>
+          <input type="date" id="cf-date" name="date" required />
+        </div>
+      </div>
+
+      <!-- Intérêts -->
+      <fieldset class="form-row" style="margin:0;padding:0;border:0">
+        <legend class="label" style="margin-bottom:6px">Je suis intéressé·e par *</legend>
+        <div class="checkbox-group" role="group">
+          <label class="checkbox-item"><input type="checkbox" name="interets" value="Livre d’or audio"> Livre d’or audio</label>
+          <label class="checkbox-item"><input type="checkbox" name="interets" value="Livre d’or vidéo"> Livre d’or vidéo</label>
+          <label class="checkbox-item"><input type="checkbox" name="interets" value="Photobooth"> Photobooth</label>
+          <label class="checkbox-item"><input type="checkbox" name="interets" value="Autre"> Autre</label>
+        </div>
+      </fieldset>
+
+      <!-- Précisions -->
+      <div>
+        <label for="cf-message" class="label">Précisions (optionnel)</label>
+        <textarea id="cf-message" name="message" placeholder="Ex. : nombre d’invités, horaires, lieu précis, configuration souhaitée…"></textarea>
+      </div>
+
+      <!-- Action -->
+      <div class="form-actions center">
+        <button type="submit" class="btn-primary big">Envoyer ma demande</button>
+      </div>
+    </form>
   </div>
 </section>
 
