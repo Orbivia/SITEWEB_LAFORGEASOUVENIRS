@@ -235,6 +235,29 @@
   .show-details #details-prestations{display:block}
   .details-close{display:inline-flex;align-items:center;gap:.5rem;border:1px solid var(--border);border-radius:10px;padding:6px 10px;cursor:pointer;background:#fff}
   .details-close:hover{background:#f7f7f7}
+
+  .gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  align-items: start;
+  justify-items: center;
+}
+
+.gallery .shot {
+  width: 100%;
+  max-width: 260px;
+  text-align: center;
+}
+
+.gallery .shot img {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+  
 </style>
 
 </head>
