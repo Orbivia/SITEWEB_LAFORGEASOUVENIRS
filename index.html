@@ -101,7 +101,87 @@
   /* --- Prestations --- */
   .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin:24px auto;max-width:1180px;padding:0 20px}
   @media (max-width:1100px){.cards{grid-template-columns:repeat(2,1fr)}}
-  @media (max-width:640px){.cards{grid-template-columns:1fr}}
+@media (max-width:640px){.cards{grid-template-columns:1fr}}
+
+/* --- Services (blocs premium) --- */
+#services {
+  padding: 70px 0;
+}
+
+#services .lead.center {
+  text-align: center;
+  max-width: 750px;
+  margin: 14px auto 40px;
+  font-size: 1.12rem;
+  color: var(--muted);
+}
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 32px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.pillar {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 12px 26px rgba(0,0,0,.08);
+  padding: 28px 22px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform .28s ease, box-shadow .28s ease;
+  min-height: 240px;
+}
+
+.pillar:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 18px 36px rgba(0,0,0,.14);
+}
+
+.pillar i {
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--brand);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 28px;
+  margin-bottom: 16px;
+}
+
+.pillar h3 {
+  margin: 0 0 10px;
+  font-size: 1.28rem;
+  color: var(--text);
+}
+
+.pillar p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.99rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 700px) {
+  .pillars {
+    gap: 20px;
+  }
+  .pillar {
+    padding: 22px 18px;
+  }
+  .pillar i {
+    width: 54px;
+    height: 54px;
+    font-size: 24px;
+  }
+}
 
   .card{
     background:var(--surface);border:1px solid var(--border);
