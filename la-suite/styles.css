@@ -1369,3 +1369,41 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
   outline:3px solid rgba(199,160,82,.45);
   outline-offset:3px;
 }
+
+
+/* Date événement — affichage français stable JJ/MM/AAAA */
+.date-fr-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+.date-fr-display{
+  width:100%;
+  padding-right:52px;
+  font-variant-numeric:tabular-nums;
+}
+.date-fr-button{
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:10px;
+  background:#f5efe5;
+  color:#b8862f;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  font-size:17px;
+}
+.date-fr-button:hover{background:#efe4d2}
+.date-fr-native{
+  position:absolute;
+  right:14px;
+  width:1px;
+  height:1px;
+  opacity:0;
+  pointer-events:none;
+}
