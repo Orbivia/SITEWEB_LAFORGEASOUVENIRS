@@ -338,35 +338,97 @@ function collectQrCustomization(c){
   qr_show_brand:true
  }
 }
-function renderCustomQr(url,c){
- const box=$("qrcode");if(!box||!window.QRCode)return;
- const o=qrOptions(c);
- box.innerHTML="";
- box.style.width=o.size+"px";
- box.style.height=o.size+"px";
- new QRCode(box,{text:url,width:o.size,height:o.size,colorDark:o.color,colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
- if(o.showInitials){
-  const badge=document.createElement("div");
-  badge.className="qr-designer-badge";
-  badge.textContent=o.initials;
-  badge.style.color=o.color;
-  box.appendChild(badge);
- }
+// The same artwork is used for the preview and the print export.
+const qrThemes={
+ romantic:{background:"#fff8f3",font:"elegant",accent:"#946c62"},
+ minimal:{background:"#ffffff",font:"modern",accent:"#353c39"},
+ chic:{background:"#f8f3e8",font:"classic",accent:"#8b713e"}
+};
+function qrInk(color){
+ const hex=/^#[0-9a-f]{6}$/i.test(color)?color:"#b78b38";
+ let rgb=hex.slice(1).match(/../g).map(x=>parseInt(x,16));
+ const luminance=()=>rgb.map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((v,x,i)=>v+x*[.2126,.7152,.0722][i],0);
+ while(luminance()>.10)rgb=rgb.map(x=>Math.floor(x*.9));
+ return "#"+rgb.map(x=>x.toString(16).padStart(2,"0")).join("");
 }
+function makeQrCanvas(url,o){
+ const holder=document.createElement("div");
+ const code=new QRCode(holder,{text:url,width:512,height:512,colorDark:qrInk(o.color),colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
+ const model=code._oQRCode,n=model.getModuleCount(),cell=12,quiet=4;
+ const canvas=document.createElement("canvas");canvas.width=canvas.height=(n+quiet*2)*cell;
+ const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle=qrInk(o.color);
+ for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(model.isDark(y,x))ctx.fillRect((x+quiet)*cell,(y+quiet)*cell,cell,cell);
+ return canvas;
+}
+function drawQrMonogram(ctx,o,cx,cy,size){
+ const d=size*.17,r=d/2;
+ ctx.save();ctx.translate(cx,cy);
+ ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=qrThemes[o.style].background;
+ ctx.beginPath();ctx.arc(0,0,r*.80,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle=o.color;ctx.lineWidth=Math.max(1,size*.0018);
+ if(o.style!=="minimal"){
+  ctx.beginPath();ctx.arc(0,0,r*.78,0,Math.PI*2);ctx.stroke();
+ }
+ const letters=Array.from(o.initials.trim().toUpperCase()).slice(0,4).join("");
+ ctx.fillStyle=qrInk(o.color);ctx.textAlign="center";ctx.textBaseline="middle";
+ ctx.font=(o.style==="minimal"?"500 ":"600 ")+Math.round(d*(letters.length>2?.30:.40))+'px '+(o.style==="minimal"?'Inter, sans-serif':'"Cormorant Garamond", Georgia, serif');
+ ctx.fillText(letters,0,d*.025,d*.66);
+ ctx.restore();
+}
+function drawQrDecor(ctx,o,W,H){
+ ctx.save();ctx.strokeStyle=o.color;ctx.fillStyle=o.color;ctx.lineWidth=2;
+ if(o.style==="chic"){
+  ctx.globalAlpha=.5;ctx.strokeRect(60,60,W-120,H-120);
+  ctx.globalAlpha=.26;ctx.strokeRect(75,75,W-150,H-150);
+  ctx.globalAlpha=.8;
+  for(const [x,y,angle] of [[60,60,0],[W-60,60,Math.PI/2],[W-60,H-60,Math.PI],[60,H-60,-Math.PI/2]]){
+   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.beginPath();
+   ctx.moveTo(0,95);ctx.lineTo(0,0);ctx.lineTo(95,0);
+   ctx.moveTo(15,70);ctx.lineTo(15,15);ctx.lineTo(70,15);ctx.stroke();
+   ctx.translate(15,15);ctx.rotate(Math.PI/4);ctx.fillRect(-4,-4,8,8);ctx.restore();
+  }
+ }else if(o.style==="romantic"){
+  ctx.globalAlpha=.32;
+  for(const [x,y,angle] of [[85,270,-.5],[W-85,H-270,Math.PI-.5]]){
+   ctx.save();ctx.translate(x,y);ctx.rotate(angle);
+   ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(25,-55,10,-130,44,-195);ctx.stroke();
+   for(let i=0;i<6;i++){
+    const y=-25-i*27,x=8+i*4,dir=i%2?1:-1;
+    ctx.beginPath();ctx.moveTo(x,y);ctx.bezierCurveTo(x+dir*45,y-3,x+dir*45,y-28,x+dir*35,y-33);
+    ctx.bezierCurveTo(x+dir*10,y-30,x+dir*5,y-10,x,y);ctx.stroke();
+   }
+   ctx.restore();
+  }
+ }
+ ctx.restore();
+}
+function drawQrDivider(ctx,o,x,y){
+ ctx.save();ctx.strokeStyle=o.color;ctx.fillStyle=o.color;ctx.lineWidth=2;
+ const half=o.style==="minimal"?32:90,gap=o.style==="minimal"?0:20;
+ ctx.beginPath();ctx.moveTo(x-half,y);ctx.lineTo(x-gap,y);ctx.moveTo(x+gap,y);ctx.lineTo(x+half,y);ctx.stroke();
+ if(o.style==="chic"){
+  ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.strokeRect(-6,-6,12,12);
+ }else if(o.style==="romantic"){
+  ctx.beginPath();ctx.ellipse(x-7,y,9,4,-.5,0,Math.PI*2);ctx.ellipse(x+7,y,9,4,.5,0,Math.PI*2);ctx.stroke();
+ }
+ ctx.restore();
+}
+let qrPreviewRevision=0;
 function applyQrPreview(url,c){
- const o=qrOptions(c),card=$("qr-print-card");
+ const o=qrOptions(c),card=$("qr-artwork-preview");
  if(!card)return;
- card.className="qr-print-card qr-style-"+o.style+" qr-font-"+o.font;
- card.style.setProperty("--qr-accent",o.color);
- $("qr-preview-capsule").textContent=c.couple_name||"Votre capsule";
- $("qr-preview-title").textContent=o.title;
- $("qr-preview-note").textContent=o.note;
- $("qr-preview-explanation").textContent=o.explanation;
  $("qr-size-value").textContent=o.size+" px";
  $("qr-color-value").textContent=o.color.toUpperCase();
- renderCustomQr(url,c)
+ const revision=++qrPreviewRevision;
+ const snapshot={...c};
+ buildPrintCardCanvas(snapshot,url).then(canvas=>{
+  if(revision!==qrPreviewRevision)return;
+  const preview=$("qr-artwork-preview");
+  if(preview)preview.src=canvas.toDataURL("image/png");
+ }).catch(()=>show($("qr-status"),"Impossible de préparer l’aperçu. Réessayez.",false));
 }
-function getQrCanvas(){return $("qrcode")?.querySelector("canvas")||null}
 function loadCanvasImage(src){
  return new Promise((resolve,reject)=>{
   const img=new Image();
@@ -404,72 +466,48 @@ function drawWrappedCenteredText(ctx,text,cx,y,maxWidth,lineHeight,maxLines=6){
  lines.forEach((line,i)=>ctx.fillText(line,cx,y+i*lineHeight));
  return y+lines.length*lineHeight
 }
+function fitPrintFont(ctx,text,width,lines,size,family,weight){
+ while(size>16){
+  ctx.font=weight+" "+size+'px '+family;
+  if(wrapCanvasLines(ctx,text,width,100).length<=lines)break;
+  size--;
+ }
+ return size;
+}
 async function buildPrintCardCanvas(c,url){
- const qr=getQrCanvas();if(!qr)throw new Error("QR code indisponible.");
  const o=qrOptions(c);
- if(document.fonts?.ready)try{await document.fonts.ready}catch(e){}
+ const qr=makeQrCanvas(url,o);
+ if(document.fonts?.load)try{await Promise.all([document.fonts.load(qrFontWeight(o.font)+' 72px "'+qrFontFamily(o.font)+'"'),document.fonts.load('600 32px "Cormorant Garamond"'),document.fonts.load('400 25px Inter'),document.fonts.load('700 32px Inter')])}catch(e){}
  const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
  const W=1181,H=1772;canvas.width=W;canvas.height=H;
- const bg=o.style==="minimal"?"#ffffff":o.style==="chic"?"#f8f3ea":"#fffaf3";
+ const bg=qrThemes[o.style].background;
  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
-
- if(o.style!=="minimal"){
-  ctx.strokeStyle=o.color;ctx.globalAlpha=.32;ctx.lineWidth=3;
-  ctx.strokeRect(54,54,W-108,H-108);
-  ctx.globalAlpha=1
- }
- if(o.style==="romantic"){
-  ctx.strokeStyle=o.color;ctx.globalAlpha=.18;ctx.lineWidth=2;
-  ctx.beginPath();ctx.arc(88,88,72,0,Math.PI*2);ctx.stroke();
-  ctx.beginPath();ctx.arc(W-88,H-88,72,0,Math.PI*2);ctx.stroke();
-  ctx.globalAlpha=1
- }
-
+ drawQrDecor(ctx,o,W,H);
  ctx.textAlign="center";ctx.textBaseline="alphabetic";
- ctx.fillStyle="#6e665f";ctx.font='600 24px Inter, Arial, sans-serif';
- drawWrappedCenteredText(ctx,String(c.couple_name||"Votre capsule").toUpperCase(),W/2,150,890,32,2);
-
  const ff=qrFontFamily(o.font);
- const titleSize=["romantic","signature"].includes(o.font)?86:o.font==="contemporary"?64:o.font==="refined"?66:72;
+ let titleSize=["romantic","signature"].includes(o.font)?86:o.font==="contemporary"?64:o.font==="refined"?66:72;
  ctx.fillStyle="#201c1a";
- ctx.font=qrFontWeight(o.font)+" "+titleSize+'px "'+ff+'", serif';
- let titleY=245;
- titleY=drawWrappedCenteredText(ctx,o.title,W/2,titleY,880,titleSize*.98,2);
+ titleSize=fitPrintFont(ctx,o.title,880,3,titleSize,'"'+ff+'", serif',qrFontWeight(o.font));
+ let titleY=270;
+ titleY=drawWrappedCenteredText(ctx,o.title,W/2,titleY,880,titleSize*1.12,3);
 
- ctx.strokeStyle=o.color;ctx.lineWidth=4;
- ctx.beginPath();ctx.moveTo(W/2-95,titleY+18);ctx.lineTo(W/2-18,titleY+18);ctx.stroke();
- ctx.fillStyle=o.color;ctx.beginPath();ctx.arc(W/2,titleY+18,5,0,Math.PI*2);ctx.fill();
- ctx.beginPath();ctx.moveTo(W/2+18,titleY+18);ctx.lineTo(W/2+95,titleY+18);ctx.stroke();
-
+ drawQrDivider(ctx,o,W/2,titleY+24);
  const qsize=Math.round(clamp(o.size,180,245)/215*500);
- const qx=Math.round((W-qsize)/2),qy=Math.max(420,Math.round(titleY+78));
+ const qx=Math.round((W-qsize)/2),qy=Math.max(420,Math.round(titleY+82));
  ctx.fillStyle="#ffffff";
  ctx.beginPath();ctx.roundRect(qx-28,qy-28,qsize+56,qsize+56,34);ctx.fill();
  ctx.imageSmoothingEnabled=false;
  ctx.drawImage(qr,qx,qy,qsize,qsize);
  ctx.imageSmoothingEnabled=true;
 
- if(o.showInitials){
-  const b=Math.round(qsize*.19),cx=W/2,cy=qy+qsize/2;
-  ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(cx,cy,b/2,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle="#fff";ctx.lineWidth=18;ctx.stroke();
-  ctx.fillStyle=o.color;ctx.font='700 '+Math.round(b*.34)+'px Inter, Arial, sans-serif';
-  ctx.textBaseline="middle";ctx.fillText(o.initials,cx,cy+2);ctx.textBaseline="alphabetic"
- }
+ if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize);
 
  let textY=qy+qsize+92;
- ctx.fillStyle="#262220";ctx.font='700 32px Inter, Arial, sans-serif';
+ ctx.fillStyle="#262220";fitPrintFont(ctx,o.note,820,3,32,"Inter, Arial, sans-serif","700");
  textY=drawWrappedCenteredText(ctx,o.note,W/2,textY,820,43,3)+20;
- ctx.fillStyle="#706964";ctx.font='400 25px Inter, Arial, sans-serif';
+ ctx.fillStyle="#706964";fitPrintFont(ctx,o.explanation,790,4,25,"Inter, Arial, sans-serif","400");
  drawWrappedCenteredText(ctx,o.explanation,W/2,textY,790,38,4);
 
- const footerY=H-220;
- ctx.strokeStyle="#ded4c8";ctx.lineWidth=2;
- ctx.beginPath();ctx.moveTo(150,footerY);ctx.lineTo(W-150,footerY);ctx.stroke();
-
- ctx.textAlign="left";
- ctx.fillStyle="#8a8179";ctx.font='500 20px Inter, Arial, sans-serif';
- ctx.fillText("Capsule temporelle · "+fdate(c.wedding_date),150,H-105);
 
  try{
   const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20260927-hq");
@@ -573,24 +611,24 @@ function ownerShell(c,url,count){
 
    <div class="qr-control-group qr-personalization-group">
     <div class="qr-control-title">
-     <div><h3>Personnalisation</h3><p>Choisissez une ambiance puis ajustez les détails.</p></div>
+     <div><h3>Personnalisation</h3><p>Chaque ambiance associe un fond, des ornements et une typographie. Ajustez ensuite les détails.</p></div>
     </div>
 
     <div class="field qr-choice-field">
-     <label>Style de carte</label>
+     <label>Ambiance de la carte</label>
      <input id="qr-style" type="hidden" value="${esc(o.style)}">
      <div class="qr-style-choices" role="group" aria-label="Style de carte">
       <button class="qr-style-choice ${o.style==="romantic"?"is-selected":""}" data-qr-style="romantic" type="button">
        <span class="qr-style-thumb qr-style-thumb-romantic"><i></i><b>Aa</b></span>
-       <span><strong>Romantique</strong><small>Doux & chaleureux</small></span>
+       <span><strong>Romantique</strong><small>Ivoire rosé · feuillage</small></span>
       </button>
       <button class="qr-style-choice ${o.style==="minimal"?"is-selected":""}" data-qr-style="minimal" type="button">
        <span class="qr-style-thumb qr-style-thumb-minimal"><i></i><b>Aa</b></span>
-       <span><strong>Minimal</strong><small>Épuré & moderne</small></span>
+       <span><strong>Minimal</strong><small>Blanc · lignes pures</small></span>
       </button>
       <button class="qr-style-choice ${o.style==="chic"?"is-selected":""}" data-qr-style="chic" type="button">
        <span class="qr-style-thumb qr-style-thumb-chic"><i></i><b>Aa</b></span>
-       <span><strong>Chic</strong><small>Élégant & raffiné</small></span>
+       <span><strong>Chic</strong><small>Champagne · Art déco</small></span>
       </button>
      </div>
     </div>
@@ -660,8 +698,8 @@ function ownerShell(c,url,count){
     </div>
 
     <div class="qr-initials-card">
-     <div class="field"><label for="qr-initials-input">Initiales dans le QR code</label><input id="qr-initials-input" maxlength="4" value="${esc(o.initials)}"></div>
-     <label class="qr-check qr-check-switch"><input id="qr-show-initials" type="checkbox" ${o.showInitials?"checked":""}><span>Afficher les initiales</span></label>
+     <div class="field"><label for="qr-initials-input">Votre monogramme</label><input id="qr-initials-input" maxlength="4" value="${esc(o.initials)}"></div>
+     <label class="qr-check qr-check-switch"><input id="qr-show-initials" type="checkbox" ${o.showInitials?"checked":""}><span>Afficher le monogramme au centre</span></label>
     </div>
    </div>
 
@@ -672,22 +710,7 @@ function ownerShell(c,url,count){
    <div class="qr-preview-sticky">
     <div class="qr-preview-label"><span>Aperçu en direct</span><strong>10 × 15 cm · Portrait</strong></div>
     <div class="qr-preview-stage">
-     <div class="qr-print-card qr-style-${esc(o.style)} qr-font-${esc(o.font)}" id="qr-print-card" style="--qr-accent:${esc(o.color)}">
-      <div class="qr-print-top">
-       <div class="qr-print-capsule" id="qr-preview-capsule">${esc(c.couple_name)}</div>
-       <h2 id="qr-preview-title">${esc(o.title)}</h2>
-       <div class="qr-print-ornament"><i></i><b></b><i></i></div>
-      </div>
-      <div class="qr-print-main">
-       <div id="qrcode" class="qr-print-code"></div>
-       <h3 id="qr-preview-note">${esc(o.note)}</h3>
-       <p id="qr-preview-explanation">${esc(o.explanation)}</p>
-      </div>
-      <div class="qr-print-footer">
-       <span>Capsule temporelle · ${esc(fdate(c.wedding_date))}</span>
-       <img class="qr-print-logo" src="assets/la-suite-logo.webp?v=20260927-hq" alt="La Suite">
-      </div>
-     </div>
+     <img id="qr-artwork-preview" class="qr-artwork-preview" alt="Aperçu de votre carte QR personnalisée, identique à l’impression">
     </div>
     <p class="qr-preview-tip">Carte 10 × 15 cm centrée sur une feuille A4 avec repères de découpe.</p>
     <div class="qr-preview-actions">
@@ -851,11 +874,15 @@ function setupQrCustomizerUi(){
 
  const syncStyle=()=>{
   const value=styleInput?.value||"romantic";
-  document.querySelectorAll("[data-qr-style]").forEach(btn=>btn.classList.toggle("is-selected",btn.dataset.qrStyle===value))
+  document.querySelectorAll("[data-qr-style]").forEach(btn=>{const selected=btn.dataset.qrStyle===value;btn.classList.toggle("is-selected",selected);btn.setAttribute("aria-pressed",String(selected))})
  };
  document.querySelectorAll("[data-qr-style]").forEach(btn=>btn.addEventListener("click",()=>{
   if(!styleInput)return;
   styleInput.value=btn.dataset.qrStyle||"romantic";
+  const theme=qrThemes[styleInput.value];
+  if(fontInput)fontInput.value=theme.font;
+  if(colorInput)colorInput.value=theme.accent;
+  syncFont();syncColor();
   syncStyle();
   dispatch(styleInput)
  }));

@@ -2363,3 +2363,29 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
     font-size:2.1rem;
   }
 }
+
+/* The print artwork is also the live preview: no divergent CSS composition. */
+.qr-artwork-preview{display:block;width:min(100%,460px);height:auto;aspect-ratio:2/3;object-fit:contain;background:#fff;box-shadow:0 18px 48px #30231720;border-radius:2px}
+.qr-style-choices{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.qr-style-choice{display:flex;flex-direction:column;align-items:stretch;padding:9px;text-align:left;border-radius:12px}
+.qr-style-thumb{width:100%;height:auto;aspect-ratio:2/3;border-radius:4px;display:grid;place-items:center}
+.qr-style-thumb b{font-size:32px;font-weight:500;position:relative}
+.qr-style-thumb-romantic{background:#fff8f3;color:#946c62;font-family:"Cormorant Garamond",serif}
+.qr-style-thumb-romantic:before,.qr-style-thumb-romantic:after{width:28px;height:60px;border-radius:100% 0;border-color:#946c6255;transform:rotate(25deg)}
+.qr-style-thumb-romantic:before{left:7px;top:9px}.qr-style-thumb-romantic:after{right:7px;bottom:9px}
+.qr-style-thumb-romantic i{border:0}
+.qr-style-thumb-minimal{font-family:Inter,sans-serif;color:#353c39}
+.qr-style-thumb-minimal:after{content:"";width:18px;height:1px;background:currentColor;position:absolute;bottom:25%}
+.qr-style-thumb-chic{background:#f8f3e8;color:#8b713e;font-family:"Playfair Display",serif}
+.qr-style-thumb-chic i{inset:7px;border:3px double #8b713e66;border-radius:0}
+.qr-style-choice strong{font-size:.8rem}.qr-style-choice small{font-size:.65rem;line-height:1.5;margin-top:3px}
+.qr-style-choice.is-selected{border-color:#8b713e;box-shadow:0 0 0 1px #8b713e;background:#fcfaf5}
+.qr-style-choice:focus-visible{outline:2px solid #8b713e;outline-offset:3px}
+.qr-initials-card input[type=text],#qr-initials-input{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.65rem;letter-spacing:.12em;text-transform:uppercase}
+@media(max-width:600px){.qr-style-choice{padding:6px}.qr-style-choice small{font-size:.59rem}.qr-preview-stage{min-height:0;padding:18px 12px}}
+
+.qr-style-thumb b{font-family:inherit}
+.qr-designer-grid,.qr-designer-grid>*{min-width:0}
+.qr-preview-stage{grid-template-columns:minmax(0,1fr)}
+.qr-preview-label{flex-wrap:wrap}
+.qr-artwork-preview{max-width:100%;min-width:0}
