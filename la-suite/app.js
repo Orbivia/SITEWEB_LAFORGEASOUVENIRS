@@ -444,12 +444,13 @@ async function downloadPrintCard(c,url){
  a.href=canvas.toDataURL("image/png");
  a.click()
 }
-async function saveQrCustomization(c,url){
+async function saveQrCustomization(c,url,silent=false){
  const s=$("qr-status"),payload=collectQrCustomization(c);
- show(s,"Enregistrement…");
+ if(!silent)show(s,"Enregistrement…");
  const{error}=await sb.from("capsules").update(payload).eq("id",c.id);
  if(error)return show(s,"Impossible d'enregistrer : "+error.message,false);
- Object.assign(c,payload);applyQrPreview(url,c);show(s,"Personnalisation enregistrée.")
+ Object.assign(c,payload);applyQrPreview(url,c);
+ if(!silent)show(s,"Personnalisation enregistrée.")
 }
 async function shareGuestLink(url){
  if(navigator.share){
@@ -469,11 +470,7 @@ function ownerShell(c,url,count){
    <h2>Personnalisez votre carte</h2>
    <p>Le rendu est mis à jour en direct. Le fichier téléchargé est au format <strong>10 × 15 cm portrait</strong>.</p>
   </div>
-  <div class="qr-designer-top-actions">
-   <button class="btn secondary" id="copy-link" type="button">Copier le lien</button>
-   <a class="btn secondary" id="open-guest-link" href="${esc(url)}" target="_blank" rel="noopener">Ouvrir la page invité</a>
-   <button class="btn primary" id="download-print-card" type="button">Télécharger la carte</button>
-  </div>
+
  </div>
 
  <div class="qr-designer-grid">
@@ -510,10 +507,7 @@ function ownerShell(c,url,count){
     <label class="qr-check"><input id="qr-show-brand" type="checkbox" ${o.showBrand?"checked":""}><span>Afficher « La Suite » en bas de la carte</span></label>
    </div>
 
-   <button class="btn primary qr-save-button" id="save-qr" type="button">Enregistrer la personnalisation</button>
-   <button class="btn secondary qr-share-button" id="share-link" type="button">Partager le lien invité</button>
-   <input id="guest-link" class="share-input" readonly value="${esc(url)}">
-   <div id="qr-status" class="status"></div>
+
   </div>
 
   <div class="qr-designer-preview">
@@ -538,18 +532,36 @@ function ownerShell(c,url,count){
      </div>
     </div>
     <p class="qr-preview-tip">Prête à imprimer ou à intégrer sur une table, une invitation ou un panneau.</p>
+    <div class="qr-preview-actions">
+     <button class="btn secondary" id="share-link" type="button"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i>Partager le lien invité</button>
+     <button class="btn secondary" id="copy-link" type="button"><i class="fa-regular fa-copy" aria-hidden="true"></i>Copier le lien</button>
+     <a class="btn secondary" id="open-guest-link" href="${esc(url)}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Ouvrir la page invité</a>
+     <button class="btn primary" id="download-print-card" type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>Télécharger la carte</button>
+    </div>
+    <input id="guest-link" class="share-input qr-preview-link" readonly value="${esc(url)}" aria-label="Lien invité">
+    <div id="qr-status" class="status"></div>
    </div>
   </div>
  </div>
 </section>
 
-<section class="card dashboard-card intro-video-card qr-followup-card">
- <div class="eyebrow">Vidéo d'accueil</div><h3>Le message vu après le scan</h3>
- <p class="microcopy">La vidéo doit durer <strong>12 secondes maximum</strong>.</p>
- <div id="intro-preview-wrap"></div>
- <input id="intro-file" type="file" accept="video/*">
- <button id="upload-intro" class="btn secondary" type="button">Enregistrer cette vidéo</button>
- <div id="intro-status" class="status"></div>
+<section class="qr-designer-panel intro-video-panel">
+ <div class="intro-video-head">
+  <div>
+   <div class="eyebrow">Vidéo d'accueil</div>
+   <h2>Le message vu après le scan</h2>
+   <p>Ajoutez une courte vidéo d’accueil. Elle sera affichée aux invités avant qu’ils déposent leur souvenir.</p>
+  </div>
+  <span class="intro-video-limit"><i class="fa-regular fa-clock" aria-hidden="true"></i>12 s maximum</span>
+ </div>
+ <div class="intro-video-body">
+  <div id="intro-preview-wrap"></div>
+  <div class="intro-video-upload">
+   <input id="intro-file" type="file" accept="video/*">
+   <button id="upload-intro" class="btn primary" type="button">Enregistrer cette vidéo</button>
+  </div>
+  <div id="intro-status" class="status"></div>
+ </div>
 </section>
 
 </div>
@@ -674,16 +686,18 @@ async function initDashboard(){
  setupOwnerTabs(c,manifest||[]);
  applyQrPreview(url.href,c);
  const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-size","qr-show-initials","qr-show-brand"];
+ let qrSaveTimer=null;
  const updateDesigner=()=>{
    Object.assign(c,collectQrCustomization(c));
    applyQrPreview(url.href,c);
+   clearTimeout(qrSaveTimer);
+   qrSaveTimer=setTimeout(()=>saveQrCustomization(c,url.href,true),650);
  };
  liveIds.forEach(id=>{
    const el=$(id);if(!el)return;
    el.addEventListener("input",updateDesigner);
    el.addEventListener("change",updateDesigner);
  });
- $("save-qr")?.addEventListener("click",()=>saveQrCustomization(c,url.href));
  $("copy-link")?.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(url.href);show($("qr-status"),"Lien copié.")}catch(e){prompt("Copiez ce lien :",url.href)}});
  $("share-link")?.addEventListener("click",()=>shareGuestLink(url.href));
  $("download-print-card")?.addEventListener("click",()=>{

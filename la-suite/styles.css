@@ -1620,3 +1620,167 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
   .owner-messages-hero h2{font-size:2rem}
   .owner-messages-hero .next-delivery{width:100%}
 }
+
+
+/* ============================================================
+   La Suite — organizer layout refinement
+   ============================================================ */
+.owner-nav > ul{
+  align-items:center;
+}
+.owner-nav > ul > li{
+  display:flex;
+  align-items:center;
+}
+.owner-nav .owner-nav-tab,
+.owner-nav .owner-logout{
+  min-height:42px;
+  box-sizing:border-box;
+  padding:10px 12px;
+  border-radius:10px;
+  font:600 .95rem Inter,Arial,sans-serif;
+  line-height:1.2;
+}
+.owner-nav .owner-logout{
+  width:auto;
+  border:0;
+  background:transparent;
+  color:#2a2a2a;
+  cursor:pointer;
+  text-align:left;
+}
+.owner-nav .owner-logout:hover{
+  background:#c10d0d;
+  color:#fff;
+}
+
+.qr-designer-head{
+  margin-bottom:24px;
+}
+.qr-preview-actions{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+  margin-top:14px;
+}
+.qr-preview-actions .btn{
+  width:100%;
+  min-height:44px;
+  padding:10px 12px;
+  font-size:.84rem;
+}
+.qr-preview-link{
+  margin-top:10px;
+}
+.qr-designer-controls{
+  align-self:start;
+}
+.qr-followup-card{
+  max-width:none;
+  width:100%;
+}
+
+.intro-video-panel{
+  width:100%;
+  max-width:none;
+  margin-top:22px;
+}
+.intro-video-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:22px;
+}
+.intro-video-head h2{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:2.45rem;
+  line-height:1;
+  margin:3px 0 8px;
+}
+.intro-video-head p{
+  margin:0;
+  max-width:700px;
+  color:var(--muted);
+}
+.intro-video-limit{
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  border-radius:999px;
+  background:#fff7ec;
+  color:#8b672d;
+  border:1px solid #ead5ae;
+  padding:7px 11px;
+  font-size:.8rem;
+  font-weight:700;
+}
+.intro-video-body{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(260px,360px);
+  gap:22px;
+  align-items:start;
+}
+.intro-video-body #intro-preview-wrap:empty{
+  min-height:180px;
+  border:2px dashed #e2d5c8;
+  border-radius:16px;
+  background:#fffdfb;
+  display:grid;
+  place-items:center;
+}
+.intro-video-body #intro-preview-wrap:empty::after{
+  content:"Aucune vidéo d’accueil enregistrée";
+  color:var(--muted);
+  font-size:.88rem;
+}
+.intro-video-upload{
+  background:#fffdfb;
+  border:1px solid #ece4dc;
+  border-radius:16px;
+  padding:18px;
+}
+.intro-video-upload input[type=file]{
+  width:100%;
+  margin:0 0 12px;
+}
+.intro-video-upload .btn{
+  width:100%;
+}
+.intro-video-panel .intro-preview{
+  width:100%;
+  max-height:460px;
+  object-fit:contain;
+}
+
+@media(max-width:920px){
+  .intro-video-body{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:900px){
+  .owner-nav > ul{
+    align-items:stretch;
+  }
+  .owner-nav > ul > li{
+    display:block;
+  }
+  .owner-nav .owner-nav-tab,
+  .owner-nav .owner-logout{
+    width:100%;
+    min-height:42px;
+  }
+}
+@media(max-width:560px){
+  .qr-preview-actions{
+    grid-template-columns:1fr;
+  }
+  .intro-video-head{
+    flex-direction:column;
+    gap:12px;
+  }
+  .intro-video-head h2{
+    font-size:2rem;
+  }
+}
