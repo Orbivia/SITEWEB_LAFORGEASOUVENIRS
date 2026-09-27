@@ -14,41 +14,41 @@
 
 <header class="simple-header">
   <div class="wrap simple-header-inner">
-    <a href="index.html" class="simple-brand" aria-label="La Suite">
-      <img src="assets/la-suite-logo.webp" alt="La Suite — Capsule temporelle">
-    </a>
-    <a class="btn primary compact-btn" href="create.html">Créer ma capsule</a>
+    <a href="index.html" class="simple-brand-text">La Suite — Capsule temporelle</a>
+    <a class="btn primary compact-btn" href="create.html">Créer une capsule</a>
   </div>
 </header>
 
 <main>
   <section class="simple-hero wrap">
-    <img src="assets/la-suite-logo.webp" class="simple-hero-logo" alt="La Suite — Capsule temporelle">
-    <h1>Vos souvenirs d’aujourd’hui,<br>à recevoir plus tard.</h1>
-    <p>
-      Vos invités scannent un QR code, découvrent votre message d’accueil,
-      puis déposent une vidéo, un audio, une photo ou un texte.
-      Chacun choisit quand son souvenir vous sera livré.
-    </p>
-    <div class="simple-actions">
-      <a class="btn primary" href="create.html">Créer ma capsule</a>
+    <div class="simple-hero-logo-wrap">
+      <img src="assets/la-suite-logo.webp" class="simple-hero-logo" alt="La Suite — Capsule temporelle">
     </div>
-    <div class="simple-points">
-      <span>Sans application</span>
-      <span>QR code personnalisable</span>
-      <span>Jusqu’à 3 ans après l’événement</span>
+    <div class="simple-hero-copy">
+      <h1>Vos souvenirs d’aujourd’hui,<br>à recevoir plus tard.</h1>
+      <p>
+        Vos invités scannent un QR code, découvrent votre message d’accueil,
+        puis déposent une vidéo, un audio, une photo ou un texte.
+        Chacun choisit quand son souvenir vous sera livré.
+      </p>
+      <div class="simple-actions">
+        <a class="btn primary" href="create.html">Créer ma capsule</a>
+      </div>
     </div>
   </section>
 
   <section class="simple-section">
     <div class="wrap">
       <h2>Comment ça marche ?</h2>
+      <p class="simple-section-lead">Tout se fait depuis le navigateur du téléphone : <strong>aucune application à installer</strong>.</p>
+
       <div class="simple-steps">
         <article class="simple-step">
           <div class="simple-icon">
             <svg viewBox="0 0 64 64" aria-hidden="true">
-              <rect x="12" y="10" width="40" height="44" rx="7"></rect>
-              <path d="M22 23h20M22 31h14M22 39h18"></path>
+              <circle cx="32" cy="32" r="8"></circle>
+              <path d="M32 10v7M32 47v7M10 32h7M47 32h7M16.5 16.5l5 5M42.5 42.5l5 5M47.5 16.5l-5 5M21.5 42.5l-5 5"></path>
+              <circle cx="32" cy="32" r="17"></circle>
             </svg>
           </div>
           <strong>1. Créez</strong>
@@ -61,11 +61,11 @@
               <rect x="10" y="10" width="16" height="16" rx="2"></rect>
               <rect x="38" y="10" width="16" height="16" rx="2"></rect>
               <rect x="10" y="38" width="16" height="16" rx="2"></rect>
-              <path d="M38 38h7v7h9v9H38z"></path>
+              <path d="M38 38h7v7h9v9H38zM32 12v8M30 30h8M46 30v5M30 46h5"></path>
             </svg>
           </div>
           <strong>2. Partagez</strong>
-          <p>Personnalisez votre QR code et placez-le où vous le souhaitez.</p>
+          <p>Personnalisez votre QR code et placez-le sur vos tables, invitations ou panneaux.</p>
         </article>
 
         <article class="simple-step">
@@ -77,7 +77,7 @@
             </svg>
           </div>
           <strong>3. Ils enregistrent</strong>
-          <p>Vos invités déposent ou enregistrent leur souvenir depuis leur téléphone.</p>
+          <p>Sans installer d’application, vos invités déposent ou enregistrent leur souvenir directement depuis leur téléphone.</p>
         </article>
 
         <article class="simple-step">
@@ -133,7 +133,21 @@
 </main>
 
 <footer class="simple-footer">
-  <div class="wrap">La Suite — par La Forge à Souvenirs</div>
+  <div class="wrap">
+    <div class="simple-footer-brand">La Suite — par La Forge à Souvenirs</div>
+    <div class="legal-block">
+      <strong>Mentions légales</strong>
+      <p>
+        Éditeur : La Forge à Souvenirs — SIRET 815 101 050 00046 —
+        27 rue du Général Boufflers, 59139 Wattignies, France —
+        <a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a>.
+      </p>
+      <p>
+        Site hébergé par GitHub Pages. Les données et médias du service La Suite sont hébergés via Supabase.
+        Les contenus déposés dans une capsule sont accessibles selon les règles de livraison choisies dans le service.
+      </p>
+    </div>
+  </div>
 </footer>
 
 </body>
