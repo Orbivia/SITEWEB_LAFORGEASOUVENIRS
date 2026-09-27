@@ -1784,3 +1784,98 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
     font-size:2rem;
   }
 }
+
+
+/* ============================================================
+   La Suite — organizer page compact refinement
+   ============================================================ */
+.dashboard-page{
+  padding-top:30px;
+}
+.dashboard-head{
+  margin-bottom:18px;
+}
+.dashboard-head h1{
+  font-size:2.8rem;
+}
+.qr-designer-panel{
+  padding:22px;
+}
+.qr-designer-head{
+  margin-bottom:18px;
+}
+.qr-designer-head h2{
+  font-size:2.25rem;
+}
+.qr-designer-grid{
+  gap:20px;
+}
+.qr-designer-controls{
+  padding:16px;
+}
+.qr-control-group + .qr-control-group{
+  margin-top:16px;
+  padding-top:16px;
+}
+.qr-control-group .field{
+  margin-bottom:12px;
+}
+.qr-preview-stage{
+  min-height:570px;
+  padding:24px;
+}
+.qr-preview-tip{
+  margin-top:8px;
+}
+.qr-preview-actions{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  margin-top:11px;
+}
+.qr-preview-actions .btn{
+  min-height:42px;
+}
+.qr-preview-actions .btn.primary{
+  box-shadow:0 6px 16px rgba(193,13,13,.16);
+}
+.intro-video-panel{
+  margin-top:18px;
+}
+.intro-video-head{
+  margin-bottom:17px;
+}
+.intro-video-head h2{
+  font-size:2.25rem;
+}
+.intro-video-body{
+  gap:18px;
+}
+.owner-messages-hero{
+  padding:21px 23px;
+}
+.memories-section{
+  margin-top:26px;
+}
+
+@media(max-width:920px){
+  .qr-preview-actions{
+    grid-template-columns:1fr;
+  }
+  .qr-preview-stage{
+    min-height:0;
+  }
+}
+@media(max-width:560px){
+  .dashboard-page{
+    padding-top:24px;
+  }
+  .dashboard-head h1{
+    font-size:2.35rem;
+  }
+  .qr-designer-panel{
+    padding:15px;
+  }
+  .qr-designer-head h2,
+  .intro-video-head h2{
+    font-size:1.95rem;
+  }
+}
