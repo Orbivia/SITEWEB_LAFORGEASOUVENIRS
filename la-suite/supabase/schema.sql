@@ -162,3 +162,162 @@ end $$;
 -- Public capsule lookup is intentionally anonymous; signed-in owners do not need this RPC.
 revoke execute on function public.get_capsule_public(text) from authenticated;
 grant execute on function public.get_capsule_public(text) to anon;
+
+
+-- ============================================================
+-- V2 — Livraison choisie par chaque invité + médias génériques
+-- ============================================================
+
+alter table public.capsules alter column unlock_date drop not null;
+alter table public.capsules add column if not exists intro_path text;
+
+alter table public.messages
+  add column if not exists media_type text,
+  add column if not exists media_path text,
+  add column if not exists delivery_at timestamptz not null default now();
+
+update public.messages
+set media_path = coalesce(media_path, video_path),
+    media_type = coalesce(media_type, case when video_path is not null then 'video' else 'text' end)
+where media_path is null or media_type is null;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint
+    where conname = 'messages_media_type_check'
+      and conrelid = 'public.messages'::regclass
+  ) then
+    alter table public.messages
+      add constraint messages_media_type_check
+      check (media_type in ('video','audio','image','text'));
+  end if;
+end $$;
+
+drop policy if exists "owners_select_messages_after_unlock" on public.messages;
+drop policy if exists "owners_select_messages_after_delivery" on public.messages;
+create policy "owners_select_messages_after_delivery"
+on public.messages for select
+to authenticated
+using (
+  delivery_at <= now()
+  and exists (
+    select 1 from public.capsules c
+    where c.id = messages.capsule_id
+      and c.owner_id = (select auth.uid())
+  )
+);
+
+drop policy if exists "owner_upload_intro" on storage.objects;
+create policy "owner_upload_intro"
+on storage.objects for insert
+to authenticated
+with check (
+  bucket_id = 'capsule-media'
+  and exists (
+    select 1 from public.capsules c
+    where c.owner_id = (select auth.uid())
+      and storage.objects.name like c.id::text || '/organizer/%'
+  )
+);
+
+drop policy if exists "owner_update_intro" on storage.objects;
+create policy "owner_update_intro"
+on storage.objects for update
+to authenticated
+using (
+  bucket_id = 'capsule-media'
+  and exists (
+    select 1 from public.capsules c
+    where c.owner_id = (select auth.uid())
+      and storage.objects.name like c.id::text || '/organizer/%'
+  )
+)
+with check (
+  bucket_id = 'capsule-media'
+  and exists (
+    select 1 from public.capsules c
+    where c.owner_id = (select auth.uid())
+      and storage.objects.name like c.id::text || '/organizer/%'
+  )
+);
+
+drop policy if exists "owner_read_media_after_unlock" on storage.objects;
+drop policy if exists "owner_read_media_after_delivery" on storage.objects;
+create policy "owner_read_media_after_delivery"
+on storage.objects for select
+to authenticated
+using (
+  bucket_id = 'capsule-media'
+  and (
+    exists (
+      select 1 from public.capsules c
+      where c.owner_id = (select auth.uid())
+        and storage.objects.name like c.id::text || '/organizer/%'
+    )
+    or exists (
+      select 1 from public.messages m
+      join public.capsules c on c.id = m.capsule_id
+      where c.owner_id = (select auth.uid())
+        and m.delivery_at <= now()
+        and m.media_path = storage.objects.name
+    )
+  )
+);
+
+drop function if exists public.get_capsule_public(text);
+create function public.get_capsule_public(p_guest_token text)
+returns table (
+  id uuid,
+  couple_name text,
+  wedding_date date,
+  welcome_message text,
+  has_intro boolean
+)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select c.id, c.couple_name, c.wedding_date, c.welcome_message, (c.intro_path is not null)
+  from public.capsules c
+  where c.guest_token = p_guest_token
+  limit 1;
+$$;
+revoke all on function public.get_capsule_public(text) from public, authenticated;
+grant execute on function public.get_capsule_public(text) to anon;
+
+create or replace function public.owner_message_manifest(p_capsule_id uuid)
+returns table (
+  id uuid,
+  guest_name text,
+  media_type text,
+  delivery_at timestamptz,
+  created_at timestamptz,
+  is_available boolean
+)
+language sql
+security definer
+set search_path = public
+stable
+as $$
+  select m.id, m.guest_name, m.media_type, m.delivery_at, m.created_at,
+         (m.delivery_at <= now()) as is_available
+  from public.messages m
+  join public.capsules c on c.id = m.capsule_id
+  where m.capsule_id = p_capsule_id
+    and c.owner_id = (select auth.uid())
+  order by m.delivery_at asc, m.created_at asc;
+$$;
+revoke all on function public.owner_message_manifest(uuid) from public, anon;
+grant execute on function public.owner_message_manifest(uuid) to authenticated;
+
+update storage.buckets
+set public = false,
+    file_size_limit = 104857600,
+    allowed_mime_types = array[
+      'video/mp4','video/quicktime','video/webm',
+      'audio/webm','audio/mpeg','audio/wav','audio/x-wav','audio/mp4','audio/ogg',
+      'image/jpeg','image/png','image/webp','image/heic','image/heif'
+    ]
+where id = 'capsule-media';
