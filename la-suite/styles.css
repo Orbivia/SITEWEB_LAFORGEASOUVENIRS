@@ -60,3 +60,14 @@ textarea{min-height:120px;resize:vertical}
 footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-size:.9rem;text-align:center}
 @media(max-width:800px){.steps,.features{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}nav{display:none}}
 @media(max-width:520px){.steps,.features{grid-template-columns:1fr}.logo{padding-top:45px}.logo .sub{letter-spacing:.2em}.logo .sub:before,.logo .sub:after{width:28px}.form-shell{padding:20px}}
+
+.nav-button{border:0;background:transparent;font:inherit;color:var(--ink);cursor:pointer;padding:0}
+.qr-wrap{display:flex;justify-content:center;margin:20px 0}
+#qrcode{background:#fff;padding:12px;border:1px solid var(--line);border-radius:12px}
+.share-url{word-break:break-all;color:var(--muted);font-size:.88rem}
+.lock-badge{display:inline-block;padding:5px 10px;border-radius:999px;font-weight:700;font-size:.82rem}
+.lock-badge.locked{background:#fff3e6;color:#8a4b08}
+.lock-badge.open{background:#edf8f2;color:var(--ok)}
+.memory-list{display:grid;gap:14px}
+.memory small{display:block;color:var(--muted);margin-top:12px}
+.memory-video{width:100%;max-height:520px;border-radius:12px;margin-top:14px;background:#000}
