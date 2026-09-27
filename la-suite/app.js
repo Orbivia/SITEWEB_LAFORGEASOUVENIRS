@@ -332,7 +332,21 @@ async function initDashboard(){
  $("save-qr")?.addEventListener("click",()=>saveQrCustomization(c));
  $("copy-link")?.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(url.href);show($("qr-status"),"Lien copié.")}catch(e){prompt("Copiez ce lien :",url.href)}});
  $("share-link")?.addEventListener("click",()=>shareGuestLink(url.href));
- $("download-print-card")?.addEventListener("click",()=>downloadPrintCard(c,url.href));
+ $("download-print-card")?.addEventListener("click",()=>{
+   c.qr_initials=$("qr-initials-input").value.trim().slice(0,4);
+   c.qr_color=$("qr-color").value;
+   c.print_note=$("print-note").value.trim();
+   c.print_explanation=$("print-explanation").value.trim();
+   downloadPrintCard(c,url.href);
+ });
+ $("intro-file")?.addEventListener("change",async()=>{
+   const f=$("intro-file")?.files?.[0];if(!f)return;
+   try{
+     const d=await videoDuration(f);
+     if(d>12.05)show($("intro-status"),"Cette vidéo dure "+d.toFixed(1)+" s. Maximum autorisé : 12 s.",false);
+     else show($("intro-status"),"Durée : "+d.toFixed(1)+" s — prête à être envoyée.");
+   }catch(e){show($("intro-status"),"Impossible de lire la durée de cette vidéo.",false)}
+ });
  $("upload-intro").addEventListener("click",()=>uploadIntro(c));
  if(c.intro_path){const s=await sb.storage.from("capsule-media").createSignedUrl(c.intro_path,300);if(s.data?.signedUrl)$("intro-preview-wrap").innerHTML='<video class="intro-preview" controls src="'+s.data.signedUrl+'"></video>'}
  nextCountdown(manifest||[]);await renderManifest(c,manifest||[])
