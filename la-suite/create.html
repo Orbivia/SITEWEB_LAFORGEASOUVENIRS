@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20260927-pricing1">
+<link rel="stylesheet" href="styles.css?v=20260927-datefr1">
 </head>
 <body class="create-page suite-shell-page">
 <header class="forge-style-header">
@@ -42,7 +42,13 @@
 
     <div class="field">
       <label for="wedding_date">Date de l'événement</label>
-      <input id="wedding_date" name="wedding_date" type="date" lang="fr" required>
+      <div class="date-fr-wrap">
+        <input id="wedding_date_display" class="date-fr-display" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date de l'événement au format jour mois année" required>
+        <button class="date-fr-button" id="wedding_date_button" type="button" aria-label="Ouvrir le calendrier">
+          <i class="fa-regular fa-calendar"></i>
+        </button>
+        <input id="wedding_date" name="wedding_date" class="date-fr-native" type="date" lang="fr-FR" tabindex="-1" aria-hidden="true">
+      </div>
     </div>
 
     <div class="field">
@@ -70,6 +76,6 @@
 <script src="suite-shell.js?v=20260927-shell1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=20260927-1"></script>
-<script src="app.js?v=20260927-24"></script>
+<script src="app.js?v=20260927-datefr1"></script>
 </body>
 </html>
