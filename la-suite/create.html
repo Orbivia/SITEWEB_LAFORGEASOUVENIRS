@@ -6,7 +6,6 @@
 <meta name="description" content="Créez votre capsule temporelle La Suite et partagez-la ensuite avec vos invités grâce à un QR code personnalisable.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body class="create-page">
@@ -34,7 +33,7 @@
     <div class="field">
       <label for="wedding_date">Date de l'événement</label>
       <div class="date-picker-wrap">
-        <input id="wedding_date" name="wedding_date" type="text" autocomplete="off" placeholder="JJ/MM/AAAA" readonly required>
+        <input id="wedding_date" name="wedding_date" type="date" lang="fr" required>
         <button class="date-picker-button" id="wedding_date_button" type="button" aria-label="Ouvrir le calendrier">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path d="M7 2v3M17 2v3M3.5 9h17M5 4.5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-12a2 2 0 0 1 2-2Z"/>
@@ -54,8 +53,6 @@
   </form>
 </main>
 
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="app.js"></script>
