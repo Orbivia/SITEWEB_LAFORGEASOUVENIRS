@@ -815,3 +815,227 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 .flatpickr-day.today{
   border-color:#c90000;
 }
+
+/* ============================================================
+   La Suite — portrait QR card designer
+   ============================================================ */
+.qr-designer-panel{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:24px;
+  padding:26px;
+  box-shadow:0 14px 38px rgba(40,20,20,.055);
+}
+.qr-designer-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:24px;
+}
+.qr-designer-head h2{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:2.45rem;
+  line-height:1;
+  margin:3px 0 8px;
+}
+.qr-designer-head p{margin:0;color:var(--muted);max-width:650px}
+.qr-designer-top-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.qr-designer-top-actions .btn{padding:10px 14px;font-size:.86rem}
+
+.qr-designer-grid{
+  display:grid;
+  grid-template-columns:minmax(320px,410px) minmax(0,1fr);
+  gap:26px;
+  align-items:start;
+}
+.qr-designer-controls{
+  border:1px solid #ece4dc;
+  border-radius:18px;
+  padding:18px;
+  background:#fffdfb;
+}
+.qr-control-group+ .qr-control-group{
+  border-top:1px solid #eee5dd;
+  margin-top:20px;
+  padding-top:20px;
+}
+.qr-control-group h3{margin:0 0 15px;font-size:1rem}
+.qr-control-group .field{margin-bottom:14px}
+.qr-control-group textarea{min-height:82px}
+.qr-control-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.qr-control-grid .field{min-width:0}
+.qr-control-grid input{margin:0}
+.color-line{margin:0}
+.qr-range-label{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qr-range-label label{margin:0}
+.qr-range-label span{font-size:.78rem;color:var(--muted);font-weight:600}
+.qr-range{padding:0;height:28px;border:0;background:transparent}
+.qr-check{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-size:.88rem;
+  font-weight:600;
+  margin:10px 0 0;
+  cursor:pointer;
+}
+.qr-check input{width:18px;height:18px;margin:0;accent-color:var(--red)}
+.qr-save-button{width:100%;margin-top:20px}
+.qr-share-button{width:100%;margin-top:9px}
+.qr-designer-controls .share-input{margin-top:10px}
+
+.qr-designer-preview{min-width:0}
+.qr-preview-sticky{position:sticky;top:96px}
+.qr-preview-label{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  color:var(--muted);
+  font-size:.8rem;
+  margin-bottom:10px;
+}
+.qr-preview-label strong{color:#8d6d36;font-size:.78rem}
+.qr-preview-stage{
+  min-height:640px;
+  border:1px solid #e8ded3;
+  border-radius:22px;
+  background:
+    radial-gradient(circle at 20% 15%,rgba(196,158,82,.10),transparent 26%),
+    radial-gradient(circle at 80% 86%,rgba(193,13,13,.055),transparent 26%),
+    #f5f0ea;
+  padding:30px;
+  display:grid;
+  place-items:center;
+}
+.qr-print-card{
+  --qr-accent:#b78b38;
+  width:min(100%,360px);
+  aspect-ratio:2/3;
+  border-radius:19px;
+  padding:28px 26px 22px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  text-align:center;
+  box-shadow:0 18px 44px rgba(40,25,18,.14);
+  overflow:hidden;
+  position:relative;
+  color:#211d1d;
+}
+.qr-print-card.qr-style-romantic{
+  background:#fffaf3;
+  border:1px solid color-mix(in srgb,var(--qr-accent) 28%,#eadfd2);
+}
+.qr-print-card.qr-style-romantic:before,
+.qr-print-card.qr-style-romantic:after{
+  content:"";
+  position:absolute;
+  width:110px;height:110px;
+  border:1px solid color-mix(in srgb,var(--qr-accent) 22%,transparent);
+  border-radius:50%;
+  pointer-events:none;
+}
+.qr-print-card.qr-style-romantic:before{left:-66px;top:-62px}
+.qr-print-card.qr-style-romantic:after{right:-66px;bottom:-62px}
+.qr-print-card.qr-style-minimal{background:#fff;border:1px solid #eee9e4}
+.qr-print-card.qr-style-chic{
+  background:linear-gradient(180deg,#fffdf8 0%,#f7f0e5 100%);
+  border:1px solid #e2d6c5;
+}
+.qr-print-capsule{
+  font-family:Inter,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.15em;
+  font-size:.56rem;
+  color:#776f68;
+  font-weight:700;
+  margin-bottom:7px;
+}
+.qr-print-card h2{
+  margin:0;
+  color:#211d1d;
+  line-height:1.02;
+  font-size:2rem;
+}
+.qr-font-elegant h2,.qr-font-elegant .qr-print-footer strong{font-family:"Cormorant Garamond",Georgia,serif;font-weight:700}
+.qr-font-classic h2,.qr-font-classic .qr-print-footer strong{font-family:"Playfair Display",Georgia,serif;font-weight:600}
+.qr-font-modern h2,.qr-font-modern .qr-print-footer strong{font-family:Inter,sans-serif;font-weight:700;letter-spacing:-.04em}
+.qr-font-romantic h2,.qr-font-romantic .qr-print-footer strong{font-family:"Great Vibes",cursive;font-weight:400}
+.qr-font-romantic h2{font-size:2.35rem}
+.qr-print-ornament{height:16px;display:flex;align-items:center;justify-content:center;gap:7px;margin-top:8px}
+.qr-print-ornament i{display:block;width:42px;height:1px;background:var(--qr-accent);opacity:.72}
+.qr-print-ornament b{display:block;width:5px;height:5px;transform:rotate(45deg);background:var(--qr-accent)}
+.qr-print-main{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0}
+.qr-print-code{
+  position:relative;
+  display:grid;
+  place-items:center;
+  background:#fff;
+  padding:10px;
+  border-radius:14px;
+  box-shadow:0 5px 16px rgba(30,20,10,.06);
+  flex:0 0 auto;
+}
+.qr-print-code canvas,.qr-print-code img{display:block;width:100%!important;height:100%!important}
+.qr-designer-badge{
+  position:absolute;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:19%;aspect-ratio:1;
+  min-width:42px;max-width:54px;
+  border-radius:50%;
+  background:#fff;
+  display:grid;
+  place-items:center;
+  box-shadow:0 0 0 7px #fff;
+  font:800 .78rem Inter,sans-serif;
+  letter-spacing:.02em;
+  pointer-events:none;
+}
+.qr-print-main h3{
+  margin:16px 0 7px;
+  font:700 .86rem/1.35 Inter,sans-serif;
+  max-width:270px;
+}
+.qr-print-main p{
+  margin:0;
+  color:#716a64;
+  font:400 .71rem/1.48 Inter,sans-serif;
+  max-width:265px;
+}
+.qr-print-footer{
+  padding-top:11px;
+  border-top:1px solid #e7ded4;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+}
+.qr-print-footer strong{font-size:1.05rem;line-height:1.05}
+.qr-font-romantic .qr-print-footer strong{font-size:1.3rem}
+.qr-print-footer span{font-size:.55rem;color:#817971;letter-spacing:.03em}
+.qr-preview-tip{text-align:center;color:var(--muted);font-size:.8rem;margin:10px 0 0}
+.qr-followup-card{margin-top:22px;max-width:720px}
+.qr-followup-card input[type=file]{width:100%}
+
+@media(max-width:920px){
+  .qr-designer-head{flex-direction:column}
+  .qr-designer-top-actions{justify-content:flex-start}
+  .qr-designer-grid{grid-template-columns:1fr}
+  .qr-designer-preview{order:-1}
+  .qr-preview-sticky{position:static}
+  .qr-preview-stage{min-height:0;padding:22px}
+}
+@media(max-width:560px){
+  .qr-designer-panel{padding:16px;border-radius:18px}
+  .qr-designer-head h2{font-size:2rem}
+  .qr-designer-top-actions{width:100%;display:grid;grid-template-columns:1fr}
+  .qr-designer-top-actions .btn{width:100%}
+  .qr-control-grid{grid-template-columns:1fr}
+  .qr-preview-stage{padding:14px}
+  .qr-print-card{width:min(100%,330px);padding:24px 20px 18px}
+  .qr-print-card h2{font-size:1.8rem}
+  .qr-font-romantic h2{font-size:2.1rem}
+}

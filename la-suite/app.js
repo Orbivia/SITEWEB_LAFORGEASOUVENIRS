@@ -247,105 +247,252 @@ function defaultInitials(name){
  if(parts.length>=2)return (parts[0][0]+parts[1][0]).toUpperCase();
  return String(name||"LS").replace(/[^A-Za-zÀ-ÿ]/g,"").slice(0,2).toUpperCase()||"LS";
 }
+function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
 function qrOptions(c){
  return {
   initials:(c.qr_initials||defaultInitials(c.couple_name)).slice(0,4),
-  color:c.qr_color||"#c10d0d",
-  note:c.print_note||"Laissez-nous un souvenir à découvrir plus tard",
-  explanation:c.print_explanation||"Scannez ce QR code pour enregistrer une vidéo, un audio, une photo ou un message dans notre capsule temporelle. Aucune application nécessaire."
+  color:c.qr_color||"#b78b38",
+  title:c.print_title||"Laissez-nous un souvenir",
+  note:c.print_note||"Scannez ce code pour nous laisser un souvenir.",
+  explanation:c.print_explanation||"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.",
+  font:["elegant","classic","modern","romantic"].includes(c.qr_font)?c.qr_font:"elegant",
+  style:["romantic","minimal","chic"].includes(c.qr_style)?c.qr_style:"romantic",
+  size:clamp(Number(c.qr_size||230),180,280),
+  showInitials:c.qr_show_initials!==false,
+  showBrand:c.qr_show_brand!==false
+ }
+}
+function qrFontFamily(key){
+ return key==="classic"?"Playfair Display":key==="modern"?"Inter":key==="romantic"?"Great Vibes":"Cormorant Garamond";
+}
+function collectQrCustomization(c){
+ return {
+  qr_initials:($("qr-initials-input")?.value||defaultInitials(c.couple_name)).trim().slice(0,4),
+  qr_color:$("qr-color")?.value||"#b78b38",
+  print_title:($("print-title")?.value||"Laissez-nous un souvenir").trim().slice(0,80),
+  print_note:($("print-note")?.value||"Scannez ce code pour nous laisser un souvenir.").trim().slice(0,180),
+  print_explanation:($("print-explanation")?.value||"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.").trim().slice(0,320),
+  qr_font:$("qr-font")?.value||"elegant",
+  qr_style:$("qr-style")?.value||"romantic",
+  qr_size:clamp(Number($("qr-size")?.value||230),180,280),
+  qr_show_initials:Boolean($("qr-show-initials")?.checked),
+  qr_show_brand:Boolean($("qr-show-brand")?.checked)
  }
 }
 function renderCustomQr(url,c){
  const box=$("qrcode");if(!box||!window.QRCode)return;
- box.innerHTML="";
  const o=qrOptions(c);
- new QRCode(box,{text:url,width:220,height:220,colorDark:o.color,colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
- const badge=document.createElement("div");badge.className="qr-initials";badge.textContent=o.initials;badge.style.color=o.color;box.appendChild(badge);
+ box.innerHTML="";
+ box.style.width=o.size+"px";
+ box.style.height=o.size+"px";
+ new QRCode(box,{text:url,width:o.size,height:o.size,colorDark:o.color,colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
+ if(o.showInitials){
+  const badge=document.createElement("div");
+  badge.className="qr-designer-badge";
+  badge.textContent=o.initials;
+  badge.style.color=o.color;
+  box.appendChild(badge);
+ }
+}
+function applyQrPreview(url,c){
+ const o=qrOptions(c),card=$("qr-print-card");
+ if(!card)return;
+ card.className="qr-print-card qr-style-"+o.style+" qr-font-"+o.font;
+ card.style.setProperty("--qr-accent",o.color);
+ $("qr-preview-capsule").textContent=c.couple_name||"Votre capsule";
+ $("qr-preview-title").textContent=o.title;
+ $("qr-preview-note").textContent=o.note;
+ $("qr-preview-explanation").textContent=o.explanation;
+ $("qr-preview-brand").hidden=!o.showBrand;
+ $("qr-size-value").textContent=o.size+" px";
+ $("qr-color-value").textContent=o.color.toUpperCase();
+ renderCustomQr(url,c)
 }
 function getQrCanvas(){return $("qrcode")?.querySelector("canvas")||null}
-function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines=8){
- const words=String(text||"").split(/\s+/);let line="",lines=[];
+function drawWrappedCenteredText(ctx,text,cx,y,maxWidth,lineHeight,maxLines=6){
+ const words=String(text||"").trim().split(/\s+/).filter(Boolean),lines=[];let line="";
  for(const word of words){
   const test=line?line+" "+word:word;
   if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test;
  }
  if(line)lines.push(line);
- lines=lines.slice(0,maxLines);
- lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight));
- return y+lines.length*lineHeight;
+ const out=lines.slice(0,maxLines);
+ out.forEach((l,i)=>ctx.fillText(l,cx,y+i*lineHeight));
+ return y+out.length*lineHeight
 }
-function loadImage(src){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src})}
 async function downloadPrintCard(c,url){
- const qr=getQrCanvas();if(!qr)return;
- const o=qrOptions(c),canvas=document.createElement("canvas");canvas.width=1772;canvas.height=1181;
- const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
- ctx.fillStyle="#201b1b";ctx.font="700 70px Georgia, serif";ctx.fillText(o.note,110,135);
- ctx.fillStyle="#6f6868";ctx.font="400 30px Arial, sans-serif";wrapCanvasText(ctx,o.explanation,820,350,800,46,7);
- ctx.fillStyle=o.color;ctx.fillRect(820,575,110,8);
- ctx.fillStyle="#201b1b";ctx.font="700 28px Arial, sans-serif";ctx.fillText("VIDÉO  •  AUDIO  •  PHOTO  •  MESSAGE",820,650);
- ctx.fillStyle="#6f6868";ctx.font="400 24px Arial, sans-serif";ctx.fillText("Sans application • Scannez simplement le QR code",820,700);
- ctx.font="400 20px Arial, sans-serif";ctx.fillText("Capsule : "+c.couple_name,820,750);
- ctx.fillText("Événement : "+fdate(c.wedding_date),820,788);
+ const qr=getQrCanvas();if(!qr)return show($("qr-status"),"QR code indisponible.",false);
+ const o=qrOptions(c);
+ if(document.fonts?.ready)try{await document.fonts.ready}catch(e){}
+ const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
+ const W=1181,H=1772;canvas.width=W;canvas.height=H;
+ const bg=o.style==="minimal"?"#ffffff":o.style==="chic"?"#f8f3ea":"#fffaf3";
+ ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
 
- const qx=120,qy=260,qsize=590;ctx.drawImage(qr,qx,qy,qsize,qsize);
- const badgeSize=118,cx=qx+qsize/2,cy=qy+qsize/2;
- ctx.fillStyle="#ffffff";ctx.beginPath();ctx.arc(cx,cy,badgeSize/2,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle="#ffffff";ctx.lineWidth=18;ctx.stroke();
- ctx.fillStyle=o.color;ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="700 42px Arial, sans-serif";ctx.fillText(o.initials,cx,cy+2);
- ctx.textAlign="left";ctx.textBaseline="alphabetic";
+ if(o.style!=="minimal"){
+  ctx.strokeStyle=o.color;ctx.globalAlpha=.32;ctx.lineWidth=3;
+  ctx.strokeRect(54,54,W-108,H-108);
+  ctx.globalAlpha=1;
+ }
+ if(o.style==="romantic"){
+  ctx.strokeStyle=o.color;ctx.globalAlpha=.18;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(88,88,72,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.arc(W-88,H-88,72,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=1;
+ }
 
- try{
-  const logo=await loadImage("assets/la-suite-logo.webp");
-  const ratio=logo.width/logo.height,lh=170,lw=lh*ratio;
-  ctx.drawImage(logo,canvas.width-lw-90,canvas.height-lh-65,lw,lh);
- }catch(e){}
- ctx.fillStyle="#6f6868";ctx.font="400 18px Arial, sans-serif";ctx.fillText("La Suite — Capsule temporelle",110,1090);
- ctx.fillText(url,110,1124);
+ ctx.textAlign="center";ctx.textBaseline="alphabetic";
+ ctx.fillStyle="#6e665f";ctx.font='600 24px Inter, Arial, sans-serif';
+ ctx.fillText(String(c.couple_name||"Votre capsule").toUpperCase(),W/2,150);
 
- const a=document.createElement("a");a.download="la-suite-"+slugify(c.couple_name)+"-15x10.png";a.href=canvas.toDataURL("image/png");a.click();
+ const ff=qrFontFamily(o.font);
+ ctx.fillStyle="#201c1a";
+ const titleSize=o.font==="romantic"?88:72;
+ ctx.font=(o.font==="romantic"?"400 ":"700 ")+titleSize+'px "'+ff+'", serif';
+ let titleY=245;
+ titleY=drawWrappedCenteredText(ctx,o.title,W/2,titleY,900,titleSize*.98,2);
+
+ ctx.strokeStyle=o.color;ctx.lineWidth=4;
+ ctx.beginPath();ctx.moveTo(W/2-95,titleY+18);ctx.lineTo(W/2-18,titleY+18);ctx.stroke();
+ ctx.fillStyle=o.color;ctx.beginPath();ctx.arc(W/2,titleY+18,5,0,Math.PI*2);ctx.fill();
+ ctx.beginPath();ctx.moveTo(W/2+18,titleY+18);ctx.lineTo(W/2+95,titleY+18);ctx.stroke();
+
+ const qsize=Math.round(clamp(o.size,180,280)/230*560);
+ const qx=Math.round((W-qsize)/2),qy=Math.max(430,Math.round(titleY+80));
+ ctx.fillStyle="#ffffff";
+ ctx.beginPath();ctx.roundRect(qx-28,qy-28,qsize+56,qsize+56,34);ctx.fill();
+ ctx.drawImage(qr,qx,qy,qsize,qsize);
+
+ if(o.showInitials){
+  const b=Math.round(qsize*.19),cx=W/2,cy=qy+qsize/2;
+  ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(cx,cy,b/2,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#fff";ctx.lineWidth=18;ctx.stroke();
+  ctx.fillStyle=o.color;ctx.font='700 '+Math.round(b*.34)+'px Inter, Arial, sans-serif';
+  ctx.textBaseline="middle";ctx.fillText(o.initials,cx,cy+2);ctx.textBaseline="alphabetic";
+ }
+
+ let textY=qy+qsize+105;
+ ctx.fillStyle="#262220";ctx.font='700 34px Inter, Arial, sans-serif';
+ textY=drawWrappedCenteredText(ctx,o.note,W/2,textY,860,46,3)+26;
+
+ ctx.fillStyle="#706964";ctx.font='400 27px Inter, Arial, sans-serif';
+ drawWrappedCenteredText(ctx,o.explanation,W/2,textY,820,42,5);
+
+ ctx.strokeStyle="#ded4c8";ctx.lineWidth=2;
+ ctx.beginPath();ctx.moveTo(175,H-205);ctx.lineTo(W-175,H-205);ctx.stroke();
+
+ if(o.showBrand){
+  ctx.fillStyle="#211d1d";
+  ctx.font='700 34px "Cormorant Garamond", Georgia, serif';
+  ctx.fillText("La Suite",W/2,H-135);
+ }
+ ctx.fillStyle="#8a8179";ctx.font='500 20px Inter, Arial, sans-serif';
+ ctx.fillText("Capsule temporelle · "+fdate(c.wedding_date),W/2,H-95);
+
+ const a=document.createElement("a");
+ a.download="la-suite-"+slugify(c.couple_name)+"-10x15-portrait.png";
+ a.href=canvas.toDataURL("image/png");
+ a.click()
 }
-async function saveQrCustomization(c){
- const s=$("qr-status"),payload={
-  qr_initials:$("qr-initials-input").value.trim().slice(0,4),
-  qr_color:$("qr-color").value,
-  print_note:$("print-note").value.trim().slice(0,120),
-  print_explanation:$("print-explanation").value.trim().slice(0,320)
- };
+async function saveQrCustomization(c,url){
+ const s=$("qr-status"),payload=collectQrCustomization(c);
  show(s,"Enregistrement…");
  const{error}=await sb.from("capsules").update(payload).eq("id",c.id);
  if(error)return show(s,"Impossible d'enregistrer : "+error.message,false);
- Object.assign(c,payload);renderCustomQr($("guest-link").value,c);show(s,"Personnalisation enregistrée.")
+ Object.assign(c,payload);applyQrPreview(url,c);show(s,"Personnalisation enregistrée.")
 }
 async function shareGuestLink(url){
  if(navigator.share){
   try{await navigator.share({title:"La Suite",text:"Déposez votre souvenir dans notre capsule temporelle.",url});return}catch(e){if(e?.name==="AbortError")return}
  }
- try{await navigator.clipboard.writeText(url);alert("Lien copié dans le presse-papiers.")}catch(e){prompt("Copiez ce lien :",url)}
+ try{await navigator.clipboard.writeText(url);show($("qr-status"),"Lien copié.")}catch(e){prompt("Copiez ce lien :",url)}
 }
 
 function ownerShell(c,url,count){
  const o=qrOptions(c);
  return `
-<div class="dashboard-grid organizer-grid">
-<section class="card dashboard-card qr-card">
- <div class="eyebrow">Votre QR code</div><h3>${esc(c.couple_name)}</h3><p>Événement : ${esc(fdate(c.wedding_date))}</p>
- <div class="qr-wrap"><div id="qrcode" class="custom-qrcode"></div></div>
- <div class="qr-custom-fields">
-  <div class="field"><label for="qr-initials-input">Initiales au centre</label><input id="qr-initials-input" maxlength="4" value="${esc(o.initials)}"></div>
-  <div class="field"><label for="qr-color">Couleur d'accentuation</label><div class="color-line"><input id="qr-color" type="color" value="${esc(o.color)}"><span id="qr-color-value">${esc(o.color)}</span></div></div>
-  <div class="field full"><label for="print-note">Petit mot sur la carte</label><input id="print-note" maxlength="120" value="${esc(o.note)}"></div>
-  <div class="field full"><label for="print-explanation">Explication rapide</label><textarea id="print-explanation" maxlength="320">${esc(o.explanation)}</textarea></div>
+<section class="qr-designer-panel">
+ <div class="qr-designer-head">
+  <div>
+   <div class="eyebrow">Carte QR code</div>
+   <h2>Personnalisez votre carte</h2>
+   <p>Le rendu est mis à jour en direct. Le fichier téléchargé est au format <strong>10 × 15 cm portrait</strong>.</p>
+  </div>
+  <div class="qr-designer-top-actions">
+   <button class="btn secondary" id="copy-link" type="button">Copier le lien</button>
+   <a class="btn secondary" id="open-guest-link" href="${esc(url)}" target="_blank" rel="noopener">Ouvrir la page invité</a>
+   <button class="btn primary" id="download-print-card" type="button">Télécharger la carte</button>
+  </div>
  </div>
- <div class="dashboard-actions">
-  <button class="btn secondary" id="save-qr" type="button">Enregistrer la personnalisation</button>
-  <button class="btn secondary" id="copy-link" type="button">Copier le lien</button>
-  <button class="btn secondary" id="share-link" type="button">Partager le lien</button>
-  <button class="btn primary" id="download-print-card" type="button">Télécharger la carte 15 × 10 cm</button>
+
+ <div class="qr-designer-grid">
+  <div class="qr-designer-controls">
+   <div class="qr-control-group">
+    <h3>Contenu</h3>
+    <div class="field"><label for="print-title">Titre de la carte</label><input id="print-title" maxlength="80" value="${esc(o.title)}"></div>
+    <div class="field"><label for="print-note">Petit mot</label><textarea id="print-note" maxlength="180" rows="3">${esc(o.note)}</textarea></div>
+    <div class="field"><label for="print-explanation">Texte d'explication</label><textarea id="print-explanation" maxlength="320" rows="4">${esc(o.explanation)}</textarea></div>
+   </div>
+
+   <div class="qr-control-group">
+    <h3>Personnalisation</h3>
+    <div class="qr-control-grid">
+     <div class="field"><label for="qr-initials-input">Initiales</label><input id="qr-initials-input" maxlength="4" value="${esc(o.initials)}"></div>
+     <div class="field"><label for="qr-color">Couleur d'accent</label><div class="color-line"><input id="qr-color" type="color" value="${esc(o.color)}"><span id="qr-color-value">${esc(o.color.toUpperCase())}</span></div></div>
+    </div>
+    <div class="field"><label for="qr-font">Typographie</label><select id="qr-font">
+     <option value="elegant" ${o.font==="elegant"?"selected":""}>Élégante</option>
+     <option value="classic" ${o.font==="classic"?"selected":""}>Classique</option>
+     <option value="modern" ${o.font==="modern"?"selected":""}>Moderne</option>
+     <option value="romantic" ${o.font==="romantic"?"selected":""}>Manuscrite</option>
+    </select></div>
+    <div class="field"><label for="qr-style">Style de carte</label><select id="qr-style">
+     <option value="romantic" ${o.style==="romantic"?"selected":""}>Romantique</option>
+     <option value="minimal" ${o.style==="minimal"?"selected":""}>Minimal</option>
+     <option value="chic" ${o.style==="chic"?"selected":""}>Chic</option>
+    </select></div>
+    <div class="field">
+     <div class="qr-range-label"><label for="qr-size">Taille du QR code</label><span id="qr-size-value">${o.size} px</span></div>
+     <input id="qr-size" class="qr-range" type="range" min="180" max="280" step="10" value="${o.size}">
+    </div>
+    <label class="qr-check"><input id="qr-show-initials" type="checkbox" ${o.showInitials?"checked":""}><span>Afficher les initiales au centre</span></label>
+    <label class="qr-check"><input id="qr-show-brand" type="checkbox" ${o.showBrand?"checked":""}><span>Afficher « La Suite » en bas de la carte</span></label>
+   </div>
+
+   <button class="btn primary qr-save-button" id="save-qr" type="button">Enregistrer la personnalisation</button>
+   <button class="btn secondary qr-share-button" id="share-link" type="button">Partager le lien invité</button>
+   <input id="guest-link" class="share-input" readonly value="${esc(url)}">
+   <div id="qr-status" class="status"></div>
+  </div>
+
+  <div class="qr-designer-preview">
+   <div class="qr-preview-sticky">
+    <div class="qr-preview-label"><span>Aperçu en direct</span><strong>10 × 15 cm · Portrait</strong></div>
+    <div class="qr-preview-stage">
+     <div class="qr-print-card qr-style-${esc(o.style)} qr-font-${esc(o.font)}" id="qr-print-card" style="--qr-accent:${esc(o.color)}">
+      <div class="qr-print-top">
+       <div class="qr-print-capsule" id="qr-preview-capsule">${esc(c.couple_name)}</div>
+       <h2 id="qr-preview-title">${esc(o.title)}</h2>
+       <div class="qr-print-ornament"><i></i><b></b><i></i></div>
+      </div>
+      <div class="qr-print-main">
+       <div id="qrcode" class="qr-print-code"></div>
+       <h3 id="qr-preview-note">${esc(o.note)}</h3>
+       <p id="qr-preview-explanation">${esc(o.explanation)}</p>
+      </div>
+      <div class="qr-print-footer">
+       <strong id="qr-preview-brand" ${o.showBrand?"":"hidden"}>La Suite</strong>
+       <span>Capsule temporelle · ${esc(fdate(c.wedding_date))}</span>
+      </div>
+     </div>
+    </div>
+    <p class="qr-preview-tip">Prête à imprimer ou à intégrer sur une table, une invitation ou un panneau.</p>
+   </div>
+  </div>
  </div>
- <input id="guest-link" class="share-input" readonly value="${esc(url)}">
- <div id="qr-status" class="status"></div>
 </section>
-<section class="card dashboard-card intro-video-card">
+
+<section class="card dashboard-card intro-video-card qr-followup-card">
  <div class="eyebrow">Vidéo d'accueil</div><h3>Le message vu après le scan</h3>
  <p class="microcopy">La vidéo doit durer <strong>12 secondes maximum</strong>.</p>
  <div id="intro-preview-wrap"></div>
@@ -353,7 +500,7 @@ function ownerShell(c,url,count){
  <button id="upload-intro" class="btn secondary" type="button">Enregistrer cette vidéo</button>
  <div id="intro-status" class="status"></div>
 </section>
-</div>
+
 <section class="memories-section"><div class="section-title-row"><div><div class="eyebrow">Souvenirs reçus</div><h2>${count} contenu(s)</h2></div></div><div id="memory-list" class="memory-list"></div></section>`
 }
 
@@ -390,28 +537,30 @@ async function initDashboard(){
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href="auth.html";
  $("logout")?.addEventListener("click",async()=>{await sb.auth.signOut();location.href="index.html"});
- const{data:caps,error}=await sb.from("capsules").select("id,slug,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_note,print_explanation,created_at").order("created_at",{ascending:false});
+ const{data:caps,error}=await sb.from("capsules").select("id,slug,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
  if(!caps.length)return $("dashboard-content").innerHTML='<div class="notice">Aucune capsule. <a href="create.html"><strong>Créer une capsule</strong></a>.</div>';
  const c=(qs.get("slug")&&caps.find(x=>x.slug===qs.get("slug")))||caps[0];$("dashboard-title").textContent=c.couple_name;
  const url=new URL("capsule.html",location.href);url.search="?t="+encodeURIComponent(c.guest_token);
  const{data:manifest,error:me}=await sb.rpc("owner_message_manifest",{p_capsule_id:c.id});if(me)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(me.message)+'</div>';
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
- renderCustomQr(url.href,c);
- ["qr-initials-input","qr-color"].forEach(id=>$(id)?.addEventListener("input",()=>{
-   c.qr_initials=$("qr-initials-input").value.trim().slice(0,4);
-   c.qr_color=$("qr-color").value;
-   $("qr-color-value").textContent=c.qr_color;
-   renderCustomQr(url.href,c);
- }));
- $("save-qr")?.addEventListener("click",()=>saveQrCustomization(c));
+ applyQrPreview(url.href,c);
+ const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-size","qr-show-initials","qr-show-brand"];
+ const updateDesigner=()=>{
+   Object.assign(c,collectQrCustomization(c));
+   applyQrPreview(url.href,c);
+ };
+ liveIds.forEach(id=>{
+   const el=$(id);if(!el)return;
+   el.addEventListener("input",updateDesigner);
+   el.addEventListener("change",updateDesigner);
+ });
+ $("save-qr")?.addEventListener("click",()=>saveQrCustomization(c,url.href));
  $("copy-link")?.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(url.href);show($("qr-status"),"Lien copié.")}catch(e){prompt("Copiez ce lien :",url.href)}});
  $("share-link")?.addEventListener("click",()=>shareGuestLink(url.href));
  $("download-print-card")?.addEventListener("click",()=>{
-   c.qr_initials=$("qr-initials-input").value.trim().slice(0,4);
-   c.qr_color=$("qr-color").value;
-   c.print_note=$("print-note").value.trim();
-   c.print_explanation=$("print-explanation").value.trim();
+   Object.assign(c,collectQrCustomization(c));
+   applyQrPreview(url.href,c);
    downloadPrintCard(c,url.href);
  });
  $("intro-file")?.addEventListener("change",async()=>{
