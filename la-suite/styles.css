@@ -763,3 +763,55 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
   }
   .create-intro{padding-top:30px}
 }
+
+/* Calendar field */
+.date-picker-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+}
+.date-picker-wrap input{
+  width:100%;
+  padding-right:52px;
+  cursor:pointer;
+}
+.date-picker-button{
+  position:absolute;
+  right:8px;
+  top:50%;
+  transform:translateY(-50%);
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:10px;
+  background:#f5efe5;
+  color:#b8862f;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+  padding:0;
+}
+.date-picker-button:hover{background:#efe4d2}
+.date-picker-button svg{
+  width:20px;
+  height:20px;
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.8;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.flatpickr-calendar{
+  font-family:"Inter",sans-serif;
+  border-radius:14px;
+  box-shadow:0 14px 40px rgba(0,0,0,.14);
+}
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange{
+  background:#c90000;
+  border-color:#c90000;
+}
+.flatpickr-day.today{
+  border-color:#c90000;
+}
