@@ -9,15 +9,85 @@
 </head>
 <body>
 <header><div class="wrap top"><a class="brand" href="index.html">La Forge à Souvenirs<small>La Suite</small></a></div></header>
-<main class="wrap">
-<section class="capsule-hero"><h1 id="capsule-title">Votre capsule</h1><div class="countdown" id="capsule-date"></div><p id="capsule-welcome" class="lead"></p></section>
-<form class="form-shell" id="guest-message">
-<div class="field"><label for="guest_name">Votre prénom</label><input id="guest_name" required autocomplete="name"></div>
-<div class="field"><label for="message_text">Votre message</label><textarea id="message_text" placeholder="Un mot pour plus tard…"></textarea></div>
-<div class="field"><label for="video">Votre vidéo</label><div class="upload-box"><input id="video" type="file" accept="video/*" capture="user"><p>Vidéo courte recommandée — maximum 100 Mo.</p></div></div>
-<button class="btn primary" type="submit">Déposer mon souvenir</button>
+<main class="wrap guest-page">
+<section class="capsule-hero">
+  <h1 id="capsule-title">Votre capsule</h1>
+  <p id="capsule-welcome" class="lead"></p>
+</section>
+<section id="intro-section" class="intro-card" hidden>
+  <div class="eyebrow">Un message des organisateurs</div>
+  <video id="organizer-intro" controls playsinline preload="metadata"></video>
+</section>
+<form class="form-shell guest-form" id="guest-message">
+<h2>Laissez votre souvenir</h2>
+<div class="field"><label for="guest_name">Votre prénom</label><input id="guest_name" required autocomplete="name" placeholder="Pierre"></div>
+<div class="field"><label for="message_text">Un petit mot <span class="optional">(facultatif)</span></label><textarea id="message_text" placeholder="Quelques mots pour accompagner votre souvenir…"></textarea></div>
+<div class="field">
+<label>Votre contenu</label>
+<div class="media-choices">
+  <button type="button" class="media-choice active" data-media-mode="upload"><span>↑</span>Importer</button>
+  <button type="button" class="media-choice" data-media-mode="video"><span>▶</span>Me filmer</button>
+  <button type="button" class="media-choice" data-media-mode="audio"><span>♫</span>M'enregistrer</button>
+  <button type="button" class="media-choice" data-media-mode="photo"><span>▣</span>Prendre une photo</button>
+</div>
+</div>
+<div id="upload-panel" class="media-panel active">
+  <div class="upload-box">
+    <input id="media-file" type="file" accept="video/*,audio/*,image/*">
+    <p>Vidéo, audio ou image — maximum 100 Mo.</p>
+  </div>
+</div>
+<div id="video-panel" class="media-panel">
+  <div class="recorder-stage">
+    <video id="live-video" autoplay muted playsinline></video>
+    <div id="video-countdown" class="record-countdown" hidden></div>
+  </div>
+  <div class="recorder-actions">
+    <button type="button" class="btn secondary" id="prepare-video">Activer la caméra</button>
+    <button type="button" class="btn primary" id="start-video" hidden>Démarrer</button>
+    <button type="button" class="btn danger" id="stop-video" hidden>Terminé</button>
+  </div>
+</div>
+<div id="audio-panel" class="media-panel">
+  <div class="audio-recorder">
+    <div id="audio-indicator" class="audio-indicator">Microphone prêt à être activé</div>
+    <div id="audio-countdown" class="record-countdown inline" hidden></div>
+  </div>
+  <div class="recorder-actions">
+    <button type="button" class="btn secondary" id="prepare-audio">Activer le micro</button>
+    <button type="button" class="btn primary" id="start-audio" hidden>Démarrer</button>
+    <button type="button" class="btn danger" id="stop-audio" hidden>Terminé</button>
+  </div>
+</div>
+<div id="photo-panel" class="media-panel">
+  <div class="upload-box">
+    <input id="photo-file" type="file" accept="image/*" capture="environment">
+    <p>Ouvrez l'appareil photo ou choisissez une image existante.</p>
+  </div>
+</div>
+<div id="media-preview" class="media-preview" hidden>
+  <div class="preview-title">Aperçu</div>
+  <video id="preview-video" controls playsinline hidden></video>
+  <audio id="preview-audio" controls hidden></audio>
+  <img id="preview-image" alt="Aperçu du souvenir" hidden>
+  <div class="preview-actions">
+    <button type="button" class="btn secondary" id="remove-media">Supprimer et refaire</button>
+  </div>
+</div>
+<div class="delivery-box">
+  <h3>Quand voulez-vous que ce souvenir soit livré ?</h3>
+  <label class="toggle-line"><input type="checkbox" id="deliver-now"> <span>Le rendre accessible immédiatement</span></label>
+  <div class="field" id="delivery-date-wrap">
+    <label for="delivery_date">Date de livraison</label>
+    <input id="delivery_date" type="date" required>
+  </div>
+  <p class="microcopy">Avant cette date, les organisateurs verront qu'un souvenir existe, son type et sa date de livraison, mais ne pourront pas l'ouvrir.</p>
+</div>
+<button class="btn primary submit-memory" type="submit">Déposer mon souvenir</button>
 <div id="status" class="status"></div>
 </form>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="supabase-config.js"></script>\n<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="app.js"></script>
 </body></html>
