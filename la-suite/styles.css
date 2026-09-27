@@ -395,3 +395,71 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 @media(max-width:520px){
   .simple-brand-text{font-size:.82rem}
 }
+
+/* ============================================================
+   La Suite — public page aligned with La Forge header/footer
+   ============================================================ */
+.suite-public{margin:0;font-family:Inter,sans-serif;color:#171717;background:#fffefb;line-height:1.65}
+.suite-container{max-width:1180px;margin:0 auto;padding-left:20px;padding-right:20px}
+
+.forge-style-header{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid #ebebeb;box-shadow:0 6px 20px rgba(0,0,0,.05)}
+.suite-topbar{height:80px;display:flex;align-items:center;justify-content:space-between}
+.suite-brand{display:flex;align-items:center}
+.suite-brand img{height:58px;width:auto;display:block}
+.suite-nav ul{list-style:none;display:flex;gap:6px;margin:0;padding:0}
+.suite-nav a{display:block;padding:10px 12px;border-radius:10px;font-weight:600;color:#2a2a2a}
+.suite-nav a:hover{background:#c10d0d;color:#fff}
+.suite-burger{display:none;border:0;background:transparent;font-size:22px;color:#171717;cursor:pointer}
+
+.suite-hero{min-height:480px;padding-top:60px;padding-bottom:55px;display:grid;grid-template-columns:minmax(300px,.85fr) minmax(0,1.15fr);gap:58px;align-items:center}
+.suite-hero-logo-wrap{display:flex;justify-content:center;align-items:center}
+.suite-hero-logo{width:min(100%,560px);height:auto;display:block}
+.suite-hero-copy h1{font-family:"Cormorant Garamond",serif;font-size:clamp(3rem,5.4vw,5.3rem);line-height:.98;margin:0 0 18px;font-weight:700}
+.suite-hero-copy p{font-size:1.08rem;color:#4a4a4a;max-width:700px;margin:0 0 26px}
+.suite-cta{display:inline-block;background:#c10d0d;color:#fff;padding:12px 18px;border-radius:10px;font-weight:700;box-shadow:0 6px 16px rgba(193,13,13,.2)}
+.suite-cta:hover{background:#9f0909}
+
+.principle-section{background:#fffaf5;padding:62px 0}
+.principle-section h2,.suite-final h2{font-family:"Cormorant Garamond",serif;font-size:clamp(2.5rem,4vw,3.5rem);text-align:center;margin:0 0 8px}
+.principle-lead{max-width:720px;margin:0 auto 34px;text-align:center;color:#4a4a4a}
+.principle-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+.principle-card{background:#fff;border:1px solid #ebebeb;border-radius:16px;padding:24px;text-align:center;box-shadow:0 10px 26px rgba(0,0,0,.05)}
+.principle-card h3{font-family:Inter,sans-serif;font-size:1.02rem;margin:14px 0 7px}
+.principle-card p{font-size:.92rem;color:#555;margin:0}
+.bold-icon{width:92px;height:92px;margin:0 auto;display:grid;place-items:center}
+.bold-icon svg{width:82px;height:82px;fill:none;stroke:#111;stroke-width:7;stroke-linecap:round;stroke-linejoin:round}
+
+.formats-section{padding-top:38px;padding-bottom:38px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.format-item{display:flex;align-items:center;gap:15px;background:#fff;border:1px solid #ebebeb;border-radius:15px;padding:17px}
+.format-bold-icon{width:55px;height:55px;display:grid;place-items:center;flex:0 0 auto}
+.format-bold-icon svg{width:48px;height:48px;fill:none;stroke:#111;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}
+.format-item strong,.format-item span{display:block}
+.format-item span{font-size:.87rem;color:#666;margin-top:2px}
+
+.suite-final{text-align:center;padding-top:54px;padding-bottom:70px}
+.suite-final h2{margin-bottom:6px}
+.suite-final p{color:#555;margin:0 0 20px}
+
+.forge-style-footer{background:#111;color:#eee;padding:18px 0;margin-top:0}
+.forge-style-footer .footerbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.forge-style-footer .legal{font-size:.92rem}
+.forge-style-footer .social a{display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:#222;color:#fff;margin-left:6px}
+.forge-style-footer .social a:hover{background:#c7a052}
+
+@media(max-width:900px){
+  .suite-nav{display:none;position:absolute;left:0;right:0;top:80px;background:#fff;border-top:1px solid #ebebeb}
+  .suite-nav.open{display:block}
+  .suite-nav ul{flex-direction:column;padding:10px 20px}
+  .suite-burger{display:block}
+  .suite-hero{grid-template-columns:1fr;gap:28px;text-align:center;padding-top:38px}
+  .suite-hero-logo{width:min(78%,520px)}
+  .suite-hero-copy p{margin-left:auto;margin-right:auto}
+  .principle-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:650px){
+  .suite-topbar{height:72px}
+  .suite-brand img{height:48px}
+  .suite-nav{top:72px}
+  .principle-grid,.formats-section{grid-template-columns:1fr}
+  .suite-hero-logo{width:92%}
+}
