@@ -579,3 +579,146 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
   .format-item strong{font-size:.88rem}
   .format-item span{font-size:.68rem;line-height:1.15}
 }
+
+/* ============================================================
+   Mobile compactness / hierarchy refinement
+   ============================================================ */
+.hero-meta{
+  margin:18px 0 0;
+  color:#777;
+  font-size:.82rem;
+  line-height:1.4;
+  letter-spacing:.01em;
+}
+.suite-final h2{overflow-wrap:normal;word-break:normal}
+
+@media(max-width:650px){
+  .suite-hero{
+    min-height:auto;
+    padding-top:28px;
+    padding-bottom:34px;
+    gap:18px;
+  }
+  .suite-hero-logo{
+    width:min(68%,360px);
+  }
+  .suite-hero-copy h1{
+    font-size:clamp(2.45rem,12vw,3.4rem);
+    line-height:.98;
+    margin-bottom:14px;
+  }
+  .suite-hero-copy p{
+    font-size:.98rem;
+    line-height:1.58;
+    margin-bottom:20px;
+  }
+  .hero-meta{
+    max-width:330px;
+    margin:15px auto 0;
+    font-size:.73rem;
+    line-height:1.35;
+  }
+
+  .principle-section{
+    padding:38px 0 28px;
+  }
+  .principle-section h2{
+    font-size:2.5rem;
+    margin-bottom:6px;
+  }
+  .principle-lead{
+    margin:0 auto 22px;
+    font-size:.95rem;
+    line-height:1.55;
+    padding:0 10px;
+  }
+  .principle-grid{
+    gap:10px;
+  }
+  .principle-card{
+    min-height:0;
+    padding:15px 16px;
+    display:grid;
+    grid-template-columns:50px minmax(0,1fr);
+    grid-template-areas:
+      "icon title"
+      "icon text";
+    column-gap:13px;
+    row-gap:3px;
+    text-align:left;
+    align-items:center;
+    border-radius:14px;
+    box-shadow:0 5px 16px rgba(0,0,0,.035);
+  }
+  .principle-card .brand-icon{
+    grid-area:icon;
+    width:46px;
+    height:46px;
+    margin:0;
+    font-size:20px;
+    align-self:center;
+  }
+  .principle-card h3{
+    grid-area:title;
+    margin:0;
+    font-size:.97rem;
+    line-height:1.25;
+  }
+  .principle-card p{
+    grid-area:text;
+    margin:0;
+    font-size:.79rem;
+    line-height:1.38;
+  }
+  .principle-card .brand-icon-combo .icon-accent{
+    font-size:11px;
+    right:5px;
+    bottom:5px;
+  }
+  .principle-card .brand-icon-guests > .fa-mobile-screen-button{
+    font-size:21px;
+  }
+  .principle-card .brand-icon-guests .icon-user{
+    top:16px;
+    font-size:8px;
+  }
+  .principle-card .brand-icon-guests .icon-user-left{left:5px}
+  .principle-card .brand-icon-guests .icon-user-right{right:5px}
+
+  .formats-section{
+    padding-top:20px;
+    padding-bottom:26px;
+    gap:7px;
+  }
+  .format-item{
+    min-height:88px;
+    padding:8px 4px;
+    gap:6px;
+  }
+  .brand-format-icon{
+    width:34px;
+    height:34px;
+    font-size:15px;
+  }
+  .format-item strong{font-size:.84rem}
+  .format-item span{
+    font-size:.64rem;
+    line-height:1.12;
+  }
+
+  .suite-final{
+    padding-top:36px;
+    padding-bottom:44px;
+  }
+  .suite-final h2{
+    font-size:2.25rem;
+    line-height:1.02;
+    max-width:330px;
+    margin:0 auto 8px;
+  }
+  .suite-final p{
+    font-size:.94rem;
+    line-height:1.5;
+    margin-bottom:18px;
+  }
+}
