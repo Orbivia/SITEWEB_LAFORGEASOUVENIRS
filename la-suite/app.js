@@ -65,15 +65,36 @@ async function initAuth(){
 async function initCreate(){
  const form=$("create-capsule");if(!form)return;
  const status=$("status"),dateInput=$("wedding_date");
- const tomorrow=new Date();tomorrow.setHours(0,0,0,0);tomorrow.setDate(tomorrow.getDate()+1);
  const pad=n=>String(n).padStart(2,"0");
- const minDate=tomorrow.getFullYear()+"-"+pad(tomorrow.getMonth()+1)+"-"+pad(tomorrow.getDate());
- if(dateInput)dateInput.min=minDate;
+ function parseFrenchDate(value){
+  const m=String(value||"").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+  if(!m)return null;
+  const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]);
+  const d=new Date(year,month-1,day);
+  if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)return null;
+  d.setHours(0,0,0,0);
+  return d;
+ }
+ function toIsoDate(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+ if(dateInput){
+  dateInput.addEventListener("input",()=>{
+   const digits=dateInput.value.replace(/\D/g,"").slice(0,8);
+   let v=digits.slice(0,2);
+   if(digits.length>2)v+="/"+digits.slice(2,4);
+   if(digits.length>4)v+="/"+digits.slice(4,8);
+   dateInput.value=v;
+  });
+ }
  form.addEventListener("submit",async e=>{
-  e.preventDefault();const fd=new FormData(form),couple=String(fd.get("couple")||"").trim(),wedding=String(fd.get("wedding_date")||"");
-  if(!couple||!wedding)return show(status,"Complétez les champs obligatoires.",false);
+  e.preventDefault();
+  const fd=new FormData(form),couple=String(fd.get("couple")||"").trim(),weddingFr=String(fd.get("wedding_date")||"").trim();
+  if(!couple||!weddingFr)return show(status,"Complétez les champs obligatoires.",false);
   if(couple.length>50)return show(status,"Le nom de la capsule est limité à 50 caractères.",false);
-  if(wedding<minDate)return show(status,"Choisissez une date d'événement future.",false);
+  const eventDate=parseFrenchDate(weddingFr);
+  if(!eventDate)return show(status,"Saisissez la date au format JJ/MM/AAAA.",false);
+  const today=new Date();today.setHours(0,0,0,0);
+  if(eventDate<=today)return show(status,"Choisissez une date d'événement future.",false);
+  const wedding=toIsoDate(eventDate);
   if(!configured)return show(status,"Supabase n'est pas configuré.",false);
   const u=await user();if(!u)return location.href="auth.html";
   show(status,"Création de la capsule…");
