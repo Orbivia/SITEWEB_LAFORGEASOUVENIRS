@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Connexion — La Suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header><div class="wrap top"><a class="brand" href="index.html">La Forge à Souvenirs<small>La Suite</small></a><nav><a href="index.html">Présentation</a></nav></div></header>
+<main class="wrap">
+<form class="form-shell" id="auth-form">
+<h1>Votre espace</h1>
+<p class="hint">Recevez un lien de connexion sécurisé par e-mail. Aucun mot de passe à retenir.</p>
+<div class="field"><label for="email">Adresse e-mail</label><input id="email" name="email" type="email" autocomplete="email" required placeholder="vous@exemple.fr"></div>
+<button class="btn primary" type="submit">Recevoir mon lien</button>
+<div id="status" class="status"></div>
+</form>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="app.js"></script>
+</body></html>
