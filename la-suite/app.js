@@ -73,7 +73,7 @@ async function initCreate(){
  const minDate=iso(tomorrow);
 
  function parseFrDate(value){
-  const m=String(value||"").trim().match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
+  const m=String(value||"").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
   if(!m)return"";
   const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]);
   const d=new Date(year,month-1,day);
@@ -81,11 +81,11 @@ async function initCreate(){
   return iso(d)
  }
  function frFromIso(value){
-  const m=String(value||"").match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+  const m=String(value||"").match(/^(\d{4})-(\d{2})-(\d{2})$/);
   return m?m[3]+"/"+m[2]+"/"+m[1]:""
  }
  function formatFrTyping(value){
-  const digits=String(value||"").replace(/\\D/g,"").slice(0,8);
+  const digits=String(value||"").replace(/\D/g,"").slice(0,8);
   return [digits.slice(0,2),digits.slice(2,4),digits.slice(4,8)].filter(Boolean).join("/")
  }
 
@@ -106,7 +106,10 @@ async function initCreate(){
  }
  dateButton?.addEventListener("click",()=>{
   if(!dateInput)return;
-  try{dateInput.showPicker?.()}catch(e){dateInput.click()}
+  try{
+   if(typeof dateInput.showPicker==="function")dateInput.showPicker();
+   else dateInput.click()
+  }catch(e){dateInput.click()}
  })
 
  function readDraft(){
