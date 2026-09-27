@@ -64,43 +64,89 @@ async function initAuth(){
 
 async function initCreate(){
  const form=$("create-capsule");if(!form)return;
- const status=$("status"),dateInput=$("wedding_date");
+ const status=$("status"),dateInput=$("wedding_date"),emailInput=$("email"),emailHelp=$("email-help"),submit=form.querySelector('button[type="submit"]');
+ const draftKey="la_suite_create_draft";
  const pad=n=>String(n).padStart(2,"0");
- function parseFrenchDate(value){
-  const m=String(value||"").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if(!m)return null;
-  const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]);
-  const d=new Date(year,month-1,day);
-  if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)return null;
-  d.setHours(0,0,0,0);
-  return d;
+ const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+ const today=new Date();today.setHours(0,0,0,0);
+ const tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+1);
+ const minDate=iso(tomorrow);
+ if(dateInput)dateInput.min=minDate;
+
+ function readDraft(){
+  try{
+   const d=JSON.parse(localStorage.getItem(draftKey)||"null");
+   if(!d||Date.now()-Number(d.saved_at||0)>24*60*60*1000){localStorage.removeItem(draftKey);return null}
+   return d;
+  }catch(e){localStorage.removeItem(draftKey);return null}
  }
- function toIsoDate(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
- if(dateInput){
-  dateInput.addEventListener("input",()=>{
-   const digits=dateInput.value.replace(/\D/g,"").slice(0,8);
-   let v=digits.slice(0,2);
-   if(digits.length>2)v+="/"+digits.slice(2,4);
-   if(digits.length>4)v+="/"+digits.slice(4,8);
-   dateInput.value=v;
-  });
+ function validateDraft(d){
+  if(!d?.couple||!d?.wedding||!d?.email)return"Complétez les champs obligatoires.";
+  if(d.couple.length>50)return"Le nom de la capsule est limité à 50 caractères.";
+  if(!/^\S+@\S+\.\S+$/.test(d.email))return"Adresse e-mail invalide.";
+  if(d.wedding<minDate)return"Choisissez une date d'événement future.";
+  return"";
  }
+ async function createCapsule(d,u){
+  const err=validateDraft(d);if(err)return show(status,err,false);
+  if(!u)return false;
+  if(submit)submit.disabled=true;
+  show(status,"Création de la capsule…");
+  const{data,error}=await sb.from("capsules").insert({
+   owner_id:u.id,
+   slug:slugify(d.couple)+"-"+rid(),
+   couple_name:d.couple,
+   wedding_date:d.wedding,
+   welcome_message:null,
+   unlock_date:null
+  }).select("id,slug,guest_token").single();
+  if(error){if(submit)submit.disabled=false;show(status,"Création impossible : "+error.message,false);return false}
+  localStorage.removeItem(draftKey);
+  location.href="dashboard.html?slug="+encodeURIComponent(data.slug);
+  return true
+ }
+
+ if(!configured)return show(status,"Supabase n'est pas configuré.",false);
+ const currentUser=await user();
+ if(currentUser?.email&&emailInput){
+  emailInput.value=currentUser.email;
+  emailInput.readOnly=true;
+  if(emailHelp)emailHelp.textContent="Vous êtes connecté avec cette adresse.";
+ }
+
+ const pending=readDraft();
+ if(qs.get("resume")==="1"&&currentUser&&pending){
+  if($("couple"))$("couple").value=pending.couple||"";
+  if(dateInput)dateInput.value=pending.wedding||"";
+  if(emailInput)emailInput.value=currentUser.email||pending.email||"";
+  await createCapsule({...pending,email:currentUser.email||pending.email},currentUser);
+  return
+ }
+
  form.addEventListener("submit",async e=>{
   e.preventDefault();
-  const fd=new FormData(form),couple=String(fd.get("couple")||"").trim(),weddingFr=String(fd.get("wedding_date")||"").trim();
-  if(!couple||!weddingFr)return show(status,"Complétez les champs obligatoires.",false);
-  if(couple.length>50)return show(status,"Le nom de la capsule est limité à 50 caractères.",false);
-  const eventDate=parseFrenchDate(weddingFr);
-  if(!eventDate)return show(status,"Saisissez la date au format JJ/MM/AAAA.",false);
-  const today=new Date();today.setHours(0,0,0,0);
-  if(eventDate<=today)return show(status,"Choisissez une date d'événement future.",false);
-  const wedding=toIsoDate(eventDate);
-  if(!configured)return show(status,"Supabase n'est pas configuré.",false);
-  const u=await user();if(!u)return location.href="auth.html";
-  show(status,"Création de la capsule…");
-  const{data,error}=await sb.from("capsules").insert({owner_id:u.id,slug:slugify(couple)+"-"+rid(),couple_name:couple,wedding_date:wedding,welcome_message:null,unlock_date:null}).select("id,slug,guest_token").single();
-  if(error)return show(status,"Création impossible : "+error.message,false);
-  location.href="dashboard.html?slug="+encodeURIComponent(data.slug)
+  const fd=new FormData(form);
+  const d={
+   couple:String(fd.get("couple")||"").trim(),
+   wedding:String(fd.get("wedding_date")||""),
+   email:String(fd.get("email")||"").trim(),
+   saved_at:Date.now()
+  };
+  const err=validateDraft(d);if(err)return show(status,err,false);
+  const u=await user();
+  if(u)return createCapsule({...d,email:u.email||d.email},u);
+
+  localStorage.setItem(draftKey,JSON.stringify(d));
+  const redirectTo=new URL("create.html?resume=1",location.href).href;
+  if(submit)submit.disabled=true;
+  show(status,"Envoi du lien de connexion…");
+  const{error}=await sb.auth.signInWithOtp({email:d.email,options:{emailRedirectTo:redirectTo}});
+  if(error){
+   if(submit)submit.disabled=false;
+   localStorage.removeItem(draftKey);
+   return show(status,"Impossible d'envoyer le lien : "+error.message,false)
+  }
+  show(status,"Lien envoyé. Ouvrez votre e-mail pour finaliser automatiquement la création de la capsule.")
  })
 }
 
