@@ -349,3 +349,11 @@ alter table public.capsules
   drop constraint if exists capsules_qr_size_check,
   add constraint capsules_qr_size_check
     check (qr_size between 180 and 280);
+
+
+-- ============================================================
+-- V4 — Lecture des messages dans l'espace organisateur
+-- ============================================================
+
+alter table public.capsules
+  add column if not exists owner_messages_seen_at timestamptz;

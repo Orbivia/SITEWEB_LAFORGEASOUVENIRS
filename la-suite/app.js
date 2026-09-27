@@ -461,6 +461,7 @@ async function shareGuestLink(url){
 function ownerShell(c,url,count){
  const o=qrOptions(c);
  return `
+<div class="owner-panel" data-owner-panel="configuration">
 <section class="qr-designer-panel">
  <div class="qr-designer-head">
   <div>
@@ -551,7 +552,83 @@ function ownerShell(c,url,count){
  <div id="intro-status" class="status"></div>
 </section>
 
-<section class="memories-section"><div class="section-title-row"><div><div class="eyebrow">Souvenirs reçus</div><h2>${count} contenu(s)</h2></div></div><div id="memory-list" class="memory-list"></div></section>`
+</div>
+
+<div class="owner-panel" data-owner-panel="messages" hidden>
+ <section class="owner-messages-hero">
+  <div>
+   <div class="eyebrow">Vos messages</div>
+   <h2>Les souvenirs de vos invités</h2>
+   <p>Retrouvez ici les souvenirs reçus. Ceux programmés pour plus tard restent verrouillés jusqu’à leur date de dévoilement.</p>
+  </div>
+  <div id="next-delivery" class="next-delivery" hidden></div>
+ </section>
+ <section class="memories-section">
+  <div class="section-title-row">
+   <div><div class="eyebrow">Souvenirs reçus</div><h2>${count} contenu(s)</h2></div>
+  </div>
+  <div id="memory-list" class="memory-list"></div>
+ </section>
+</div>`
+}
+
+function ownerUnreadCount(c,manifest){
+ const seen=c?.owner_messages_seen_at?new Date(c.owner_messages_seen_at).getTime():0;
+ return (manifest||[]).filter(item=>{
+  const created=new Date(item.created_at).getTime();
+  return Number.isFinite(created)&&created>seen
+ }).length
+}
+
+function updateOwnerUnreadBadge(count){
+ const badge=$("owner-unread-badge");
+ if(!badge)return;
+ const n=Math.max(0,Number(count)||0);
+ badge.hidden=n===0;
+ badge.textContent=n>99?"99+":String(n);
+ badge.setAttribute("aria-label",n+" nouveau"+(n>1?"x":"")+" message"+(n>1?"s":""));
+}
+
+async function markOwnerMessagesSeen(c,manifest){
+ const latest=(manifest||[]).reduce((max,item)=>{
+  const t=new Date(item.created_at).getTime();
+  return Number.isFinite(t)&&t>max?t:max
+ },0);
+ if(!latest){updateOwnerUnreadBadge(0);return}
+ const current=c?.owner_messages_seen_at?new Date(c.owner_messages_seen_at).getTime():0;
+ if(current>=latest){updateOwnerUnreadBadge(0);return}
+ const seenAt=new Date(Math.max(Date.now(),latest)).toISOString();
+ const{error}=await sb.from("capsules").update({owner_messages_seen_at:seenAt}).eq("id",c.id);
+ if(!error){
+  c.owner_messages_seen_at=seenAt;
+  updateOwnerUnreadBadge(0)
+ }
+}
+
+function setupOwnerTabs(c,manifest){
+ const links=[...document.querySelectorAll("[data-owner-tab-link]")];
+ const panels=[...document.querySelectorAll("[data-owner-panel]")];
+ if(!links.length||!panels.length)return;
+
+ const activate=async(name,updateHash=true)=>{
+  const target=name==="messages"?"messages":"configuration";
+  links.forEach(link=>{
+   const active=link.dataset.ownerTabLink===target;
+   link.classList.toggle("is-active",active);
+   link.setAttribute("aria-current",active?"page":"false")
+  });
+  panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
+  if(updateHash&&location.hash!=="#"+target)history.replaceState(null,"","#"+target);
+  if(target==="messages")await markOwnerMessagesSeen(c,manifest)
+ };
+
+ links.forEach(link=>link.addEventListener("click",e=>{
+  e.preventDefault();
+  activate(link.dataset.ownerTabLink||"configuration")
+ }));
+
+ updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));
+ activate(location.hash==="#messages"?"messages":"configuration",false)
 }
 
 function nextCountdown(manifest){
@@ -587,13 +664,14 @@ async function initDashboard(){
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href="auth.html";
  $("logout")?.addEventListener("click",async()=>{await sb.auth.signOut();location.href="index.html"});
- const{data:caps,error}=await sb.from("capsules").select("id,slug,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,created_at").order("created_at",{ascending:false});
+ const{data:caps,error}=await sb.from("capsules").select("id,slug,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
  if(!caps.length)return $("dashboard-content").innerHTML='<div class="notice">Aucune capsule. <a href="create.html"><strong>Créer une capsule</strong></a>.</div>';
  const c=(qs.get("slug")&&caps.find(x=>x.slug===qs.get("slug")))||caps[0];$("dashboard-title").textContent=c.couple_name;
  const url=new URL("capsule.html",location.href);url.search="?t="+encodeURIComponent(c.guest_token);
  const{data:manifest,error:me}=await sb.rpc("owner_message_manifest",{p_capsule_id:c.id});if(me)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(me.message)+'</div>';
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
+ setupOwnerTabs(c,manifest||[]);
  applyQrPreview(url.href,c);
  const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-size","qr-show-initials","qr-show-brand"];
  const updateDesigner=()=>{
