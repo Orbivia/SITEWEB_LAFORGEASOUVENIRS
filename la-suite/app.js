@@ -103,6 +103,15 @@ async function initCapsule(){
  const{data,error}=await sb.rpc("get_capsule_public",{p_guest_token:token});
  if(error||!data?.length){$("guest-message").hidden=true;return show(status,"Cette capsule est introuvable.",false)}
  const c=data[0];$("capsule-title").textContent=c.couple_name;$("capsule-welcome").textContent=c.welcome_message||"";
+ const eventDate=c.wedding_date?new Date(c.wedding_date+"T23:59:59"):null;
+ if(eventDate){
+   const recordingDeadline=new Date(eventDate);
+   recordingDeadline.setFullYear(recordingDeadline.getFullYear()+3);
+   if(new Date()>recordingDeadline){
+     $("guest-message").hidden=true;
+     return show(status,"Cette capsule n'accepte plus de nouveaux souvenirs : la période de 3 ans après l'événement est terminée.",false);
+   }
+ }
  if(c.has_intro){
   const r=await sb.functions.invoke("guest-upload",{body:{action:"get_intro",guest_token:token}});
   if(!r.error&&r.data?.signed_url){$("organizer-intro").src=r.data.signed_url;$("intro-section").hidden=false}
