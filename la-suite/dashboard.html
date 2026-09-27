@@ -9,12 +9,15 @@
 </head>
 <body>
 <header><div class="wrap top"><a class="brand" href="index.html">La Forge à Souvenirs<small>La Suite</small></a><nav><a href="create.html">Nouvelle capsule</a><button id="logout" class="nav-button" type="button">Déconnexion</button></nav></div></header>
-<main class="wrap">
-<section class="form-shell">
-<h1>Tableau de bord</h1>
-<p class="hint">Gérez votre capsule, son lien invité et les souvenirs reçus.</p>
-<div id="dashboard-content"></div>
+<main class="wrap dashboard-page">
+<section class="dashboard-head">
+  <div><div class="eyebrow">Espace organisateur</div><h1 id="dashboard-title">Votre capsule</h1></div>
+  <div id="next-delivery" class="next-delivery" hidden></div>
 </section>
+<div id="dashboard-content"><p class="hint">Chargement…</p></div>
 </main>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>\n<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="supabase-config.js"></script>\n<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
+<script src="app.js"></script>
 </body></html>
