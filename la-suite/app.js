@@ -72,10 +72,8 @@ async function initCreate(){
  const tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+1);
  const minDate=iso(tomorrow);
 
- if(dateInput){
-  dateInput.min=minDate;
-  dateInput.lang="fr";
- }
+ if(dateInput){dateInput.min=minDate;dateInput.lang="fr"}
+
  function readDraft(){
   try{
    const d=JSON.parse(localStorage.getItem(draftKey)||"null");
@@ -109,9 +107,12 @@ async function initCreate(){
   return true
  }
 
- if(!configured)return show(status,"Supabase n'est pas configuré.",false);
- const currentUser=await user();
+ if(!configured){
+  show(status,"Le service de connexion n'a pas pu être chargé. Rechargez la page.",false);
+  return
+ }
 
+ const currentUser=await user();
  const pending=readDraft();
  if(qs.get("resume")==="1"&&currentUser&&pending){
   await createCapsule(pending,currentUser);
@@ -120,6 +121,7 @@ async function initCreate(){
 
  form.addEventListener("submit",async e=>{
   e.preventDefault();
+  e.stopPropagation();
   const fd=new FormData(form);
   const d={
    couple:String(fd.get("couple")||"").trim(),
@@ -129,23 +131,24 @@ async function initCreate(){
   };
   const err=validateDraft(d);if(err)return show(status,err,false);
 
-  const u=await user();
-  if(u&&String(u.email||"").toLowerCase()===d.email.toLowerCase()){
-   return createCapsule(d,u)
-  }
-  if(u)await sb.auth.signOut();
-
   localStorage.setItem(draftKey,JSON.stringify(d));
-  const redirectTo=new URL("create.html?resume=1",location.href).href;
   if(submit)submit.disabled=true;
-  show(status,"Envoi du lien de connexion…");
-  const{error}=await sb.auth.signInWithOtp({email:d.email,options:{emailRedirectTo:redirectTo}});
-  if(error){
+  show(status,"Envoi du lien sécurisé…");
+
+  try{
+   const u=await user();
+   if(u)await sb.auth.signOut();
+   const redirectTo=new URL("create.html?resume=1",location.href).href;
+   const{error}=await sb.auth.signInWithOtp({
+    email:d.email,
+    options:{emailRedirectTo:redirectTo,shouldCreateUser:true}
+   });
+   if(error)throw error;
+   show(status,"Lien envoyé. Consultez votre boîte mail pour finaliser la création.");
+  }catch(err){
    if(submit)submit.disabled=false;
-   localStorage.removeItem(draftKey);
-   return show(status,"Impossible d'envoyer le lien : "+error.message,false)
+   show(status,"Impossible d'envoyer le lien : "+(err?.message||"erreur inconnue"),false);
   }
-  show(status,"Lien envoyé. Ouvrez votre e-mail pour finaliser automatiquement la création de la capsule.")
  })
 }
 

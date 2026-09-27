@@ -23,7 +23,7 @@
     <h1>Créez votre capsule</h1>
   </section>
 
-  <form class="form-shell create-form" id="create-capsule">
+  <form class="form-shell create-form" id="create-capsule" action="#" onsubmit="return false;">
     <div class="field">
       <label for="couple">Nom de la capsule</label>
       <input id="couple" name="couple" required maxlength="50" placeholder="Julie & Thomas">
@@ -37,7 +37,7 @@
 
     <div class="field">
       <label for="email">Adresse e-mail</label>
-      <input id="email" name="email" type="email" autocomplete="email" required placeholder="vous@exemple.fr">
+      <input id="email" name="email" type="email" autocomplete="off" required placeholder="vous@exemple.fr">
       <small class="field-help" id="email-help">Un lien sécurisé vous sera envoyé pour finaliser la création.</small>
     </div>
 
@@ -47,7 +47,7 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="supabase-config.js"></script>
-<script src="app.js"></script>
+<script src="supabase-config.js?v=20260927-1"></script>
+<script src="app.js?v=20260927-23"></script>
 </body>
 </html>
