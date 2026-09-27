@@ -32,13 +32,7 @@
 
     <div class="field">
       <label for="wedding_date">Date de l'événement</label>
-      <input id="wedding_date" name="wedding_date" type="date" required>
-      <small class="field-help">La date de l'événement doit être dans le futur.</small>
-    </div>
-
-    <div class="create-info">
-      <div class="create-info-icon">1</div>
-      <div><strong>Après la création</strong><p>Vous récupérerez votre QR code personnalisable, ajouterez votre vidéo d'accueil et suivrez les souvenirs déposés.</p></div>
+      <input id="wedding_date" name="wedding_date" type="text" inputmode="numeric" autocomplete="off" maxlength="10" pattern="[0-9]{2}/[0-9]{2}/[0-9]{4}" placeholder="JJ/MM/AAAA" required>
     </div>
 
     <button class="btn primary create-submit" type="submit">Créer ma capsule</button>
