@@ -64,38 +64,18 @@ async function initAuth(){
 
 async function initCreate(){
  const form=$("create-capsule");if(!form)return;
- const status=$("status"),dateInput=$("wedding_date"),dateButton=$("wedding_date_button"),emailInput=$("email"),submit=form.querySelector('button[type="submit"]');
+ const status=$("status"),dateInput=$("wedding_date"),emailInput=$("email"),submit=form.querySelector('button[type="submit"]');
  const draftKey="la_suite_create_draft";
  const pad=n=>String(n).padStart(2,"0");
  const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
  const today=new Date();today.setHours(0,0,0,0);
  const tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+1);
+ const minDate=iso(tomorrow);
 
- function parseFrenchDate(value){
-  const m=String(value||"").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-  if(!m)return null;
-  const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]);
-  const d=new Date(year,month-1,day);
-  if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)return null;
-  d.setHours(0,0,0,0);
-  return d;
+ if(dateInput){
+  dateInput.min=minDate;
+  dateInput.lang="fr";
  }
-
- let datePicker=null;
- if(dateInput&&window.flatpickr){
-  datePicker=flatpickr(dateInput,{
-   locale:window.flatpickr?.l10ns?.fr||"fr",
-   dateFormat:"d/m/Y",
-   minDate:tomorrow,
-   disableMobile:true,
-   allowInput:false,
-   clickOpens:true,
-   monthSelectorType:"dropdown"
-  });
-  dateInput.addEventListener("click",()=>datePicker.open());
-  if(dateButton)dateButton.addEventListener("click",()=>datePicker.open());
- }
-
  function readDraft(){
   try{
    const d=JSON.parse(localStorage.getItem(draftKey)||"null");
@@ -107,22 +87,19 @@ async function initCreate(){
   if(!d?.couple||!d?.wedding||!d?.email)return"Complétez les champs obligatoires.";
   if(d.couple.length>50)return"Le nom de la capsule est limité à 50 caractères.";
   if(!/^\S+@\S+\.\S+$/.test(d.email))return"Adresse e-mail invalide.";
-  const eventDate=parseFrenchDate(d.wedding);
-  if(!eventDate)return"Saisissez ou choisissez une date valide.";
-  if(eventDate<=today)return"Choisissez une date d'événement future.";
+  if(d.wedding<minDate)return"Choisissez une date d'événement future.";
   return"";
  }
  async function createCapsule(d,u){
   const err=validateDraft(d);if(err)return show(status,err,false);
   if(!u)return false;
-  const eventDate=parseFrenchDate(d.wedding);
   if(submit)submit.disabled=true;
   show(status,"Création de la capsule…");
   const{data,error}=await sb.from("capsules").insert({
    owner_id:u.id,
    slug:slugify(d.couple)+"-"+rid(),
    couple_name:d.couple,
-   wedding_date:iso(eventDate),
+   wedding_date:d.wedding,
    welcome_message:null,
    unlock_date:null
   }).select("id,slug,guest_token").single();
@@ -146,7 +123,7 @@ async function initCreate(){
   const fd=new FormData(form);
   const d={
    couple:String(fd.get("couple")||"").trim(),
-   wedding:String(fd.get("wedding_date")||"").trim(),
+   wedding:String(fd.get("wedding_date")||""),
    email:String(fd.get("email")||"").trim(),
    saved_at:Date.now()
   };
