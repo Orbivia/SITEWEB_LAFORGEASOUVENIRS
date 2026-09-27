@@ -463,3 +463,36 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
   .principle-grid,.formats-section{grid-template-columns:1fr}
   .suite-hero-logo{width:92%}
 }
+
+
+/* Supplied La Suite pictograms */
+.brand-icon{
+  width:104px;
+  height:104px;
+  margin:0 auto 12px;
+  display:grid;
+  place-items:center;
+}
+.brand-icon img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+.brand-format-icon{
+  width:64px;
+  height:64px;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+}
+.brand-format-icon img{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+@media(max-width:650px){
+  .brand-icon{width:92px;height:92px}
+  .brand-format-icon{width:58px;height:58px}
+}
