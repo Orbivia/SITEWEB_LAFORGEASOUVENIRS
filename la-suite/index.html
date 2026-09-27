@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=20260927-shell1">
 </head>
 
 <body class="suite-public">
@@ -18,10 +18,10 @@
     <a class="suite-brand" href="#top" aria-label="Aller en haut de la page">
       <img src="assets/la-suite-logo.webp?v=20260927-hq" alt="Logo La Suite — Capsule temporelle">
     </a>
-    <button class="suite-burger" id="suite-burger" type="button" aria-label="Ouvrir le menu" aria-expanded="false">
+    <button class="suite-burger" data-suite-burger type="button" aria-label="Ouvrir le menu" aria-expanded="false">
       <i class="fa-solid fa-bars"></i>
     </button>
-    <nav class="suite-nav" id="suite-nav">
+    <nav class="suite-nav" data-suite-nav>
       <ul>
         <li><a href="#principe">Le principe</a></li>
         <li><a href="create.html">Créer la capsule</a></li>
@@ -133,16 +133,6 @@
   </div>
 </footer>
 
-<script>
-(() => {
-  const burger = document.getElementById('suite-burger');
-  const nav = document.getElementById('suite-nav');
-  if (!burger || !nav) return;
-  burger.addEventListener('click', () => {
-    const open = nav.classList.toggle('open');
-    burger.setAttribute('aria-expanded', String(open));
-  });
-})();
-</script>
+<script src="suite-shell.js?v=20260927-shell1"></script>
 </body>
 </html>
