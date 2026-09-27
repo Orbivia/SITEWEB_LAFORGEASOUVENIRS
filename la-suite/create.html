@@ -12,17 +12,17 @@
 <main class="wrap">
 <form class="form-shell" id="create-capsule">
 <h1>Créer une capsule</h1>
-<p class="hint">Cette première interface prépare le branchement à Supabase. Aucun paiement n'est demandé.</p>
+<p class="hint">Créez votre capsule temporelle. Vous pourrez ensuite partager son QR code avec vos invités.</p>
 <div class="grid">
 <div class="field"><label for="couple">Nom de la capsule</label><input id="couple" name="couple" required placeholder="Julie & Thomas"></div>
 <div class="field"><label for="wedding_date">Date de l'événement</label><input id="wedding_date" name="wedding_date" type="date" required></div>
 </div>
 <div class="field"><label for="unlock_date">Date d'ouverture</label><input id="unlock_date" name="unlock_date" type="date" required></div>
 <div class="field"><label for="welcome_message">Message d'accueil</label><textarea id="welcome_message" name="welcome_message" placeholder="Laissez-nous un souvenir que nous découvrirons dans un an…"></textarea></div>
-<div class="notice">Mode prototype : tant que Supabase n'est pas configuré, la capsule est enregistrée uniquement dans ce navigateur pour tester le parcours.</div>
+<div class="notice">Si vous n’êtes pas encore connecté, un lien de connexion sécurisé vous sera proposé.</div>
 <div style="margin-top:18px"><button class="btn primary" type="submit">Créer ma capsule</button></div>
 <div id="status" class="status"></div>
 </form>
 </main>
-<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="supabase-config.js"></script>\n<script src="app.js"></script>
 </body></html>
