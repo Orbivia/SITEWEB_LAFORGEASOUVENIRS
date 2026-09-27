@@ -1407,3 +1407,118 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
   opacity:0;
   pointer-events:none;
 }
+
+
+/* ============================================================
+   La Suite — organizer access
+   ============================================================ */
+.suite-organizer-link{
+  display:flex!important;
+  align-items:center;
+  gap:7px;
+  border:1px solid #ded5cd;
+  background:#fff;
+}
+.suite-organizer-link i{
+  font-size:.88rem;
+}
+.suite-organizer-link:hover,
+.suite-organizer-link.is-active{
+  border-color:#c10d0d;
+  background:#c10d0d;
+  color:#fff;
+}
+
+.organizer-access-page{
+  display:grid;
+  place-items:center;
+  padding-top:58px;
+  padding-bottom:70px;
+}
+.organizer-access-card{
+  width:min(100%,600px);
+  background:#fff;
+  border:1px solid #eadfd6;
+  border-radius:24px;
+  padding:34px;
+  box-shadow:0 18px 48px rgba(45,27,18,.08);
+  text-align:center;
+}
+.organizer-access-icon{
+  width:64px;
+  height:64px;
+  margin:0 auto 17px;
+  border-radius:50%;
+  display:grid;
+  place-items:center;
+  background:linear-gradient(145deg,#e2bd64,#cda13f);
+  color:#fff;
+  font-size:25px;
+  box-shadow:0 9px 22px rgba(167,122,40,.18);
+}
+.organizer-access-heading .eyebrow{
+  margin-bottom:5px;
+}
+.organizer-access-heading h1{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:clamp(2.35rem,5vw,3.35rem);
+  line-height:1;
+  margin:0 0 13px;
+}
+.organizer-access-heading p{
+  max-width:500px;
+  margin:0 auto 27px;
+  color:#625b56;
+  font-size:.96rem;
+  line-height:1.55;
+}
+.organizer-login-form{
+  text-align:left;
+  max-width:470px;
+  margin:0 auto;
+}
+.organizer-login-form .field{
+  margin-bottom:15px;
+}
+.organizer-login-submit{
+  width:100%;
+  min-height:49px;
+}
+.organizer-access-help{
+  margin:17px auto 0;
+  color:#817972;
+  font-size:.79rem;
+  line-height:1.45;
+}
+@media (hover:hover) and (pointer:fine){
+  .organizer-access-card{
+    transition:transform .32s ease,box-shadow .32s ease,border-color .32s ease;
+  }
+  .organizer-access-card:hover{
+    transform:translateY(-3px);
+    box-shadow:0 23px 54px rgba(45,27,18,.11);
+    border-color:#dfcdae;
+  }
+}
+@media(max-width:650px){
+  .suite-organizer-link{
+    border:0;
+    background:transparent;
+  }
+  .organizer-access-page{
+    padding-top:34px;
+    padding-bottom:46px;
+  }
+  .organizer-access-card{
+    border-radius:18px;
+    padding:26px 18px;
+  }
+  .organizer-access-icon{
+    width:56px;
+    height:56px;
+    font-size:22px;
+  }
+  .organizer-access-heading h1{
+    font-size:2.35rem;
+  }
+}
