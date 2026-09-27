@@ -308,8 +308,7 @@ function qrOptions(c){
   font:["elegant","classic","modern","romantic"].includes(c.qr_font)?c.qr_font:"elegant",
   style:["romantic","minimal","chic"].includes(c.qr_style)?c.qr_style:"romantic",
   size:clamp(Number(c.qr_size||230),180,280),
-  showInitials:c.qr_show_initials!==false,
-  showBrand:c.qr_show_brand!==false
+  showInitials:c.qr_show_initials!==false
  }
 }
 function qrFontFamily(key){
@@ -326,7 +325,7 @@ function collectQrCustomization(c){
   qr_style:$("qr-style")?.value||"romantic",
   qr_size:clamp(Number($("qr-size")?.value||230),180,280),
   qr_show_initials:Boolean($("qr-show-initials")?.checked),
-  qr_show_brand:Boolean($("qr-show-brand")?.checked)
+  qr_show_brand:true
  }
 }
 function renderCustomQr(url,c){
@@ -353,12 +352,19 @@ function applyQrPreview(url,c){
  $("qr-preview-title").textContent=o.title;
  $("qr-preview-note").textContent=o.note;
  $("qr-preview-explanation").textContent=o.explanation;
- $("qr-preview-brand").hidden=!o.showBrand;
  $("qr-size-value").textContent=o.size+" px";
  $("qr-color-value").textContent=o.color.toUpperCase();
  renderCustomQr(url,c)
 }
 function getQrCanvas(){return $("qrcode")?.querySelector("canvas")||null}
+function loadCanvasImage(src){
+ return new Promise((resolve,reject)=>{
+  const img=new Image();
+  img.onload=()=>resolve(img);
+  img.onerror=reject;
+  img.src=src
+ })
+}
 function drawWrappedCenteredText(ctx,text,cx,y,maxWidth,lineHeight,maxLines=6){
  const words=String(text||"").trim().split(/\s+/).filter(Boolean),lines=[];let line="";
  for(const word of words){
@@ -431,13 +437,21 @@ async function downloadPrintCard(c,url){
  ctx.strokeStyle="#ded4c8";ctx.lineWidth=2;
  ctx.beginPath();ctx.moveTo(175,H-205);ctx.lineTo(W-175,H-205);ctx.stroke();
 
- if(o.showBrand){
+ ctx.textAlign="left";
+ ctx.fillStyle="#8a8179";ctx.font='500 20px Inter, Arial, sans-serif';
+ ctx.fillText("Capsule temporelle · "+fdate(c.wedding_date),175,H-105);
+
+ try{
+  const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20260927-hq");
+  const maxW=210,maxH=94,scale=Math.min(maxW/logo.naturalWidth,maxH/logo.naturalHeight);
+  const lw=Math.round(logo.naturalWidth*scale),lh=Math.round(logo.naturalHeight*scale);
+  ctx.drawImage(logo,W-175-lw,H-164,lw,lh)
+ }catch(e){
+  ctx.textAlign="right";
   ctx.fillStyle="#211d1d";
   ctx.font='700 34px "Cormorant Garamond", Georgia, serif';
-  ctx.fillText("La Suite",W/2,H-135);
+  ctx.fillText("La Suite",W-175,H-105)
  }
- ctx.fillStyle="#8a8179";ctx.font='500 20px Inter, Arial, sans-serif';
- ctx.fillText("Capsule temporelle · "+fdate(c.wedding_date),W/2,H-95);
 
  const a=document.createElement("a");
  a.download="la-suite-"+slugify(c.couple_name)+"-10x15-portrait.png";
@@ -482,29 +496,87 @@ function ownerShell(c,url,count){
     <div class="field"><label for="print-explanation">Texte d'explication</label><textarea id="print-explanation" maxlength="320" rows="4">${esc(o.explanation)}</textarea></div>
    </div>
 
-   <div class="qr-control-group">
-    <h3>Personnalisation</h3>
-    <div class="qr-control-grid">
-     <div class="field"><label for="qr-initials-input">Initiales</label><input id="qr-initials-input" maxlength="4" value="${esc(o.initials)}"></div>
-     <div class="field"><label for="qr-color">Couleur d'accent</label><div class="color-line"><input id="qr-color" type="color" value="${esc(o.color)}"><span id="qr-color-value">${esc(o.color.toUpperCase())}</span></div></div>
+   <div class="qr-control-group qr-personalization-group">
+    <div class="qr-control-title">
+     <div><h3>Personnalisation</h3><p>Choisissez une ambiance puis ajustez les détails.</p></div>
+     <span class="qr-brand-lock"><i class="fa-solid fa-lock" aria-hidden="true"></i>Logo La Suite inclus</span>
     </div>
-    <div class="field"><label for="qr-font">Typographie</label><select id="qr-font">
-     <option value="elegant" ${o.font==="elegant"?"selected":""}>Élégante</option>
-     <option value="classic" ${o.font==="classic"?"selected":""}>Classique</option>
-     <option value="modern" ${o.font==="modern"?"selected":""}>Moderne</option>
-     <option value="romantic" ${o.font==="romantic"?"selected":""}>Manuscrite</option>
-    </select></div>
-    <div class="field"><label for="qr-style">Style de carte</label><select id="qr-style">
-     <option value="romantic" ${o.style==="romantic"?"selected":""}>Romantique</option>
-     <option value="minimal" ${o.style==="minimal"?"selected":""}>Minimal</option>
-     <option value="chic" ${o.style==="chic"?"selected":""}>Chic</option>
-    </select></div>
-    <div class="field">
-     <div class="qr-range-label"><label for="qr-size">Taille du QR code</label><span id="qr-size-value">${o.size} px</span></div>
-     <input id="qr-size" class="qr-range" type="range" min="180" max="280" step="10" value="${o.size}">
+
+    <div class="field qr-choice-field">
+     <label>Style de carte</label>
+     <input id="qr-style" type="hidden" value="${esc(o.style)}">
+     <div class="qr-style-choices" role="group" aria-label="Style de carte">
+      <button class="qr-style-choice ${o.style==="romantic"?"is-selected":""}" data-qr-style="romantic" type="button">
+       <span class="qr-style-thumb qr-style-thumb-romantic"><i></i><b>Aa</b></span>
+       <span><strong>Romantique</strong><small>Doux & chaleureux</small></span>
+      </button>
+      <button class="qr-style-choice ${o.style==="minimal"?"is-selected":""}" data-qr-style="minimal" type="button">
+       <span class="qr-style-thumb qr-style-thumb-minimal"><i></i><b>Aa</b></span>
+       <span><strong>Minimal</strong><small>Épuré & moderne</small></span>
+      </button>
+      <button class="qr-style-choice ${o.style==="chic"?"is-selected":""}" data-qr-style="chic" type="button">
+       <span class="qr-style-thumb qr-style-thumb-chic"><i></i><b>Aa</b></span>
+       <span><strong>Chic</strong><small>Élégant & raffiné</small></span>
+      </button>
+     </div>
     </div>
-    <label class="qr-check"><input id="qr-show-initials" type="checkbox" ${o.showInitials?"checked":""}><span>Afficher les initiales au centre</span></label>
-    <label class="qr-check"><input id="qr-show-brand" type="checkbox" ${o.showBrand?"checked":""}><span>Afficher « La Suite » en bas de la carte</span></label>
+
+    <div class="field qr-choice-field">
+     <label>Typographie</label>
+     <input id="qr-font" type="hidden" value="${esc(o.font)}">
+     <div class="qr-font-picker" data-qr-font-picker>
+      <button class="qr-font-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+       <span class="qr-font-current qr-font-sample-${esc(o.font)}">Julie & Thomas</span>
+       <span class="qr-font-current-name">${o.font==="classic"?"Classique":o.font==="modern"?"Moderne":o.font==="romantic"?"Manuscrite":"Élégante"}</span>
+       <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
+      </button>
+      <div class="qr-font-menu" role="listbox" hidden>
+       <button type="button" role="option" data-qr-font="elegant" class="${o.font==="elegant"?"is-selected":""}">
+        <span class="qr-font-sample qr-font-sample-elegant">Julie & Thomas</span><small>Élégante</small>
+       </button>
+       <button type="button" role="option" data-qr-font="classic" class="${o.font==="classic"?"is-selected":""}">
+        <span class="qr-font-sample qr-font-sample-classic">Julie & Thomas</span><small>Classique</small>
+       </button>
+       <button type="button" role="option" data-qr-font="modern" class="${o.font==="modern"?"is-selected":""}">
+        <span class="qr-font-sample qr-font-sample-modern">Julie & Thomas</span><small>Moderne</small>
+       </button>
+       <button type="button" role="option" data-qr-font="romantic" class="${o.font==="romantic"?"is-selected":""}">
+        <span class="qr-font-sample qr-font-sample-romantic">Julie & Thomas</span><small>Manuscrite</small>
+       </button>
+      </div>
+     </div>
+    </div>
+
+    <div class="field qr-choice-field">
+     <div class="qr-field-label-row"><label for="qr-color">Couleur d’accent</label><span id="qr-color-value">${esc(o.color.toUpperCase())}</span></div>
+     <div class="qr-color-palette">
+      <button type="button" data-qr-color="#B78B38" style="--swatch:#B78B38" aria-label="Doré"></button>
+      <button type="button" data-qr-color="#C10D0D" style="--swatch:#C10D0D" aria-label="Rouge La Suite"></button>
+      <button type="button" data-qr-color="#9C6571" style="--swatch:#9C6571" aria-label="Rose poudré"></button>
+      <button type="button" data-qr-color="#6D7B67" style="--swatch:#6D7B67" aria-label="Sauge"></button>
+      <button type="button" data-qr-color="#42556D" style="--swatch:#42556D" aria-label="Bleu ardoise"></button>
+      <button type="button" data-qr-color="#2D2926" style="--swatch:#2D2926" aria-label="Noir doux"></button>
+      <label class="qr-custom-color" title="Couleur personnalisée">
+       <input id="qr-color" type="color" value="${esc(o.color)}" aria-label="Choisir une couleur personnalisée">
+       <i class="fa-solid fa-plus" aria-hidden="true"></i>
+      </label>
+     </div>
+    </div>
+
+    <div class="field qr-choice-field">
+     <div class="qr-field-label-row"><label>Taille du QR code</label><span id="qr-size-value">${o.size} px</span></div>
+     <input id="qr-size" type="hidden" value="${o.size}">
+     <div class="qr-size-choices" role="group" aria-label="Taille du QR code">
+      <button type="button" data-qr-size="190">Discret</button>
+      <button type="button" data-qr-size="230">Équilibré</button>
+      <button type="button" data-qr-size="270">Grand</button>
+     </div>
+    </div>
+
+    <div class="qr-initials-card">
+     <div class="field"><label for="qr-initials-input">Initiales dans le QR code</label><input id="qr-initials-input" maxlength="4" value="${esc(o.initials)}"></div>
+     <label class="qr-check qr-check-switch"><input id="qr-show-initials" type="checkbox" ${o.showInitials?"checked":""}><span>Afficher les initiales</span></label>
+    </div>
    </div>
 
 
@@ -526,8 +598,8 @@ function ownerShell(c,url,count){
        <p id="qr-preview-explanation">${esc(o.explanation)}</p>
       </div>
       <div class="qr-print-footer">
-       <strong id="qr-preview-brand" ${o.showBrand?"":"hidden"}>La Suite</strong>
        <span>Capsule temporelle · ${esc(fdate(c.wedding_date))}</span>
+       <img class="qr-print-logo" src="assets/la-suite-logo.webp?v=20260927-hq" alt="La Suite">
       </div>
      </div>
     </div>
@@ -641,6 +713,92 @@ function setupOwnerTabs(c,manifest){
  activate(location.hash==="#messages"?"messages":"configuration",false)
 }
 
+function setupQrCustomizerUi(){
+ const fontInput=$("qr-font"),styleInput=$("qr-style"),colorInput=$("qr-color"),sizeInput=$("qr-size");
+ const fontPicker=document.querySelector("[data-qr-font-picker]");
+ const fontTrigger=fontPicker?.querySelector(".qr-font-trigger");
+ const fontMenu=fontPicker?.querySelector(".qr-font-menu");
+ const fontNames={elegant:"Élégante",classic:"Classique",modern:"Moderne",romantic:"Manuscrite"};
+
+ const dispatch=valueEl=>valueEl?.dispatchEvent(new Event("change",{bubbles:true}));
+
+ const syncFont=()=>{
+  if(!fontInput||!fontPicker)return;
+  const value=fontInput.value||"elegant";
+  fontPicker.querySelectorAll("[data-qr-font]").forEach(btn=>btn.classList.toggle("is-selected",btn.dataset.qrFont===value));
+  const sample=fontPicker.querySelector(".qr-font-current");
+  const name=fontPicker.querySelector(".qr-font-current-name");
+  if(sample){
+   sample.className="qr-font-current qr-font-sample-"+value;
+   sample.textContent="Julie & Thomas"
+  }
+  if(name)name.textContent=fontNames[value]||fontNames.elegant
+ };
+ fontTrigger?.addEventListener("click",()=>{
+  const open=fontMenu?.hidden!==false;
+  if(fontMenu)fontMenu.hidden=!open;
+  fontTrigger.setAttribute("aria-expanded",String(open))
+ });
+ fontPicker?.querySelectorAll("[data-qr-font]").forEach(btn=>btn.addEventListener("click",()=>{
+  if(!fontInput)return;
+  fontInput.value=btn.dataset.qrFont||"elegant";
+  if(fontMenu)fontMenu.hidden=true;
+  fontTrigger?.setAttribute("aria-expanded","false");
+  syncFont();
+  dispatch(fontInput)
+ }));
+ document.addEventListener("click",e=>{
+  if(!fontPicker||fontPicker.contains(e.target))return;
+  if(fontMenu)fontMenu.hidden=true;
+  fontTrigger?.setAttribute("aria-expanded","false")
+ });
+ syncFont();
+
+ const syncStyle=()=>{
+  const value=styleInput?.value||"romantic";
+  document.querySelectorAll("[data-qr-style]").forEach(btn=>btn.classList.toggle("is-selected",btn.dataset.qrStyle===value))
+ };
+ document.querySelectorAll("[data-qr-style]").forEach(btn=>btn.addEventListener("click",()=>{
+  if(!styleInput)return;
+  styleInput.value=btn.dataset.qrStyle||"romantic";
+  syncStyle();
+  dispatch(styleInput)
+ }));
+ syncStyle();
+
+ const syncColor=()=>{
+  const value=(colorInput?.value||"#b78b38").toUpperCase();
+  document.querySelectorAll("[data-qr-color]").forEach(btn=>btn.classList.toggle("is-selected",(btn.dataset.qrColor||"").toUpperCase()===value));
+ };
+ document.querySelectorAll("[data-qr-color]").forEach(btn=>btn.addEventListener("click",()=>{
+  if(!colorInput)return;
+  colorInput.value=btn.dataset.qrColor||"#b78b38";
+  syncColor();
+  colorInput.dispatchEvent(new Event("input",{bubbles:true}))
+ }));
+ colorInput?.addEventListener("input",syncColor);
+ syncColor();
+
+ const syncSize=()=>{
+  if(!sizeInput)return;
+  const value=Number(sizeInput.value||230);
+  const choices=[...document.querySelectorAll("[data-qr-size]")];
+  let closest=null,delta=Infinity;
+  choices.forEach(btn=>{
+   const d=Math.abs(Number(btn.dataset.qrSize)-value);
+   if(d<delta){delta=d;closest=btn}
+  });
+  choices.forEach(btn=>btn.classList.toggle("is-selected",btn===closest))
+ };
+ document.querySelectorAll("[data-qr-size]").forEach(btn=>btn.addEventListener("click",()=>{
+  if(!sizeInput)return;
+  sizeInput.value=btn.dataset.qrSize||"230";
+  syncSize();
+  dispatch(sizeInput)
+ }));
+ syncSize()
+}
+
 function nextCountdown(manifest){
  const next=manifest.filter(m=>!m.is_available).sort((a,b)=>new Date(a.delivery_at)-new Date(b.delivery_at))[0],box=$("next-delivery");box.hidden=false;
  if(!next){box.innerHTML="<strong>Aucun souvenir en attente</strong>";return}
@@ -683,7 +841,7 @@ async function initDashboard(){
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
  setupOwnerTabs(c,manifest||[]);
  applyQrPreview(url.href,c);
- const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-size","qr-show-initials","qr-show-brand"];
+ const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-size","qr-show-initials"];
  let qrSaveTimer=null;
  const updateDesigner=()=>{
    Object.assign(c,collectQrCustomization(c));
@@ -696,6 +854,7 @@ async function initDashboard(){
    el.addEventListener("input",updateDesigner);
    el.addEventListener("change",updateDesigner);
  });
+ setupQrCustomizerUi();
  $("share-link")?.addEventListener("click",()=>shareGuestLink(url.href));
  $("download-print-card")?.addEventListener("click",()=>{
    Object.assign(c,collectQrCustomization(c));
