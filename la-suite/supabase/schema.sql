@@ -26,7 +26,6 @@ create table if not exists public.messages (
 
 create index if not exists messages_capsule_id_idx on public.messages(capsule_id);
 create index if not exists capsules_owner_id_idx on public.capsules(owner_id);
-create unique index if not exists capsules_guest_token_idx on public.capsules(guest_token);
 
 alter table public.capsules enable row level security;
 alter table public.messages enable row level security;
@@ -35,26 +34,26 @@ drop policy if exists "owners_select_capsules" on public.capsules;
 create policy "owners_select_capsules"
 on public.capsules for select
 to authenticated
-using (auth.uid() = owner_id);
+using ((select auth.uid()) = owner_id);
 
 drop policy if exists "owners_insert_capsules" on public.capsules;
 create policy "owners_insert_capsules"
 on public.capsules for insert
 to authenticated
-with check (auth.uid() = owner_id);
+with check ((select auth.uid()) = owner_id);
 
 drop policy if exists "owners_update_capsules" on public.capsules;
 create policy "owners_update_capsules"
 on public.capsules for update
 to authenticated
-using (auth.uid() = owner_id)
-with check (auth.uid() = owner_id);
+using ((select auth.uid()) = owner_id)
+with check ((select auth.uid()) = owner_id);
 
 drop policy if exists "owners_delete_capsules" on public.capsules;
 create policy "owners_delete_capsules"
 on public.capsules for delete
 to authenticated
-using (auth.uid() = owner_id);
+using ((select auth.uid()) = owner_id);
 
 -- Le contenu n'est lisible par le propriétaire qu'à partir de la date d'ouverture.
 drop policy if exists "owners_select_messages_after_unlock" on public.messages;
@@ -65,7 +64,7 @@ using (
   exists (
     select 1 from public.capsules c
     where c.id = messages.capsule_id
-      and c.owner_id = auth.uid()
+      and c.owner_id = (select auth.uid())
       and c.unlock_date <= now()
   )
 );
@@ -105,7 +104,7 @@ as $$
   from public.messages m
   join public.capsules c on c.id = m.capsule_id
   where m.capsule_id = p_capsule_id
-    and c.owner_id = auth.uid();
+    and c.owner_id = (select auth.uid());
 $$;
 
 revoke all on function public.owner_capsule_stats(uuid) from public;
@@ -134,7 +133,7 @@ using (
   and exists (
     select 1
     from public.capsules c
-    where c.owner_id = auth.uid()
+    where c.owner_id = (select auth.uid())
       and c.unlock_date <= now()
       and storage.objects.name like c.id::text || '/%'
   )
@@ -142,3 +141,24 @@ using (
 
 -- Pas de policy INSERT publique : les uploads invités passent par une URL signée
 -- créée par l'Edge Function guest-upload avec la service role.
+
+
+-- Explicit RPC exposure hardening
+revoke execute on function public.owner_capsule_stats(uuid) from anon;
+grant execute on function public.owner_capsule_stats(uuid) to authenticated;
+
+-- This function is created by the project's automatic-RLS setting and should not be callable through the API.
+do $$
+begin
+  if exists (
+    select 1 from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname = 'rls_auto_enable'
+  ) then
+    revoke execute on function public.rls_auto_enable() from anon, authenticated;
+  end if;
+end $$;
+
+-- Public capsule lookup is intentionally anonymous; signed-in owners do not need this RPC.
+revoke execute on function public.get_capsule_public(text) from authenticated;
+grant execute on function public.get_capsule_public(text) to anon;
