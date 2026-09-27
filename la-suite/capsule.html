@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Déposer un souvenir — La Suite</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header><div class="wrap top"><a class="brand" href="index.html">La Forge à Souvenirs<small>La Suite</small></a></div></header>
+<main class="wrap">
+<section class="capsule-hero"><h1 id="capsule-title">Votre capsule</h1><div class="countdown" id="capsule-date"></div><p id="capsule-welcome" class="lead"></p></section>
+<form class="form-shell" id="guest-message">
+<div class="field"><label for="guest_name">Votre prénom</label><input id="guest_name" required autocomplete="name"></div>
+<div class="field"><label for="message_text">Votre message</label><textarea id="message_text" placeholder="Un mot pour plus tard…"></textarea></div>
+<div class="field"><label for="video">Votre vidéo</label><div class="upload-box"><input id="video" type="file" accept="video/*" capture="user"><p>Vidéo courte recommandée — maximum 100 Mo.</p></div></div>
+<button class="btn primary" type="submit">Déposer mon souvenir</button>
+<div id="status" class="status"></div>
+</form>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="supabase-config.js"></script>\n<script src="app.js"></script>
+</body></html>
