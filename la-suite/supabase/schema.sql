@@ -342,7 +342,7 @@ alter table public.capsules
 alter table public.capsules
   drop constraint if exists capsules_qr_font_check,
   add constraint capsules_qr_font_check
-    check (qr_font in ('elegant','classic','modern','romantic')),
+    check (qr_font in ('elegant','classic','modern','romantic','editorial','refined','contemporary','signature')),
   drop constraint if exists capsules_qr_style_check,
   add constraint capsules_qr_style_check
     check (qr_style in ('romantic','minimal','chic')),
@@ -357,3 +357,18 @@ alter table public.capsules
 
 alter table public.capsules
   add column if not exists owner_messages_seen_at timestamptz;
+
+
+-- ============================================================
+-- V5 — Typographies supplémentaires de la carte QR
+-- ============================================================
+
+alter table public.capsules
+  drop constraint if exists capsules_qr_font_check;
+
+alter table public.capsules
+  add constraint capsules_qr_font_check
+  check (qr_font in (
+    'elegant','classic','modern','romantic',
+    'editorial','refined','contemporary','signature'
+  ));
