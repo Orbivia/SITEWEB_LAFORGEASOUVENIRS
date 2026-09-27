@@ -20,28 +20,20 @@
 
 <main class="wrap create-wrap">
   <section class="create-intro">
-    <span class="eyebrow">Création</span>
     <h1>Créez votre capsule</h1>
-    <p>Votre événement peut déjà avoir eu lieu. Les invités pourront déposer des souvenirs jusqu'à 3 ans après sa date.</p>
   </section>
 
   <form class="form-shell create-form" id="create-capsule">
     <div class="field">
       <label for="couple">Nom de la capsule</label>
-      <input id="couple" name="couple" required placeholder="Julie & Thomas">
-      <small class="field-help">Le nom affiché sur la page accessible aux invités.</small>
+      <input id="couple" name="couple" required maxlength="50" placeholder="Julie & Thomas">
+      <small class="field-help">50 caractères maximum.</small>
     </div>
 
     <div class="field">
       <label for="wedding_date">Date de l'événement</label>
       <input id="wedding_date" name="wedding_date" type="date" required>
-      <small class="field-help">Vous pouvez sélectionner une date antérieure si l'événement a déjà eu lieu.</small>
-    </div>
-
-    <div class="field">
-      <label for="welcome_message">Message d'accueil <span class="optional">(facultatif)</span></label>
-      <textarea id="welcome_message" name="welcome_message" placeholder="Laissez-nous un souvenir à découvrir plus tard…"></textarea>
-      <small class="field-help">Vous pourrez également ajouter une vidéo d'accueil depuis votre espace organisateur.</small>
+      <small class="field-help">La date de l'événement doit être dans le futur.</small>
     </div>
 
     <div class="create-info">

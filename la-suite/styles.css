@@ -583,13 +583,6 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 /* ============================================================
    Mobile compactness / hierarchy refinement
    ============================================================ */
-.hero-meta{
-  margin:18px 0 0;
-  color:#777;
-  font-size:.82rem;
-  line-height:1.4;
-  letter-spacing:.01em;
-}
 .suite-final h2{overflow-wrap:normal;word-break:normal}
 
 @media(max-width:650px){
@@ -612,13 +605,6 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
     line-height:1.58;
     margin-bottom:20px;
   }
-  .hero-meta{
-    max-width:330px;
-    margin:15px auto 0;
-    font-size:.73rem;
-    line-height:1.35;
-  }
-
   .principle-section{
     padding:38px 0 28px;
   }
@@ -721,4 +707,59 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
     line-height:1.5;
     margin-bottom:18px;
   }
+}
+
+/* ============================================================
+   Landing formats presentation + logo sharpness
+   ============================================================ */
+.suite-brand img,
+.suite-hero-logo,
+.header-logo{
+  image-rendering:auto;
+  transform:translateZ(0);
+}
+.suite-hero-logo{width:min(92%,500px)}
+.formats-block{
+  padding:34px 0 18px;
+  background:#fffefb;
+}
+.formats-heading{
+  text-align:center;
+  max-width:680px;
+  margin:0 auto 20px;
+}
+.formats-heading h2{
+  font-family:"Cormorant Garamond",serif;
+  font-size:clamp(2rem,3.6vw,3rem);
+  line-height:1.05;
+  margin:0 0 8px;
+}
+.formats-heading p{
+  margin:0;
+  color:#666;
+  font-size:.96rem;
+}
+.formats-block .formats-section{
+  padding-top:0;
+  padding-bottom:12px;
+}
+
+.create-intro{
+  padding-top:40px;
+}
+.create-intro h1{
+  margin-bottom:0;
+}
+
+@media(max-width:650px){
+  .suite-hero-logo{width:min(58%,310px)}
+  .formats-block{padding:28px 0 12px}
+  .formats-heading{margin-bottom:16px;padding:0 12px}
+  .formats-heading h2{font-size:2rem}
+  .formats-heading p{font-size:.84rem;line-height:1.45}
+  .formats-block .formats-section{
+    padding-top:0;
+    padding-bottom:12px;
+  }
+  .create-intro{padding-top:30px}
 }

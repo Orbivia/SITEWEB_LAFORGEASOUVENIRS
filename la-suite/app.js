@@ -64,14 +64,20 @@ async function initAuth(){
 
 async function initCreate(){
  const form=$("create-capsule");if(!form)return;
- const status=$("status");
+ const status=$("status"),dateInput=$("wedding_date");
+ const tomorrow=new Date();tomorrow.setHours(0,0,0,0);tomorrow.setDate(tomorrow.getDate()+1);
+ const pad=n=>String(n).padStart(2,"0");
+ const minDate=tomorrow.getFullYear()+"-"+pad(tomorrow.getMonth()+1)+"-"+pad(tomorrow.getDate());
+ if(dateInput)dateInput.min=minDate;
  form.addEventListener("submit",async e=>{
-  e.preventDefault();const fd=new FormData(form),couple=String(fd.get("couple")||"").trim(),wedding=String(fd.get("wedding_date")||""),welcome=String(fd.get("welcome_message")||"").trim();
+  e.preventDefault();const fd=new FormData(form),couple=String(fd.get("couple")||"").trim(),wedding=String(fd.get("wedding_date")||"");
   if(!couple||!wedding)return show(status,"Complétez les champs obligatoires.",false);
+  if(couple.length>50)return show(status,"Le nom de la capsule est limité à 50 caractères.",false);
+  if(wedding<minDate)return show(status,"Choisissez une date d'événement future.",false);
   if(!configured)return show(status,"Supabase n'est pas configuré.",false);
   const u=await user();if(!u)return location.href="auth.html";
   show(status,"Création de la capsule…");
-  const{data,error}=await sb.from("capsules").insert({owner_id:u.id,slug:slugify(couple)+"-"+rid(),couple_name:couple,wedding_date:wedding,welcome_message:welcome||null,unlock_date:null}).select("id,slug,guest_token").single();
+  const{data,error}=await sb.from("capsules").insert({owner_id:u.id,slug:slugify(couple)+"-"+rid(),couple_name:couple,wedding_date:wedding,welcome_message:null,unlock_date:null}).select("id,slug,guest_token").single();
   if(error)return show(status,"Création impossible : "+error.message,false);
   location.href="dashboard.html?slug="+encodeURIComponent(data.slug)
  })
