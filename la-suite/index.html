@@ -4,41 +4,193 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>La Suite — Capsule temporelle | La Forge à Souvenirs</title>
-<meta name="description" content="Créez une capsule temporelle pour votre mariage. Vos invités déposent photos, audios et vidéos, et choisissent eux-mêmes quand chaque souvenir vous sera livré.">
+<meta name="description" content="Créez une capsule temporelle pour votre événement. Vos invités déposent vidéos, audios, photos et messages et choisissent quand chaque souvenir vous sera livré.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<header><div class="wrap top"><a class="brand" href="../">La Forge à Souvenirs<small>La Suite</small></a><nav><a href="#fonctionnement">Fonctionnement</a><a href="#contenus">Contenus</a><a href="create.html">Créer une capsule</a></nav></div></header>
+<body class="marketing-page">
+<header>
+  <div class="wrap top">
+    <a class="header-logo-link" href="index.html" aria-label="La Suite">
+      <img src="assets/la-suite-logo.webp" class="header-logo" alt="La Suite — Capsule temporelle">
+    </a>
+    <nav>
+      <a href="#fonctionnement">Fonctionnement</a>
+      <a href="#formats">Formats</a>
+      <a href="#duree">Durée</a>
+      <a href="create.html" class="nav-cta">Créer une capsule</a>
+    </nav>
+  </div>
+</header>
+
 <main>
-<section class="logo wrap">
-<span class="la">LA</span><span class="suite">Suite</span>
-<div class="sub">Capsule temporelle</div>
+<section class="hero-new wrap">
+  <div class="hero-logo-wrap">
+    <img src="assets/la-suite-logo.webp" class="hero-logo" alt="La Suite — Capsule temporelle">
+  </div>
+  <div class="hero-copy">
+    <span class="eyebrow">Capsule temporelle pour vos événements</span>
+    <h1>Des souvenirs déposés aujourd'hui, livrés au moment choisi.</h1>
+    <p>
+      Vos invités scannent un QR code, découvrent votre message d'accueil puis déposent
+      une vidéo, un audio, une photo ou un texte. Chacun décide ensuite de la date à laquelle
+      son souvenir vous sera accessible.
+    </p>
+    <div class="actions hero-actions">
+      <a class="btn primary" href="create.html">Créer ma capsule</a>
+      <a class="btn secondary" href="#fonctionnement">Découvrir le fonctionnement</a>
+    </div>
+    <div class="hero-trust">
+      <span>Sans application</span>
+      <span>QR code personnalisable</span>
+      <span>Souvenirs programmables</span>
+    </div>
+  </div>
 </section>
-<section class="hero wrap">
-<h1>Les souvenirs d'aujourd'hui, à redécouvrir demain.</h1>
-<p>Créez une capsule pour votre événement. Vos proches y déposent leurs messages et vidéos depuis leur téléphone, sans application à installer.</p>
-<div class="actions"><a class="btn primary" href="create.html">Créer ma capsule</a><a class="btn secondary" href="#fonctionnement">Voir comment ça marche</a></div>
+
+<section id="fonctionnement" class="section soft concept-section">
+  <div class="wrap">
+    <div class="section-kicker">Le principe</div>
+    <h2>Quatre étapes, simplement</h2>
+    <p class="lead">Le QR code peut être personnalisé pour reprendre le style de votre événement, de votre papeterie ou de votre décoration.</p>
+
+    <div class="steps visual-steps">
+      <article class="card step-card">
+        <div class="step-visual">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="12" y="10" width="40" height="44" rx="7"></rect>
+            <path d="M22 23h20M22 31h14M22 39h18"></path>
+            <path d="M44 45l7 7"></path>
+          </svg>
+        </div>
+        <div class="stepno">1</div>
+        <h3>Créez votre capsule</h3>
+        <p>Renseignez votre événement et ajoutez une vidéo d'accueil destinée à vos invités.</p>
+      </article>
+
+      <article class="card step-card">
+        <div class="step-visual">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="10" y="10" width="16" height="16" rx="2"></rect>
+            <rect x="38" y="10" width="16" height="16" rx="2"></rect>
+            <rect x="10" y="38" width="16" height="16" rx="2"></rect>
+            <path d="M38 38h7v7h9v9H38zM30 15h4M30 49h4M49 30v4M15 30v4"></path>
+          </svg>
+        </div>
+        <div class="stepno">2</div>
+        <h3>Partagez votre QR code</h3>
+        <p>Téléchargez votre QR code personnalisable et placez-le sur les tables, invitations ou panneaux.</p>
+      </article>
+
+      <article class="card step-card">
+        <div class="step-visual">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="8" y="15" width="34" height="34" rx="6"></rect>
+            <path d="M42 25l12-6v26l-12-6z"></path>
+            <circle cx="25" cy="32" r="7"></circle>
+          </svg>
+        </div>
+        <div class="stepno">3</div>
+        <h3>Les invités enregistrent</h3>
+        <p>Ils peuvent importer un contenu ou se filmer, s'enregistrer et prendre une photo directement depuis leur téléphone.</p>
+      </article>
+
+      <article class="card step-card">
+        <div class="step-visual">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="12" y="18" width="40" height="34" rx="6"></rect>
+            <path d="M20 10v12M44 10v12M12 28h40"></path>
+            <path d="M26 40l5 5 9-11"></path>
+          </svg>
+        </div>
+        <div class="stepno">4</div>
+        <h3>Ils choisissent la livraison</h3>
+        <p>Le souvenir peut être accessible immédiatement ou rester verrouillé jusqu'à une date choisie par l'invité.</p>
+      </article>
+    </div>
+  </div>
 </section>
-<section id="fonctionnement" class="section soft"><div class="wrap">
-<h2>Quatre étapes</h2><p class="lead">Un QR code suffit le jour J. Chaque invité choisit la date de livraison de son propre souvenir.</p>
-<div class="steps">
-<div class="card"><div class="stepno">1</div><h3>Créez</h3><p>Créez l'espace de votre événement et ajoutez votre vidéo d'accueil.</p></div>
-<div class="card"><div class="stepno">2</div><h3>Partagez</h3><p>Un lien unique et un QR code permettront aux invités d'accéder à la capsule.</p></div>
-<div class="card"><div class="stepno">3</div><h3>Collectez</h3><p>Les invités importent ou enregistrent une vidéo, un audio ou une photo directement depuis leur téléphone.</p></div>
-<div class="card"><div class="stepno">4</div><h3>Ouvrez</h3><p>Chaque invité choisit une date. Le souvenir reste verrouillé jusque-là, puis devient lisible et téléchargeable.</p></div>
-</div></div></section>
-<section id="contenus" class="section"><div class="wrap">
-<h2>Une capsule vivante</h2><p class="lead">Vidéo, audio, photo ou texte : chaque souvenir peut être livré immédiatement ou programmé pour plus tard.</p>
-<div class="features">
-<div class="card"><h3>Vidéo</h3><p>Messages courts enregistrés ou sélectionnés depuis le téléphone.</p></div>
-<div class="card"><h3>Audio & photo</h3><p>Enregistrez une voix ou prenez une photo directement depuis le téléphone.</p></div>
-<div class="card"><h3>QR code</h3><p>Accès immédiat, sans compte et sans installation pour les invités.</p></div>
-<div class="card"><h3>Livraison programmée</h3><p>Chaque invité choisit quand son contenu devient accessible.</p></div>
-</div>
-</div></section>
+
+<section id="formats" class="section formats-section">
+  <div class="wrap">
+    <div class="section-kicker">Les souvenirs</div>
+    <h2>Un message, sous la forme qui vous ressemble</h2>
+    <p class="lead">Chaque invité choisit le format le plus naturel pour lui.</p>
+
+    <div class="format-grid">
+      <article class="format-card video-format">
+        <div class="format-icon">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="8" y="15" width="34" height="34" rx="6"></rect>
+            <path d="M42 25l12-6v26l-12-6z"></path>
+            <path d="M23 25l11 7-11 7z"></path>
+          </svg>
+        </div>
+        <h3>Vidéo</h3>
+        <p>Se filmer avec compte à rebours, prévisualiser, recommencer ou importer une vidéo existante.</p>
+      </article>
+
+      <article class="format-card audio-format">
+        <div class="format-icon">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="24" y="8" width="16" height="30" rx="8"></rect>
+            <path d="M16 30c0 10 6 16 16 16s16-6 16-16M32 46v10M23 56h18"></path>
+          </svg>
+        </div>
+        <h3>Audio</h3>
+        <p>Enregistrer un message vocal directement depuis le navigateur ou importer un fichier audio.</p>
+      </article>
+
+      <article class="format-card photo-format">
+        <div class="format-icon">
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <rect x="8" y="15" width="48" height="36" rx="6"></rect>
+            <circle cx="32" cy="33" r="9"></circle>
+            <path d="M20 15l4-7h16l4 7"></path>
+          </svg>
+        </div>
+        <h3>Photo</h3>
+        <p>Prendre une photo sur le moment ou choisir une image déjà présente dans la galerie.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="duree" class="section soft duration-section">
+  <div class="wrap duration-layout">
+    <div class="duration-icon">
+      <svg viewBox="0 0 80 80" aria-hidden="true">
+        <circle cx="40" cy="40" r="28"></circle>
+        <path d="M40 23v18l12 8"></path>
+        <path d="M20 15l-7 9M60 15l7 9"></path>
+      </svg>
+    </div>
+    <div>
+      <div class="section-kicker">Jusqu'à 3 ans après l'événement</div>
+      <h2>La capsule continue de vivre après le jour J.</h2>
+      <p>
+        Les invités peuvent ajouter de nouveaux souvenirs pendant les <strong>3 années qui suivent l'événement</strong>.
+        Une vidéo oubliée, une photo retrouvée ou un message enregistré quelques mois plus tard peuvent encore rejoindre la capsule.
+      </p>
+      <p class="duration-note">Chaque souvenir conserve sa propre date de livraison : immédiate ou programmée.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section final-cta">
+  <div class="wrap final-cta-box">
+    <div>
+      <span class="eyebrow">La Suite</span>
+      <h2>Commencez votre capsule en quelques minutes.</h2>
+      <p>Créez l'espace, ajoutez votre message vidéo et récupérez votre QR code.</p>
+    </div>
+    <a class="btn primary" href="create.html">Créer ma capsule</a>
+  </div>
+</section>
 </main>
+
 <footer><div class="wrap">La Suite — par La Forge à Souvenirs</div></footer>
-</body></html>
+</body>
+</html>
