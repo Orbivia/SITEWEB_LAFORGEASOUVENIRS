@@ -5,10 +5,26 @@
 <title>Connexion — La Suite</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
+<link rel="stylesheet" href="styles.css?v=20260927-shell1">
 </head>
-<body>
-<header><div class="wrap top"><a class="brand" href="index.html">La Forge à Souvenirs<small>La Suite</small></a><nav><a href="index.html">Présentation</a></nav></div></header>
+<body class="suite-shell-page">
+<header class="forge-style-header">
+  <div class="suite-container suite-topbar">
+    <a class="suite-brand" href="index.html" aria-label="La Suite — Accueil">
+      <img src="assets/la-suite-logo.webp?v=20260927-hq" alt="Logo La Suite — Capsule temporelle">
+    </a>
+    <button class="suite-burger" data-suite-burger type="button" aria-label="Ouvrir le menu" aria-expanded="false">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <nav class="suite-nav" data-suite-nav>
+      <ul>
+        <li><a href="index.html#principe">Le principe</a></li>
+        <li><a href="create.html">Créer la capsule</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
 <main class="wrap">
 <form class="form-shell" id="auth-form">
 <h1>Votre espace</h1>
@@ -18,6 +34,17 @@
 <div id="status" class="status"></div>
 </form>
 </main>
+<footer class="forge-style-footer">
+  <div class="suite-container footerbar">
+    <div class="legal">© 2023–2026 La Forge à Souvenirs</div>
+    <div class="social">
+      <a href="https://www.facebook.com/people/La-Forge-%C3%A0-Souvenirs/100095037515785/" target="_blank" rel="noopener" aria-label="Facebook La Forge à Souvenirs">
+        <i class="fa-brands fa-facebook"></i>
+      </a>
+    </div>
+  </div>
+</footer>
+<script src="suite-shell.js?v=20260927-shell1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="app.js"></script>
