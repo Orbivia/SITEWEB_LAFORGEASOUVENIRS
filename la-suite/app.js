@@ -143,22 +143,144 @@ async function initCapsule(){
  })
 }
 
+function videoDuration(file){
+ return new Promise((resolve,reject)=>{
+  const video=document.createElement("video"),url=URL.createObjectURL(file);
+  video.preload="metadata";
+  video.onloadedmetadata=()=>{const d=video.duration;URL.revokeObjectURL(url);resolve(d)};
+  video.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Impossible de lire la durée de la vidéo."))};
+  video.src=url;
+ })
+}
+
 async function uploadIntro(c){
  const f=$("intro-file")?.files?.[0],s=$("intro-status");if(!f)return show(s,"Choisissez une vidéo.",false);
  if(!f.type.startsWith("video/"))return show(s,"Choisissez un fichier vidéo.",false);
  if(f.size>maxBytes)return show(s,"La vidéo dépasse 100 Mo.",false);
+ try{
+  const duration=await videoDuration(f);
+  if(!Number.isFinite(duration)||duration>12.05)return show(s,"La vidéo d'accueil doit durer 12 secondes maximum.",false);
+ }catch(err){return show(s,err.message||"Impossible de contrôler la durée de la vidéo.",false)}
  const path=c.id+"/organizer/intro."+ext(f.type);show(s,"Envoi de la vidéo…");
  const up=await sb.storage.from("capsule-media").upload(path,f,{contentType:f.type,upsert:true});if(up.error)return show(s,up.error.message,false);
  const{error}=await sb.from("capsules").update({intro_path:path}).eq("id",c.id);if(error)return show(s,error.message,false);
  show(s,"Vidéo d'accueil enregistrée.");setTimeout(()=>location.reload(),400)
 }
 
-function ownerShell(c,url,count){return `
-<div class="dashboard-grid">
-<section class="card dashboard-card"><div class="eyebrow">Votre QR code</div><h3>${esc(c.couple_name)}</h3><p>Événement : ${esc(fdate(c.wedding_date))}</p><div class="qr-wrap"><div id="qrcode"></div></div><a class="btn primary" href="${url}">Ouvrir la page invité</a><p class="share-url">${esc(url)}</p></section>
-<section class="card dashboard-card"><div class="eyebrow">Vidéo d'accueil</div><h3>Le message vu après le scan</h3><div id="intro-preview-wrap"></div><input id="intro-file" type="file" accept="video/*"><button id="upload-intro" class="btn secondary" type="button">Enregistrer cette vidéo</button><div id="intro-status" class="status"></div></section>
+function defaultInitials(name){
+ const parts=String(name||"").split(/&|\+| et |\/|,/i).map(x=>x.trim()).filter(Boolean);
+ if(parts.length>=2)return (parts[0][0]+parts[1][0]).toUpperCase();
+ return String(name||"LS").replace(/[^A-Za-zÀ-ÿ]/g,"").slice(0,2).toUpperCase()||"LS";
+}
+function qrOptions(c){
+ return {
+  initials:(c.qr_initials||defaultInitials(c.couple_name)).slice(0,4),
+  color:c.qr_color||"#c10d0d",
+  note:c.print_note||"Laissez-nous un souvenir à découvrir plus tard",
+  explanation:c.print_explanation||"Scannez ce QR code pour enregistrer une vidéo, un audio, une photo ou un message dans notre capsule temporelle. Aucune application nécessaire."
+ }
+}
+function renderCustomQr(url,c){
+ const box=$("qrcode");if(!box||!window.QRCode)return;
+ box.innerHTML="";
+ const o=qrOptions(c);
+ new QRCode(box,{text:url,width:220,height:220,colorDark:o.color,colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
+ const badge=document.createElement("div");badge.className="qr-initials";badge.textContent=o.initials;badge.style.color=o.color;box.appendChild(badge);
+}
+function getQrCanvas(){return $("qrcode")?.querySelector("canvas")||null}
+function wrapCanvasText(ctx,text,x,y,maxWidth,lineHeight,maxLines=8){
+ const words=String(text||"").split(/\s+/);let line="",lines=[];
+ for(const word of words){
+  const test=line?line+" "+word:word;
+  if(ctx.measureText(test).width>maxWidth&&line){lines.push(line);line=word}else line=test;
+ }
+ if(line)lines.push(line);
+ lines=lines.slice(0,maxLines);
+ lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight));
+ return y+lines.length*lineHeight;
+}
+function loadImage(src){return new Promise((resolve,reject)=>{const im=new Image();im.onload=()=>resolve(im);im.onerror=reject;im.src=src})}
+async function downloadPrintCard(c,url){
+ const qr=getQrCanvas();if(!qr)return;
+ const o=qrOptions(c),canvas=document.createElement("canvas");canvas.width=1772;canvas.height=1181;
+ const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle="#201b1b";ctx.font="700 70px Georgia, serif";ctx.fillText(o.note,110,135);
+ ctx.fillStyle="#6f6868";ctx.font="400 30px Arial, sans-serif";wrapCanvasText(ctx,o.explanation,820,350,800,46,7);
+ ctx.fillStyle=o.color;ctx.fillRect(820,575,110,8);
+ ctx.fillStyle="#201b1b";ctx.font="700 28px Arial, sans-serif";ctx.fillText("VIDÉO  •  AUDIO  •  PHOTO  •  MESSAGE",820,650);
+ ctx.fillStyle="#6f6868";ctx.font="400 24px Arial, sans-serif";ctx.fillText("Sans application • Scannez simplement le QR code",820,700);
+ ctx.font="400 20px Arial, sans-serif";ctx.fillText("Capsule : "+c.couple_name,820,750);
+ ctx.fillText("Événement : "+fdate(c.wedding_date),820,788);
+
+ const qx=120,qy=260,qsize=590;ctx.drawImage(qr,qx,qy,qsize,qsize);
+ const badgeSize=118,cx=qx+qsize/2,cy=qy+qsize/2;
+ ctx.fillStyle="#ffffff";ctx.beginPath();ctx.arc(cx,cy,badgeSize/2,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle="#ffffff";ctx.lineWidth=18;ctx.stroke();
+ ctx.fillStyle=o.color;ctx.textAlign="center";ctx.textBaseline="middle";ctx.font="700 42px Arial, sans-serif";ctx.fillText(o.initials,cx,cy+2);
+ ctx.textAlign="left";ctx.textBaseline="alphabetic";
+
+ try{
+  const logo=await loadImage("assets/la-suite-logo.webp");
+  const ratio=logo.width/logo.height,lh=170,lw=lh*ratio;
+  ctx.drawImage(logo,canvas.width-lw-90,canvas.height-lh-65,lw,lh);
+ }catch(e){}
+ ctx.fillStyle="#6f6868";ctx.font="400 18px Arial, sans-serif";ctx.fillText("La Suite — Capsule temporelle",110,1090);
+ ctx.fillText(url,110,1124);
+
+ const a=document.createElement("a");a.download="la-suite-"+slugify(c.couple_name)+"-15x10.png";a.href=canvas.toDataURL("image/png");a.click();
+}
+async function saveQrCustomization(c){
+ const s=$("qr-status"),payload={
+  qr_initials:$("qr-initials-input").value.trim().slice(0,4),
+  qr_color:$("qr-color").value,
+  print_note:$("print-note").value.trim().slice(0,120),
+  print_explanation:$("print-explanation").value.trim().slice(0,320)
+ };
+ show(s,"Enregistrement…");
+ const{error}=await sb.from("capsules").update(payload).eq("id",c.id);
+ if(error)return show(s,"Impossible d'enregistrer : "+error.message,false);
+ Object.assign(c,payload);renderCustomQr($("guest-link").value,c);show(s,"Personnalisation enregistrée.")
+}
+async function shareGuestLink(url){
+ if(navigator.share){
+  try{await navigator.share({title:"La Suite",text:"Déposez votre souvenir dans notre capsule temporelle.",url});return}catch(e){if(e?.name==="AbortError")return}
+ }
+ try{await navigator.clipboard.writeText(url);alert("Lien copié dans le presse-papiers.")}catch(e){prompt("Copiez ce lien :",url)}
+}
+
+function ownerShell(c,url,count){
+ const o=qrOptions(c);
+ return `
+<div class="dashboard-grid organizer-grid">
+<section class="card dashboard-card qr-card">
+ <div class="eyebrow">Votre QR code</div><h3>${esc(c.couple_name)}</h3><p>Événement : ${esc(fdate(c.wedding_date))}</p>
+ <div class="qr-wrap"><div id="qrcode" class="custom-qrcode"></div></div>
+ <div class="qr-custom-fields">
+  <div class="field"><label for="qr-initials-input">Initiales au centre</label><input id="qr-initials-input" maxlength="4" value="${esc(o.initials)}"></div>
+  <div class="field"><label for="qr-color">Couleur d'accentuation</label><div class="color-line"><input id="qr-color" type="color" value="${esc(o.color)}"><span id="qr-color-value">${esc(o.color)}</span></div></div>
+  <div class="field full"><label for="print-note">Petit mot sur la carte</label><input id="print-note" maxlength="120" value="${esc(o.note)}"></div>
+  <div class="field full"><label for="print-explanation">Explication rapide</label><textarea id="print-explanation" maxlength="320">${esc(o.explanation)}</textarea></div>
+ </div>
+ <div class="dashboard-actions">
+  <button class="btn secondary" id="save-qr" type="button">Enregistrer la personnalisation</button>
+  <button class="btn secondary" id="copy-link" type="button">Copier le lien</button>
+  <button class="btn secondary" id="share-link" type="button">Partager le lien</button>
+  <button class="btn primary" id="download-print-card" type="button">Télécharger la carte 15 × 10 cm</button>
+ </div>
+ <input id="guest-link" class="share-input" readonly value="${esc(url)}">
+ <div id="qr-status" class="status"></div>
+</section>
+<section class="card dashboard-card intro-video-card">
+ <div class="eyebrow">Vidéo d'accueil</div><h3>Le message vu après le scan</h3>
+ <p class="microcopy">La vidéo doit durer <strong>12 secondes maximum</strong>.</p>
+ <div id="intro-preview-wrap"></div>
+ <input id="intro-file" type="file" accept="video/*">
+ <button id="upload-intro" class="btn secondary" type="button">Enregistrer cette vidéo</button>
+ <div id="intro-status" class="status"></div>
+</section>
 </div>
-<section class="memories-section"><div class="section-title-row"><div><div class="eyebrow">Souvenirs reçus</div><h2>${count} contenu(s)</h2></div></div><div id="memory-list" class="memory-list"></div></section>`}
+<section class="memories-section"><div class="section-title-row"><div><div class="eyebrow">Souvenirs reçus</div><h2>${count} contenu(s)</h2></div></div><div id="memory-list" class="memory-list"></div></section>`
+}
 
 function nextCountdown(manifest){
  const next=manifest.filter(m=>!m.is_available).sort((a,b)=>new Date(a.delivery_at)-new Date(b.delivery_at))[0],box=$("next-delivery");box.hidden=false;
@@ -193,14 +315,38 @@ async function initDashboard(){
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href="auth.html";
  $("logout")?.addEventListener("click",async()=>{await sb.auth.signOut();location.href="index.html"});
- const{data:caps,error}=await sb.from("capsules").select("id,slug,guest_token,couple_name,wedding_date,welcome_message,intro_path,created_at").order("created_at",{ascending:false});
+ const{data:caps,error}=await sb.from("capsules").select("id,slug,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_note,print_explanation,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
  if(!caps.length)return $("dashboard-content").innerHTML='<div class="notice">Aucune capsule. <a href="create.html"><strong>Créer une capsule</strong></a>.</div>';
  const c=(qs.get("slug")&&caps.find(x=>x.slug===qs.get("slug")))||caps[0];$("dashboard-title").textContent=c.couple_name;
  const url=new URL("capsule.html",location.href);url.search="?t="+encodeURIComponent(c.guest_token);
  const{data:manifest,error:me}=await sb.rpc("owner_message_manifest",{p_capsule_id:c.id});if(me)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(me.message)+'</div>';
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
- if(window.QRCode)new QRCode($("qrcode"),{text:url.href,width:180,height:180,correctLevel:QRCode.CorrectLevel.M});
+ renderCustomQr(url.href,c);
+ ["qr-initials-input","qr-color"].forEach(id=>$(id)?.addEventListener("input",()=>{
+   c.qr_initials=$("qr-initials-input").value.trim().slice(0,4);
+   c.qr_color=$("qr-color").value;
+   $("qr-color-value").textContent=c.qr_color;
+   renderCustomQr(url.href,c);
+ }));
+ $("save-qr")?.addEventListener("click",()=>saveQrCustomization(c));
+ $("copy-link")?.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(url.href);show($("qr-status"),"Lien copié.")}catch(e){prompt("Copiez ce lien :",url.href)}});
+ $("share-link")?.addEventListener("click",()=>shareGuestLink(url.href));
+ $("download-print-card")?.addEventListener("click",()=>{
+   c.qr_initials=$("qr-initials-input").value.trim().slice(0,4);
+   c.qr_color=$("qr-color").value;
+   c.print_note=$("print-note").value.trim();
+   c.print_explanation=$("print-explanation").value.trim();
+   downloadPrintCard(c,url.href);
+ });
+ $("intro-file")?.addEventListener("change",async()=>{
+   const f=$("intro-file")?.files?.[0];if(!f)return;
+   try{
+     const d=await videoDuration(f);
+     if(d>12.05)show($("intro-status"),"Cette vidéo dure "+d.toFixed(1)+" s. Maximum autorisé : 12 s.",false);
+     else show($("intro-status"),"Durée : "+d.toFixed(1)+" s — prête à être envoyée.");
+   }catch(e){show($("intro-status"),"Impossible de lire la durée de cette vidéo.",false)}
+ });
  $("upload-intro").addEventListener("click",()=>uploadIntro(c));
  if(c.intro_path){const s=await sb.storage.from("capsule-media").createSignedUrl(c.intro_path,300);if(s.data?.signedUrl)$("intro-preview-wrap").innerHTML='<video class="intro-preview" controls src="'+s.data.signedUrl+'"></video>'}
  nextCountdown(manifest||[]);await renderManifest(c,manifest||[])
