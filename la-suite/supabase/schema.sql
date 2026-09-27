@@ -155,7 +155,7 @@ begin
     join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and p.proname = 'rls_auto_enable'
   ) then
-    revoke execute on function public.rls_auto_enable() from anon, authenticated;
+    revoke execute on function public.rls_auto_enable() from public, anon, authenticated;
   end if;
 end $$;
 
