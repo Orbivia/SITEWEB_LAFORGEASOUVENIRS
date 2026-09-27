@@ -33,7 +33,14 @@
 
     <div class="field">
       <label for="wedding_date">Date de l'événement</label>
-      <input id="wedding_date" name="wedding_date" type="text" inputmode="numeric" autocomplete="off" placeholder="JJ/MM/AAAA" required>
+      <div class="date-picker-wrap">
+        <input id="wedding_date" name="wedding_date" type="text" autocomplete="off" placeholder="JJ/MM/AAAA" readonly required>
+        <button class="date-picker-button" id="wedding_date_button" type="button" aria-label="Ouvrir le calendrier">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 2v3M17 2v3M3.5 9h17M5 4.5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-12a2 2 0 0 1 2-2Z"/>
+          </svg>
+        </button>
+      </div>
     </div>
 
     <div class="field">
