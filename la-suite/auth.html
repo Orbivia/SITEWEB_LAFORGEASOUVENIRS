@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20260927-pricing1">
+<link rel="stylesheet" href="styles.css?v=20260927-organizer1">
 </head>
 <body class="suite-shell-page">
 <header class="forge-style-header">
@@ -22,18 +22,34 @@
         <li><a href="index.html#principe">Le principe</a></li>
         <li><a href="index.html#tarifs">Tarifs</a></li>
         <li><a href="create.html">Créer la capsule</a></li>
+        <li><a class="suite-organizer-link is-active" href="auth.html"><i class="fa-regular fa-user"></i><span>Espace organisateur</span></a></li>
       </ul>
     </nav>
   </div>
 </header>
-<main class="wrap">
-<form class="form-shell" id="auth-form">
-<h1>Votre espace</h1>
-<p class="hint">Recevez un lien de connexion sécurisé par e-mail. Aucun mot de passe à retenir.</p>
-<div class="field"><label for="email">Adresse e-mail</label><input id="email" name="email" type="email" autocomplete="email" required placeholder="vous@exemple.fr"></div>
-<button class="btn primary" type="submit">Recevoir mon lien</button>
-<div id="status" class="status"></div>
-</form>
+<main class="wrap organizer-access-page">
+  <section class="organizer-access-card">
+    <div class="organizer-access-icon" aria-hidden="true"><i class="fa-regular fa-user"></i></div>
+    <div class="organizer-access-heading">
+      <div class="eyebrow">Espace organisateur</div>
+      <h1>Accéder à votre espace</h1>
+      <p>Entrez l’adresse e-mail utilisée lors de la création de votre capsule. Nous vous enverrons un lien sécurisé pour vous connecter.</p>
+    </div>
+
+    <form class="organizer-login-form" id="auth-form">
+      <div class="field">
+        <label for="email">Adresse e-mail</label>
+        <input id="email" name="email" type="email" autocomplete="email" required placeholder="vous@exemple.fr">
+      </div>
+      <button class="btn primary organizer-login-submit" type="submit">
+        <i class="fa-regular fa-envelope"></i>
+        Recevoir mon lien de connexion
+      </button>
+      <div id="status" class="status"></div>
+    </form>
+
+    <p class="organizer-access-help">Vous retrouverez automatiquement les capsules associées à cette adresse.</p>
+  </section>
 </main>
 <footer class="forge-style-footer">
   <div class="suite-container footerbar">
@@ -48,5 +64,5 @@
 <script src="suite-shell.js?v=20260927-shell1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
-<script src="app.js"></script>
+<script src="app.js?v=20260927-organizer1"></script>
 </body></html>
