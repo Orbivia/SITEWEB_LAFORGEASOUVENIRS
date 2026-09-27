@@ -7,148 +7,165 @@
 <meta name="description" content="Une capsule temporelle simple pour vos événements : QR code personnalisable, vidéo, audio, photo et messages programmés pour plus tard.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body class="simple-landing">
 
-<header class="simple-header">
-  <div class="wrap simple-header-inner">
-    <a href="index.html" class="simple-brand-text">La Suite - Capsule temporelle</a>
-    <a class="btn primary compact-btn" href="create.html">Créer une capsule</a>
+<body class="suite-public">
+<header class="forge-style-header">
+  <div class="suite-container suite-topbar">
+    <a class="suite-brand" href="#top" aria-label="Aller en haut de la page">
+      <img src="assets/la-suite-logo.webp" alt="Logo La Suite — Capsule temporelle">
+    </a>
+    <button class="suite-burger" id="suite-burger" type="button" aria-label="Ouvrir le menu" aria-expanded="false">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+    <nav class="suite-nav" id="suite-nav">
+      <ul>
+        <li><a href="#principe">Le principe</a></li>
+        <li><a href="create.html">Créer la capsule</a></li>
+      </ul>
+    </nav>
   </div>
 </header>
 
-<main>
-  <section class="simple-hero wrap">
-    <div class="simple-hero-logo-wrap">
-      <img src="assets/la-suite-logo.webp" class="simple-hero-logo" alt="La Suite — Capsule temporelle">
+<main id="top">
+  <section class="suite-hero suite-container">
+    <div class="suite-hero-logo-wrap">
+      <img src="assets/la-suite-logo.webp" class="suite-hero-logo" alt="La Suite — Capsule temporelle">
     </div>
-    <div class="simple-hero-copy">
+    <div class="suite-hero-copy">
       <h1>Vos souvenirs d’aujourd’hui,<br>à recevoir plus tard.</h1>
       <p>
         Vos invités scannent un QR code, découvrent votre message d’accueil,
         puis déposent une vidéo, un audio, une photo ou un texte.
         Chacun choisit quand son souvenir vous sera livré.
       </p>
-      <div class="simple-actions">
-        <a class="btn primary" href="create.html">Créer ma capsule</a>
-      </div>
+      <a class="suite-cta" href="create.html">Créer ma capsule</a>
     </div>
   </section>
 
-  <section class="simple-section">
-    <div class="wrap">
+  <section id="principe" class="principle-section">
+    <div class="suite-container">
       <h2>Le principe</h2>
-      <p class="simple-section-lead">Tout se fait depuis le navigateur du téléphone : <strong>aucune application à installer</strong>.</p>
+      <p class="principle-lead">
+        Tout se fait directement depuis le navigateur du téléphone :
+        <strong>aucune application à installer.</strong>
+      </p>
 
-      <div class="simple-steps">
-        <article class="simple-step">
-          <div class="simple-icon">
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <circle cx="32" cy="32" r="8"></circle>
-              <path d="M32 10v7M32 47v7M10 32h7M47 32h7M16.5 16.5l5 5M42.5 42.5l5 5M47.5 16.5l-5 5M21.5 42.5l-5 5"></path>
-              <circle cx="32" cy="32" r="17"></circle>
+      <div class="principle-grid">
+        <article class="principle-card">
+          <div class="bold-icon" aria-hidden="true">
+            <svg viewBox="0 0 96 96">
+              <circle cx="48" cy="48" r="34"></circle>
+              <circle cx="48" cy="48" r="11"></circle>
+              <path d="M48 5v12M48 79v12M5 48h12M79 48h12M18 18l9 9M69 69l9 9M78 18l-9 9M27 69l-9 9"></path>
             </svg>
           </div>
-          <strong>1. Créez</strong>
-          <p>Créez votre capsule et ajoutez une courte vidéo d’accueil.</p>
+          <h3>Créez votre capsule</h3>
+          <p>Créez l’espace de votre événement et ajoutez votre courte vidéo d’accueil.</p>
         </article>
 
-        <article class="simple-step">
-          <div class="simple-icon">
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <rect x="10" y="10" width="16" height="16" rx="2"></rect>
-              <rect x="38" y="10" width="16" height="16" rx="2"></rect>
-              <rect x="10" y="38" width="16" height="16" rx="2"></rect>
-              <path d="M38 38h7v7h9v9H38zM32 12v8M30 30h8M46 30v5M30 46h5"></path>
+        <article class="principle-card">
+          <div class="bold-icon" aria-hidden="true">
+            <svg viewBox="0 0 96 96">
+              <rect x="8" y="8" width="28" height="28" rx="5"></rect>
+              <rect x="60" y="8" width="28" height="28" rx="5"></rect>
+              <rect x="8" y="60" width="28" height="28" rx="5"></rect>
+              <path d="M49 12v16M44 47h17v13h15M47 73h13v15M75 47h13M73 73h15"></path>
             </svg>
           </div>
-          <strong>2. Partagez</strong>
-          <p>Personnalisez votre QR code et placez-le sur vos tables, invitations ou panneaux.</p>
+          <h3>Partagez votre QR code</h3>
+          <p>Personnalisez-le puis placez-le sur vos tables, invitations ou panneaux.</p>
         </article>
 
-        <article class="simple-step">
-          <div class="simple-icon">
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <rect x="9" y="15" width="34" height="34" rx="6"></rect>
-              <path d="M43 25l12-6v26l-12-6z"></path>
-              <circle cx="26" cy="32" r="7"></circle>
+        <article class="principle-card">
+          <div class="bold-icon" aria-hidden="true">
+            <svg viewBox="0 0 96 96">
+              <rect x="9" y="22" width="56" height="52" rx="10"></rect>
+              <path d="M65 36l22-12v48L65 60z"></path>
+              <circle cx="37" cy="48" r="12"></circle>
             </svg>
           </div>
-          <strong>3. Ils enregistrent</strong>
-          <p>Sans installer d’application, vos invités déposent ou enregistrent leur souvenir directement depuis leur téléphone.</p>
+          <h3>Ils enregistrent</h3>
+          <p>Vos invités filment, enregistrent ou importent leur souvenir depuis leur téléphone.</p>
         </article>
 
-        <article class="simple-step">
-          <div class="simple-icon">
-            <svg viewBox="0 0 64 64" aria-hidden="true">
-              <rect x="12" y="18" width="40" height="34" rx="6"></rect>
-              <path d="M20 10v12M44 10v12M12 28h40"></path>
-              <path d="M27 40l5 5 9-11"></path>
+        <article class="principle-card">
+          <div class="bold-icon" aria-hidden="true">
+            <svg viewBox="0 0 96 96">
+              <circle cx="48" cy="48" r="35"></circle>
+              <path d="M48 27v23l17 10"></path>
+              <path d="M25 10l-10 13M71 10l10 13"></path>
             </svg>
           </div>
-          <strong>4. Recevez plus tard</strong>
-          <p>Chaque invité choisit une date. Le souvenir reste verrouillé jusque-là.</p>
+          <h3>Recevez plus tard</h3>
+          <p>Chaque invité choisit une date et le souvenir reste verrouillé jusqu’au moment prévu.</p>
         </article>
       </div>
     </div>
   </section>
 
-  <section class="simple-formats wrap">
-    <div class="simple-format">
-      <div class="format-symbol">▶</div>
+  <section class="formats-section suite-container">
+    <div class="format-item">
+      <div class="format-bold-icon">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="7" y="14" width="37" height="36" rx="7"></rect>
+          <path d="M44 25l13-7v28l-13-7z"></path>
+        </svg>
+      </div>
       <div><strong>Vidéo</strong><span>Filmer ou importer</span></div>
     </div>
-    <div class="simple-format">
-      <div class="format-symbol">♫</div>
+    <div class="format-item">
+      <div class="format-bold-icon">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="24" y="8" width="16" height="30" rx="8"></rect>
+          <path d="M16 29c0 11 6 17 16 17s16-6 16-17M32 46v10M23 56h18"></path>
+        </svg>
+      </div>
       <div><strong>Audio</strong><span>Enregistrer ou importer</span></div>
     </div>
-    <div class="simple-format">
-      <div class="format-symbol">▣</div>
+    <div class="format-item">
+      <div class="format-bold-icon">
+        <svg viewBox="0 0 64 64" aria-hidden="true">
+          <rect x="7" y="15" width="50" height="36" rx="7"></rect>
+          <circle cx="32" cy="33" r="10"></circle>
+          <path d="M19 15l5-7h16l5 7"></path>
+        </svg>
+      </div>
       <div><strong>Photo</strong><span>Prendre ou importer</span></div>
     </div>
   </section>
 
-  <section class="simple-duration">
-    <div class="wrap simple-duration-inner">
-      <div class="simple-clock">
-        <svg viewBox="0 0 64 64" aria-hidden="true">
-          <circle cx="32" cy="32" r="23"></circle>
-          <path d="M32 18v15l10 7"></path>
-        </svg>
-      </div>
-      <div>
-        <strong>La capsule reste ouverte pendant 3 ans après l’événement.</strong>
-        <p>Vos proches peuvent continuer à ajouter un souvenir longtemps après le jour J.</p>
-      </div>
-    </div>
-  </section>
-
-  <section class="simple-final wrap">
+  <section class="suite-final suite-container">
     <h2>Prêt à créer votre capsule ?</h2>
     <p>Quelques minutes suffisent pour créer l’espace et récupérer votre QR code.</p>
-    <a class="btn primary" href="create.html">Créer ma capsule</a>
+    <a class="suite-cta" href="create.html">Créer ma capsule</a>
   </section>
 </main>
 
-<footer class="simple-footer">
-  <div class="wrap">
-    <div class="simple-footer-brand">La Suite — par La Forge à Souvenirs</div>
-    <div class="legal-block">
-      <strong>Mentions légales</strong>
-      <p>
-        Éditeur : La Forge à Souvenirs — SIRET 815 101 050 00046 —
-        27 rue du Général Boufflers, 59139 Wattignies, France —
-        <a href="mailto:laforgeasouvenirs@gmail.com">laforgeasouvenirs@gmail.com</a>.
-      </p>
-      <p>
-        Site hébergé par GitHub Pages. Les données et médias du service La Suite sont hébergés via Supabase.
-        Les contenus déposés dans une capsule sont accessibles selon les règles de livraison choisies dans le service.
-      </p>
+<footer class="forge-style-footer">
+  <div class="suite-container footerbar">
+    <div class="legal">© 2023–2026 La Forge à Souvenirs</div>
+    <div class="social">
+      <a href="https://www.facebook.com/people/La-Forge-%C3%A0-Souvenirs/100095037515785/" target="_blank" rel="noopener" aria-label="Facebook La Forge à Souvenirs">
+        <i class="fa-brands fa-facebook"></i>
+      </a>
     </div>
   </div>
 </footer>
 
+<script>
+(() => {
+  const burger = document.getElementById('suite-burger');
+  const nav = document.getElementById('suite-nav');
+  if (!burger || !nav) return;
+  burger.addEventListener('click', () => {
+    const open = nav.classList.toggle('open');
+    burger.setAttribute('aria-expanded', String(open));
+  });
+})();
+</script>
 </body>
 </html>
