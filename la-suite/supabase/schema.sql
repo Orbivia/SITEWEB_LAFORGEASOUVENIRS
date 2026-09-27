@@ -335,7 +335,7 @@ alter table public.capsules
   add column if not exists print_explanation text,
   add column if not exists qr_font text default 'elegant',
   add column if not exists qr_style text default 'romantic',
-  add column if not exists qr_size integer default 230,
+  add column if not exists qr_size integer default 245,
   add column if not exists qr_show_initials boolean default true,
   add column if not exists qr_show_brand boolean default true;
 
@@ -345,7 +345,7 @@ alter table public.capsules
     check (qr_font in ('elegant','classic','modern','romantic','editorial','refined','contemporary','signature')),
   drop constraint if exists capsules_qr_style_check,
   add constraint capsules_qr_style_check
-    check (qr_style in ('romantic','minimal','chic')),
+    check (qr_style in ('minimal','editorial','signature','chic','palace','arch','botanical','olive','pressed','romantic','boho','riviera','dolce','seaside','celestial','pearl','retro','confetti')),
   drop constraint if exists capsules_qr_size_check,
   add constraint capsules_qr_size_check
     check (qr_size between 180 and 280);
@@ -372,3 +372,6 @@ alter table public.capsules
     'elegant','classic','modern','romantic',
     'editorial','refined','contemporary','signature'
   ));
+
+-- QR cards use the fixed large size; historical rows remain compatible.
+alter table public.capsules alter column qr_size set default 245;
