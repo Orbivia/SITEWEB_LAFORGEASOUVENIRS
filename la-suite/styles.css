@@ -2198,3 +2198,168 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
     margin:0;
   }
 }
+
+
+/* ============================================================
+   La Suite — A4 print workflow + extended card customizer
+   ============================================================ */
+.qr-designer-grid{
+  grid-template-columns:minmax(320px,390px) minmax(0,1fr);
+}
+.qr-preview-stage{
+  min-height:790px;
+  padding:30px 24px;
+}
+.qr-print-card{
+  width:min(100%,430px);
+  aspect-ratio:2/3;
+  padding:34px 31px 25px;
+}
+.qr-print-top,
+.qr-print-main,
+.qr-print-footer{
+  min-width:0;
+}
+.qr-print-capsule,
+.qr-print-card h2,
+.qr-print-main h3,
+.qr-print-main p,
+.qr-print-footer span{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  hyphens:auto;
+}
+.qr-print-card h2{
+  max-width:100%;
+}
+.qr-print-main{
+  gap:0;
+  padding:8px 0 14px;
+}
+.qr-print-main h3{
+  max-width:320px;
+}
+.qr-print-main p{
+  max-width:315px;
+}
+.qr-print-code{
+  max-width:100%;
+  max-height:245px;
+}
+.qr-print-footer{
+  flex-shrink:0;
+  min-height:48px;
+}
+.qr-print-logo{
+  width:82px;
+  max-height:44px;
+}
+.qr-font-editorial h2{font-family:"DM Serif Display",Georgia,serif;font-weight:400}
+.qr-font-refined h2{font-family:"Libre Baskerville",Georgia,serif;font-weight:700;font-size:1.8rem;line-height:1.12}
+.qr-font-contemporary h2{font-family:Montserrat,Inter,sans-serif;font-weight:700;letter-spacing:-.045em;font-size:1.75rem}
+.qr-font-signature h2{font-family:Parisienne,cursive;font-weight:400;font-size:2.45rem}
+
+.qr-font-menu{
+  max-height:390px;
+  overflow-y:auto;
+}
+.qr-font-sample-editorial{font-family:"DM Serif Display",Georgia,serif;font-weight:400}
+.qr-font-sample-refined{font-family:"Libre Baskerville",Georgia,serif;font-weight:700;font-size:1.05rem}
+.qr-font-sample-contemporary{font-family:Montserrat,Inter,sans-serif;font-weight:700;letter-spacing:-.035em;font-size:1.05rem}
+.qr-font-sample-signature{font-family:Parisienne,cursive;font-weight:400;font-size:1.55rem}
+
+.qr-control-title{
+  display:block;
+}
+.qr-brand-lock{
+  display:none!important;
+}
+.qr-field-label-row>span[data-char-count]{
+  font-variant-numeric:tabular-nums;
+}
+.qr-control-group textarea{
+  resize:none;
+}
+
+.qr-preview-actions{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.qr-print-guide{
+  margin-top:14px;
+  border:1px solid #e9dfd5;
+  border-radius:15px;
+  padding:14px;
+  background:#fffdfb;
+}
+.qr-print-guide h4{
+  margin:0 0 10px;
+  font-size:.82rem;
+}
+.qr-print-guide-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+}
+.qr-print-guide-grid>div{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  min-width:0;
+  padding:9px;
+  border-radius:11px;
+  background:#f7f1ea;
+}
+.qr-print-guide-grid i{
+  color:#b78b38;
+  margin-top:2px;
+  flex:0 0 auto;
+}
+.qr-print-guide-grid span,
+.qr-print-guide-grid strong,
+.qr-print-guide-grid small{
+  display:block;
+  min-width:0;
+}
+.qr-print-guide-grid strong{
+  font-size:.72rem;
+  line-height:1.25;
+}
+.qr-print-guide-grid small{
+  margin-top:3px;
+  color:var(--muted);
+  font-size:.64rem;
+  line-height:1.35;
+}
+
+@media(max-width:1100px){
+  .qr-print-guide-grid{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:920px){
+  .qr-designer-grid{
+    grid-template-columns:1fr;
+  }
+  .qr-preview-stage{
+    min-height:0;
+  }
+  .qr-print-card{
+    width:min(100%,410px);
+  }
+}
+@media(max-width:560px){
+  .qr-print-card{
+    width:min(100%,350px);
+    padding:27px 22px 20px;
+  }
+  .qr-preview-actions{
+    grid-template-columns:1fr;
+  }
+  .qr-font-refined h2,
+  .qr-font-contemporary h2{
+    font-size:1.55rem;
+  }
+  .qr-font-signature h2{
+    font-size:2.1rem;
+  }
+}
