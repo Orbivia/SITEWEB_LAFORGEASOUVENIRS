@@ -1522,3 +1522,101 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
     font-size:2.35rem;
   }
 }
+
+
+/* ============================================================
+   La Suite — organizer dashboard tabs + unread messages
+   ============================================================ */
+.owner-nav .owner-nav-tab,
+.owner-nav .owner-logout{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.owner-nav .owner-nav-tab.is-active{
+  background:#c10d0d;
+  color:#fff;
+}
+.owner-nav-bell{
+  position:relative;
+  display:inline-grid;
+  place-items:center;
+  width:20px;
+  height:20px;
+  flex:0 0 auto;
+}
+.owner-unread-badge{
+  position:absolute;
+  top:-8px;
+  right:-10px;
+  min-width:18px;
+  height:18px;
+  padding:0 5px;
+  border-radius:999px;
+  background:#c10d0d;
+  color:#fff;
+  border:2px solid #fff;
+  font:700 10px/14px Inter,sans-serif;
+  text-align:center;
+  box-shadow:0 3px 9px rgba(193,13,13,.25);
+}
+.owner-nav-tab.is-active .owner-unread-badge{
+  background:#fff;
+  color:#c10d0d;
+  border-color:#c10d0d;
+}
+.owner-panel[hidden]{display:none!important}
+.owner-messages-hero{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:24px;
+  padding:24px 26px;
+  margin-bottom:20px;
+  border:1px solid var(--line);
+  border-radius:20px;
+  background:#fff;
+  box-shadow:0 12px 30px rgba(40,20,20,.045);
+}
+.owner-messages-hero h2{
+  font-family:"Cormorant Garamond",Georgia,serif;
+  font-size:2.35rem;
+  line-height:1;
+  margin:4px 0 8px;
+}
+.owner-messages-hero p{
+  max-width:690px;
+  margin:0;
+  color:var(--muted);
+  font-size:.93rem;
+}
+.owner-messages-hero .next-delivery{
+  flex:0 0 auto;
+  margin:0;
+}
+@media (hover:hover) and (pointer:fine){
+  .owner-nav .owner-nav-tab{
+    transition:transform .22s ease,background-color .22s ease,color .22s ease;
+  }
+  .owner-nav .owner-nav-tab:hover{
+    transform:translateY(-1px);
+  }
+}
+@media(max-width:900px){
+  .owner-nav .owner-nav-tab,
+  .owner-nav .owner-logout{
+    width:100%;
+  }
+  .owner-unread-badge{
+    top:-7px;
+    right:-9px;
+  }
+}
+@media(max-width:700px){
+  .owner-messages-hero{
+    flex-direction:column;
+    padding:19px 18px;
+  }
+  .owner-messages-hero h2{font-size:2rem}
+  .owner-messages-hero .next-delivery{width:100%}
+}
