@@ -1265,3 +1265,107 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
   .pricing-card h3{font-size:1.7rem}
   .pricing-price strong{font-size:1.8rem}
 }
+
+
+/* ============================================================
+   La Suite — interactive hover states
+   Inspired by La Forge card interactions
+   ============================================================ */
+@media (hover:hover) and (pointer:fine){
+  .principle-card,
+  .format-item,
+  .pricing-card{
+    transition:
+      transform .32s ease,
+      box-shadow .32s ease,
+      border-color .32s ease,
+      background-color .32s ease;
+    will-change:transform;
+  }
+
+  .principle-card:hover{
+    transform:translateY(-6px) scale(1.015);
+    box-shadow:0 18px 38px rgba(0,0,0,.105);
+    border-color:#dfd1c2;
+  }
+  .principle-card:hover .brand-icon{
+    transform:scale(1.08) rotate(-2deg);
+    box-shadow:0 7px 17px rgba(165,120,42,.2);
+  }
+
+  .format-item:hover{
+    transform:translateY(-5px) scale(1.02);
+    box-shadow:0 15px 32px rgba(0,0,0,.09);
+    border-color:#e1d2c2;
+    background:#fffdf9;
+  }
+  .format-item:hover .brand-format-icon{
+    transform:scale(1.1) rotate(3deg);
+    box-shadow:0 7px 16px rgba(165,120,42,.2);
+  }
+
+  .pricing-card:hover{
+    transform:translateY(-8px) scale(1.02);
+    box-shadow:0 21px 45px rgba(55,32,18,.13);
+    border-color:#d5b66f;
+  }
+  .pricing-card-featured:hover{
+    transform:translateY(-13px) scale(1.025);
+    box-shadow:0 24px 50px rgba(105,73,25,.18);
+  }
+  .pricing-card:hover .pricing-icon{
+    transform:scale(1.1) rotate(-4deg);
+    box-shadow:0 8px 18px rgba(165,120,42,.23);
+  }
+  .pricing-card:hover .pricing-price strong{
+    color:#b8862f;
+    transform:translateY(-1px);
+  }
+  .pricing-card:hover .pricing-button{
+    border-color:#c10d0d;
+    color:#c10d0d;
+    transform:translateY(-2px);
+    box-shadow:0 7px 15px rgba(193,13,13,.10);
+  }
+  .pricing-card:hover .pricing-button-primary{
+    color:#fff;
+    background:#9f0909;
+    border-color:#9f0909;
+  }
+
+  .suite-cta,
+  .pricing-button,
+  .brand-icon,
+  .brand-format-icon,
+  .pricing-icon,
+  .pricing-price strong,
+  .forge-style-footer .social a{
+    transition:
+      transform .25s ease,
+      box-shadow .25s ease,
+      background-color .25s ease,
+      border-color .25s ease,
+      color .25s ease;
+  }
+
+  .suite-cta:hover{
+    transform:translateY(-3px);
+    box-shadow:0 11px 24px rgba(193,13,13,.27);
+  }
+  .forge-style-footer .social a:hover{
+    transform:translateY(-3px) scale(1.08);
+  }
+}
+
+/* Keep featured card elevated when no hover interaction is available. */
+@media (hover:none), (pointer:coarse){
+  .pricing-card-featured{transform:none}
+}
+
+/* Keyboard users get the same visual feedback as mouse users. */
+.suite-cta:focus-visible,
+.pricing-button:focus-visible,
+.suite-nav a:focus-visible{
+  outline:3px solid rgba(199,160,82,.45);
+  outline-offset:3px;
+}
