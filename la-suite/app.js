@@ -133,11 +133,17 @@ async function initCreate(){
 
   localStorage.setItem(draftKey,JSON.stringify(d));
   if(submit)submit.disabled=true;
-  show(status,"Envoi du lien sécurisé…");
 
   try{
    const u=await user();
+
+   // Ne renvoie pas inutilement un e-mail si cette adresse est déjà authentifiée.
+   if(u&&String(u.email||"").toLowerCase()===d.email.toLowerCase()){
+    return await createCapsule(d,u)
+   }
+
    if(u)await sb.auth.signOut();
+   show(status,"Envoi du lien sécurisé…");
    const redirectTo=new URL("create.html?resume=1",location.href).href;
    const{error}=await sb.auth.signInWithOtp({
     email:d.email,
@@ -147,7 +153,11 @@ async function initCreate(){
    show(status,"Lien envoyé. Consultez votre boîte mail pour finaliser la création.");
   }catch(err){
    if(submit)submit.disabled=false;
-   show(status,"Impossible d'envoyer le lien : "+(err?.message||"erreur inconnue"),false);
+   const msg=String(err?.message||"");
+   if(/rate limit|too many requests|429/i.test(msg)){
+    return show(status,"Trop de liens ont été demandés récemment. Le service e-mail Supabase a temporairement atteint sa limite. Réessayez plus tard ou utilisez une adresse déjà connectée.",false)
+   }
+   show(status,"Impossible d'envoyer le lien : "+(msg||"erreur inconnue"),false);
   }
  })
 }
