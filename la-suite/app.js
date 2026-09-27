@@ -445,7 +445,9 @@ async function buildPrintCardCanvas(c,url){
  const qx=Math.round((W-qsize)/2),qy=Math.max(420,Math.round(titleY+78));
  ctx.fillStyle="#ffffff";
  ctx.beginPath();ctx.roundRect(qx-28,qy-28,qsize+56,qsize+56,34);ctx.fill();
+ ctx.imageSmoothingEnabled=false;
  ctx.drawImage(qr,qx,qy,qsize,qsize);
+ ctx.imageSmoothingEnabled=true;
 
  if(o.showInitials){
   const b=Math.round(qsize*.19),cx=W/2,cy=qy+qsize/2;
@@ -514,16 +516,22 @@ async function downloadPrintCard(c,url){
  }catch(e){show($("qr-status"),e?.message||"Impossible de préparer le fichier.",false)}
 }
 async function printPrintCard(c,url){
+ const win=window.open("","_blank");
+ if(!win)return show($("qr-status"),"Autorisez les fenêtres pop-up pour lancer l’impression.",false);
  try{
+  win.document.write('<!doctype html><html><head><title>Préparation de l’impression…</title></head><body></body></html>');
+  win.document.close();
   const page=await buildA4PrintCanvas(c,url);
   const data=page.toDataURL("image/png");
-  const win=window.open("","_blank");
-  if(!win)return show($("qr-status"),"Autorisez les fenêtres pop-up pour lancer l’impression.",false);
+  win.document.open();
   win.document.write('<!doctype html><html><head><title>Imprimer La Suite</title><style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff}img{display:block;width:210mm;height:297mm;object-fit:contain}</style></head><body><img src="'+data+'" alt="Carte La Suite A4"></body></html>');
   win.document.close();
   const img=win.document.querySelector("img");
   img.onload=()=>{win.focus();win.print()}
- }catch(e){show($("qr-status"),e?.message||"Impossible de lancer l’impression.",false)}
+ }catch(e){
+  try{win.close()}catch(_){}
+  show($("qr-status"),e?.message||"Impossible de lancer l’impression.",false)
+ }
 }
 async function saveQrCustomization(c,url,silent=false){
  const s=$("qr-status"),payload=collectQrCustomization(c);
