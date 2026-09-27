@@ -468,7 +468,7 @@ function ownerShell(c,url,count){
   <div>
    <div class="eyebrow">Carte QR code</div>
    <h2>Personnalisez votre carte</h2>
-   <p>Le rendu est mis à jour en direct. Le fichier téléchargé est au format <strong>10 × 15 cm portrait</strong>.</p>
+   <p>Personnalisez la carte et visualisez le résultat immédiatement.</p>
   </div>
 
  </div>
@@ -531,14 +531,12 @@ function ownerShell(c,url,count){
       </div>
      </div>
     </div>
-    <p class="qr-preview-tip">Prête à imprimer ou à intégrer sur une table, une invitation ou un panneau.</p>
+    <p class="qr-preview-tip">Format 10 × 15 cm portrait, prêt à imprimer.</p>
     <div class="qr-preview-actions">
-     <button class="btn secondary" id="share-link" type="button"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i>Partager le lien invité</button>
-     <button class="btn secondary" id="copy-link" type="button"><i class="fa-regular fa-copy" aria-hidden="true"></i>Copier le lien</button>
-     <a class="btn secondary" id="open-guest-link" href="${esc(url)}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Ouvrir la page invité</a>
+     <button class="btn secondary" id="share-link" type="button"><i class="fa-solid fa-share-nodes" aria-hidden="true"></i>Partager</button>
+     <a class="btn secondary" id="open-guest-link" href="${esc(url)}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Voir la page invité</a>
      <button class="btn primary" id="download-print-card" type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>Télécharger la carte</button>
     </div>
-    <input id="guest-link" class="share-input qr-preview-link" readonly value="${esc(url)}" aria-label="Lien invité">
     <div id="qr-status" class="status"></div>
    </div>
   </div>
@@ -550,7 +548,7 @@ function ownerShell(c,url,count){
   <div>
    <div class="eyebrow">Vidéo d'accueil</div>
    <h2>Le message vu après le scan</h2>
-   <p>Ajoutez une courte vidéo d’accueil. Elle sera affichée aux invités avant qu’ils déposent leur souvenir.</p>
+   <p>Cette vidéo apparaît aux invités juste après le scan du QR code.</p>
   </div>
   <span class="intro-video-limit"><i class="fa-regular fa-clock" aria-hidden="true"></i>12 s maximum</span>
  </div>
@@ -698,7 +696,6 @@ async function initDashboard(){
    el.addEventListener("input",updateDesigner);
    el.addEventListener("change",updateDesigner);
  });
- $("copy-link")?.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(url.href);show($("qr-status"),"Lien copié.")}catch(e){prompt("Copiez ce lien :",url.href)}});
  $("share-link")?.addEventListener("click",()=>shareGuestLink(url.href));
  $("download-print-card")?.addEventListener("click",()=>{
    Object.assign(c,collectQrCustomization(c));
