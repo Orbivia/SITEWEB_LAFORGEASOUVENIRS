@@ -6,6 +6,7 @@
 <meta name="description" content="Créez votre capsule temporelle La Suite et partagez-la ensuite avec vos invités grâce à un QR code personnalisable.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body class="create-page">
@@ -32,7 +33,7 @@
 
     <div class="field">
       <label for="wedding_date">Date de l'événement</label>
-      <input id="wedding_date" name="wedding_date" type="date" lang="fr" required>
+      <input id="wedding_date" name="wedding_date" type="text" inputmode="numeric" autocomplete="off" placeholder="JJ/MM/AAAA" required>
     </div>
 
     <div class="field">
@@ -46,6 +47,8 @@
   </form>
 </main>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="app.js"></script>
