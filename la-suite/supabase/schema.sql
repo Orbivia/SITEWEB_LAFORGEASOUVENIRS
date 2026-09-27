@@ -321,3 +321,31 @@ set public = false,
       'image/jpeg','image/png','image/webp','image/heic','image/heif'
     ]
 where id = 'capsule-media';
+
+
+-- ============================================================
+-- V3 — Personnalisation de la carte QR code
+-- ============================================================
+
+alter table public.capsules
+  add column if not exists qr_initials text,
+  add column if not exists qr_color text default '#c10d0d',
+  add column if not exists print_title text default 'Laissez-nous un souvenir',
+  add column if not exists print_note text,
+  add column if not exists print_explanation text,
+  add column if not exists qr_font text default 'elegant',
+  add column if not exists qr_style text default 'romantic',
+  add column if not exists qr_size integer default 230,
+  add column if not exists qr_show_initials boolean default true,
+  add column if not exists qr_show_brand boolean default true;
+
+alter table public.capsules
+  drop constraint if exists capsules_qr_font_check,
+  add constraint capsules_qr_font_check
+    check (qr_font in ('elegant','classic','modern','romantic')),
+  drop constraint if exists capsules_qr_style_check,
+  add constraint capsules_qr_style_check
+    check (qr_style in ('romantic','minimal','chic')),
+  drop constraint if exists capsules_qr_size_check,
+  add constraint capsules_qr_size_check
+    check (qr_size between 180 and 280);
