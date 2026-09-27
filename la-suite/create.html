@@ -3,27 +3,59 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Créer une capsule — La Suite</title>
+<meta name="description" content="Créez votre capsule temporelle La Suite et partagez-la ensuite avec vos invités grâce à un QR code personnalisable.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-<header><div class="wrap top"><a class="brand" href="index.html">La Forge à Souvenirs<small>La Suite</small></a><nav><a href="index.html">Présentation</a><a href="../">Site principal</a></nav></div></header>
-<main class="wrap">
-<form class="form-shell" id="create-capsule">
-<h1>Créer une capsule</h1>
-<p class="hint">Créez l'espace de votre événement. Chaque invité choisira lui-même quand son souvenir devra vous être livré.</p>
-<div class="grid">
-<div class="field"><label for="couple">Nom de la capsule</label><input id="couple" name="couple" required placeholder="Julie & Thomas"></div>
-<div class="field"><label for="wedding_date">Date de l'événement</label><input id="wedding_date" name="wedding_date" type="date" required></div>
-</div>
-<div class="field"><label for="welcome_message">Petit message d'accueil</label><textarea id="welcome_message" name="welcome_message" placeholder="Laissez-nous un souvenir à découvrir plus tard…"></textarea></div>
-<div class="notice">Après création, vous pourrez ajouter votre vidéo d'accueil et récupérer le QR code à partager.</div>
-<div style="margin-top:18px"><button class="btn primary" type="submit">Créer ma capsule</button></div>
-<div id="status" class="status"></div>
-</form>
+<body class="create-page">
+<header>
+  <div class="wrap top">
+    <a class="header-logo-link" href="index.html" aria-label="La Suite">
+      <img src="assets/la-suite-logo.webp" class="header-logo" alt="La Suite — Capsule temporelle">
+    </a>
+    <nav><a href="index.html">Présentation</a><a href="../">La Forge à Souvenirs</a></nav>
+  </div>
+</header>
+
+<main class="wrap create-wrap">
+  <section class="create-intro">
+    <span class="eyebrow">Création</span>
+    <h1>Créez votre capsule</h1>
+    <p>Votre événement peut déjà avoir eu lieu. Les invités pourront déposer des souvenirs jusqu'à 3 ans après sa date.</p>
+  </section>
+
+  <form class="form-shell create-form" id="create-capsule">
+    <div class="field">
+      <label for="couple">Nom de la capsule</label>
+      <input id="couple" name="couple" required placeholder="Julie & Thomas">
+      <small class="field-help">Le nom affiché sur la page accessible aux invités.</small>
+    </div>
+
+    <div class="field">
+      <label for="wedding_date">Date de l'événement</label>
+      <input id="wedding_date" name="wedding_date" type="date" required>
+      <small class="field-help">Vous pouvez sélectionner une date antérieure si l'événement a déjà eu lieu.</small>
+    </div>
+
+    <div class="field">
+      <label for="welcome_message">Message d'accueil <span class="optional">(facultatif)</span></label>
+      <textarea id="welcome_message" name="welcome_message" placeholder="Laissez-nous un souvenir à découvrir plus tard…"></textarea>
+      <small class="field-help">Vous pourrez également ajouter une vidéo d'accueil depuis votre espace organisateur.</small>
+    </div>
+
+    <div class="create-info">
+      <div class="create-info-icon">1</div>
+      <div><strong>Après la création</strong><p>Vous récupérerez votre QR code personnalisable, ajouterez votre vidéo d'accueil et suivrez les souvenirs déposés.</p></div>
+    </div>
+
+    <button class="btn primary create-submit" type="submit">Créer ma capsule</button>
+    <div id="status" class="status"></div>
+  </form>
 </main>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
 <script src="app.js"></script>
-</body></html>
+</body>
+</html>
