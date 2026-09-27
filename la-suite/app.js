@@ -64,7 +64,7 @@ async function initAuth(){
 
 async function initCreate(){
  const form=$("create-capsule");if(!form)return;
- const status=$("status"),dateInput=$("wedding_date"),emailInput=$("email"),submit=form.querySelector('button[type="submit"]');
+ const status=$("status"),dateInput=$("wedding_date"),dateDisplay=$("wedding_date_display"),dateButton=$("wedding_date_button"),emailInput=$("email"),submit=form.querySelector('button[type="submit"]');
  const draftKey="la_suite_create_draft";
  const pad=n=>String(n).padStart(2,"0");
  const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
@@ -72,7 +72,42 @@ async function initCreate(){
  const tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+1);
  const minDate=iso(tomorrow);
 
- if(dateInput){dateInput.min=minDate;dateInput.lang="fr"}
+ function parseFrDate(value){
+  const m=String(value||"").trim().match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
+  if(!m)return"";
+  const day=Number(m[1]),month=Number(m[2]),year=Number(m[3]);
+  const d=new Date(year,month-1,day);
+  if(d.getFullYear()!==year||d.getMonth()!==month-1||d.getDate()!==day)return"";
+  return iso(d)
+ }
+ function frFromIso(value){
+  const m=String(value||"").match(/^(\\d{4})-(\\d{2})-(\\d{2})$/);
+  return m?m[3]+"/"+m[2]+"/"+m[1]:""
+ }
+ function formatFrTyping(value){
+  const digits=String(value||"").replace(/\\D/g,"").slice(0,8);
+  return [digits.slice(0,2),digits.slice(2,4),digits.slice(4,8)].filter(Boolean).join("/")
+ }
+
+ if(dateInput){
+  dateInput.min=minDate;
+  dateInput.lang="fr-FR";
+  dateInput.addEventListener("change",()=>{if(dateDisplay)dateDisplay.value=frFromIso(dateInput.value)})
+ }
+ if(dateDisplay){
+  dateDisplay.addEventListener("input",()=>{
+   dateDisplay.value=formatFrTyping(dateDisplay.value);
+   if(dateInput)dateInput.value=parseFrDate(dateDisplay.value)
+  })
+  dateDisplay.addEventListener("blur",()=>{
+   const parsed=parseFrDate(dateDisplay.value);
+   if(parsed&&dateInput)dateInput.value=parsed
+  })
+ }
+ dateButton?.addEventListener("click",()=>{
+  if(!dateInput)return;
+  try{dateInput.showPicker?.()}catch(e){dateInput.click()}
+ })
 
  function readDraft(){
   try{
@@ -82,9 +117,10 @@ async function initCreate(){
   }catch(e){localStorage.removeItem(draftKey);return null}
  }
  function validateDraft(d){
-  if(!d?.couple||!d?.wedding||!d?.email)return"Complétez les champs obligatoires.";
+  if(!d?.couple||!d?.email)return"Complétez les champs obligatoires.";
   if(d.couple.length>50)return"Le nom de la capsule est limité à 50 caractères.";
   if(!/^\S+@\S+\.\S+$/.test(d.email))return"Adresse e-mail invalide.";
+  if(!d?.wedding)return"Saisissez une date valide au format JJ/MM/AAAA.";
   if(d.wedding<minDate)return"Choisissez une date d'événement future.";
   return"";
  }
@@ -123,9 +159,10 @@ async function initCreate(){
   e.preventDefault();
   e.stopPropagation();
   const fd=new FormData(form);
+  const displayedDate=String(dateDisplay?.value||"").trim();
   const d={
    couple:String(fd.get("couple")||"").trim(),
-   wedding:String(fd.get("wedding_date")||""),
+   wedding:dateDisplay?parseFrDate(displayedDate):String(fd.get("wedding_date")||""),
    email:String(fd.get("email")||"").trim(),
    saved_at:Date.now()
   };
