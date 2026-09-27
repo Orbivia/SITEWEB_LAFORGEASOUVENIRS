@@ -245,3 +245,67 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
  .qr-custom-fields,.dashboard-actions{grid-template-columns:1fr}
  .qr-custom-fields .field.full,.dashboard-actions .btn.primary{grid-column:auto}
 }
+
+
+/* ============================================================
+   Simple landing page
+   ============================================================ */
+.simple-landing{background:#fffdf9}
+.simple-header{position:sticky;top:0;z-index:20;background:rgba(255,253,249,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}
+.simple-header-inner{height:72px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.simple-brand img{display:block;width:118px;height:auto}
+.compact-btn{padding:10px 15px}
+
+.simple-hero{padding:58px 0 54px;text-align:center}
+.simple-hero-logo{display:block;width:min(620px,88%);height:auto;margin:0 auto 20px}
+.simple-hero h1{font-family:"Cormorant Garamond",Georgia,serif;font-size:clamp(2.7rem,6vw,5rem);line-height:.98;margin:0 auto 18px;max-width:900px;letter-spacing:-.02em}
+.simple-hero>p{max-width:760px;margin:0 auto;color:var(--muted);font-size:1.08rem}
+.simple-actions{display:flex;justify-content:center;margin-top:26px}
+.simple-points{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:22px}
+.simple-points span{font-size:.82rem;font-weight:600;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid var(--line)}
+
+.simple-section{padding:58px 0;background:var(--soft)}
+.simple-section h2,.simple-final h2{font-family:"Cormorant Garamond",Georgia,serif;text-align:center;font-size:clamp(2.2rem,4vw,3rem);margin:0 0 30px}
+.simple-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.simple-step{background:#fff;border:1px solid var(--line);border-radius:18px;padding:22px;min-height:230px}
+.simple-step strong{display:block;font-size:1rem;margin-bottom:8px}
+.simple-step p{margin:0;color:var(--muted);font-size:.93rem}
+.simple-icon{width:62px;height:62px;border-radius:16px;background:#fff4f1;display:grid;place-items:center;margin-bottom:18px}
+.simple-icon svg{width:38px;height:38px;fill:none;stroke:var(--red);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+
+.simple-formats{padding:42px 0;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.simple-format{border:1px solid var(--line);border-radius:16px;background:#fff;padding:18px;display:flex;align-items:center;gap:14px}
+.format-symbol{width:48px;height:48px;border-radius:14px;background:#fff1ef;color:var(--red);display:grid;place-items:center;font-size:1.2rem;font-weight:800;flex:0 0 auto}
+.simple-format strong,.simple-format span{display:block}
+.simple-format span{color:var(--muted);font-size:.87rem;margin-top:2px}
+
+.simple-duration{background:#1f1b1b;color:#fff;padding:34px 0}
+.simple-duration-inner{display:flex;align-items:center;justify-content:center;gap:22px}
+.simple-clock{width:62px;height:62px;border-radius:50%;background:rgba(255,255,255,.08);display:grid;place-items:center;flex:0 0 auto}
+.simple-clock svg{width:38px;height:38px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.simple-duration strong{display:block;font-size:1.12rem}
+.simple-duration p{margin:3px 0 0;color:#d8d0d0;font-size:.92rem}
+
+.simple-final{text-align:center;padding:58px 0 72px}
+.simple-final h2{margin-bottom:8px}
+.simple-final p{color:var(--muted);margin:0 auto 20px}
+.simple-footer{border-top:1px solid var(--line);padding:24px 0;color:var(--muted);font-size:.88rem;text-align:center}
+
+@media(max-width:900px){
+  .simple-steps{grid-template-columns:1fr 1fr}
+}
+@media(max-width:700px){
+  .simple-formats{grid-template-columns:1fr}
+  .simple-duration-inner{align-items:flex-start}
+}
+@media(max-width:560px){
+  .simple-header-inner{height:66px}
+  .simple-brand img{width:102px}
+  .compact-btn{font-size:.88rem;padding:9px 12px}
+  .simple-hero{padding-top:38px}
+  .simple-hero-logo{width:92%}
+  .simple-steps{grid-template-columns:1fr}
+  .simple-step{min-height:0}
+  .simple-duration-inner{flex-direction:column;text-align:center}
+  .simple-clock{margin:auto}
+}
