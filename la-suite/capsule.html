@@ -10,14 +10,14 @@
 <body>
 <header><div class="wrap top"><a class="brand" href="index.html">La Forge à Souvenirs<small>La Suite</small></a></div></header>
 <main class="wrap">
-<section class="capsule-hero"><h1 id="capsule-title">Votre capsule</h1><div class="countdown" id="capsule-date"></div></section>
+<section class="capsule-hero"><h1 id="capsule-title">Votre capsule</h1><div class="countdown" id="capsule-date"></div><p id="capsule-welcome" class="lead"></p></section>
 <form class="form-shell" id="guest-message">
 <div class="field"><label for="guest_name">Votre prénom</label><input id="guest_name" required autocomplete="name"></div>
 <div class="field"><label for="message_text">Votre message</label><textarea id="message_text" placeholder="Un mot pour plus tard…"></textarea></div>
-<div class="field"><label for="video">Votre vidéo</label><div class="upload-box"><input id="video" type="file" accept="video/*" capture="user"><p>Vidéo courte recommandée. L'envoi cloud sera activé avec Supabase.</p></div></div>
+<div class="field"><label for="video">Votre vidéo</label><div class="upload-box"><input id="video" type="file" accept="video/*" capture="user"><p>Vidéo courte recommandée — maximum 100 Mo.</p></div></div>
 <button class="btn primary" type="submit">Déposer mon souvenir</button>
 <div id="status" class="status"></div>
 </form>
 </main>
-<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>\n<script src="supabase-config.js"></script>\n<script src="app.js"></script>
 </body></html>
