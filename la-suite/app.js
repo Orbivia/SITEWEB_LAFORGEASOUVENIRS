@@ -64,7 +64,7 @@ async function initAuth(){
 
 async function initCreate(){
  const form=$("create-capsule");if(!form)return;
- const status=$("status"),dateInput=$("wedding_date"),dateButton=$("wedding_date_button"),emailInput=$("email"),submit=form.querySelector('button[type="submit"]');
+ const status=$("status"),dateInput=$("wedding_date"),emailInput=$("email"),submit=form.querySelector('button[type="submit"]');
  const draftKey="la_suite_create_draft";
  const pad=n=>String(n).padStart(2,"0");
  const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
@@ -76,18 +76,6 @@ async function initCreate(){
   dateInput.min=minDate;
   dateInput.lang="fr";
  }
- if(dateButton&&dateInput){
-  dateButton.addEventListener("click",()=>{
-   try{
-    if(typeof dateInput.showPicker==="function")dateInput.showPicker();
-    else{dateInput.focus();dateInput.click()}
-   }catch(e){
-    dateInput.focus();
-    dateInput.click();
-   }
-  });
- }
-
  function readDraft(){
   try{
    const d=JSON.parse(localStorage.getItem(draftKey)||"null");
