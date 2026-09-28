@@ -73,3 +73,11 @@ Tests navigateur : depuis `la-suite/tests`, exécuter `npm install`, `npx playwr
 `tests/account_activation.sql` vérifie dans une transaction annulée les brouillons privés, l’isolation entre comptes, les modifications directes interdites, la confirmation e-mail, le coupe-circuit des activations gratuites et l’idempotence. Les essais navigateur couvrent inscription, connexion, récupération, conservation de la préparation, activation et affichage mobile/ordinateur avec réponses Auth simulées. La réception des e-mails et les liens réels restent à vérifier avec une boîte de test autorisée.
 
 Les avis Supabase sur les fonctions SECURITY DEFINER sont attendus : la lecture publique est limitée au jeton d’une capsule active, l’activation à son propriétaire confirmé. La table de réglage serveur est volontairement sans policy et sans droits clients. La protection contre les mots de passe compromis était désactivée avant cette évolution ; réglage à activer dans Supabase Auth avant commercialisation : https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+
+## Configuration et répondeur facultatif
+
+La carte propose désormais « Notre capsule temporelle », un petit mot et une explication adaptée aux formats de la formule. Les anciens textes par défaut sont remplacés à l’affichage ; les textes personnalisés restent conservés. Le QR garde ses dimensions fixes. Les limites sont de 42 / 120 / 240 caractères pour le titre, le petit mot et l’explication.
+
+Le répondeur est facultatif : aucun, texte (2 000 caractères), image JPG/PNG/WebP (10 Mo) ou vidéo MP4/MOV/WebM (12 secondes, 100 Mo). Il réutilise `welcome_message` et `intro_path`, sans migration. Les médias restent privés dans le dossier du propriétaire ; `get_intro` fournit un lien signé et son type uniquement pour une capsule active. Désactiver le répondeur retire son affichage sans supprimer définitivement les fichiers précédemment envoyés.
+
+Les tests navigateur couvrent les trois formats, la désactivation et l’échec de sauvegarde. `node tests/guest-intro.cjs` (Node 24) vérifie la réponse image/vidéo et le refus des actions invité sur un brouillon.
