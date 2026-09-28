@@ -322,7 +322,7 @@ function qrFontFamily(key){
  return"Cormorant Garamond";
 }
 function qrFontWeight(key){
- return ["romantic","signature"].includes(key)?"400":["classic","editorial","refined"].includes(key)?"600":"700";
+ return ["romantic","signature","editorial"].includes(key)?"400":key==="classic"?"600":"700";
 }
 function collectQrCustomization(c){
  return {
@@ -373,30 +373,98 @@ function makeQrCanvas(url,o){
  const code=new QRCode(holder,{text:url,width:512,height:512,colorDark:qrInk(o.color),colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
  const model=code._oQRCode,n=model.getModuleCount(),cell=12,quiet=4;
  const canvas=document.createElement("canvas");canvas.width=canvas.height=(n+quiet*2)*cell;
- const ctx=canvas.getContext("2d");ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
+ const ctx=canvas.getContext("2d"); // Light modules and the four-module quiet zone remain transparent.
  ctx.fillStyle=qrInk(o.color);
  for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(model.isDark(y,x))ctx.fillRect((x+quiet)*cell,(y+quiet)*cell,cell,cell);
  return canvas;
 }
-function drawQrMonogram(ctx,o,cx,cy,size){
- const d=size*.17,r=d/2;
- ctx.save();ctx.translate(cx,cy);
- ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
- ctx.fillStyle=qrThemes[o.style].background;
- ctx.beginPath();ctx.arc(0,0,r*.80,0,Math.PI*2);ctx.fill();
- ctx.strokeStyle=o.color;ctx.lineWidth=Math.max(1,size*.0018);
- const badge=qrThemes[o.style].badge;
+function drawQrMonogram(ctx,o,cx,cy,size,background){
+ const d=size*.18,r=d/2,theme=qrThemes[o.style];
+ ctx.save();
+ // Reveal the exact artwork beneath the code, including gradients: no white badge.
+ ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
+ ctx.drawImage(background,cx-r,cy-r,d,d,cx-r,cy-r,d,d);
+ ctx.restore();ctx.save();ctx.translate(cx,cy);
+ ctx.strokeStyle=qrInk(o.color);ctx.lineWidth=Math.max(.8,size*.0013);ctx.globalAlpha=.45;
+ const badge=theme.badge;
  if(badge!=="plain"){
   ctx.beginPath();
-  if(badge==="diamond"){ctx.moveTo(0,-r*.8);ctx.lineTo(r*.8,0);ctx.lineTo(0,r*.8);ctx.lineTo(-r*.8,0);ctx.closePath()}
-  else ctx.ellipse(0,0,r*.78,r*(badge==="oval"?.60:.78),0,0,Math.PI*2);
+  if(badge==="diamond"){ctx.moveTo(0,-r*.84);ctx.lineTo(r*.84,0);ctx.lineTo(0,r*.84);ctx.lineTo(-r*.84,0);ctx.closePath()}
+  else ctx.ellipse(0,0,r*.83,r*(badge==="oval"?.72:.83),0,0,Math.PI*2);
   ctx.stroke();
-  if(badge==="double"){ctx.beginPath();ctx.arc(0,0,r*.68,0,Math.PI*2);ctx.stroke()}
+  if(badge==="double"){ctx.globalAlpha=.2;ctx.beginPath();ctx.arc(0,0,r*.93,0,Math.PI*2);ctx.stroke()}
  }
+ ctx.globalAlpha=1;
  const letters=Array.from(o.initials.trim().toUpperCase()).slice(0,4).join("");
- ctx.fillStyle=qrInk(o.color);ctx.textAlign="center";ctx.textBaseline="middle";
- ctx.font=(qrThemes[o.style].badge==="plain"?"500 ":"600 ")+Math.round(d*(letters.length>2?.30:.40))+'px '+(qrThemes[o.style].badge==="plain"?'Inter, sans-serif':'"Cormorant Garamond", Georgia, serif');
- ctx.fillText(letters,0,d*.025,d*.66);
+ const family=qrFontFamily(o.font),weight=qrFontWeight(o.font);
+ const maxW=d*(badge==="diamond"?.52:.66),maxH=d*(badge==="diamond"?.43:.48);
+ ctx.textAlign="left";ctx.textBaseline="alphabetic";
+ let fontSize=d*.5,metrics;
+ do{
+  ctx.font=weight+" "+fontSize+'px "'+family+'", serif';
+  metrics=ctx.measureText(letters);
+  if(Math.max(metrics.width,metrics.actualBoundingBoxLeft+metrics.actualBoundingBoxRight)<=maxW&&metrics.actualBoundingBoxAscent+metrics.actualBoundingBoxDescent<=maxH)break;
+  fontSize--;
+ }while(fontSize>12);
+ ctx.fillStyle=qrInk(o.color);ctx.textAlign="left";ctx.textBaseline="alphabetic";
+ ctx.fillText(letters,(metrics.actualBoundingBoxLeft-metrics.actualBoundingBoxRight)/2,(metrics.actualBoundingBoxAscent-metrics.actualBoundingBoxDescent)/2);
+ ctx.restore();
+}
+function drawQrBackdrop(ctx,o,W,H){
+ const theme=qrThemes[o.style],style=o.style;
+ ctx.fillStyle=theme.background;ctx.fillRect(0,0,W,H);
+ if(style==="minimal")return;
+ const wash=(x,y,r,alpha)=>{
+  const g=ctx.createRadialGradient(x,y,0,x,y,r);
+  g.addColorStop(0,o.color);g.addColorStop(1,theme.background);
+  ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.restore();
+ };
+ const soft=["romantic","pressed","botanical","olive","signature","pearl","celestial"].includes(style);
+ wash(0,0,W*.9,soft?.14:.07);wash(W,H,W,soft?.12:.06);
+ if(style==="pearl")wash(W*.8,H*.35,W*.7,.07);
+ ctx.save();ctx.strokeStyle=o.color;ctx.fillStyle=o.color;
+ // Fine paper texture lives in the margins, away from the quiet zone and text.
+ ctx.globalAlpha=.045;
+ for(let i=0;i<1100;i++){
+  const x=(i*83.37)%W,y=(i*173.29)%H;
+  if(x<125||x>W-125)ctx.fillRect(x,y,1.1,1.1);
+ }
+ ctx.globalAlpha=.14;ctx.lineWidth=1.3;
+ if(["chic","palace","retro","editorial"].includes(style)){
+  for(let i=0;i<5;i++){
+   const inset=24+i*7;ctx.beginPath();ctx.moveTo(inset,150);ctx.lineTo(inset,inset);ctx.lineTo(150,inset);ctx.stroke();
+   ctx.beginPath();ctx.moveTo(W-inset,H-150);ctx.lineTo(W-inset,H-inset);ctx.lineTo(W-150,H-inset);ctx.stroke();
+  }
+ }
+ if(["romantic","pressed","botanical","olive"].includes(style)){
+  for(const flip of [false,true]){
+   ctx.save();if(flip){ctx.translate(W,H);ctx.rotate(Math.PI)}
+   ctx.globalAlpha=.09;
+   for(let i=0;i<5;i++){
+    ctx.beginPath();ctx.ellipse(55+i*9,510+i*135,70,150,-.4+i*.15,0,Math.PI*2);ctx.fill();
+   }
+   ctx.globalAlpha=.24;ctx.beginPath();ctx.moveTo(36,185);ctx.bezierCurveTo(135,360,18,650,83,980);ctx.stroke();
+   ctx.restore();
+  }
+ }
+ if(style==="celestial"){
+  ctx.globalAlpha=.16;
+  for(const [x,y] of [[35,95],[W-35,H-95]]){ctx.beginPath();ctx.arc(x,y,145,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(x,y,165,0,Math.PI*2);ctx.stroke()}
+  ctx.globalAlpha=.38;
+  for(let i=0;i<38;i++){const x=i%2?W-35-(i*11)%80:35+(i*11)%80,y=170+(i*73)%(H-300);ctx.beginPath();ctx.arc(x,y,i%3?1.4:2.5,0,Math.PI*2);ctx.fill()}
+ }
+ if(style==="seaside"){
+  ctx.globalAlpha=.09;
+  for(let i=0;i<6;i++){ctx.beginPath();ctx.moveTo(0,H-65-i*12);ctx.bezierCurveTo(W*.3,H-190-i*8,W*.6,H+20-i*12,W,H-110-i*12);ctx.stroke()}
+ }
+ if(style==="dolce"){
+  ctx.globalAlpha=.18;
+  for(let y=320;y<H-320;y+=85)for(const x of [50,W-50]){ctx.beginPath();ctx.moveTo(x,y-10);ctx.lineTo(x+10,y);ctx.lineTo(x,y+10);ctx.lineTo(x-10,y);ctx.closePath();ctx.stroke()}
+ }
+ if(style==="boho"){
+  ctx.globalAlpha=.16;
+  for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse(-10,H-180,160+i*14,300+i*14,.35,0,Math.PI*2);ctx.stroke()}
+ }
  ctx.restore();
 }
 function drawQrDecor(ctx,o,W,H){
@@ -539,26 +607,26 @@ async function buildPrintCardCanvas(c,url){
  if(document.fonts?.load)try{await Promise.all([document.fonts.load(qrFontWeight(o.font)+' 72px "'+qrFontFamily(o.font)+'"'),document.fonts.load('600 32px "Cormorant Garamond"'),document.fonts.load('400 25px Inter'),document.fonts.load('700 32px Inter')])}catch(e){}
  const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
  const W=1181,H=1772;canvas.width=W;canvas.height=H;
- const bg=qrThemes[o.style].background;
- ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+ drawQrBackdrop(ctx,o,W,H);
  drawQrDecor(ctx,o,W,H);
  ctx.textAlign="center";ctx.textBaseline="alphabetic";
  const ff=qrFontFamily(o.font);
  let titleSize=["romantic","signature"].includes(o.font)?86:o.font==="contemporary"?64:o.font==="refined"?66:72;
  ctx.fillStyle="#201c1a";
- titleSize=fitPrintFont(ctx,o.title,880,3,titleSize,'"'+ff+'", serif',qrFontWeight(o.font));
- const titleLines=wrapCanvasLines(ctx,o.title,880,3),titleLineHeight=titleSize*1.12;
+ const titleWidth=o.style==="arch"?660:880;
+ titleSize=fitPrintFont(ctx,o.title,titleWidth,3,titleSize,'"'+ff+'", serif',qrFontWeight(o.font));
+ const titleLines=wrapCanvasLines(ctx,o.title,titleWidth,3),titleLineHeight=titleSize*1.12;
  const titleY=310-(titleLines.length-1)*titleLineHeight/2;
- drawWrappedCenteredText(ctx,o.title,W/2,titleY,880,titleLineHeight,3);
+ drawWrappedCenteredText(ctx,o.title,W/2,titleY,titleWidth,titleLineHeight,3);
  drawQrDivider(ctx,o,W/2,475);
  const qsize=570,qx=Math.round((W-qsize)/2),qy=550;
- ctx.fillStyle="#ffffff";
- ctx.beginPath();ctx.roundRect(qx-28,qy-28,qsize+56,qsize+56,34);ctx.fill();
+ const background=document.createElement("canvas");background.width=W;background.height=H;
+ background.getContext("2d").drawImage(canvas,0,0);
  ctx.imageSmoothingEnabled=false;
  ctx.drawImage(qr,qx,qy,qsize,qsize);
  ctx.imageSmoothingEnabled=true;
 
- if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize);
+ if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize,background);
 
  let textY=qy+qsize+105;
  ctx.fillStyle="#262220";fitPrintFont(ctx,o.note,820,3,32,"Inter, Arial, sans-serif","700");
@@ -676,7 +744,7 @@ function ownerShell(c,url,count){
      <label>Ambiance de la carte</label>
      <input id="qr-style" type="hidden" value="${esc(o.style)}">
      <div class="qr-style-choices qr-theme-gallery" role="group" aria-label="18 ambiances de carte">
-      ${Object.entries(qrThemes).map(([key,theme])=>`<button class="qr-style-choice ${o.style===key?"is-selected":""}" data-qr-style="${key}" type="button" aria-pressed="${o.style===key}"><img class="qr-theme-thumbnail" src="assets/themes/${key}.webp?v=20260927-collection1" alt="" width="180" height="270" loading="lazy"><span><strong>${theme.name}</strong><small>${theme.detail}</small></span></button>`).join("")}
+      ${Object.entries(qrThemes).map(([key,theme])=>`<button class="qr-style-choice ${o.style===key?"is-selected":""}" data-qr-style="${key}" type="button" aria-pressed="${o.style===key}"><img class="qr-theme-thumbnail" src="assets/themes/${key}.webp?v=20260928-integrated1" alt="" width="180" height="270" loading="lazy"><span><strong>${theme.name}</strong><small>${theme.detail}</small></span></button>`).join("")}
      </div>
     </div>
 
