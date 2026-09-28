@@ -2390,12 +2390,22 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 .qr-preview-label{flex-wrap:wrap}
 .qr-artwork-preview{max-width:100%;min-width:0}
 
-/* Full-card swatches keep the collection faithful to the printed artwork. */
-.qr-theme-gallery{max-height:620px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:3px 5px 5px 3px;gap:12px;align-items:start}
-.qr-theme-gallery .qr-style-choice{padding:6px;gap:0;min-width:0;background:#fff;border-radius:9px;transition:border-color .15s,box-shadow .15s}
-.qr-theme-thumbnail{display:block;width:100%;height:auto;aspect-ratio:2/3;object-fit:cover;border-radius:3px;box-shadow:0 2px 8px #392d2110}
-.qr-theme-gallery .qr-style-choice>span:last-child{padding:5px 2px;margin:0}
-.qr-theme-gallery .qr-style-choice strong{font-size:.72rem;line-height:1.25}
-.qr-theme-gallery .qr-style-choice small{font-size:.60rem;line-height:1.4;min-height:2.8em}
-.qr-theme-gallery .qr-style-choice.is-selected{border-color:#8b713e;background:#faf7ef;box-shadow:0 0 0 1px #8b713e}
-@media(max-width:600px){.qr-theme-gallery{max-height:510px;gap:8px}.qr-theme-gallery .qr-style-choice strong{font-size:.67rem}.qr-theme-gallery .qr-style-choice small{font-size:.56rem}}
+/* Compact theme cards with names directly on the preview. */
+.qr-theme-gallery{grid-template-columns:repeat(4,minmax(0,1fr));max-height:280px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:3px 5px 5px 3px;gap:8px;align-items:start}
+.qr-theme-gallery .qr-style-choice{position:relative;display:block;padding:0;min-width:0;border:2px solid transparent;background:#f6f1e9;border-radius:7px;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.qr-theme-thumbnail{display:block;width:100%;height:auto;aspect-ratio:2/3;object-fit:contain;border-radius:4px}
+.qr-theme-gallery .qr-style-choice>.qr-theme-name{position:absolute;inset:auto 0 0;display:flex;align-items:center;justify-content:center;min-height:31px;padding:5px 3px;margin:0;background:rgba(255,253,249,.94);color:#39302b;text-align:center;font:600 .65rem/1.2 Inter,sans-serif;overflow-wrap:anywhere}
+.qr-theme-gallery .qr-style-choice.is-selected{border-color:#8b713e;box-shadow:0 0 0 1px #8b713e}
+.qr-theme-gallery .qr-style-choice.is-selected>.qr-theme-name{background:#f0e5d0;color:#674d25}
+/* Allow controls to shrink inside the organizer column instead of overflowing it. */
+.qr-designer-controls,.qr-control-group,.qr-designer-controls .field,.qr-font-picker,.qr-initials-card,.qr-initials-card>*{min-width:0;max-width:100%;box-sizing:border-box}
+.qr-font-trigger{grid-template-columns:minmax(0,1fr) auto auto;max-width:100%;box-sizing:border-box;gap:8px}
+.qr-font-current,.qr-font-sample{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.qr-font-menu{box-sizing:border-box;max-width:100%}
+.qr-font-menu button{grid-template-columns:minmax(0,1fr) auto;box-sizing:border-box;gap:8px}
+.qr-initials-card{grid-template-columns:minmax(0,90px) minmax(0,1fr);align-items:center;gap:12px}
+.qr-initials-card input:not([type=checkbox]){width:100%;max-width:100%;box-sizing:border-box}
+.qr-initials-card .qr-check-switch{white-space:normal;margin:0;align-items:center;line-height:1.4}
+.qr-check-switch input[type=checkbox]{flex:0 0 18px}
+.qr-check-switch span{min-width:0;overflow-wrap:anywhere}
+@media(max-width:400px){.qr-theme-gallery{grid-template-columns:repeat(3,minmax(0,1fr));max-height:265px}.qr-font-current-name{font-size:.65rem}.qr-initials-card{grid-template-columns:minmax(0,74px) minmax(0,1fr);gap:9px}}

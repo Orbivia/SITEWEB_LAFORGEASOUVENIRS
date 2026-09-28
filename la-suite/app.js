@@ -744,7 +744,7 @@ function ownerShell(c,url,count){
      <label>Ambiance de la carte</label>
      <input id="qr-style" type="hidden" value="${esc(o.style)}">
      <div class="qr-style-choices qr-theme-gallery" role="group" aria-label="18 ambiances de carte">
-      ${Object.entries(qrThemes).map(([key,theme])=>`<button class="qr-style-choice ${o.style===key?"is-selected":""}" data-qr-style="${key}" type="button" aria-pressed="${o.style===key}"><img class="qr-theme-thumbnail" src="assets/themes/${key}.webp?v=20260928-integrated1" alt="" width="180" height="270" loading="lazy"><span><strong>${theme.name}</strong><small>${theme.detail}</small></span></button>`).join("")}
+      ${Object.entries(qrThemes).map(([key,theme])=>`<button class="qr-style-choice ${o.style===key?"is-selected":""}" data-qr-style="${key}" type="button" aria-pressed="${o.style===key}"><img class="qr-theme-thumbnail" src="assets/themes/${key}.webp?v=20260928-integrated1" alt="" width="180" height="270" loading="lazy"><span class="qr-theme-name">${theme.name}</span></button>`).join("")}
      </div>
     </div>
 
