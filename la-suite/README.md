@@ -52,7 +52,7 @@ Ajouter au minimum : anti-abus (Turnstile ou équivalent), suppression complète
 - « Mes capsules » permet de retrouver chaque capsule, y compris les brouillons.
 - Les anciennes connexions par lien restent compatibles : « première connexion » permet de définir un mot de passe sur la même adresse.
 - Configurer les URL de retour autorisées dans Supabase Auth : `https://laforgeasouvenirs.fr/la-suite/dashboard.html`, `https://laforgeasouvenirs.fr/la-suite/create.html?resume=1` et `https://laforgeasouvenirs.fr/la-suite/auth.html?mode=recovery` (et leurs équivalents de prévisualisation). La confirmation de l’adresse est activée sur le projet.
-- Formules : `photo` = Éclat, `audio` = Écho, `premium` = Éternité. La formule est une intention commerciale ; durant la phase gratuite, tous les médias restent accessibles.
+- Formules : `photo` = Essentiel, `audio` = Plus, `premium` = Premium. La formule est une intention commerciale ; durant la phase gratuite, tous les médias restent accessibles.
 - Le bouton « Activer gratuitement » appelle `activate_capsule`, qui vérifie le propriétaire, la confirmation de l’e-mail et le paramètre serveur. L’opération est idempotente. Les modifications directes des champs d’activation sont refusées aux clients.
 - Les capsules existantes restent actives (`activation_source=legacy`). Les nouvelles activations gratuites portent `free_beta`, jamais un statut payé.
 - Les invités ne peuvent consulter ou alimenter que les capsules actives, via le jeton du QR code. L’Edge Function vérifie aussi cet état avant toute création de message ou d’URL signée.
