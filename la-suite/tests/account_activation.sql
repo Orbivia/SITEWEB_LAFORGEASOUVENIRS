@@ -24,6 +24,10 @@ select set_config('request.jwt.claim.sub',current_setting('test.other'),true);
 set local role authenticated;
 do $$ begin
  if exists(select 1 from public.capsules where id=current_setting('test.capsule')::uuid) then raise exception 'Cross-account read'; end if;
+ update public.capsules set couple_name='Unauthorized' where id=current_setting('test.capsule')::uuid;
+ if found then raise exception 'Cross-account update'; end if;
+ delete from public.capsules where id=current_setting('test.capsule')::uuid and status='draft';
+ if found then raise exception 'Cross-account delete'; end if;
  begin
   perform public.activate_capsule(current_setting('test.capsule')::uuid);
   raise exception 'TEST: cross-account activation allowed';
@@ -59,10 +63,18 @@ reset role;
 update auth.users set email_confirmed_at=now() where id=current_setting('test.owner')::uuid;
 set local role authenticated;
 update public.capsules set welcome_message='Bienvenue dans notre capsule',intro_path=current_setting('test.capsule')||'/organizer/greeting.png' where id=current_setting('test.capsule')::uuid;
+update public.capsules set couple_name='Updated name',wedding_date=current_date+40,plan='audio' where id=current_setting('test.capsule')::uuid;
 select public.activate_capsule(current_setting('test.capsule')::uuid);
 select public.activate_capsule(current_setting('test.capsule')::uuid);
 do $$ begin
- if not exists(select 1 from public.capsules where id=current_setting('test.capsule')::uuid and status='active' and activation_source='free_beta') then raise exception 'Activation failed'; end if;
+ if not exists(select 1 from public.capsules where id=current_setting('test.capsule')::uuid and status='active' and activation_source='free_beta' and couple_name='Updated name' and plan='audio') then raise exception 'Activation failed'; end if;
+end $$;
+do $$ declare draft_id uuid:=gen_random_uuid(); begin
+ delete from public.capsules where id=current_setting('test.capsule')::uuid and status='draft';
+ if found then raise exception 'Filtered delete removed active capsule'; end if;
+ insert into public.capsules(id,owner_id,slug,couple_name,wedding_date) values(draft_id,auth.uid(),'test-'||draft_id,'Draft deletion test',current_date+30);
+ delete from public.capsules where id=draft_id and status='draft';
+ if not found then raise exception 'Draft deletion failed'; end if;
 end $$;
 reset role;
 set local role anon;
