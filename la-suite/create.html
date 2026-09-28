@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20260927-organizer1">
+<link rel="stylesheet" href="styles.css?v=20260928-account1">
 </head>
 <body class="create-page suite-shell-page">
 <header class="forge-style-header">
@@ -31,7 +31,7 @@
 
 <main class="wrap create-wrap">
   <section class="create-intro">
-    <h1>Créez votre capsule</h1>
+    <div class="eyebrow">1. Préparation · 2. Compte · 3. Personnalisation · 4. Activation</div><h1>Créez votre capsule</h1><p>Commencez par un brouillon privé. Aucun paiement demandé.</p>
   </section>
 
   <form class="form-shell create-form" id="create-capsule" action="#" onsubmit="return false;">
@@ -55,10 +55,11 @@
     <div class="field">
       <label for="email">Adresse e-mail</label>
       <input id="email" name="email" type="email" autocomplete="off" required placeholder="vous@exemple.fr">
-      <small class="field-help" id="email-help">Un lien sécurisé vous sera envoyé pour finaliser la création.</small>
+      <small class="field-help" id="email-help">Votre e-mail vous permettra de retrouver votre capsule.</small>
     </div>
 
-    <button class="btn primary create-submit" type="submit">Créer ma capsule</button>
+    <div class="field"><label for="plan">Votre formule envisagée</label><select id="plan" name="plan"><option value="photo">Éclat — Photo</option><option value="audio">Écho — Photo + Audio</option><option value="premium">Éternité — Photo + Audio + Vidéo</option></select><small class="field-help">Le paiement arrive plus tard. Pour le moment, tous les formats sont accessibles gratuitement après activation.</small></div>
+    <button class="btn primary create-submit" type="submit">Continuer ma préparation</button>
     <div id="status" class="status"></div>
   </form>
 </main>
@@ -77,6 +78,6 @@
 <script src="suite-shell.js?v=20260927-shell1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js?v=20260927-1"></script>
-<script src="app.js?v=20260927-datefr1"></script>
+<script src="app.js?v=20260928-account1"></script>
 </body>
 </html>

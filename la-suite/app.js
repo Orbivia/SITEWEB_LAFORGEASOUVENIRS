@@ -48,18 +48,67 @@ async function startRecorder(kind){
 }
 function stopRecorder(){if(recorder&&recorder.state!=="inactive")recorder.stop()}
 
+const PLAN_NAMES={photo:"Éclat",audio:"Écho",premium:"Éternité"};
+const PLAN_PRICES={photo:"9,90 €",audio:"14,90 €",premium:"24,90 €"};
+function authDestination(){return qs.get("next")==="create"?"create.html?resume=1":"dashboard.html"}
 async function initAuth(){
  const form=$("auth-form");if(!form)return;
- const status=$("status");
- if(!configured)return show(status,"Supabase n'est pas encore configuré.",false);
- if(await user())return setTimeout(()=>location.href="dashboard.html",200);
+ const status=$("status"),submit=form.querySelector('[type="submit"]');
+ if(!configured)return show(status,"Le service de connexion est indisponible. Rechargez la page.",false);
+ let mode=qs.get("mode")==="signup"?"signup":qs.get("mode")==="recovery"?"recovery":"login";
+ function render(){
+  const recovery=mode==="recovery",reset=mode==="reset";
+  $("auth-title").textContent=({login:"Bienvenue dans votre espace",signup:"Créez votre compte",reset:"Retrouver votre accès",recovery:"Choisissez votre mot de passe"})[mode];
+  $("auth-description").textContent=reset?"Recevez un lien pour définir ou réinitialiser votre mot de passe.":recovery?"Utilisez au moins 10 caractères pour sécuriser votre espace.":"Retrouvez vos capsules, personnalisez-les et partagez vos souvenirs.";
+  $("email-field").hidden=recovery;$("email").required=!recovery;
+  $("password-field").hidden=reset;$("password").required=!reset;
+  $("password").minLength=mode==="login"?1:10;$("password").autocomplete=mode==="login"?"current-password":"new-password";
+  $("password-confirm-field").hidden=!(recovery||mode==="signup");$("password-confirm").required=recovery||mode==="signup";
+  submit.textContent=({login:"Me connecter",signup:"Créer mon compte",reset:"Recevoir le lien",recovery:"Enregistrer mon mot de passe"})[mode];
+  $("auth-options").hidden=false;
+  $("resend-confirmation").hidden=true;
+  show(status,"");
+ }
+ render();
+ sb.auth.onAuthStateChange(event=>{if(event==="PASSWORD_RECOVERY"){mode="recovery";render()}});
+ $("resend-confirmation").addEventListener("click",async()=>{
+  const button=$("resend-confirmation");button.disabled=true;
+  try{const{error}=await sb.auth.resend({type:"signup",email:$("email").value.trim(),options:{emailRedirectTo:new URL(authDestination(),location.href).href}});if(error)throw error;show(status,"Un nouveau lien de confirmation a été demandé. Vérifiez votre boîte mail et les indésirables.")}catch(e){show(status,"Envoi impossible. Patientez quelques minutes avant de réessayer.",false)}finally{button.disabled=false}
+ });
+ document.querySelectorAll('[data-auth-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.authMode;render()}));
+ if(qs.get("next")==="create")try{const d=JSON.parse(localStorage.getItem("la_suite_create_draft")||"null");if(d?.email)$("email").value=d.email}catch(e){}
+ const authError=new URLSearchParams(location.hash.slice(1)).get("error_description");
+ if(authError)show(status,"Ce lien n’est plus valide. Demandez un nouveau lien avec « Mot de passe oublié / première connexion ».",false);
+ const initial=await user();
+ if(initial&&mode!=="recovery")return location.href=authDestination();
  form.addEventListener("submit",async e=>{
-  e.preventDefault();const email=$("email").value.trim();const redirectTo=new URL("dashboard.html",location.href).href;
-  show(status,"Envoi du lien de connexion…");
-  const{error}=await sb.auth.signInWithOtp({email,options:{emailRedirectTo:redirectTo}});
-  if(error)return show(status,"Impossible d'envoyer le lien : "+error.message,false);
-  form.reset();show(status,"Lien envoyé. Consultez votre boîte mail.")
- })
+  e.preventDefault();submit.disabled=true;
+  const email=$("email").value.trim(),password=$("password").value;
+  try{
+   if((mode==="signup"||mode==="recovery")&&password!==$("password-confirm").value)throw new Error("Les mots de passe ne correspondent pas.");
+   let result;
+   if(mode==="reset"){
+    result=await sb.auth.resetPasswordForEmail(email,{redirectTo:new URL("auth.html?mode=recovery",location.href).href});
+    if(result.error)throw result.error;
+    return show(status,"Si cette adresse est associée à un compte, un lien vous sera envoyé. Pensez à vérifier les indésirables.");
+   }
+   if(mode==="recovery"){
+    result=await sb.auth.updateUser({password});if(result.error)throw result.error;
+    location.href=authDestination();return;
+   }
+   if(mode==="signup"){
+    result=await sb.auth.signUp({email,password,options:{emailRedirectTo:new URL(authDestination(),location.href).href}});
+    if(result.error)throw result.error;
+    if(!result.data.session){$("resend-confirmation").hidden=false;$("password").value="";$("password-confirm").value="";return show(status,"Consultez votre boîte mail pour confirmer votre adresse, puis connectez-vous. Votre préparation est conservée 24 h dans ce navigateur. Si vous avez déjà un compte, utilisez « J’ai déjà un compte ».")}
+   }else{
+    result=await sb.auth.signInWithPassword({email,password});if(result.error)throw result.error;
+   }
+   location.href=authDestination();
+  }catch(err){
+   const msg=String(err?.message||"");
+   show(status,/Invalid login/i.test(msg)?"E-mail ou mot de passe incorrect.":/Email not confirmed/i.test(msg)?"Confirmez votre adresse avec le lien reçu par e-mail.":/rate limit|too many/i.test(msg)?"Trop de tentatives. Patientez quelques minutes avant de réessayer.":/session missing|expired|invalid.*token/i.test(msg)?"Ce lien a expiré. Demandez un nouveau lien depuis « Mot de passe oublié ».":msg||"Connexion impossible. Réessayez.",false);
+  }finally{submit.disabled=false}
+ });
 }
 
 async function initCreate(){
@@ -132,7 +181,11 @@ async function initCreate(){
   if(!u)return false;
   if(submit)submit.disabled=true;
   show(status,"Création de la capsule…");
+  const existing=await sb.from("capsules").select("slug").eq("id",d.id).maybeSingle();
+  if(existing.data){localStorage.removeItem(draftKey);location.href="dashboard.html?slug="+encodeURIComponent(existing.data.slug);return true}
   const{data,error}=await sb.from("capsules").insert({
+   id:d.id,
+   plan:PLAN_NAMES[d.plan]?d.plan:"premium",
    owner_id:u.id,
    slug:slugify(d.couple)+"-"+rid(),
    couple_name:d.couple,
@@ -153,7 +206,12 @@ async function initCreate(){
 
  const currentUser=await user();
  const pending=readDraft();
+ if(currentUser){emailInput.value=currentUser.email;emailInput.readOnly=true;$("email-help").textContent="Cette capsule sera enregistrée dans votre compte."}
+ if(pending){$("couple").value=pending.couple;dateInput.value=pending.wedding;dateDisplay.value=frFromIso(pending.wedding);if(!currentUser)emailInput.value=pending.email}
+ $("plan").value=PLAN_NAMES[qs.get("plan")]?qs.get("plan"):(pending?.plan||"premium");
  if(qs.get("resume")==="1"&&currentUser&&pending){
+  pending.id=pending.id||crypto.randomUUID();
+  localStorage.setItem(draftKey,JSON.stringify(pending));
   await createCapsule(pending,currentUser);
   return
  }
@@ -164,6 +222,8 @@ async function initCreate(){
   const fd=new FormData(form);
   const displayedDate=String(dateDisplay?.value||"").trim();
   const d={
+   id:readDraft()?.id||crypto.randomUUID(),
+   plan:$("plan").value,
    couple:String(fd.get("couple")||"").trim(),
    wedding:dateDisplay?parseFrDate(displayedDate):String(fd.get("wedding_date")||""),
    email:String(fd.get("email")||"").trim(),
@@ -177,27 +237,15 @@ async function initCreate(){
   try{
    const u=await user();
 
-   // Ne renvoie pas inutilement un e-mail si cette adresse est déjà authentifiée.
-   if(u&&String(u.email||"").toLowerCase()===d.email.toLowerCase()){
-    return await createCapsule(d,u)
-   }
-
-   if(u)await sb.auth.signOut();
-   show(status,"Envoi du lien sécurisé…");
-   const redirectTo=new URL("create.html?resume=1",location.href).href;
-   const{error}=await sb.auth.signInWithOtp({
-    email:d.email,
-    options:{emailRedirectTo:redirectTo,shouldCreateUser:true}
-   });
-   if(error)throw error;
-   show(status,"Lien envoyé. Consultez votre boîte mail pour finaliser la création.");
+   if(u)return await createCapsule(d,u);
+   location.href="auth.html?mode=signup&next=create";
   }catch(err){
    if(submit)submit.disabled=false;
    const msg=String(err?.message||"");
    if(/rate limit|too many requests|429/i.test(msg)){
     return show(status,"Trop de liens ont été demandés récemment. Le service e-mail Supabase a temporairement atteint sa limite. Réessayez plus tard ou utilisez une adresse déjà connectée.",false)
    }
-   show(status,"Impossible d'envoyer le lien : "+(msg||"erreur inconnue"),false);
+   show(status,"Impossible de continuer : "+(msg||"erreur inconnue"),false);
   }
  })
 }
@@ -701,9 +749,9 @@ async function saveQrCustomization(c,url,silent=false){
  const s=$("qr-status"),payload=collectQrCustomization(c);
  if(!silent)show(s,"Enregistrement…");
  const{error}=await sb.from("capsules").update(payload).eq("id",c.id);
- if(error)return show(s,"Impossible d'enregistrer : "+error.message,false);
+ if(error){show(s,"Impossible d'enregistrer : "+error.message,false);return false}
  Object.assign(c,payload);applyQrPreview(url,c);
- if(!silent)show(s,"Personnalisation enregistrée.")
+ if(!silent)show(s,"Personnalisation enregistrée.");return true
 }
 async function shareGuestLink(url){
  if(navigator.share){
@@ -1052,13 +1100,36 @@ async function initDashboard(){
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href="auth.html";
  $("logout")?.addEventListener("click",async()=>{await sb.auth.signOut();location.href="index.html"});
- const{data:caps,error}=await sb.from("capsules").select("id,slug,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
+ const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
- if(!caps.length)return $("dashboard-content").innerHTML='<div class="notice">Aucune capsule. <a href="create.html"><strong>Créer une capsule</strong></a>.</div>';
- const c=(qs.get("slug")&&caps.find(x=>x.slug===qs.get("slug")))||caps[0];$("dashboard-title").textContent=c.couple_name;
+ if(!qs.get("slug")){
+  $("dashboard-title").textContent="Mes capsules";
+  document.querySelectorAll('[data-owner-tab-link]').forEach(el=>el.hidden=true);
+  $("dashboard-content").innerHTML='<p class="hint">Vos brouillons et vos capsules actives, réunis dans votre espace.</p><div class="capsule-grid">'+caps.map(c=>`<a class="capsule-card" href="dashboard.html?slug=${encodeURIComponent(c.slug)}"><span class="capsule-badge">${c.status==="active"?"Active":"Brouillon privé"}</span><h2>${esc(c.couple_name)}</h2><p>${esc(new Date(c.wedding_date+"T12:00:00").toLocaleDateString("fr-FR"))} · ${esc(PLAN_NAMES[c.plan]||"Éternité")}</p><strong>${c.status==="active"?"Ouvrir ma capsule":"Continuer la préparation"} →</strong></a>`).join("")+'<a class="capsule-card capsule-new" href="create.html"><span aria-hidden="true">+</span><h2>Créer une capsule</h2><p>Préparez un nouvel événement.</p></a></div>';
+  return;
+ }
+ const c=caps.find(x=>x.slug===qs.get("slug"));
+ if(!c)return $("dashboard-content").innerHTML='<div class="notice">Capsule introuvable. <a href="dashboard.html">Revenir à mes capsules</a></div>';
+ $("dashboard-title").textContent=c.couple_name;
  const url=new URL("capsule.html",location.href);url.search="?t="+encodeURIComponent(c.guest_token);
  const{data:manifest,error:me}=await sb.rpc("owner_message_manifest",{p_capsule_id:c.id});if(me)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(me.message)+'</div>';
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
+ const stage=document.createElement("section");stage.className="activation-panel";
+ stage.innerHTML=c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">Brouillon privé</span><h2>Personnalisez, puis activez votre capsule</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Valider ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p><strong>${esc(c.couple_name)}</strong> · ${esc(c.wedding_date)}</p><p>Formule envisagée : <strong>${esc(PLAN_NAMES[c.plan]||"Éternité")}</strong></p><p>Tarif prévu de cette formule : ${esc(PLAN_PRICES[c.plan]||PLAN_PRICES.premium)} par capsule. <strong>À régler aujourd’hui : 0 €.</strong></p><p>Le paiement sera proposé ultérieurement. Pour le moment, l’activation est gratuite et tous les formats sont accessibles. Aucun paiement ne vous sera demandé pour cette activation.</p><button id="activate-capsule" class="btn primary" type="button">Activer gratuitement</button><p id="activation-status" class="status" role="status"></p></dialog>`;
+ $("dashboard-content").prepend(stage);
+ if(c.status!=="active"){
+  ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title="Activez votre capsule pour partager votre carte"});
+  const guestLink=$("open-guest-link");if(guestLink)guestLink.hidden=true;
+  $("review-activation").addEventListener("click",()=>$("activation-dialog").showModal());
+  $("activate-capsule").addEventListener("click",async()=>{
+   const button=$("activate-capsule");button.disabled=true;
+   try{
+    if(!await saveQrCustomization(c,url.href,true))throw new Error("Enregistrez la personnalisation avant de réessayer.");
+    const{error}=await sb.rpc("activate_capsule",{p_capsule_id:c.id});if(error)throw error;
+    location.reload();
+   }catch(e){show($("activation-status"),"Activation impossible : "+e.message,false);button.disabled=false}
+  });
+ }
  setupOwnerTabs(c,manifest||[]);
  applyQrPreview(url.href,c);
  const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-show-initials"];
