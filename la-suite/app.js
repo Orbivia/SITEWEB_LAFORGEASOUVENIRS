@@ -275,7 +275,7 @@ async function initCapsule(){
  if(!configured||!token)return show(status,"Lien de capsule invalide.",false);
  const{data,error}=await sb.rpc("get_capsule_public",{p_guest_token:token});
  if(error||!data?.length){$("guest-message").hidden=true;return show(status,"Cette capsule est introuvable.",false)}
- const c=data[0];$("capsule-title").textContent=c.couple_name;$("capsule-welcome").textContent=c.welcome_message||"";
+ const c=data[0];$("capsule-title").textContent=c.couple_name;$("capsule-welcome").textContent=c.welcome_message||"";$("capsule-welcome").hidden=!c.welcome_message;if(c.welcome_message)$("intro-section").hidden=false;
  const eventDate=c.wedding_date?new Date(c.wedding_date+"T23:59:59"):null;
  if(eventDate){
    const recordingDeadline=new Date(eventDate);
@@ -287,7 +287,7 @@ async function initCapsule(){
  }
  if(c.has_intro){
   const r=await sb.functions.invoke("guest-upload",{body:{action:"get_intro",guest_token:token}});
-  if(!r.error&&r.data?.signed_url){$("organizer-intro").src=r.data.signed_url;$("intro-section").hidden=false}
+  if(!r.error&&r.data?.signed_url){const media=$(r.data.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.data.signed_url;media.hidden=false;$("intro-section").hidden=false}
  }
  $("guest-message").addEventListener("submit",async e=>{
   e.preventDefault();const name=$("guest_name").value.trim(),text=$("message_text").value.trim(),instant=$("deliver-now").checked,date=$("delivery_date").value;
@@ -326,19 +326,64 @@ function videoDuration(file){
  })
 }
 
-async function uploadIntro(c){
- const f=$("intro-file")?.files?.[0],s=$("intro-status");if(!f)return show(s,"Choisissez une vidéo.",false);
- if(!f.type.startsWith("video/"))return show(s,"Choisissez un fichier vidéo.",false);
- if(f.size>maxBytes)return show(s,"La vidéo dépasse 100 Mo.",false);
- try{
-  const duration=await videoDuration(f);
-  if(!Number.isFinite(duration)||duration>12.05)return show(s,"La vidéo d'accueil doit durer 12 secondes maximum.",false);
- }catch(err){return show(s,err.message||"Impossible de contrôler la durée de la vidéo.",false)}
- const path=c.id+"/organizer/intro."+ext(f.type);show(s,"Envoi de la vidéo…");
- const up=await sb.storage.from("capsule-media").upload(path,f,{contentType:f.type,upsert:true});if(up.error)return show(s,up.error.message,false);
- const{error}=await sb.from("capsules").update({intro_path:path}).eq("id",c.id);if(error)return show(s,error.message,false);
- show(s,"Vidéo d'accueil enregistrée.");setTimeout(()=>location.reload(),400)
+function introKind(c){return c.intro_path?(/\.(jpg|jpeg|png|webp)$/i.test(c.intro_path)?"image":"video"):c.welcome_message?"text":"none"}
+async function renderIntroPreview(c){
+ const wrap=$("intro-preview-wrap");if(!wrap)return;
+ wrap.replaceChildren();
+ if(c.welcome_message){const text=document.createElement("p");text.className="intro-text-preview";text.textContent=c.welcome_message;wrap.append(text)}
+ if(!c.intro_path)return;
+ const{data,error}=await sb.storage.from("capsule-media").createSignedUrl(c.intro_path,300);
+ if(error||!data?.signedUrl){wrap.append(document.createTextNode("Aperçu indisponible. Votre répondeur reste enregistré."));return}
+ const media=document.createElement(introKind(c)==="image"?"img":"video");media.className="intro-preview";media.src=data.signedUrl;
+ if(media.tagName==="IMG")media.alt="Votre image d’accueil";else{media.controls=true;media.playsInline=true}
+ wrap.append(media);
 }
+async function uploadIntro(c){
+ const kind=$("intro-kind").value,f=$("intro-file")?.files?.[0],s=$("intro-status"),button=$("upload-intro");
+ const text=$("intro-text").value.trim();
+ if(kind==="text"&&!text)return show(s,"Écrivez votre message d’accueil.",false);
+ let path=null;
+ button.disabled=true;
+ try{
+  if(kind==="image"||kind==="video"){
+   if(!f){if(introKind(c)!==kind||!c.intro_path)throw new Error("Choisissez un fichier pour votre répondeur.");path=c.intro_path}
+   else{
+    const allowed=kind==="image"?["image/jpeg","image/png","image/webp"]:["video/mp4","video/quicktime","video/webm"];
+    if(!allowed.includes(f.type))throw new Error(kind==="image"?"Choisissez une image JPG, PNG ou WebP.":"Choisissez une vidéo MP4, MOV ou WebM.");
+    if(f.size>(kind==="image"?10*1024*1024:maxBytes))throw new Error(kind==="image"?"L’image dépasse 10 Mo.":"La vidéo dépasse 100 Mo.");
+    if(kind==="video"){const duration=await videoDuration(f);if(!Number.isFinite(duration)||duration>12.05)throw new Error("La vidéo doit durer 12 secondes maximum.")}
+    path=c.id+"/organizer/intro-"+crypto.randomUUID()+"."+ext(f.type);
+    show(s,"Envoi du répondeur…");
+    const up=await sb.storage.from("capsule-media").upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;
+   }
+  }
+  const payload={intro_path:path,welcome_message:kind==="text"?text:null};
+  const{error}=await sb.from("capsules").update(payload).eq("id",c.id);if(error)throw error;
+  Object.assign(c,payload);$("intro-file").value="";await renderIntroPreview(c);
+  show(s,kind==="none"?"Répondeur désactivé. Vos invités accèdent directement au dépôt de souvenirs.":"Votre répondeur est enregistré.");
+ }catch(e){show(s,e.message||"Impossible d’enregistrer votre répondeur.",false)}finally{button.disabled=false}
+}
+function setupIntro(c){
+ const kind=$("intro-kind"),file=$("intro-file");kind.value=introKind(c);
+ function update(){
+  $("intro-text-field").hidden=kind.value!=="text";
+  $("intro-media-field").hidden=kind.value!=="image"&&kind.value!=="video";
+  file.accept=kind.value==="image"?"image/jpeg,image/png,image/webp":"video/mp4,video/quicktime,video/webm";
+  $("intro-file-label").textContent=kind.value==="image"?"Votre image":"Votre vidéo";
+  $("intro-file-help").textContent=kind.value==="image"?"JPG, PNG ou WebP · 10 Mo maximum.":"MP4, MOV ou WebM · 12 secondes et 100 Mo maximum.";
+  $("upload-intro").textContent=kind.value==="none"?"Enregistrer sans répondeur":"Enregistrer mon répondeur";
+ }
+ kind.addEventListener("change",()=>{file.value="";update();show($("intro-status"),"Modifications à enregistrer.")});update();
+ file.addEventListener("change",()=>show($("intro-status"),file.files[0]?"Fichier sélectionné. Enregistrez pour le publier.":""));
+ $("upload-intro").addEventListener("click",()=>uploadIntro(c));renderIntroPreview(c);
+}
+const DEFAULT_CARD_TITLE="Notre capsule temporelle";
+const DEFAULT_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard, à la date que vous choisissez.";
+function defaultCardExplanation(plan){
+ const formats={photo:"une photo ou un texte",audio:"une photo, un audio ou un texte",premium:"une photo, un audio, une vidéo ou un texte"};
+ return "Flashez ce QR code et déposez-y "+(formats[plan]||formats.premium)+". Choisissez la manière la plus naturelle de partager un souvenir avec nous.";
+}
+function cardDefault(value,old,fallback){return !value||value===old?fallback:String(value)}
 
 function defaultInitials(name){
  const parts=String(name||"").split(/&|\+| et |\/|,/i).map(x=>x.trim()).filter(Boolean);
@@ -350,9 +395,9 @@ function qrOptions(c){
  return {
   initials:(c.qr_initials||defaultInitials(c.couple_name)).slice(0,4),
   color:c.qr_color||"#b78b38",
-  title:String(c.print_title||"Laissez-nous un souvenir").slice(0,42),
-  note:String(c.print_note||"Scannez ce code pour nous laisser un souvenir.").slice(0,80),
-  explanation:String(c.print_explanation||"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.").slice(0,150),
+  title:cardDefault(c.print_title,"Laissez-nous un souvenir",DEFAULT_CARD_TITLE).slice(0,42),
+  note:cardDefault(c.print_note,"Scannez ce code pour nous laisser un souvenir.",DEFAULT_CARD_NOTE).slice(0,120),
+  explanation:cardDefault(c.print_explanation,"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.",defaultCardExplanation(c.plan)).slice(0,240),
   font:["elegant","classic","modern","romantic","editorial","refined","contemporary","signature"].includes(c.qr_font)?c.qr_font:"elegant",
   style:Object.hasOwn(qrThemes,c.qr_style)?c.qr_style:"romantic",
   size:QR_LARGE_SIZE,
@@ -376,9 +421,9 @@ function collectQrCustomization(c){
  return {
   qr_initials:($("qr-initials-input")?.value||defaultInitials(c.couple_name)).trim().slice(0,4),
   qr_color:$("qr-color")?.value||"#b78b38",
-  print_title:($("print-title")?.value||"Laissez-nous un souvenir").trim().slice(0,42),
-  print_note:($("print-note")?.value||"Scannez ce code pour nous laisser un souvenir.").trim().slice(0,80),
-  print_explanation:($("print-explanation")?.value||"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.").trim().slice(0,150),
+  print_title:($("print-title")?.value||DEFAULT_CARD_TITLE).trim().slice(0,42),
+  print_note:($("print-note")?.value||DEFAULT_CARD_NOTE).trim().slice(0,120),
+  print_explanation:($("print-explanation")?.value||defaultCardExplanation(c.plan)).trim().slice(0,240),
   qr_font:$("qr-font")?.value||"elegant",
   qr_style:$("qr-style")?.value||"romantic",
   qr_size:QR_LARGE_SIZE,
@@ -659,7 +704,7 @@ async function buildPrintCardCanvas(c,url){
  drawQrDecor(ctx,o,W,H);
  ctx.textAlign="center";ctx.textBaseline="alphabetic";
  const ff=qrFontFamily(o.font);
- let titleSize=["romantic","signature"].includes(o.font)?86:o.font==="contemporary"?64:o.font==="refined"?66:72;
+ let titleSize=["romantic","signature"].includes(o.font)?104:o.font==="contemporary"?80:o.font==="refined"?82:94;
  ctx.fillStyle="#201c1a";
  const titleWidth=o.style==="arch"?660:880;
  titleSize=fitPrintFont(ctx,o.title,titleWidth,3,titleSize,'"'+ff+'", serif',qrFontWeight(o.font));
@@ -676,11 +721,11 @@ async function buildPrintCardCanvas(c,url){
 
  if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize,background);
 
- let textY=qy+qsize+105;
- ctx.fillStyle="#262220";fitPrintFont(ctx,o.note,820,3,32,"Inter, Arial, sans-serif","700");
- textY=drawWrappedCenteredText(ctx,o.note,W/2,textY,820,43,3)+20;
- ctx.fillStyle="#706964";fitPrintFont(ctx,o.explanation,790,4,25,"Inter, Arial, sans-serif","400");
- drawWrappedCenteredText(ctx,o.explanation,W/2,textY,790,38,4);
+ let textY=qy+qsize+92;
+ ctx.fillStyle="#262220";const noteSize=fitPrintFont(ctx,o.note,850,3,40,"Inter, Arial, sans-serif","600");
+ textY=drawWrappedCenteredText(ctx,o.note,W/2,textY,850,noteSize*1.3,3)+24;
+ ctx.fillStyle="#554e49";const explanationSize=fitPrintFont(ctx,o.explanation,850,5,32,"Inter, Arial, sans-serif","400");
+ drawWrappedCenteredText(ctx,o.explanation,W/2,textY,850,explanationSize*1.3,5);
 
 
  try{
@@ -777,10 +822,10 @@ function ownerShell(c,url,count){
  <div class="qr-designer-grid">
   <div class="qr-designer-controls">
    <div class="qr-control-group">
-    <h3>Contenu</h3>
+    <h3>Les mots de votre carte</h3><p class="field-help">Les textes sont prêts à l’emploi. Ajustez-les pour qu’ils vous ressemblent.</p>
     <div class="field"><div class="qr-field-label-row"><label for="print-title">Titre de la carte</label><span data-char-count="print-title">0 / 42</span></div><input id="print-title" maxlength="42" value="${esc(o.title)}"></div>
-    <div class="field"><div class="qr-field-label-row"><label for="print-note">Petit mot</label><span data-char-count="print-note">0 / 80</span></div><textarea id="print-note" maxlength="80" rows="2">${esc(o.note)}</textarea></div>
-    <div class="field"><div class="qr-field-label-row"><label for="print-explanation">Texte d'explication</label><span data-char-count="print-explanation">0 / 150</span></div><textarea id="print-explanation" maxlength="150" rows="3">${esc(o.explanation)}</textarea></div>
+    <div class="field"><div class="qr-field-label-row"><label for="print-note">Petit mot</label><span data-char-count="print-note">0 / 120</span></div><textarea id="print-note" maxlength="120" rows="2">${esc(o.note)}</textarea></div>
+    <div class="field"><div class="qr-field-label-row"><label for="print-explanation">Texte d'explication</label><span data-char-count="print-explanation">0 / 240</span></div><textarea id="print-explanation" maxlength="240" rows="3">${esc(o.explanation)}</textarea><small class="field-help">Texte proposé pour la formule ${esc(PLAN_NAMES[c.plan]||"Éternité")}.</small></div>
    </div>
 
    <div class="qr-control-group qr-personalization-group">
@@ -835,7 +880,7 @@ function ownerShell(c,url,count){
     </div>
 
     <div class="field qr-choice-field">
-     <div class="qr-field-label-row"><label for="qr-color">Couleur d’accent</label><span id="qr-color-value">${esc(o.color.toUpperCase())}</span></div>
+     <div class="qr-field-label-row"><label for="qr-color">Couleurs</label><span id="qr-color-value">${esc(o.color.toUpperCase())}</span></div>
      <div class="qr-color-palette">
       <button type="button" data-qr-color="#B78B38" style="--swatch:#B78B38" aria-label="Doré"></button>
       <button type="button" data-qr-color="#C10D0D" style="--swatch:#C10D0D" aria-label="Rouge La Suite"></button>
@@ -877,7 +922,7 @@ function ownerShell(c,url,count){
      <div class="qr-print-guide-grid">
       <div><i class="fa-regular fa-file-lines" aria-hidden="true"></i><span><strong>Imprimez sur A4</strong><small>Découpez ensuite la carte 10 × 15 cm grâce aux repères.</small></span></div>
       <div><i class="fa-regular fa-image" aria-hidden="true"></i><span><strong>Placez-la dans un cadre</strong><small>Un cadre 10 × 15 cm ou un petit chevalet fonctionne très bien.</small></span></div>
-      <div><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span><strong>Multipliez les points d’accès</strong><small>Tables, bar, livre d’or ou photobooth : plusieurs QR codes facilitent les participations.</small></span></div>
+      <div><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span><strong>Multipliez les points d’accès</strong><small>Tables, bar, livre d’or ou photobooth : plusieurs QR codes facilitent les participations.</small></span></div><div><i class="fa-solid fa-share-nodes" aria-hidden="true"></i><span><strong>Pensez aussi aux absents</strong><small>N’hésitez pas à partager votre carte ou votre lien avec les personnes absentes : elles peuvent, elles aussi, vous laisser un souvenir.</small></span></div>
      </div>
     </div>
     <div id="qr-status" class="status"></div>
@@ -887,21 +932,16 @@ function ownerShell(c,url,count){
 </section>
 
 <section class="qr-designer-panel intro-video-panel">
- <div class="intro-video-head">
-  <div>
-   <div class="eyebrow">Vidéo d'accueil</div>
-   <h2>Le message vu après le scan</h2>
-   <p>Cette vidéo apparaît aux invités juste après le scan du QR code.</p>
+ <div class="intro-video-head"><div><div class="eyebrow">Un accueil à votre image · Facultatif</div><h2>Votre répondeur</h2><p>Visible à l’ouverture de votre QR code. Accueillez vos invités avec un texte, une vidéo ou une image avant qu’ils déposent leur souvenir.</p></div><span class="intro-video-limit">En option</span></div>
+ <div class="intro-video-body intro-editor-grid">
+  <div class="intro-editor-fields">
+   <div class="field"><label for="intro-kind">Comment souhaitez-vous accueillir vos invités ?</label><select id="intro-kind"><option value="none">Sans répondeur</option><option value="text">Un texte</option><option value="video">Une vidéo</option><option value="image">Une image</option></select><small class="field-help">Vous pouvez passer cette étape ou modifier votre répondeur à tout moment.</small></div>
+   <div class="field" id="intro-text-field" hidden><label for="intro-text">Votre message</label><textarea id="intro-text" rows="6" maxlength="2000" placeholder="Bienvenue dans notre capsule ! Laissez-nous un petit mot, une émotion, un souvenir…">${esc(c.welcome_message||"")}</textarea><small class="field-help">2 000 caractères maximum.</small></div>
+   <div class="field" id="intro-media-field" hidden><label id="intro-file-label" for="intro-file">Votre fichier</label><input id="intro-file" type="file"><small class="field-help" id="intro-file-help"></small></div>
+   <button id="upload-intro" class="btn primary" type="button">Enregistrer mon répondeur</button>
+   <div id="intro-status" class="status" role="status" aria-live="polite"></div>
   </div>
-  <span class="intro-video-limit"><i class="fa-regular fa-clock" aria-hidden="true"></i>12 s maximum</span>
- </div>
- <div class="intro-video-body">
-  <div id="intro-preview-wrap"></div>
-  <div class="intro-video-upload">
-   <input id="intro-file" type="file" accept="video/*">
-   <button id="upload-intro" class="btn primary" type="button">Enregistrer cette vidéo</button>
-  </div>
-  <div id="intro-status" class="status"></div>
+  <div class="intro-preview-card"><span class="eyebrow">Répondeur enregistré</span><div id="intro-preview-wrap"></div><p class="field-help">Sans répondeur, vos invités accèdent directement au dépôt de souvenirs.</p></div>
  </div>
 </section>
 
@@ -1058,7 +1098,7 @@ function setupQrCustomizerUi(){
 }
 
 function setupQrTextCounters(){
- const limits={ "print-title":42, "print-note":80, "print-explanation":150 };
+ const limits={ "print-title":42, "print-note":120, "print-explanation":240 };
  Object.entries(limits).forEach(([id,max])=>{
   const el=$(id),counter=document.querySelector('[data-char-count="'+id+'"]');
   if(!el||!counter)return;
@@ -1158,16 +1198,7 @@ async function initDashboard(){
    applyQrPreview(url.href,c);
    printPrintCard(c,url.href);
  });
- $("intro-file")?.addEventListener("change",async()=>{
-   const f=$("intro-file")?.files?.[0];if(!f)return;
-   try{
-     const d=await videoDuration(f);
-     if(d>12.05)show($("intro-status"),"Cette vidéo dure "+d.toFixed(1)+" s. Maximum autorisé : 12 s.",false);
-     else show($("intro-status"),"Durée : "+d.toFixed(1)+" s — prête à être envoyée.");
-   }catch(e){show($("intro-status"),"Impossible de lire la durée de cette vidéo.",false)}
- });
- $("upload-intro").addEventListener("click",()=>uploadIntro(c));
- if(c.intro_path){const s=await sb.storage.from("capsule-media").createSignedUrl(c.intro_path,300);if(s.data?.signedUrl)$("intro-preview-wrap").innerHTML='<video class="intro-preview" controls src="'+s.data.signedUrl+'"></video>'}
+ setupIntro(c);
  nextCountdown(manifest||[]);await renderManifest(c,manifest||[])
 }
 

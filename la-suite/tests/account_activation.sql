@@ -58,6 +58,7 @@ end $$;
 reset role;
 update auth.users set email_confirmed_at=now() where id=current_setting('test.owner')::uuid;
 set local role authenticated;
+update public.capsules set welcome_message='Bienvenue dans notre capsule',intro_path=current_setting('test.capsule')||'/organizer/greeting.png' where id=current_setting('test.capsule')::uuid;
 select public.activate_capsule(current_setting('test.capsule')::uuid);
 select public.activate_capsule(current_setting('test.capsule')::uuid);
 do $$ begin
@@ -66,7 +67,7 @@ end $$;
 reset role;
 set local role anon;
 do $$ begin
- if not exists(select * from public.get_capsule_public(current_setting('test.token'))) then raise exception 'Active capsule inaccessible'; end if;
+ if not exists(select * from public.get_capsule_public(current_setting('test.token')) where welcome_message='Bienvenue dans notre capsule' and has_intro) then raise exception 'Active capsule inaccessible'; end if;
 end $$;
 reset role;
 rollback;
