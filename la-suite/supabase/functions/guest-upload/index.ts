@@ -31,7 +31,7 @@ Deno.serve(async(req)=>{
     const body=await req.json(),action=String(body?.action||""),guestToken=String(body?.guest_token||"");
     if(!guestToken||guestToken.length<20)return json({error:"Invalid capsule token"},400);
     const db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,{auth:{persistSession:false,autoRefreshToken:false}});
-    const{data:capsule,error:capsuleError}=await db.from("capsules").select("id,intro_path").eq("guest_token",guestToken).maybeSingle();
+    const{data:capsule,error:capsuleError}=await db.from("capsules").select("id,intro_path,status").eq("guest_token",guestToken).maybeSingle();
     if(capsuleError||!capsule)return json({error:"Capsule not found"},404);
 
     if(action==="get_intro"){

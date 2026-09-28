@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20260927-organizer1">
+<link rel="stylesheet" href="styles.css?v=20260928-account1">
 </head>
 <body class="suite-shell-page">
 <header class="forge-style-header">
@@ -32,23 +32,23 @@
     <div class="organizer-access-icon" aria-hidden="true"><i class="fa-regular fa-user"></i></div>
     <div class="organizer-access-heading">
       <div class="eyebrow">Espace organisateur</div>
-      <h1>Accéder à votre espace</h1>
-      <p>Entrez l’adresse e-mail utilisée lors de la création de votre capsule. Nous vous enverrons un lien sécurisé pour vous connecter.</p>
+      <h1 id="auth-title">Bienvenue dans votre espace</h1>
+      <p id="auth-description">Retrouvez vos capsules avec votre e-mail et votre mot de passe.</p>
     </div>
 
-    <form class="organizer-login-form" id="auth-form">
-      <div class="field">
+    <form class="organizer-login-form" id="auth-form" action="#" onsubmit="return false;">
+      <div class="field" id="email-field">
         <label for="email">Adresse e-mail</label>
         <input id="email" name="email" type="email" autocomplete="email" required placeholder="vous@exemple.fr">
       </div>
-      <button class="btn primary organizer-login-submit" type="submit">
-        <i class="fa-regular fa-envelope"></i>
-        Recevoir mon lien de connexion
-      </button>
-      <div id="status" class="status"></div>
+      <div class="field" id="password-field"><label for="password">Mot de passe</label><input id="password" type="password" autocomplete="current-password" required><small>À la création : 10 caractères minimum.</small></div>
+      <div class="field" id="password-confirm-field" hidden><label for="password-confirm">Confirmer le mot de passe</label><input id="password-confirm" type="password" autocomplete="new-password"></div>
+      <button class="btn primary organizer-login-submit" type="submit">Me connecter</button>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
     </form>
+    <button class="btn secondary" id="resend-confirmation" type="button" hidden>Renvoyer le lien de confirmation</button>
 
-    <p class="organizer-access-help">Vous retrouverez automatiquement les capsules associées à cette adresse.</p>
+    <div id="auth-options" class="auth-options"><button type="button" data-auth-mode="login">J’ai déjà un compte</button><button type="button" data-auth-mode="signup">Créer un compte</button><button type="button" data-auth-mode="reset">Mot de passe oublié / première connexion</button></div><p class="organizer-access-help">Vous utilisiez les liens de connexion ? Choisissez « première connexion » pour définir votre mot de passe avec la même adresse.</p>
   </section>
 </main>
 <footer class="forge-style-footer">
@@ -64,5 +64,5 @@
 <script src="suite-shell.js?v=20260927-shell1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
-<script src="app.js?v=20260927-organizer1"></script>
+<script src="app.js?v=20260928-account1"></script>
 </body></html>
