@@ -81,3 +81,14 @@ La carte propose désormais « Notre capsule temporelle », un petit mot et une 
 Le répondeur est facultatif : aucun, texte (2 000 caractères), image JPG/PNG/WebP (10 Mo) ou vidéo MP4/MOV/WebM (12 secondes, 100 Mo). Il réutilise `welcome_message` et `intro_path`, sans migration. Les médias restent privés dans le dossier du propriétaire ; `get_intro` fournit un lien signé et son type uniquement pour une capsule active. Désactiver le répondeur retire son affichage sans supprimer définitivement les fichiers précédemment envoyés.
 
 Les tests navigateur couvrent les trois formats, la désactivation et l’échec de sauvegarde. `node tests/guest-intro.cjs` (Node 24) vérifie la réponse image/vidéo et le refus des actions invité sur un brouillon.
+
+## Fiabilisation de l’espace organisateur
+
+- Une file de sauvegarde conserve l’ordre des modifications de carte. L’indicateur distingue l’enregistrement en cours, les modifications restantes et les échecs ; le bouton « Tout enregistrer » permet de réessayer. Un avertissement navigateur protège une sortie avec des modifications restantes.
+- Avant la validation puis l’activation, les paramètres, le répondeur et la carte sont enregistrés. Une erreur ou une modification survenue pendant la sauvegarde bloque la validation. Un envoi du répondeur déjà en cours est attendu, sans double upload.
+- Nom et date sont modifiables ; la formule l’est en brouillon. Le texte d’explication proposé est ajusté au changement de formule, sans remplacer un texte personnalisé. L’activation est suivie d’une confirmation avec partage, téléchargement et impression.
+- Le répondeur propose un aperçu local immédiat, séparé de sa version enregistrée.
+- La liste des capsules affiche une miniature générée à la demande et les comptes de souvenirs via `owner_capsule_stats`. La suppression nécessite une confirmation et filtre à la fois l’identifiant et le statut brouillon ; les règles de propriété Supabase restent appliquées. Les anciens fichiers de répondeur non référencés restent privés dans le stockage et nécessitent une tâche de nettoyage distincte ; cette suppression n’est pas une purge physique du stockage.
+- Les souvenirs peuvent être actualisés sans recharger la configuration. Les erreurs sont affichées, chaque téléchargement obtient un nouveau lien signé, et les médias peuvent être rechargés ; la lecture audio/vidéo renouvelle son URL après expiration.
+
+Vérifications : tests navigateur avec sauvegardes échouées et retardées, conservation du répondeur à l’activation, paramètres, aperçu, confirmation et suppression de brouillon, erreurs de chargement et renouvellement de média. Le test SQL transactionnel vérifie aussi les modifications/suppressions entre comptes et le filtre protégeant une capsule devenue active. Aucun changement de schéma ni du parcours invité.
