@@ -306,8 +306,8 @@ function qrOptions(c){
   note:String(c.print_note||"Scannez ce code pour nous laisser un souvenir.").slice(0,80),
   explanation:String(c.print_explanation||"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.").slice(0,150),
   font:["elegant","classic","modern","romantic","editorial","refined","contemporary","signature"].includes(c.qr_font)?c.qr_font:"elegant",
-  style:["romantic","minimal","chic"].includes(c.qr_style)?c.qr_style:"romantic",
-  size:clamp(Number(c.qr_size||215),180,245),
+  style:Object.hasOwn(qrThemes,c.qr_style)?c.qr_style:"romantic",
+  size:QR_LARGE_SIZE,
   showInitials:c.qr_show_initials!==false
  }
 }
@@ -333,17 +333,34 @@ function collectQrCustomization(c){
   print_explanation:($("print-explanation")?.value||"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.").trim().slice(0,150),
   qr_font:$("qr-font")?.value||"elegant",
   qr_style:$("qr-style")?.value||"romantic",
-  qr_size:clamp(Number($("qr-size")?.value||215),180,245),
+  qr_size:QR_LARGE_SIZE,
   qr_show_initials:Boolean($("qr-show-initials")?.checked),
   qr_show_brand:true
  }
 }
 // The same artwork is used for the preview and the print export.
 const qrThemes={
- romantic:{background:"#fff8f3",font:"elegant",accent:"#946c62"},
- minimal:{background:"#ffffff",font:"modern",accent:"#353c39"},
- chic:{background:"#f8f3e8",font:"classic",accent:"#8b713e"}
+ minimal:{name:"Épure",detail:"Blanc · lignes pures",background:"#ffffff",font:"modern",accent:"#353c39",badge:"plain"},
+ editorial:{name:"Éditorial",detail:"Papier · contraste",background:"#faf8f2",font:"editorial",accent:"#252d3b",badge:"plain"},
+ signature:{name:"Signature",detail:"Ivoire · manuscrit",background:"#fffcf6",font:"signature",accent:"#715e51",badge:"oval"},
+ chic:{name:"Art déco",detail:"Champagne · géométrie",background:"#f8f3e8",font:"classic",accent:"#8b713e",badge:"diamond"},
+ palace:{name:"Palace",detail:"Crème · médaillons",background:"#fcf7ec",font:"refined",accent:"#907447",badge:"double"},
+ arch:{name:"Arche",detail:"Pêche · courbes",background:"#f7ece4",font:"editorial",accent:"#986c59",badge:"oval"},
+ botanical:{name:"Botanique",detail:"Sauge · feuillage",background:"#f0f4eb",font:"elegant",accent:"#536c53",badge:"circle"},
+ olive:{name:"Olivier",detail:"Lin · Méditerranée",background:"#faf8ed",font:"refined",accent:"#63704d",badge:"oval"},
+ pressed:{name:"Fleurs pressées",detail:"Crème · fleurs des champs",background:"#fffaf1",font:"signature",accent:"#8b665d",badge:"circle"},
+ romantic:{name:"Jardin romantique",detail:"Rose · fleurs au trait",background:"#fff4f3",font:"elegant",accent:"#946c76",badge:"double"},
+ boho:{name:"Bohème",detail:"Sable · soleil",background:"#f7eee1",font:"editorial",accent:"#9b6449",badge:"circle"},
+ riviera:{name:"Riviera",detail:"Pastel · rayures",background:"#fffdf7",font:"classic",accent:"#698b89",badge:"oval"},
+ dolce:{name:"Dolce Vita",detail:"Citron · bleu azur",background:"#fffbee",font:"classic",accent:"#386384",badge:"diamond"},
+ seaside:{name:"Bord de mer",detail:"Bleu brume · vagues",background:"#f0f7f8",font:"modern",accent:"#456c83",badge:"plain"},
+ celestial:{name:"Céleste",detail:"Perle · étoiles",background:"#f5f3fc",font:"elegant",accent:"#72658e",badge:"diamond"},
+ pearl:{name:"Perle",detail:"Nacre · petits points",background:"#faf7f4",font:"refined",accent:"#8b7c75",badge:"double"},
+ retro:{name:"Rétro",detail:"Pêche · bordeaux",background:"#fff0e3",font:"editorial",accent:"#8d4751",badge:"oval"},
+ confetti:{name:"Confettis",detail:"Crème · touches de couleur",background:"#fffdf4",font:"contemporary",accent:"#55677c",badge:"plain"}
 };
+const QR_LARGE_SIZE=245;
+
 function qrInk(color){
  const hex=/^#[0-9a-f]{6}$/i.test(color)?color:"#b78b38";
  let rgb=hex.slice(1).match(/../g).map(x=>parseInt(x,16));
@@ -368,45 +385,88 @@ function drawQrMonogram(ctx,o,cx,cy,size){
  ctx.fillStyle=qrThemes[o.style].background;
  ctx.beginPath();ctx.arc(0,0,r*.80,0,Math.PI*2);ctx.fill();
  ctx.strokeStyle=o.color;ctx.lineWidth=Math.max(1,size*.0018);
- if(o.style!=="minimal"){
-  ctx.beginPath();ctx.arc(0,0,r*.78,0,Math.PI*2);ctx.stroke();
+ const badge=qrThemes[o.style].badge;
+ if(badge!=="plain"){
+  ctx.beginPath();
+  if(badge==="diamond"){ctx.moveTo(0,-r*.8);ctx.lineTo(r*.8,0);ctx.lineTo(0,r*.8);ctx.lineTo(-r*.8,0);ctx.closePath()}
+  else ctx.ellipse(0,0,r*.78,r*(badge==="oval"?.60:.78),0,0,Math.PI*2);
+  ctx.stroke();
+  if(badge==="double"){ctx.beginPath();ctx.arc(0,0,r*.68,0,Math.PI*2);ctx.stroke()}
  }
  const letters=Array.from(o.initials.trim().toUpperCase()).slice(0,4).join("");
  ctx.fillStyle=qrInk(o.color);ctx.textAlign="center";ctx.textBaseline="middle";
- ctx.font=(o.style==="minimal"?"500 ":"600 ")+Math.round(d*(letters.length>2?.30:.40))+'px '+(o.style==="minimal"?'Inter, sans-serif':'"Cormorant Garamond", Georgia, serif');
+ ctx.font=(qrThemes[o.style].badge==="plain"?"500 ":"600 ")+Math.round(d*(letters.length>2?.30:.40))+'px '+(qrThemes[o.style].badge==="plain"?'Inter, sans-serif':'"Cormorant Garamond", Georgia, serif');
  ctx.fillText(letters,0,d*.025,d*.66);
  ctx.restore();
 }
 function drawQrDecor(ctx,o,W,H){
  ctx.save();ctx.strokeStyle=o.color;ctx.fillStyle=o.color;ctx.lineWidth=2;
- if(o.style==="chic"){
-  ctx.globalAlpha=.5;ctx.strokeRect(60,60,W-120,H-120);
-  ctx.globalAlpha=.26;ctx.strokeRect(75,75,W-150,H-150);
-  ctx.globalAlpha=.8;
-  for(const [x,y,angle] of [[60,60,0],[W-60,60,Math.PI/2],[W-60,H-60,Math.PI],[60,H-60,-Math.PI/2]]){
-   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.beginPath();
-   ctx.moveTo(0,95);ctx.lineTo(0,0);ctx.lineTo(95,0);
-   ctx.moveTo(15,70);ctx.lineTo(15,15);ctx.lineTo(70,15);ctx.stroke();
-   ctx.translate(15,15);ctx.rotate(Math.PI/4);ctx.fillRect(-4,-4,8,8);ctx.restore();
+ const style=o.style;
+ const line=(x,y,x2,y2)=>{ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x2,y2);ctx.stroke()};
+ const ellipse=(x,y,rx,ry,angle=0,fill=false)=>{ctx.beginPath();ctx.ellipse(x,y,rx,ry,angle,0,Math.PI*2);fill?ctx.fill():ctx.stroke()};
+ const star=(x,y,r)=>{ctx.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,l=i%2?r*.25:r;ctx.lineTo(x+Math.cos(a)*l,y+Math.sin(a)*l)}ctx.closePath();ctx.fill()};
+ const branch=(x,y,angle,filled=false)=>{
+  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(20,-70,8,-145,40,-210);ctx.stroke();
+  for(let i=0;i<7;i++){const ly=-25-i*26,lx=6+i*4,dir=i%2?1:-1;ellipse(lx+dir*17,ly-12,22,6,dir*.65,filled)}ctx.restore();
+ };
+ const flower=(x,y,r)=>{for(let i=0;i<5;i++){const a=i*Math.PI*2/5;ellipse(x+Math.cos(a)*r*.65,y+Math.sin(a)*r*.65,r*.6,r*.28,a)}ellipse(x,y,r*.18,r*.18,0,true)};
+ if(style==="chic"){
+  ctx.globalAlpha=.45;ctx.strokeRect(60,60,W-120,H-120);ctx.globalAlpha=.25;ctx.strokeRect(75,75,W-150,H-150);ctx.globalAlpha=.8;
+  for(const [x,y,a] of [[60,60,0],[W-60,60,Math.PI/2],[W-60,H-60,Math.PI],[60,H-60,-Math.PI/2]]){ctx.save();ctx.translate(x,y);ctx.rotate(a);line(0,95,0,0);line(0,0,95,0);line(15,70,15,15);line(15,15,70,15);ctx.translate(15,15);ctx.rotate(Math.PI/4);ctx.fillRect(-4,-4,8,8);ctx.restore()}
+ }else if(style==="editorial"){
+  ctx.lineWidth=5;line(145,125,W-145,125);ctx.lineWidth=1;line(145,H-250,W-145,H-250);
+  ctx.globalAlpha=.25;ctx.fillRect(62,185,10,250);ctx.fillRect(W-72,H-495,10,250);
+ }else if(style==="signature"){
+  ctx.globalAlpha=.55;ctx.beginPath();ctx.moveTo(340,125);ctx.bezierCurveTo(550,60,650,200,840,120);ctx.bezierCurveTo(750,175,630,80,530,145);ctx.stroke();
+  line(145,H-250,245,H-250);
+ }else if(style==="palace"){
+  ctx.globalAlpha=.42;ctx.strokeRect(70,70,W-140,H-140);
+  for(const [x,y,a] of [[85,85,0],[W-85,85,Math.PI/2],[W-85,H-85,Math.PI],[85,H-85,-Math.PI/2]]){ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,105);ctx.bezierCurveTo(75,95,95,75,105,0);ctx.stroke();ellipse(45,45,25,12,-Math.PI/4);ellipse(22,72,12,6,-Math.PI/3);ellipse(72,22,12,6,-Math.PI/6);ctx.restore()}
+ }else if(style==="arch"){
+  ctx.globalAlpha=.08;ctx.beginPath();ctx.roundRect(125,110,W-250,H-390,[450,450,18,18]);ctx.fill();ctx.globalAlpha=.45;ctx.beginPath();ctx.roundRect(145,135,W-290,H-440,[425,425,12,12]);ctx.stroke();
+ }else if(["botanical","olive","pressed","romantic"].includes(style)){
+  ctx.globalAlpha=style==="botanical"?.45:.5;
+  branch(100,360,-.2,style==="botanical");branch(W-100,H-360,Math.PI-.2,style==="botanical");
+  if(style==="olive"){for(let i=0;i<4;i++){ellipse(76+i*3,205+i*25,4,7,.3,true);ellipse(W-76-i*3,H-205-i*25,4,7,.3,true)}}
+  if(style==="pressed"||style==="romantic"){
+   if(style==="pressed")ctx.strokeStyle="#b89749";
+   flower(112,130,style==="romantic"?32:20);flower(70,230,18);
+   flower(W-112,H-130,style==="romantic"?32:20);flower(W-70,H-230,18);
+   if(style==="romantic"){flower(112,130,18);flower(W-112,H-130,18)}
   }
- }else if(o.style==="romantic"){
-  ctx.globalAlpha=.32;
-  for(const [x,y,angle] of [[85,270,-.5],[W-85,H-270,Math.PI-.5]]){
-   ctx.save();ctx.translate(x,y);ctx.rotate(angle);
-   ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(25,-55,10,-130,44,-195);ctx.stroke();
-   for(let i=0;i<6;i++){
-    const y=-25-i*27,x=8+i*4,dir=i%2?1:-1;
-    ctx.beginPath();ctx.moveTo(x,y);ctx.bezierCurveTo(x+dir*45,y-3,x+dir*45,y-28,x+dir*35,y-33);
-    ctx.bezierCurveTo(x+dir*10,y-30,x+dir*5,y-10,x,y);ctx.stroke();
-   }
-   ctx.restore();
-  }
+ }else if(style==="boho"){
+  ctx.globalAlpha=.1;ellipse(0,H-180,190,280,.4,true);ellipse(W,210,170,260,.4,true);ctx.globalAlpha=.55;
+  for(let i=0;i<15;i++){const a=Math.PI+i*Math.PI/14;line(W/2+Math.cos(a)*48,155+Math.sin(a)*48,W/2+Math.cos(a)*68,155+Math.sin(a)*68)}
+  ctx.beginPath();ctx.arc(W/2,155,35,Math.PI,Math.PI*2);ctx.stroke();
+ }else if(style==="riviera"){
+  ctx.globalAlpha=.14;for(let x=0;x<W;x+=70)ctx.fillRect(x,0,35,H);
+  ctx.globalAlpha=1;ctx.fillStyle="#fffdf7";ctx.fillRect(110,110,W-220,H-220);
+  for(let y=125;y<H-110;y+=35){ellipse(110,y,18,18,0,true);ellipse(W-110,y,18,18,0,true)}
+  ctx.strokeStyle=o.color;ctx.globalAlpha=.3;ctx.strokeRect(130,130,W-260,H-260);
+ }else if(style==="dolce"){
+  ctx.globalAlpha=.5;ctx.setLineDash([5,10]);ctx.strokeRect(65,65,W-130,H-130);ctx.setLineDash([]);ctx.globalAlpha=1;
+  for(const [x,y] of [[103,150],[W-103,H-170]]){ctx.fillStyle="#eed36a";ellipse(x,y,30,45,.5,true);ctx.fillStyle="#6f8853";ellipse(x+15,y-49,23,7,-.4,true)}
+ }else if(style==="seaside"){
+  ctx.globalAlpha=.3;
+  for(const base of [85,H-120])for(let j=0;j<3;j++){ctx.beginPath();ctx.moveTo(60,base+j*14);for(let x=60;x<W-60;x+=100)ctx.quadraticCurveTo(x+25,base+j*14-18,x+50,base+j*14);ctx.stroke()}
+ }else if(style==="celestial"){
+  ctx.globalAlpha=.6;for(const [x,y,r] of [[110,170,15],[W-100,330,10],[90,960,9],[W-100,1330,14],[170,H-165,11],[W-260,110,8]])star(x,y,r);
+  ctx.beginPath();ctx.arc(W/2,130,27,.2,Math.PI*1.85);ctx.bezierCurveTo(W/2-10,100,W/2-10,150,W/2+26,135);ctx.stroke();
+ }else if(style==="pearl"){
+  ctx.globalAlpha=.4;for(let x=70;x<W-60;x+=24){ellipse(x,70,3,3,0,true);ellipse(x,H-70,3,3,0,true)}for(let y=94;y<H-90;y+=24){ellipse(70,y,3,3,0,true);ellipse(W-70,y,3,3,0,true)}
+  ctx.globalAlpha=.2;ctx.strokeRect(86,86,W-172,H-172);
+ }else if(style==="retro"){
+  ctx.globalAlpha=.65;ctx.lineWidth=5;ctx.beginPath();ctx.roundRect(70,70,W-140,H-140,130);ctx.stroke();ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(85,85,W-170,H-170,118);ctx.stroke();
+  ctx.globalAlpha=.15;for(let i=0;i<3;i++){line(105+i*12,290,105+i*12,H-290);line(W-105-i*12,290,W-105-i*12,H-290)}
+ }else if(style==="confetti"){
+  const colors=["#c99383","#d8b557","#7e9b92","#9092b1"];
+  for(let i=0;i<30;i++){const x=i%2?W-55-(i*19)%65:55+(i*19)%65,y=90+(i*137)%(H-180);ctx.save();ctx.translate(x,y);ctx.rotate(i*.7);ctx.fillStyle=colors[i%4];ctx.globalAlpha=.7;i%3?ctx.fillRect(-4,-9,8,18):ellipse(0,0,5,5,0,true);ctx.restore()}
  }
  ctx.restore();
 }
 function drawQrDivider(ctx,o,x,y){
  ctx.save();ctx.strokeStyle=o.color;ctx.fillStyle=o.color;ctx.lineWidth=2;
- const half=o.style==="minimal"?32:90,gap=o.style==="minimal"?0:20;
+ const half=qrThemes[o.style].badge==="plain"?32:90,gap=qrThemes[o.style].badge==="plain"?0:20;
  ctx.beginPath();ctx.moveTo(x-half,y);ctx.lineTo(x-gap,y);ctx.moveTo(x+gap,y);ctx.lineTo(x+half,y);ctx.stroke();
  if(o.style==="chic"){
   ctx.translate(x,y);ctx.rotate(Math.PI/4);ctx.strokeRect(-6,-6,12,12);
@@ -419,7 +479,6 @@ let qrPreviewRevision=0;
 function applyQrPreview(url,c){
  const o=qrOptions(c),card=$("qr-artwork-preview");
  if(!card)return;
- $("qr-size-value").textContent=o.size+" px";
  $("qr-color-value").textContent=o.color.toUpperCase();
  const revision=++qrPreviewRevision;
  const snapshot={...c};
@@ -488,12 +547,11 @@ async function buildPrintCardCanvas(c,url){
  let titleSize=["romantic","signature"].includes(o.font)?86:o.font==="contemporary"?64:o.font==="refined"?66:72;
  ctx.fillStyle="#201c1a";
  titleSize=fitPrintFont(ctx,o.title,880,3,titleSize,'"'+ff+'", serif',qrFontWeight(o.font));
- let titleY=270;
- titleY=drawWrappedCenteredText(ctx,o.title,W/2,titleY,880,titleSize*1.12,3);
-
- drawQrDivider(ctx,o,W/2,titleY+24);
- const qsize=Math.round(clamp(o.size,180,245)/215*500);
- const qx=Math.round((W-qsize)/2),qy=Math.max(420,Math.round(titleY+82));
+ const titleLines=wrapCanvasLines(ctx,o.title,880,3),titleLineHeight=titleSize*1.12;
+ const titleY=310-(titleLines.length-1)*titleLineHeight/2;
+ drawWrappedCenteredText(ctx,o.title,W/2,titleY,880,titleLineHeight,3);
+ drawQrDivider(ctx,o,W/2,475);
+ const qsize=570,qx=Math.round((W-qsize)/2),qy=550;
  ctx.fillStyle="#ffffff";
  ctx.beginPath();ctx.roundRect(qx-28,qy-28,qsize+56,qsize+56,34);ctx.fill();
  ctx.imageSmoothingEnabled=false;
@@ -502,7 +560,7 @@ async function buildPrintCardCanvas(c,url){
 
  if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize);
 
- let textY=qy+qsize+92;
+ let textY=qy+qsize+105;
  ctx.fillStyle="#262220";fitPrintFont(ctx,o.note,820,3,32,"Inter, Arial, sans-serif","700");
  textY=drawWrappedCenteredText(ctx,o.note,W/2,textY,820,43,3)+20;
  ctx.fillStyle="#706964";fitPrintFont(ctx,o.explanation,790,4,25,"Inter, Arial, sans-serif","400");
@@ -617,19 +675,8 @@ function ownerShell(c,url,count){
     <div class="field qr-choice-field">
      <label>Ambiance de la carte</label>
      <input id="qr-style" type="hidden" value="${esc(o.style)}">
-     <div class="qr-style-choices" role="group" aria-label="Style de carte">
-      <button class="qr-style-choice ${o.style==="romantic"?"is-selected":""}" data-qr-style="romantic" type="button">
-       <span class="qr-style-thumb qr-style-thumb-romantic"><i></i><b>Aa</b></span>
-       <span><strong>Romantique</strong><small>Ivoire rosé · feuillage</small></span>
-      </button>
-      <button class="qr-style-choice ${o.style==="minimal"?"is-selected":""}" data-qr-style="minimal" type="button">
-       <span class="qr-style-thumb qr-style-thumb-minimal"><i></i><b>Aa</b></span>
-       <span><strong>Minimal</strong><small>Blanc · lignes pures</small></span>
-      </button>
-      <button class="qr-style-choice ${o.style==="chic"?"is-selected":""}" data-qr-style="chic" type="button">
-       <span class="qr-style-thumb qr-style-thumb-chic"><i></i><b>Aa</b></span>
-       <span><strong>Chic</strong><small>Champagne · Art déco</small></span>
-      </button>
+     <div class="qr-style-choices qr-theme-gallery" role="group" aria-label="18 ambiances de carte">
+      ${Object.entries(qrThemes).map(([key,theme])=>`<button class="qr-style-choice ${o.style===key?"is-selected":""}" data-qr-style="${key}" type="button" aria-pressed="${o.style===key}"><img class="qr-theme-thumbnail" src="assets/themes/${key}.webp?v=20260927-collection1" alt="" width="180" height="270" loading="lazy"><span><strong>${theme.name}</strong><small>${theme.detail}</small></span></button>`).join("")}
      </div>
     </div>
 
@@ -684,16 +731,6 @@ function ownerShell(c,url,count){
        <input id="qr-color" type="color" value="${esc(o.color)}" aria-label="Choisir une couleur personnalisée">
        <i class="fa-solid fa-plus" aria-hidden="true"></i>
       </label>
-     </div>
-    </div>
-
-    <div class="field qr-choice-field">
-     <div class="qr-field-label-row"><label>Taille du QR code</label><span id="qr-size-value">${o.size} px</span></div>
-     <input id="qr-size" type="hidden" value="${o.size}">
-     <div class="qr-size-choices" role="group" aria-label="Taille du QR code">
-      <button type="button" data-qr-size="180">Discret</button>
-      <button type="button" data-qr-size="215">Équilibré</button>
-      <button type="button" data-qr-size="245">Grand</button>
      </div>
     </div>
 
@@ -832,7 +869,7 @@ function setupOwnerTabs(c,manifest){
 }
 
 function setupQrCustomizerUi(){
- const fontInput=$("qr-font"),styleInput=$("qr-style"),colorInput=$("qr-color"),sizeInput=$("qr-size");
+ const fontInput=$("qr-font"),styleInput=$("qr-style"),colorInput=$("qr-color");
  const fontPicker=document.querySelector("[data-qr-font-picker]");
  const fontTrigger=fontPicker?.querySelector(".qr-font-trigger");
  const fontMenu=fontPicker?.querySelector(".qr-font-menu");
@@ -901,24 +938,7 @@ function setupQrCustomizerUi(){
  colorInput?.addEventListener("input",syncColor);
  syncColor();
 
- const syncSize=()=>{
-  if(!sizeInput)return;
-  const value=Number(sizeInput.value||215);
-  const choices=[...document.querySelectorAll("[data-qr-size]")];
-  let closest=null,delta=Infinity;
-  choices.forEach(btn=>{
-   const d=Math.abs(Number(btn.dataset.qrSize)-value);
-   if(d<delta){delta=d;closest=btn}
-  });
-  choices.forEach(btn=>btn.classList.toggle("is-selected",btn===closest))
- };
- document.querySelectorAll("[data-qr-size]").forEach(btn=>btn.addEventListener("click",()=>{
-  if(!sizeInput)return;
-  sizeInput.value=btn.dataset.qrSize||"215";
-  syncSize();
-  dispatch(sizeInput)
- }));
- syncSize()
+
 }
 
 function setupQrTextCounters(){
@@ -973,7 +993,7 @@ async function initDashboard(){
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
  setupOwnerTabs(c,manifest||[]);
  applyQrPreview(url.href,c);
- const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-size","qr-show-initials"];
+ const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-show-initials"];
  let qrSaveTimer=null;
  const updateDesigner=()=>{
    Object.assign(c,collectQrCustomization(c));

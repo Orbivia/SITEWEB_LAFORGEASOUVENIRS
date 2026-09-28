@@ -2389,3 +2389,13 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 .qr-preview-stage{grid-template-columns:minmax(0,1fr)}
 .qr-preview-label{flex-wrap:wrap}
 .qr-artwork-preview{max-width:100%;min-width:0}
+
+/* Full-card swatches keep the collection faithful to the printed artwork. */
+.qr-theme-gallery{max-height:620px;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:3px 5px 5px 3px;gap:12px;align-items:start}
+.qr-theme-gallery .qr-style-choice{padding:6px;gap:0;min-width:0;background:#fff;border-radius:9px;transition:border-color .15s,box-shadow .15s}
+.qr-theme-thumbnail{display:block;width:100%;height:auto;aspect-ratio:2/3;object-fit:cover;border-radius:3px;box-shadow:0 2px 8px #392d2110}
+.qr-theme-gallery .qr-style-choice>span:last-child{padding:5px 2px;margin:0}
+.qr-theme-gallery .qr-style-choice strong{font-size:.72rem;line-height:1.25}
+.qr-theme-gallery .qr-style-choice small{font-size:.60rem;line-height:1.4;min-height:2.8em}
+.qr-theme-gallery .qr-style-choice.is-selected{border-color:#8b713e;background:#faf7ef;box-shadow:0 0 0 1px #8b713e}
+@media(max-width:600px){.qr-theme-gallery{max-height:510px;gap:8px}.qr-theme-gallery .qr-style-choice strong{font-size:.67rem}.qr-theme-gallery .qr-style-choice small{font-size:.56rem}}
