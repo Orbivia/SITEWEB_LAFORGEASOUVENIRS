@@ -48,7 +48,7 @@ async function startRecorder(kind){
 }
 function stopRecorder(){if(recorder&&recorder.state!=="inactive")recorder.stop()}
 
-const PLAN_NAMES={photo:"Éclat",audio:"Écho",premium:"Éternité"};
+const PLAN_NAMES={photo:"Essentiel",audio:"Plus",premium:"Premium"};
 const PLAN_PRICES={photo:"9,90 €",audio:"14,90 €",premium:"24,90 €"};
 function authDestination(){return qs.get("next")==="create"?"create.html?resume=1":"dashboard.html"}
 async function initAuth(){
@@ -704,7 +704,7 @@ async function buildPrintCardCanvas(c,url){
  drawQrDecor(ctx,o,W,H);
  ctx.textAlign="center";ctx.textBaseline="alphabetic";
  const ff=qrFontFamily(o.font);
- let titleSize=["romantic","signature"].includes(o.font)?104:o.font==="contemporary"?80:o.font==="refined"?82:94;
+ let titleSize=["romantic","signature"].includes(o.font)?120:o.font==="contemporary"?96:o.font==="refined"?98:112;
  ctx.fillStyle="#201c1a";
  const titleWidth=o.style==="arch"?660:880;
  titleSize=fitPrintFont(ctx,o.title,titleWidth,3,titleSize,'"'+ff+'", serif',qrFontWeight(o.font));
@@ -721,11 +721,21 @@ async function buildPrintCardCanvas(c,url){
 
  if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize,background);
 
- let textY=qy+qsize+92;
- ctx.fillStyle="#262220";const noteSize=fitPrintFont(ctx,o.note,850,3,40,"Inter, Arial, sans-serif","600");
- textY=drawWrappedCenteredText(ctx,o.note,W/2,textY,850,noteSize*1.3,3)+24;
- ctx.fillStyle="#554e49";const explanationSize=fitPrintFont(ctx,o.explanation,850,5,32,"Inter, Arial, sans-serif","400");
- drawWrappedCenteredText(ctx,o.explanation,W/2,textY,850,explanationSize*1.3,5);
+ let textY=qy+qsize+74;
+ const textWidth=890;
+ let noteSize=fitPrintFont(ctx,o.note,textWidth,3,48,"Inter, Arial, sans-serif","600");
+ let explanationSize=fitPrintFont(ctx,o.explanation,textWidth,5,40,"Inter, Arial, sans-serif","400");
+ // Fit both paragraphs above the logo, including maximum-length custom text.
+ const textLines=(text,size,weight)=>{ctx.font=weight+" "+size+"px Inter, Arial, sans-serif";return wrapCanvasLines(ctx,text,textWidth,100).length};
+ while(noteSize>24&&explanationSize>24){
+  const n=textLines(o.note,noteSize,"600"),e=textLines(o.explanation,explanationSize,"400");
+  if(textY+n*noteSize*1.2+20+(e-1)*explanationSize*1.2<=1545)break;
+  noteSize--;explanationSize--;
+ }
+ ctx.fillStyle="#262220";ctx.font="600 "+noteSize+"px Inter, Arial, sans-serif";
+ textY=drawWrappedCenteredText(ctx,o.note,W/2,textY,textWidth,noteSize*1.2,10)+20;
+ ctx.fillStyle="#554e49";ctx.font="400 "+explanationSize+"px Inter, Arial, sans-serif";
+ drawWrappedCenteredText(ctx,o.explanation,W/2,textY,textWidth,explanationSize*1.2,12);
 
 
  try{
@@ -825,7 +835,7 @@ function ownerShell(c,url,count){
     <h3>Les mots de votre carte</h3><p class="field-help">Les textes sont prêts à l’emploi. Ajustez-les pour qu’ils vous ressemblent.</p>
     <div class="field"><div class="qr-field-label-row"><label for="print-title">Titre de la carte</label><span data-char-count="print-title">0 / 42</span></div><input id="print-title" maxlength="42" value="${esc(o.title)}"></div>
     <div class="field"><div class="qr-field-label-row"><label for="print-note">Petit mot</label><span data-char-count="print-note">0 / 120</span></div><textarea id="print-note" maxlength="120" rows="2">${esc(o.note)}</textarea></div>
-    <div class="field"><div class="qr-field-label-row"><label for="print-explanation">Texte d'explication</label><span data-char-count="print-explanation">0 / 240</span></div><textarea id="print-explanation" maxlength="240" rows="3">${esc(o.explanation)}</textarea><small class="field-help">Texte proposé pour la formule ${esc(PLAN_NAMES[c.plan]||"Éternité")}.</small></div>
+    <div class="field"><div class="qr-field-label-row"><label for="print-explanation">Texte d'explication</label><span data-char-count="print-explanation">0 / 240</span></div><textarea id="print-explanation" maxlength="240" rows="3">${esc(o.explanation)}</textarea><small class="field-help">Texte proposé pour la formule ${esc(PLAN_NAMES[c.plan]||"Premium")}.</small></div>
    </div>
 
    <div class="qr-control-group qr-personalization-group">
@@ -1145,7 +1155,7 @@ async function initDashboard(){
  if(!qs.get("slug")){
   $("dashboard-title").textContent="Mes capsules";
   document.querySelectorAll('[data-owner-tab-link]').forEach(el=>el.hidden=true);
-  $("dashboard-content").innerHTML='<p class="hint">Vos brouillons et vos capsules actives, réunis dans votre espace.</p><div class="capsule-grid">'+caps.map(c=>`<a class="capsule-card" href="dashboard.html?slug=${encodeURIComponent(c.slug)}"><span class="capsule-badge">${c.status==="active"?"Active":"Brouillon privé"}</span><h2>${esc(c.couple_name)}</h2><p>${esc(new Date(c.wedding_date+"T12:00:00").toLocaleDateString("fr-FR"))} · ${esc(PLAN_NAMES[c.plan]||"Éternité")}</p><strong>${c.status==="active"?"Ouvrir ma capsule":"Continuer la préparation"} →</strong></a>`).join("")+'<a class="capsule-card capsule-new" href="create.html"><span aria-hidden="true">+</span><h2>Créer une capsule</h2><p>Préparez un nouvel événement.</p></a></div>';
+  $("dashboard-content").innerHTML='<p class="hint">Vos brouillons et vos capsules actives, réunis dans votre espace.</p><div class="capsule-grid">'+caps.map(c=>`<a class="capsule-card" href="dashboard.html?slug=${encodeURIComponent(c.slug)}"><span class="capsule-badge">${c.status==="active"?"Active":"Brouillon privé"}</span><h2>${esc(c.couple_name)}</h2><p>${esc(new Date(c.wedding_date+"T12:00:00").toLocaleDateString("fr-FR"))} · ${esc(PLAN_NAMES[c.plan]||"Premium")}</p><strong>${c.status==="active"?"Ouvrir ma capsule":"Continuer la préparation"} →</strong></a>`).join("")+'<a class="capsule-card capsule-new" href="create.html"><span aria-hidden="true">+</span><h2>Créer une capsule</h2><p>Préparez un nouvel événement.</p></a></div>';
   return;
  }
  const c=caps.find(x=>x.slug===qs.get("slug"));
@@ -1155,8 +1165,8 @@ async function initDashboard(){
  const{data:manifest,error:me}=await sb.rpc("owner_message_manifest",{p_capsule_id:c.id});if(me)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(me.message)+'</div>';
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
  const stage=document.createElement("section");stage.className="activation-panel";
- stage.innerHTML=c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">Brouillon privé</span><h2>Personnalisez, puis activez votre capsule</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Valider ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p><strong>${esc(c.couple_name)}</strong> · ${esc(c.wedding_date)}</p><p>Formule envisagée : <strong>${esc(PLAN_NAMES[c.plan]||"Éternité")}</strong></p><p>Tarif prévu de cette formule : ${esc(PLAN_PRICES[c.plan]||PLAN_PRICES.premium)} par capsule. <strong>À régler aujourd’hui : 0 €.</strong></p><p>Le paiement sera proposé ultérieurement. Pour le moment, l’activation est gratuite et tous les formats sont accessibles. Aucun paiement ne vous sera demandé pour cette activation.</p><button id="activate-capsule" class="btn primary" type="button">Activer gratuitement</button><p id="activation-status" class="status" role="status"></p></dialog>`;
- $("dashboard-content").prepend(stage);
+ stage.innerHTML=c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">Brouillon privé</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Valider ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p><strong>${esc(c.couple_name)}</strong> · ${esc(c.wedding_date)}</p><p>Formule envisagée : <strong>${esc(PLAN_NAMES[c.plan]||"Premium")}</strong></p><p>Tarif prévu de cette formule : ${esc(PLAN_PRICES[c.plan]||PLAN_PRICES.premium)} par capsule. <strong>À régler aujourd’hui : 0 €.</strong></p><p>Le paiement sera proposé ultérieurement. Pour le moment, l’activation est gratuite et tous les formats sont accessibles. Aucun paiement ne vous sera demandé pour cette activation.</p><button id="activate-capsule" class="btn primary" type="button">Activer gratuitement</button><p id="activation-status" class="status" role="status"></p></dialog>`;
+ document.querySelector('[data-owner-panel="configuration"]').append(stage);
  if(c.status!=="active"){
   ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title="Activez votre capsule pour partager votre carte"});
   const guestLink=$("open-guest-link");if(guestLink)guestLink.hidden=true;
