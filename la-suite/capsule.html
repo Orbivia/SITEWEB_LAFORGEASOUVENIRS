@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20260928-organizer2">
+<link rel="stylesheet" href="styles.css?v=20260930-guest1">
 </head>
 <body class="suite-shell-page">
 <header class="forge-style-header">
@@ -36,23 +36,24 @@
   <div class="eyebrow">Un message des organisateurs</div>
   <p id="capsule-welcome" class="lead intro-text-preview" hidden></p><video id="organizer-intro" controls playsinline preload="metadata" hidden></video><img id="organizer-intro-image" alt="Le message d’accueil de vos hôtes" hidden>
 </section>
-<form class="form-shell guest-form" id="guest-message">
-<h2>Laissez votre souvenir</h2>
-<div class="field"><label for="guest_name">Votre prénom</label><input id="guest_name" required autocomplete="name" placeholder="Pierre"></div>
-<div class="field"><label for="message_text">Un petit mot <span class="optional">(facultatif)</span></label><textarea id="message_text" placeholder="Quelques mots pour accompagner votre souvenir…"></textarea></div>
-<div class="field">
-<label>Votre contenu</label>
-<div class="media-choices">
-  <button type="button" class="media-choice active" data-media-mode="upload"><span>↑</span>Importer</button>
-  <button type="button" class="media-choice" data-media-mode="video"><span>▶</span>Me filmer</button>
-  <button type="button" class="media-choice" data-media-mode="audio"><span>♫</span>M'enregistrer</button>
-  <button type="button" class="media-choice" data-media-mode="photo"><span>▣</span>Prendre une photo</button>
-</div>
-</div>
-<div id="upload-panel" class="media-panel active">
+
+<p id="guest-state" class="guest-state" role="status" aria-live="polite">Chargement de la capsule…</p>
+<form class="form-shell guest-form" id="guest-message" hidden>
+ <div class="guest-step-heading"><span>1</span><h2>Quel souvenir souhaitez-vous laisser ?</h2></div>
+ <div class="memory-type-choices" role="group" aria-label="Type de souvenir">
+  <button type="button" class="memory-type active" data-memory-type="image" aria-pressed="true"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>Photo</span></button>
+  <button type="button" class="memory-type" data-memory-type="text" aria-pressed="false"><i class="fa-regular fa-comment" aria-hidden="true"></i><span>Petit mot</span></button>
+  <button type="button" class="memory-type" data-memory-type="audio" aria-pressed="false"><i class="fa-solid fa-microphone" aria-hidden="true"></i><span>Audio</span></button>
+  <button type="button" class="memory-type" data-memory-type="video" aria-pressed="false"><i class="fa-solid fa-video" aria-hidden="true"></i><span>Vidéo</span></button>
+ </div>
+ <div class="media-choices" id="capture-choices">
+  <button type="button" class="media-choice active" data-media-mode="upload">Choisir un fichier</button>
+  <button type="button" class="media-choice" data-media-mode="photo" id="capture-memory">Prendre une photo</button>
+ </div>
+ <div id="upload-panel" class="media-panel active">
   <div class="upload-box">
-    <input id="media-file" type="file" accept="video/*,audio/*,image/*">
-    <p>Vidéo, audio ou image — maximum 100 Mo.</p>
+    <input id="media-file" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif">
+    <p><span id="file-help">Photo · 10 Mo maximum.</span></p>
   </div>
 </div>
 <div id="video-panel" class="media-panel">
@@ -89,21 +90,35 @@
   <audio id="preview-audio" controls hidden></audio>
   <img id="preview-image" alt="Aperçu du souvenir" hidden>
   <div class="preview-actions">
-    <button type="button" class="btn secondary" id="remove-media">Supprimer et refaire</button>
+    <button type="button" class="btn secondary" id="remove-media">Changer de souvenir</button>
   </div>
 </div>
-<div class="delivery-box">
-  <h3>Quand voulez-vous que ce souvenir soit livré ?</h3>
-  <label class="toggle-line"><input type="checkbox" id="deliver-now"> <span>Le rendre accessible immédiatement</span></label>
-  <div class="field" id="delivery-date-wrap">
-    <label for="delivery_date">Date de livraison</label>
-    <input id="delivery_date" type="date" required>
+
+ <div class="field"><label for="message_text" id="message-label">Un petit mot <span class="optional">(facultatif)</span></label><textarea id="message_text" maxlength="4000" rows="3" placeholder="Quelques mots pour accompagner votre souvenir…"></textarea></div>
+ <div class="field"><label for="guest_name">Votre prénom <span class="optional">(facultatif)</span></label><input id="guest_name" maxlength="80" autocomplete="given-name" placeholder="Pour signer votre souvenir"></div>
+ <div class="delivery-box">
+  <div class="guest-step-heading"><span>2</span><h2>Quand le découvrir ?</h2></div>
+  <div class="delivery-choices" role="group" aria-label="Date de dévoilement">
+   <button type="button" data-delivery="now" class="active" aria-pressed="true">Maintenant</button>
+   <button type="button" data-delivery="1" aria-pressed="false">Dans 1 mois</button>
+   <button type="button" data-delivery="6" aria-pressed="false">Dans 6 mois</button>
+   <button type="button" data-delivery="12" aria-pressed="false">Dans 1 an</button>
+   <button type="button" data-delivery="custom" aria-pressed="false">Autre date</button>
   </div>
-  <p class="microcopy">Avant cette date, les organisateurs verront qu'un souvenir existe, son type et sa date de livraison, mais ne pourront pas l'ouvrir.</p>
-</div>
-<button class="btn primary submit-memory" type="submit">Déposer mon souvenir</button>
-<div id="status" class="status"></div>
+  <input type="checkbox" id="deliver-now" checked hidden>
+  <div class="field" id="delivery-date-wrap" hidden><label for="delivery_date">Date de dévoilement</label><input id="delivery_date" type="date"></div>
+  <p class="microcopy" id="delivery-help">Votre souvenir sera accessible dès son envoi.</p>
+ </div>
+ <div class="guest-step-heading"><span>3</span><h2>Envoyez votre souvenir</h2></div>
+ <p class="microcopy">Aucun compte à créer. Votre souvenir sera réservé aux organisateurs.</p>
+ <button class="btn primary submit-memory" type="submit">Envoyer mon souvenir</button>
+ <progress id="upload-progress" max="100" value="0" hidden aria-label="Progression de l’envoi"></progress>
+ <div id="status" class="status" role="status" aria-live="polite"></div>
 </form>
+<section id="guest-success" class="guest-success" tabindex="-1" hidden>
+ <i class="fa-solid fa-check" aria-hidden="true"></i><h2>Votre souvenir est bien enregistré</h2>
+ <p id="guest-success-date"></p><button type="button" class="btn primary" id="another-memory">Ajouter un autre souvenir</button>
+</section>
 </main>
 <footer class="forge-style-footer">
   <div class="suite-container footerbar">
@@ -118,5 +133,6 @@
 <script src="suite-shell.js?v=20260927-shell1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="supabase-config.js"></script>
-<script src="app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
+<script src="app.js?v=20260930-guest1"></script>
 </body></html>

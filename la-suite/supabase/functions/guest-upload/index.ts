@@ -21,56 +21,68 @@ const EXTENSIONS: Record<string,string> = {
   "audio/webm":"webm","audio/mpeg":"mp3","audio/wav":"wav","audio/x-wav":"wav","audio/mp4":"m4a","audio/ogg":"ogg",
   "image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/heic":"heic","image/heif":"heif",
 };
+
 function json(body:unknown,status=200){return new Response(JSON.stringify(body),{status,headers:{...corsHeaders,"Content-Type":"application/json"}})}
-function parseDelivery(v:unknown){if(!v)return new Date().toISOString();const d=new Date(String(v));if(Number.isNaN(d.getTime()))throw new Error("Invalid delivery date");return d.toISOString()}
-
+function parseDelivery(value:unknown){
+ if(!value)return new Date().toISOString();
+ const text=String(value);
+ if(/^\d{4}-\d{2}-\d{2}$/.test(text)){
+  const d=new Date(text+"T00:00:00Z");
+  if(Number.isNaN(d.getTime())||d.toISOString().slice(0,10)!==text)throw new Error("Choisissez une date valide.");
+  const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Paris",hour:"numeric",hourCycle:"h23"}).formatToParts(d);
+  const offset=Number(parts.find(p=>p.type==="hour")?.value);
+  return new Date(d.getTime()-offset*3600000).toISOString();
+ }
+ const d=new Date(text);if(Number.isNaN(d.getTime()))throw new Error("Choisissez une date valide.");return d.toISOString();
+}
 Deno.serve(async(req)=>{
-  if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
-  if(req.method!=="POST")return json({error:"Method not allowed"},405);
-  try{
-    const body=await req.json(),action=String(body?.action||""),guestToken=String(body?.guest_token||"");
-    if(!guestToken||guestToken.length<20)return json({error:"Invalid capsule token"},400);
-    const db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,{auth:{persistSession:false,autoRefreshToken:false}});
-    const{data:capsule,error:capsuleError}=await db.from("capsules").select("id,intro_path,status").eq("guest_token",guestToken).maybeSingle();
-    if(capsuleError||!capsule||capsule.status!=="active")return json({error:"Capsule not found"},404);
-
-    if(action==="get_intro"){
-      if(!capsule.intro_path)return json({ok:true,signed_url:null});
-      const{data,error}=await db.storage.from("capsule-media").createSignedUrl(capsule.intro_path,3600);
-      if(error)throw error;return json({ok:true,signed_url:data?.signedUrl||null,media_type:/\.(jpg|jpeg|png|webp)$/i.test(capsule.intro_path)?"image":"video"});
+ if(req.method==="OPTIONS")return new Response("ok",{headers:corsHeaders});
+ if(req.method!=="POST")return json({error:"Method not allowed"},405);
+ try{
+  const body=await req.json(),action=String(body?.action||""),guestToken=String(body?.guest_token||"");
+  if(!/^[a-f0-9]{36}$/.test(guestToken))return json({error:"Lien de capsule invalide."},400);
+  const db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,{auth:{persistSession:false,autoRefreshToken:false}});
+  const{data:capsule,error:capsuleError}=await db.from("capsules").select("id,intro_path,status,couple_name,wedding_date,welcome_message").eq("guest_token",guestToken).maybeSingle();
+  if(capsuleError||!capsule||capsule.status!=="active")return json({error:"Cette capsule est introuvable."},404);
+  if(action==="get_status"){
+   const{data,error}=await db.rpc("guest_capsule_state",{p_capsule_id:capsule.id});if(error)throw error;
+   return json({ok:true,...data,couple_name:capsule.couple_name,wedding_date:capsule.wedding_date,welcome_message:capsule.welcome_message,has_intro:Boolean(capsule.intro_path)});
+  }
+  if(action==="get_intro"){
+   const{data:state,error:stateError}=await db.rpc("guest_capsule_state",{p_capsule_id:capsule.id});
+   if(stateError)throw stateError;if(state?.state==="expired")return json({error:"La période de conservation est terminée."},410);
+   if(!capsule.intro_path)return json({ok:true,signed_url:null});
+   const{data,error}=await db.storage.from("capsule-media").createSignedUrl(capsule.intro_path,3600);
+   if(error)throw error;return json({ok:true,signed_url:data?.signedUrl||null,media_type:/\.(jpg|jpeg|png|webp)$/i.test(capsule.intro_path)?"image":"video"});
+  }
+  if(action==="submit_text"||action==="init_media"){
+   const guestName=String(body?.guest_name||"").trim(),messageText=String(body?.message_text||"").trim();
+   const fileType=String(body?.file_type||"").split(";")[0],fileSize=action==="submit_text"?0:Number(body?.file_size),mediaType=action==="submit_text"?"text":TYPE_GROUPS[fileType];
+   if(action==="init_media"&&(!ALLOWED_TYPES.has(fileType)||!Number.isSafeInteger(fileSize)))return json({error:"Choisissez un fichier compatible."},400);
+   const duration=body?.duration_seconds;
+   if(duration!=null&&(!Number.isFinite(duration)||duration<=0||duration>(mediaType==="video"?60.1:180.1)))return json({error:"Vidéo : 1 minute maximum. Audio : 3 minutes maximum."},400);
+   const requestId=String(body?.request_id||crypto.randomUUID());
+   if(!/^[a-f0-9-]{36}$/i.test(requestId))return json({error:"Envoi invalide."},400);
+   const{data:reserved,error}=await db.rpc("reserve_guest_memory",{p_capsule_id:capsule.id,p_request_id:requestId,p_name:guestName,p_text:messageText,p_type:mediaType,p_mime:action==="submit_text"?null:fileType,p_bytes:fileSize,p_delivery:parseDelivery(body?.delivery_at)});
+   if(error)return json({error:error.message},409);
+   if(reserved.complete)return json(reserved);
+   const{data:signed,error:signedError}=await db.storage.from("capsule-media").createSignedUploadUrl(reserved.path);
+   if(signedError||!signed)throw signedError||new Error("Unable to create upload URL");
+   return json({...reserved,token:signed.token});
+  }
+  if(action==="finalize_media"){
+   const messageId=String(body?.message_id||""),path=String(body?.path||"");
+   if(!/^[a-f0-9-]{36}$/i.test(messageId)||!path.startsWith(capsule.id+"/"))return json({error:"Envoi invalide."},400);
+   const{data,error}=await db.rpc("finalize_guest_memory",{p_capsule_id:capsule.id,p_message_id:messageId,p_path:path});
+   if(error){
+    if(error.message.includes("ne correspond pas")){
+     const{data:message}=await db.from("messages").select("upload_path,media_path").eq("id",messageId).eq("capsule_id",capsule.id).maybeSingle();
+     if(message?.upload_path===path&&!message.media_path)await db.storage.from("capsule-media").remove([path]);
     }
-
-    if(action==="submit_text"){
-      const guestName=String(body?.guest_name||"").trim().slice(0,80),messageText=String(body?.message_text||"").trim().slice(0,4000),deliveryAt=parseDelivery(body?.delivery_at);
-      if(!guestName||!messageText)return json({error:"Name and message are required"},400);
-      const{error}=await db.from("messages").insert({capsule_id:capsule.id,guest_name:guestName,message_text:messageText,media_type:"text",delivery_at:deliveryAt});
-      if(error)throw error;return json({ok:true});
-    }
-
-    if(action==="init_media"){
-      const guestName=String(body?.guest_name||"").trim().slice(0,80),messageText=String(body?.message_text||"").trim().slice(0,4000);
-      const fileType=String(body?.file_type||""),fileSize=Number(body?.file_size||0),deliveryAt=parseDelivery(body?.delivery_at);
-      if(!guestName)return json({error:"Name is required"},400);
-      if(!ALLOWED_TYPES.has(fileType))return json({error:"Unsupported media type"},400);
-      if(!Number.isFinite(fileSize)||fileSize<=0||fileSize>MAX_BYTES)return json({error:"Media too large"},400);
-      const messageId=crypto.randomUUID(),mediaType=TYPE_GROUPS[fileType],path=`${capsule.id}/${messageId}/media.${EXTENSIONS[fileType]||"bin"}`;
-      const{error:insertError}=await db.from("messages").insert({id:messageId,capsule_id:capsule.id,guest_name:guestName,message_text:messageText||null,media_type:mediaType,media_path:null,delivery_at:deliveryAt});
-      if(insertError)throw insertError;
-      const{data:signed,error:signedError}=await db.storage.from("capsule-media").createSignedUploadUrl(path);
-      if(signedError||!signed){await db.from("messages").delete().eq("id",messageId);throw signedError||new Error("Unable to create upload URL")}
-      return json({ok:true,message_id:messageId,media_type:mediaType,path,token:signed.token});
-    }
-
-    if(action==="finalize_media"){
-      const messageId=String(body?.message_id||""),path=String(body?.path||"");
-      if(!messageId||!path.startsWith(capsule.id+"/"))return json({error:"Invalid upload"},400);
-      const{data:message}=await db.from("messages").select("id,capsule_id").eq("id",messageId).eq("capsule_id",capsule.id).maybeSingle();
-      if(!message)return json({error:"Message not found"},404);
-      const{data:objects,error:listError}=await db.storage.from("capsule-media").list(`${capsule.id}/${messageId}`);
-      if(listError||!objects?.some(o=>path.endsWith("/"+o.name)))return json({error:"Uploaded file not found"},409);
-      const{error}=await db.from("messages").update({media_path:path}).eq("id",messageId);
-      if(error)throw error;return json({ok:true});
-    }
-    return json({error:"Unknown action"},400);
-  }catch(error){console.error(error);return json({error:error instanceof Error?error.message:"Internal error"},500)}
+    return json({error:error.message},409);
+   }
+   return json(data);
+  }
+  return json({error:"Unknown action"},400);
+ }catch(error){console.error(error);return json({error:"Le service est momentanément indisponible. Votre souvenir reste sur cette page : réessayez."},500)}
 });
