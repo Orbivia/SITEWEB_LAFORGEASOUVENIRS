@@ -24,6 +24,7 @@ function show(el,msg,ok=true){if(!el)return;el.textContent=msg;el.className="sta
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function slugify(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"").slice(0,50)}
 function rid(){return Math.random().toString(36).slice(2,8)}
+function fParis(v){return new Date(v).toLocaleDateString('fr-FR',{timeZone:'Europe/Paris'})}
 function fdate(v){if(!v)return"—";return new Date(String(v).length===10?v+"T12:00:00":v).toLocaleDateString("fr-FR")}
 function label(t){return t==="video"?"Vidéo":t==="audio"?"Audio":t==="image"?"Image":"Texte"}
 function icon(t){return t==="video"?"▶":t==="audio"?"♫":t==="image"?"▣":"✎"}
@@ -392,12 +393,12 @@ function initGuestControls(){
 }
 function renderGuestState(state){
  const el=$("guest-state");const messages={
- scheduled:"Les dépôts ouvriront le "+fdate(state.opens_at)+", le jour de l’événement.",
+ scheduled:"Les dépôts ouvriront le "+fParis(state.opens_at)+", le jour de l’événement.",
  closed:"Les dépôts sont terminés. Les souvenirs déjà envoyés seront dévoilés aux dates choisies.",
  expired:"La période de conservation de cette capsule est terminée.",
  missing_date:"Cette capsule n’est pas encore prête à recevoir des souvenirs.",
  full:"La capsule est pleine pour les fichiers. Vous pouvez toujours laisser un petit mot.",
- open:state.legacy?"Vous pouvez laisser un souvenir dans cette capsule.":"Les dépôts sont ouverts jusqu’au "+fdate(new Date(new Date(state.closes_at).getTime()-1000).toISOString())+" à minuit, heure de Paris."
+ open:state.legacy?"Vous pouvez laisser un souvenir dans cette capsule.":"Les dépôts sont ouverts jusqu’au "+fParis(new Date(new Date(state.closes_at).getTime()-1000).toISOString())+" à minuit, heure de Paris."
  };
  el.textContent=messages[state.state]||"Cette capsule n’est pas disponible.";el.dataset.state=state.state;
  $("guest-message").hidden=!["open","full"].includes(state.state);
@@ -1373,7 +1374,7 @@ async function renderOrganizerLifecycle(c){
  if(error||!data){panel.textContent="Les dates et le stockage sont momentanément indisponibles.";document.querySelector('[data-owner-panel="configuration"]').prepend(panel);return}
  const names={draft:"Brouillon privé",scheduled:"Prête à partager",open:"Dépôts ouverts",closed:"Souvenirs à découvrir",full:"Stockage rempli",expired:"Conservation terminée",missing_date:"Date à compléter"};
  const ratio=Math.min(100,Math.round(data.used_bytes/data.quota_bytes*100)),warning=ratio>=95?"Il reste très peu de place pour les fichiers. Les petits mots restent possibles.":ratio>=80?"Votre capsule approche de sa limite de stockage.":"";
- panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fdate(data.opens_at)+" et "+fdate(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fdate(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fdate(data.expires_at))+'.</p><details '+(warning?"open":"")+'><summary>Stockage : '+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</summary><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress><p>'+esc(warning||"Le stockage comprend les fichiers et les envois en cours.")+'</p></details>'+(c.activation_source==="free_beta"||c.status==="draft"?'<small>Pendant le lancement gratuit : tous les formats et jusqu’à 5 Go après activation.</small>':"");
+ panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(data.expires_at))+'.</p><details '+(warning?"open":"")+'><summary>Stockage : '+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</summary><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress><p>'+esc(warning||"Le stockage comprend les fichiers et les envois en cours.")+'</p></details>'+(c.activation_source==="free_beta"||c.status==="draft"?'<small>Pendant le lancement gratuit : tous les formats et jusqu’à 5 Go après activation.</small>':"");
  document.querySelector('[data-owner-panel="configuration"]').prepend(panel);
 }
 

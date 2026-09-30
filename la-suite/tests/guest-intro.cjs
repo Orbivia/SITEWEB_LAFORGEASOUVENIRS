@@ -4,8 +4,12 @@ let capsule={id:'test',status:'draft',intro_path:'test/organizer/greeting.png'},
 const chain={select:()=>chain,eq:()=>chain,maybeSingle:async()=>({data:capsule})};
 const createClient=()=>({from:()=>chain,rpc:async()=>({data:{state:'open'}}),storage:{from:()=>({createSignedUrl:async()=>{signedCalls++;return{data:{signedUrl:'https://example.test/signed'}}}})}});
 const source=fs.readFileSync(path.join(__dirname,'../supabase/functions/guest-upload/index.ts'),'utf8').replace(/^import .*;\n/,'');
-vm.runInNewContext(stripTypeScriptTypes(source),{createClient,Deno:{env:{get:()=>''},serve:fn=>handler=fn},Response,crypto,console});
+const ctx={createClient,Deno:{env:{get:()=>''},serve:fn=>handler=fn},Response,crypto,console};
+vm.runInNewContext(stripTypeScriptTypes(source),ctx);
 (async()=>{
+ assert.equal(ctx.parseDelivery('2026-03-29'),'2026-03-28T23:00:00.000Z');
+ assert.equal(ctx.parseDelivery('2026-03-30'),'2026-03-29T22:00:00.000Z');
+ assert.throws(()=>ctx.parseDelivery('2026-02-30'));
  const invoke=action=>handler(new Request('https://example.test/',{method:'POST',body:JSON.stringify({action,guest_token:'a'.repeat(36)})}));
  for(const action of ['get_intro','submit_text','init_media','finalize_media'])assert.equal((await invoke(action)).status,404);
  assert.equal(signedCalls,0);
