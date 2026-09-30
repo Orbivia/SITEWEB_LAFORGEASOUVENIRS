@@ -24,10 +24,11 @@ function show(el,msg,ok=true){if(!el)return;el.textContent=msg;el.className="sta
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function slugify(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"").slice(0,50)}
 function rid(){return Math.random().toString(36).slice(2,8)}
+function fParis(v){return new Date(v).toLocaleDateString('fr-FR',{timeZone:'Europe/Paris'})}
 function fdate(v){if(!v)return"—";return new Date(String(v).length===10?v+"T12:00:00":v).toLocaleDateString("fr-FR")}
 function label(t){return t==="video"?"Vidéo":t==="audio"?"Audio":t==="image"?"Image":"Texte"}
 function icon(t){return t==="video"?"▶":t==="audio"?"♫":t==="image"?"▣":"✎"}
-function ext(m){return({"video/mp4":"mp4","video/quicktime":"mov","video/webm":"webm","audio/webm":"webm","audio/mpeg":"mp3","audio/wav":"wav","audio/x-wav":"wav","audio/mp4":"m4a","audio/ogg":"ogg","image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/heic":"heic","image/heif":"heif"})[m]||"bin"}
+function ext(m){m=m?.split(";")[0];return({"video/mp4":"mp4","video/quicktime":"mov","video/webm":"webm","audio/webm":"webm","audio/mpeg":"mp3","audio/wav":"wav","audio/x-wav":"wav","audio/mp4":"m4a","audio/ogg":"ogg","image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/heic":"heic","image/heif":"heif"})[m]||"bin"}
 function group(m){return m?.startsWith("video/")?"video":m?.startsWith("audio/")?"audio":m?.startsWith("image/")?"image":null}
 async function user(){if(!sb)return null;const{data}=await sb.auth.getUser();return data?.user||null}
 function stopStream(){if(activeStream){activeStream.getTracks().forEach(t=>t.stop());activeStream=null}}
@@ -36,30 +37,50 @@ function preview(file,type){resetPreview();const url=URL.createObjectURL(file);s
 async function countdown(el){el.hidden=false;for(let i=3;i>0;i--){el.textContent=i;await new Promise(r=>setTimeout(r,1000))}el.textContent="●";await new Promise(r=>setTimeout(r,250));el.hidden=true}
 function bestMime(kind){const c=kind==="video"?["video/webm;codecs=vp8,opus","video/webm","video/mp4"]:["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg"];return c.find(x=>window.MediaRecorder&&MediaRecorder.isTypeSupported(x))||""}
 
+
+let recorderTimer=null,recorderStarted=0,recorderPreparing=false,recorderGeneration=0;
 async function prepareRecorder(kind){
- stopStream();
- activeStream=await navigator.mediaDevices.getUserMedia(kind==="video"?{video:{facingMode:"user"},audio:true}:{audio:true});
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw new Error("Enregistrement indisponible");
+ stopStream();const generation=recorderGeneration;
+ const stream=await navigator.mediaDevices.getUserMedia(kind==="video"?{video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:true}:{audio:true});
+ if(generation!==recorderGeneration){stream.getTracks().forEach(t=>t.stop());return}
+ activeStream=stream;
  if(kind==="video"){$("live-video").srcObject=activeStream;$("prepare-video").hidden=true;$("start-video").hidden=false}
  else{$("audio-indicator").textContent="Microphone activé";$("prepare-audio").hidden=true;$("start-audio").hidden=false}
 }
 async function startRecorder(kind){
- if(!activeStream)await prepareRecorder(kind);
- await countdown($(kind==="video"?"video-countdown":"audio-countdown"));
- recordedChunks=[];const mime=bestMime(kind);
- recorder=mime?new MediaRecorder(activeStream,{mimeType:mime}):new MediaRecorder(activeStream);
- recorder.ondataavailable=e=>{if(e.data?.size)recordedChunks.push(e.data)};
- recorder.onstop=()=>{
-  const actual=recorder.mimeType||mime||(kind==="video"?"video/webm":"audio/webm");
-  const file=new File([new Blob(recordedChunks,{type:actual})],"souvenir."+ext(actual),{type:actual});
-  preview(file,kind);stopStream();
-  if(kind==="video"){$("live-video").srcObject=null;$("prepare-video").hidden=false;$("start-video").hidden=true;$("stop-video").hidden=true}
-  else{$("audio-indicator").textContent="Enregistrement terminé";$("prepare-audio").hidden=false;$("start-audio").hidden=true;$("stop-audio").hidden=true}
- };
- recorder.start();
- if(kind==="video"){$("start-video").hidden=true;$("stop-video").hidden=false}
- else{$("audio-indicator").textContent="● Enregistrement en cours";$("start-audio").hidden=true;$("stop-audio").hidden=false}
+ if(recorderPreparing||recorder?.state==="recording")return;
+ recorderPreparing=true;const generation=recorderGeneration;
+ $("start-"+kind).disabled=true;
+ try{
+  if(!activeStream)await prepareRecorder(kind);
+  await countdown($(kind==="video"?"video-countdown":"audio-countdown"));
+  if(generation!==recorderGeneration||!activeStream)return;
+  recordedChunks=[];const mime=bestMime(kind),options={audioBitsPerSecond:64000};
+  if(mime)options.mimeType=mime;if(kind==="video")options.videoBitsPerSecond=1500000;
+  const current=new MediaRecorder(activeStream,options);recorder=current;recorderStarted=Date.now();let bytes=0;
+  current.ondataavailable=e=>{if(e.data?.size){recordedChunks.push(e.data);bytes+=e.data.size;if(bytes>=GUEST_LIMITS[kind]*0.95&&current.state==="recording")current.stop()}};
+  current.onstop=()=>{
+   clearInterval(recorderTimer);const duration=Math.min((Date.now()-recorderStarted)/1000,kind==="video"?60:180);
+   const actual=(current.mimeType||mime||(kind==="video"?"video/webm":"audio/webm")).split(";")[0];
+   const file=new File([new Blob(recordedChunks,{type:actual})],"souvenir."+ext(actual),{type:actual});
+   stopStream();if(kind==="video")$("live-video").srcObject=null;
+   $("prepare-"+kind).hidden=false;$("start-"+kind).hidden=true;$("stop-"+kind).hidden=true;
+   $(kind+"-countdown").hidden=true;
+   if(generation===recorderGeneration&&guestType===kind)acceptGuestFile(file,kind,duration);
+  };
+  current.start(500);
+  $("start-"+kind).hidden=true;$("stop-"+kind).hidden=false;
+  const durationLimit=kind==="video"?60:180,clock=$(kind+"-countdown");clock.hidden=false;
+  recorderTimer=setInterval(()=>{
+   const left=Math.max(0,durationLimit-Math.floor((Date.now()-recorderStarted)/1000));
+   clock.textContent="● "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0")+" restantes";
+   if(kind==="audio")$("audio-indicator").textContent="Enregistrement en cours";
+   if(left===0)stopRecorder();
+  },250);
+ }finally{recorderPreparing=false;$("start-"+kind).disabled=false}
 }
-function stopRecorder(){if(recorder&&recorder.state!=="inactive")recorder.stop()}
+function stopRecorder(){clearInterval(recorderTimer);if(recorder&&recorder.state!=="inactive")recorder.stop()}
 
 const PLAN_NAMES={photo:"Essentiel",audio:"Plus",premium:"Premium"};
 const PLAN_PRICES={photo:"9,90 €",audio:"14,90 €",premium:"24,90 €"};
@@ -263,70 +284,197 @@ async function initCreate(){
  })
 }
 
-function initGuestControls(){
- document.querySelectorAll("[data-media-mode]").forEach(btn=>btn.addEventListener("click",()=>{
-  document.querySelectorAll("[data-media-mode]").forEach(b=>b.classList.remove("active"));btn.classList.add("active");
-  document.querySelectorAll(".media-panel").forEach(p=>p.classList.remove("active"));$(btn.dataset.mediaMode+"-panel").classList.add("active");stopStream()
- }));
- $("media-file")?.addEventListener("change",e=>{const f=e.target.files?.[0],t=f&&group(f.type);if(f&&t)preview(f,t)});
- $("photo-file")?.addEventListener("change",e=>{const f=e.target.files?.[0];if(f)preview(f,"image")});
- $("remove-media")?.addEventListener("click",resetPreview);
- $("prepare-video")?.addEventListener("click",()=>prepareRecorder("video").catch(()=>alert("Impossible d'accéder à la caméra.")));
- $("start-video")?.addEventListener("click",()=>startRecorder("video"));
- $("stop-video")?.addEventListener("click",stopRecorder);
- $("prepare-audio")?.addEventListener("click",()=>prepareRecorder("audio").catch(()=>alert("Impossible d'accéder au microphone.")));
- $("start-audio")?.addEventListener("click",()=>startRecorder("audio"));
- $("stop-audio")?.addEventListener("click",stopRecorder);
- const d=$("delivery_date"),now=$("deliver-now"),wrap=$("delivery-date-wrap");
- if(d)d.min=new Date().toISOString().slice(0,10);
- now?.addEventListener("change",()=>{wrap.hidden=now.checked;d.required=!now.checked})
-}
 
+let guestState=null,guestType="image",guestBusy=false,guestTransaction=null,guestSelectionVersion=0;
+const GUEST_LIMITS={image:10000000,audio:20000000,video:50000000};
+function parisDay(value=new Date()){
+ const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(value);
+ return ["year","month","day"].map(k=>parts.find(p=>p.type===k).value).join("-");
+}
+function addMonthsClamped(day,months){
+ const [y,m,d]=day.split("-").map(Number),last=new Date(Date.UTC(y,m-1+months+1,0)).getUTCDate();
+ return new Date(Date.UTC(y,m-1+months,Math.min(d,last))).toISOString().slice(0,10);
+}
+async function guestInvoke(body){
+ const r=await sb.functions.invoke("guest-upload",{body});
+ if(r.error||r.data?.error){
+  let message=r.data?.error;
+  if(!message&&r.error?.context?.json)try{message=(await r.error.context.json()).error}catch(e){}
+  throw new Error(message||"Connexion interrompue. Votre souvenir reste sur cette page : réessayez.");
+ }
+ return r.data;
+}
+function setGuestMode(mode){
+ stopRecorder();stopStream();recorderGeneration++;
+ document.querySelectorAll(".media-panel").forEach(p=>p.classList.remove("active"));
+ $(mode+"-panel")?.classList.add("active");
+ document.querySelectorAll("[data-media-mode]").forEach(b=>b.classList.toggle("active",b.dataset.mediaMode===mode));
+ ["video","audio"].forEach(k=>{$("prepare-"+k).hidden=false;$("start-"+k).hidden=true;$("stop-"+k).hidden=true});
+}
+function chooseGuestType(type){
+ guestType=type;guestSelectionVersion++;resetPreview();guestTransaction=null;
+ if(!guestBusy)$("guest-message").querySelector('[type="submit"]').disabled=false;show($("status"),"");
+ document.querySelectorAll("[data-memory-type]").forEach(b=>{const selected=b.dataset.memoryType===type;b.classList.toggle("active",selected);b.setAttribute("aria-pressed",String(selected))});
+ $("capture-choices").hidden=type==="text";$("message_text").required=type==="text";
+ $("message-label").innerHTML=type==="text"?"Votre petit mot":'Un petit mot <span class="optional">(facultatif)</span>';
+ $("message_text").placeholder=type==="text"?"Écrivez ce que vous aimeriez leur dire…":"Quelques mots pour accompagner votre souvenir…";
+ const capture=$("capture-memory");capture.dataset.mediaMode=type==="image"?"photo":type;
+ capture.textContent=type==="image"?"Prendre une photo":type==="audio"?"M’enregistrer":"Me filmer";
+ $("media-file").accept=type==="image"?"image/jpeg,image/png,image/webp,image/heic,image/heif":type==="audio"?"audio/webm,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg":"video/mp4,video/quicktime,video/webm";
+ $("media-file").value="";$("photo-file").value="";
+ $("file-help").textContent=type==="image"?"Photo · 10 Mo maximum.":type==="audio"?"Audio · 3 minutes et 20 Mo maximum.":"Vidéo · 1 minute et 50 Mo maximum.";
+ setGuestMode(type==="text"?"text":"upload");
+}
+async function optimizeGuestPhoto(file){
+ if(!["image/jpeg","image/png","image/webp"].includes(file.type))return file;
+ const img=new Image(),url=URL.createObjectURL(file);
+ try{
+  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error("Cette image ne peut pas être lue. Choisissez une autre photo."));img.src=url});
+  const scale=Math.min(1,2048/Math.max(img.naturalWidth,img.naturalHeight));
+  const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
+  const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",0.88));
+  if(!blob)throw new Error("Impossible de préparer cette photo.");
+  return new File([blob],"souvenir.jpg",{type:"image/jpeg"});
+ }finally{URL.revokeObjectURL(url)}
+}
+function guestMediaDuration(file){
+ return new Promise((resolve,reject)=>{
+  const media=document.createElement(file.type.startsWith("audio/")?"audio":"video"),url=URL.createObjectURL(file);
+  const timeout=setTimeout(()=>finish(new Error("La durée de ce fichier est illisible. Essayez un autre fichier ou enregistrez directement ici.")),10000);
+  function finish(error){clearTimeout(timeout);media.removeAttribute("src");URL.revokeObjectURL(url);error?reject(error):resolve(media.duration)}
+  media.preload="metadata";media.onloadedmetadata=()=>Number.isFinite(media.duration)&&media.duration>0?finish():finish(new Error("La durée de ce fichier est illisible. Enregistrez directement ici."));
+  media.onerror=()=>finish(new Error("Ce fichier ne peut pas être lu. Essayez un autre format."));media.src=url;
+ });
+}
+async function acceptGuestFile(file,type,duration){
+ const version=++guestSelectionVersion;resetPreview();guestTransaction=null;
+ if(!file)return;
+ try{
+  $("guest-message").querySelector('[type="submit"]').disabled=true;show($("status"),"Préparation de votre souvenir…");
+  const normalizedType=file.type.split(";")[0];if(group(normalizedType)!==type)throw new Error("Choisissez un fichier correspondant au type de souvenir sélectionné.");
+  if(file.size>GUEST_LIMITS[type])throw new Error(type==="image"?"La photo dépasse 10 Mo.":type==="audio"?"L’audio dépasse 20 Mo.":"La vidéo dépasse 50 Mo.");
+  if(type==="image")file=await optimizeGuestPhoto(file);
+  else{duration=duration||await guestMediaDuration(file);if(duration>(type==="video"?60.1:180.1))throw new Error(type==="video"?"Choisissez une vidéo d’une minute maximum.":"Choisissez un audio de 3 minutes maximum.")}
+  if(version!==guestSelectionVersion)return;
+  if(file.size>GUEST_LIMITS[type])throw new Error("Ce souvenir dépasse la taille autorisée.");
+  if(normalizedType!==file.type&&type!=="image")file=new File([file],file.name,{type:normalizedType});
+  preview(file,type);selectedMedia.duration=duration;show($("status"),"Votre souvenir est prêt.");
+ }catch(error){if(version===guestSelectionVersion)show($("status"),error.message,false)}
+ finally{if(version===guestSelectionVersion)$("guest-message").querySelector('[type="submit"]').disabled=false}
+}
+function chooseDelivery(choice){
+ const now=choice==="now";$("deliver-now").checked=now;$("delivery-date-wrap").hidden=choice!=="custom";$("delivery_date").required=!now;
+ document.querySelectorAll("[data-delivery]").forEach(b=>{const active=b.dataset.delivery===choice;b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active))});
+ if(now)$("delivery_date").value="";
+ else if(choice!=="custom")$("delivery_date").value=addMonthsClamped(parisDay(),Number(choice));
+ else{$("delivery_date").focus()}
+ updateDeliveryHelp();guestTransaction=null;
+}
+function updateDeliveryHelp(){
+ $("delivery-help").textContent=$("deliver-now").checked?"Votre souvenir sera accessible dès son envoi.":$("delivery_date").value?"Il restera secret jusqu’au "+fdate($("delivery_date").value)+".":"Choisissez une date. Votre souvenir restera secret jusqu’à ce jour.";
+}
+function initGuestControls(){
+ document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy)chooseGuestType(b.dataset.memoryType)}));
+ document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy)setGuestMode(b.dataset.mediaMode)}));
+ $("media-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],guestType));
+ $("photo-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],"image"));
+ $("remove-media").addEventListener("click",()=>{guestSelectionVersion++;resetPreview();guestTransaction=null;$("media-file").value="";$("photo-file").value="";show($("status"),"")});
+ for(const kind of ["video","audio"]){
+  $("prepare-"+kind).addEventListener("click",()=>prepareRecorder(kind).catch(()=>show($("status"),"Autorisez l’accès "+(kind==="video"?"à la caméra":"au microphone")+", ou choisissez un fichier.",false)));
+  $("start-"+kind).addEventListener("click",()=>startRecorder(kind).catch(()=>show($("status"),"L’enregistrement n’a pas démarré. Réessayez ou choisissez un fichier.",false)));
+  $("stop-"+kind).addEventListener("click",stopRecorder);
+ }
+ document.querySelectorAll("[data-delivery]").forEach(b=>b.addEventListener("click",()=>chooseDelivery(b.dataset.delivery)));
+ $("delivery_date").addEventListener("change",()=>{guestTransaction=null;updateDeliveryHelp()});
+ $("delivery_date").min=parisDay();
+ window.addEventListener("beforeunload",e=>{if(guestBusy||selectedMedia||$("message_text")?.value.trim()){e.preventDefault();e.returnValue=""}});
+ window.addEventListener("pagehide",()=>{stopRecorder();stopStream()});
+}
+function renderGuestState(state){
+ const el=$("guest-state");const messages={
+ scheduled:"Les dépôts ouvriront le "+fParis(state.opens_at)+", le jour de l’événement.",
+ closed:"Les dépôts sont terminés. Les souvenirs déjà envoyés seront dévoilés aux dates choisies.",
+ expired:"La période de conservation de cette capsule est terminée.",
+ missing_date:"Cette capsule n’est pas encore prête à recevoir des souvenirs.",
+ full:"La capsule est pleine pour les fichiers. Vous pouvez toujours laisser un petit mot.",
+ open:state.legacy?"Vous pouvez laisser un souvenir dans cette capsule.":"Les dépôts sont ouverts jusqu’au "+fParis(new Date(new Date(state.closes_at).getTime()-1000).toISOString())+" à minuit, heure de Paris."
+ };
+ el.textContent=messages[state.state]||"Cette capsule n’est pas disponible.";el.dataset.state=state.state;
+ $("guest-message").hidden=!["open","full"].includes(state.state);
+ const allowed=state.effective_plan==="photo"?["image","text"]:state.effective_plan==="audio"?["image","audio","text"]:["image","audio","video","text"];
+ document.querySelectorAll("[data-memory-type]").forEach(b=>b.hidden=!allowed.includes(b.dataset.memoryType)||(state.state==="full"&&b.dataset.memoryType!=="text"));
+ if(!allowed.includes(guestType)||state.state==="full")chooseGuestType("text");
+ const max=parisDay(new Date(new Date(state.delivery_before).getTime()-1000));$("delivery_date").max=max;
+ document.querySelectorAll("[data-delivery]").forEach(b=>{if(/^\d+$/.test(b.dataset.delivery))b.hidden=addMonthsClamped(parisDay(),Number(b.dataset.delivery))>max});
+}
+function uploadGuestFile(file,transaction){
+ if(transaction.uploaded)return Promise.resolve();
+ if(!window.tus)throw new Error("Le service d’envoi n’a pas chargé. Gardez cette page ouverte et réessayez.");
+ return new Promise((resolve,reject)=>{
+  const progress=$("upload-progress");progress.hidden=false;
+  if(!transaction.upload){
+   const endpoint=cfg.SUPABASE_URL.replace(".supabase.co",".storage.supabase.co")+"/storage/v1/upload/resumable";
+   transaction.upload=new tus.Upload(file,{endpoint,headers:{"x-signature":transaction.reserved.token,apikey:cfg.SUPABASE_ANON_KEY,"x-upsert":"false"},
+    chunkSize:6*1024*1024,uploadDataDuringCreation:true,removeFingerprintOnSuccess:true,retryDelays:[0,1000,3000,5000],
+    fingerprint:()=>Promise.resolve("la-suite:"+transaction.requestId),
+    metadata:{bucketName:"capsule-media",objectName:transaction.reserved.path,contentType:file.type,cacheControl:"3600"}});
+  }
+  transaction.upload.options.onProgress=(sent,total)=>{const percent=Math.round(sent/total*100);progress.value=percent;show($("status"),"Envoi de votre souvenir : "+percent+" %. Gardez cette page ouverte.")};
+  transaction.upload.options.onError=()=>reject(new Error("L’envoi a été interrompu. Gardez cette page ouverte et appuyez sur Réessayer pour le reprendre."));
+  transaction.upload.options.onSuccess=()=>{transaction.uploaded=true;resolve()};
+  transaction.upload.start();
+ });
+}
 async function initCapsule(){
  if(!$("capsule-title"))return;
- initGuestControls();const token=qs.get("t")||qs.get("token"),status=$("status");
- if(!configured||!token)return show(status,"Lien de capsule invalide.",false);
- const{data,error}=await sb.rpc("get_capsule_public",{p_guest_token:token});
- if(error||!data?.length){$("guest-message").hidden=true;return show(status,"Cette capsule est introuvable.",false)}
- const c=data[0];$("capsule-title").textContent=c.couple_name;$("capsule-welcome").textContent=c.welcome_message||"";$("capsule-welcome").hidden=!c.welcome_message;if(c.welcome_message)$("intro-section").hidden=false;
- const eventDate=c.wedding_date?new Date(c.wedding_date+"T23:59:59"):null;
- if(eventDate){
-   const recordingDeadline=new Date(eventDate);
-   recordingDeadline.setFullYear(recordingDeadline.getFullYear()+3);
-   if(new Date()>recordingDeadline){
-     $("guest-message").hidden=true;
-     return show(status,"Cette capsule n'accepte plus de nouveaux souvenirs : la période de 3 ans après l'événement est terminée.",false);
-   }
- }
- if(c.has_intro){
-  const r=await sb.functions.invoke("guest-upload",{body:{action:"get_intro",guest_token:token}});
-  if(!r.error&&r.data?.signed_url){const media=$(r.data.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.data.signed_url;media.hidden=false;$("intro-section").hidden=false}
- }
+ const token=qs.get("t")||qs.get("token");
+ if(!configured||!token){$("guest-state").textContent="Lien de capsule invalide.";return}
+ initGuestControls();chooseGuestType("image");
+ try{
+  guestState=await guestInvoke({action:"get_status",guest_token:token});
+  $("capsule-title").textContent=guestState.couple_name;$("capsule-welcome").textContent=guestState.welcome_message||"";
+  $("capsule-welcome").hidden=!guestState.welcome_message;$("intro-section").hidden=!guestState.welcome_message;
+  renderGuestState(guestState);
+  if(guestState.has_intro&&guestState.state!=="expired")guestInvoke({action:"get_intro",guest_token:token}).then(r=>{
+   if(r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false}
+  }).catch(()=>{});
+ }catch(error){$("guest-state").textContent=error.message;return}
+ $("another-memory").addEventListener("click",async()=>{
+  $("guest-success").hidden=true;$("guest-message").hidden=false;chooseGuestType("image");chooseDelivery("now");show($("status"),"");
+  try{guestState=await guestInvoke({action:"get_status",guest_token:token});renderGuestState(guestState)}catch(error){$("guest-state").textContent=error.message}
+  $("guest-state").scrollIntoView({behavior:"smooth",block:"start"});
+ });
  $("guest-message").addEventListener("submit",async e=>{
-  e.preventDefault();const name=$("guest_name").value.trim(),text=$("message_text").value.trim(),instant=$("deliver-now").checked,date=$("delivery_date").value;
-  if(!name)return show(status,"Indiquez votre prénom.",false);
-  if(!selectedMedia&&!text)return show(status,"Ajoutez un contenu ou un message.",false);
-  if(selectedMedia?.file.size>maxBytes)return show(status,"Le fichier dépasse 100 Mo.",false);
-  let deliveryAt;
-  if(instant)deliveryAt=new Date().toISOString();
-  else{if(!date)return show(status,"Choisissez une date de livraison.",false);deliveryAt=new Date(date+"T00:00:00").toISOString()}
+  e.preventDefault();if(guestBusy)return;
+  const name=$("guest_name").value.trim(),text=$("message_text").value.trim(),instant=$("deliver-now").checked,date=$("delivery_date").value,status=$("status");
+  if(recorder?.state==="recording"||recorderPreparing)return show(status,"Terminez votre enregistrement avant l’envoi.",false);
+  if(guestType!=="text"&&!selectedMedia)return show(status,"Ajoutez votre souvenir, ou choisissez « Petit mot ».",false);
+  if(guestType==="text"&&!text)return show(status,"Écrivez votre petit mot.",false);
+  if(!instant&&(!date||date<$("delivery_date").min||date>$("delivery_date").max))return show(status,"Choisissez une date entre aujourd’hui et le "+fdate($("delivery_date").max)+".",false);
+  const key=JSON.stringify([name,text,instant,date,selectedMedia?.url]);
+  if(!guestTransaction||guestTransaction.key!==key)guestTransaction={key,requestId:crypto.randomUUID(),delivery:instant?new Date().toISOString():date};
+  const transaction=guestTransaction,button=e.target.querySelector('[type="submit"]');
+  const fields=[...e.target.querySelectorAll("input,textarea,button")],disabled=fields.map(f=>f.disabled);
+  guestBusy=true;fields.forEach(f=>f.disabled=true);button.textContent="Envoi en cours…";$("upload-progress").value=0;
   try{
-   show(status,"Envoi de votre souvenir…");
-   if(!selectedMedia){
-    const r=await sb.functions.invoke("guest-upload",{body:{action:"submit_text",guest_token:token,guest_name:name,message_text:text,delivery_at:deliveryAt}});
-    if(r.error||r.data?.error)throw new Error(r.data?.error||r.error.message)
+   show(status,"Préparation de l’envoi…");
+   if(guestType==="text"){
+    await guestInvoke({action:"submit_text",guest_token:token,request_id:transaction.requestId,guest_name:name,message_text:text,delivery_at:transaction.delivery});
    }else{
     const f=selectedMedia.file;
-    const i=await sb.functions.invoke("guest-upload",{body:{action:"init_media",guest_token:token,guest_name:name,message_text:text,file_type:f.type,file_size:f.size,delivery_at:deliveryAt}});
-    if(i.error||i.data?.error)throw new Error(i.data?.error||i.error.message);
-    const up=await sb.storage.from("capsule-media").uploadToSignedUrl(i.data.path,i.data.token,f,{contentType:f.type,upsert:false});
-    if(up.error)throw up.error;
-    const fin=await sb.functions.invoke("guest-upload",{body:{action:"finalize_media",guest_token:token,message_id:i.data.message_id,path:i.data.path}});
-    if(fin.error||fin.data?.error)throw new Error(fin.data?.error||fin.error.message)
+    if(!transaction.reserved)transaction.reserved=await guestInvoke({action:"init_media",guest_token:token,request_id:transaction.requestId,guest_name:name,message_text:text,file_type:f.type,file_size:f.size,duration_seconds:selectedMedia.duration,delivery_at:transaction.delivery});
+    if(!transaction.reserved.complete){
+     await uploadGuestFile(f,transaction);
+     show(status,"Votre fichier est reçu. Confirmation du souvenir…");
+     await guestInvoke({action:"finalize_media",guest_token:token,message_id:transaction.reserved.message_id,path:transaction.reserved.path});
+    }
    }
-   e.target.reset();resetPreview();$("delivery-date-wrap").hidden=false;show(status,"Souvenir déposé. Il sera livré à la date choisie.")
-  }catch(err){show(status,"Envoi impossible : "+(err?.message||"erreur inconnue"),false)}
- })
+   $("guest-success-date").textContent=instant?"Les organisateurs peuvent déjà le découvrir.":"Il restera secret jusqu’au "+fdate(date)+".";
+   e.target.reset();resetPreview();guestTransaction=null;$("guest-message").hidden=true;$("guest-success").hidden=false;$("guest-success").focus();$("guest-success").scrollIntoView({behavior:"smooth",block:"center"});
+  }catch(error){show(status,error.message,false);button.textContent="Réessayer l’envoi"}
+  finally{guestBusy=false;fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;if(!$("guest-success").hidden)button.textContent="Envoyer mon souvenir"}
+ });
 }
 
 function videoDuration(file){
@@ -368,7 +516,7 @@ async function performIntroSave(c){
    else{
     const allowed=kind==="image"?["image/jpeg","image/png","image/webp"]:["video/mp4","video/quicktime","video/webm"];
     if(!allowed.includes(f.type))throw new Error(kind==="image"?"Choisissez une image JPG, PNG ou WebP.":"Choisissez une vidéo MP4, MOV ou WebM.");
-    if(f.size>(kind==="image"?10*1024*1024:maxBytes))throw new Error(kind==="image"?"L’image dépasse 10 Mo.":"La vidéo dépasse 100 Mo.");
+    if(f.size>(kind==="image"?10000000:50000000))throw new Error(kind==="image"?"L’image dépasse 10 Mo.":"La vidéo dépasse 50 Mo.");
     if(kind==="video"){const duration=await videoDuration(f);if(!Number.isFinite(duration)||duration>12.05)throw new Error("La vidéo doit durer 12 secondes maximum.")}
     path=c.id+"/organizer/intro-"+crypto.randomUUID()+"."+ext(f.type);
     show(s,"Envoi du répondeur…");
@@ -400,7 +548,7 @@ function setupIntro(c){
   $("intro-media-field").hidden=kind.value!=="image"&&kind.value!=="video";
   file.accept=kind.value==="image"?"image/jpeg,image/png,image/webp":"video/mp4,video/quicktime,video/webm";
   $("intro-file-label").textContent=kind.value==="image"?"Votre image":"Votre vidéo";
-  $("intro-file-help").textContent=kind.value==="image"?"JPG, PNG ou WebP · 10 Mo maximum.":"MP4, MOV ou WebM · 12 secondes et 100 Mo maximum.";
+  $("intro-file-help").textContent=kind.value==="image"?"JPG, PNG ou WebP · 10 Mo maximum.":"MP4, MOV ou WebM · 12 secondes et 50 Mo maximum.";
   $("upload-intro").textContent=kind.value==="none"?"Enregistrer sans répondeur":"Enregistrer mon répondeur";
  }
  kind.addEventListener("change",()=>{file.value="";update();markDirty("intro");renderIntroDraft(c);show($("intro-status"),"Modifications à enregistrer.")});update();
@@ -1203,7 +1351,7 @@ async function renderCapsuleList(caps){
 }
 function setupCapsuleSettings(c){
  const panel=document.createElement('details');panel.className='capsule-settings';
- panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required value="${esc(c.wedding_date)}"></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===c.plan?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${c.status==='active'?'La formule est fixée après activation.':'Modifiable tant que la capsule est en brouillon.'}</small></div></div>`;
+ panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===c.plan?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${c.status==='active'?'La formule est fixée après activation.':'Modifiable tant que la capsule est en brouillon.'}</small></div></div>`;
  document.querySelector('[data-owner-panel="configuration"]').prepend(panel);
  ['capsule-name','capsule-date','capsule-plan'].forEach(id=>$(id).addEventListener('input',()=>markDirty('settings')));
 }
@@ -1219,12 +1367,23 @@ async function saveCapsuleSettings(c){
  organizerState.settings=($("capsule-name").value.trim()!==name||$("capsule-date").value!==date||$("capsule-plan").value!==plan);return true;
 }
 
+
+async function renderOrganizerLifecycle(c){
+ const {data,error}=await sb.rpc("owner_capsule_usage",{p_capsule_id:c.id});
+ const panel=document.createElement("section");panel.className="capsule-lifecycle";
+ if(error||!data){panel.textContent="Les dates et le stockage sont momentanément indisponibles.";document.querySelector('[data-owner-panel="configuration"]').prepend(panel);return}
+ const names={draft:"Brouillon privé",scheduled:"Prête à partager",open:"Dépôts ouverts",closed:"Souvenirs à découvrir",full:"Stockage rempli",expired:"Conservation terminée",missing_date:"Date à compléter"};
+ const ratio=Math.min(100,Math.round(data.used_bytes/data.quota_bytes*100)),warning=ratio>=95?"Il reste très peu de place pour les fichiers. Les petits mots restent possibles.":ratio>=80?"Votre capsule approche de sa limite de stockage.":"";
+ panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(data.expires_at))+'.</p><details '+(warning?"open":"")+'><summary>Stockage : '+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</summary><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress><p>'+esc(warning||"Le stockage comprend les fichiers et les envois en cours.")+'</p></details>'+(c.activation_source==="free_beta"||c.status==="draft"?'<small>Pendant le lancement gratuit : tous les formats et jusqu’à 5 Go après activation.</small>':"");
+ document.querySelector('[data-owner-panel="configuration"]').prepend(panel);
+}
+
 async function initDashboard(){
  if(!$("dashboard-content"))return;
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href="auth.html";
  $("logout")?.addEventListener("click",async()=>{if(organizerState.saving){show($("organizer-save-error"),"Patientez jusqu’à la fin de l’enregistrement avant de vous déconnecter.",false);return}if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return;Object.assign(organizerState,{qr:false,intro:false,settings:false});await sb.auth.signOut();location.href="index.html"});
- const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
+ const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
  if(!qs.get("slug")){await renderCapsuleList(caps);return}
  const c=caps.find(x=>x.slug===qs.get("slug"));
@@ -1233,6 +1392,7 @@ async function initDashboard(){
  const url=new URL("capsule.html",location.href);url.search="?t="+encodeURIComponent(c.guest_token);
  let manifest=[];
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
+ await renderOrganizerLifecycle(c);
  const stage=document.createElement("section");stage.className="activation-panel";
  stage.innerHTML=c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">Brouillon privé</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Valider ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[c.plan]||"Premium")}</p><p>Tarif prévu de cette formule : <span id="activation-price">${esc(PLAN_PRICES[c.plan]||PLAN_PRICES.premium)}</span> par capsule. <strong>À régler aujourd’hui : 0 €.</strong></p><p>Le paiement sera proposé ultérieurement. Pour le moment, l’activation est gratuite et tous les formats sont accessibles. Aucun paiement ne vous sera demandé pour cette activation.</p><button id="activate-capsule" class="btn primary" type="button">Activer gratuitement</button><p id="activation-status" class="status" role="status"></p></dialog>`;
  document.querySelector('[data-owner-panel="configuration"]').append(stage);

@@ -1,0 +1,40 @@
+name: La Suite checks
+on:
+  pull_request:
+    paths: ['la-suite/**', '.github/workflows/la-suite-checks.yml']
+  push:
+    branches: [main]
+    paths: ['la-suite/**', '.github/workflows/la-suite-checks.yml']
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install browser test dependencies
+        working-directory: la-suite/tests
+        run: npm install --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: la-suite/tests
+        run: npx playwright install --with-deps chromium
+      - name: Syntax and guest endpoint tests
+        run: |
+          node --check la-suite/app.js
+          node la-suite/tests/guest-intro.cjs
+      - name: Browser flows
+        working-directory: la-suite/tests
+        env:
+          QA_SCREENSHOTS: ${{ runner.temp }}
+        run: |
+          node account-flow.cjs
+          node guest-flow.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: la-suite-screenshots
+          path: ${{ runner.temp }}/*.png
