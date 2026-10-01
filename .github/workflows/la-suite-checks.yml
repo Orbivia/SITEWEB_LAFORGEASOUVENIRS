@@ -25,6 +25,10 @@ jobs:
       - name: Syntax and guest endpoint tests
         run: |
           node --check la-suite/app.js
+          node --check la-suite/admin.js
+          node --check la-suite/backup-archive.js
+          node la-suite/tests/backup-integrity.cjs
+          node la-suite/tests/admin-endpoint.cjs
           node la-suite/tests/guest-intro.cjs
       - name: Browser flows
         working-directory: la-suite/tests
@@ -33,6 +37,7 @@ jobs:
         run: |
           node account-flow.cjs
           node guest-flow.cjs
+          node admin-flow.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
