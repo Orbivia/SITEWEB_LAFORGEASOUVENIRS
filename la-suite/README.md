@@ -105,3 +105,11 @@ Vérifications : tests navigateur avec sauvegardes échouées et retardées, con
 - Pas de paiement ajouté. Les emails d’ouverture/expiration, sauvegardes médias indépendantes, purge automatique des objets expirés/orphelins et protections anti-abus restent à configurer avant commercialisation. La fin d’accès à 3 ans n’est pas une purge physique des médias.
 
 Migration : `supabase/migrations/20260930182838_guest_experience_quotas_calendar.sql` (version générée par Supabase). Tests SQL transactionnels annulés : `tests/guest_limits.sql`. CI : syntaxe, endpoint invité et parcours Playwright organisateur/invité avec services simulés. Aucun email ni souvenir réel n’est envoyé par ces tests.
+
+## Une capsule gratuite par compte (octobre 2026)
+
+Le parcours affiche « En préparation » puis « Active ». Un compte avec une seule capsule ouvre directement son espace ; les comptes existants avec plusieurs capsules les conservent. La page de création retrouve la capsule existante pendant le lancement gratuit. Les paramètres et l’accueil sont enregistrés automatiquement, en plus de la personnalisation QR.
+
+La migration `20261001092247_single_free_capsule_per_account.sql` ajoute un verrou par compte, une limite de cinq créations réussies sur 24 h, et une seule capsule non payée par compte pendant le lancement. Le droit gratuit est consommé à l’activation et reste consommé après suppression de la capsule. Les activations gratuites existantes sont reprises sans supprimer les capsules. Quand l’activation gratuite est désactivée, les créations supplémentaires restent possibles pour le futur parcours payant ; celui-ci doit confirmer chaque achat côté serveur.
+
+Les informations de limite sont privées, avec RLS activée et aucun accès client. `owner_capsule_access()` expose seulement la situation du compte connecté. Tests transactionnels sans données conservées : `tests/account_limits.sql` et `tests/account_activation.sql`.

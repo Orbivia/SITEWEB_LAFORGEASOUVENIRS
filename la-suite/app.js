@@ -31,6 +31,7 @@ function icon(t){return t==="video"?"▶":t==="audio"?"♫":t==="image"?"▣":"�
 function ext(m){m=m?.split(";")[0];return({"video/mp4":"mp4","video/quicktime":"mov","video/webm":"webm","audio/webm":"webm","audio/mpeg":"mp3","audio/wav":"wav","audio/x-wav":"wav","audio/mp4":"m4a","audio/ogg":"ogg","image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/heic":"heic","image/heif":"heif"})[m]||"bin"}
 function group(m){return m?.startsWith("video/")?"video":m?.startsWith("audio/")?"audio":m?.startsWith("image/")?"image":null}
 async function user(){if(!sb)return null;const{data}=await sb.auth.getUser();return data?.user||null}
+async function capsuleAccess(){const{data,error}=await sb.rpc("owner_capsule_access");if(error||!data)throw error||new Error("Impossible de vérifier votre capsule. Réessayez.");return data}
 function stopStream(){if(activeStream){activeStream.getTracks().forEach(t=>t.stop());activeStream=null}}
 function resetPreview(){if(selectedMedia?.url)URL.revokeObjectURL(selectedMedia.url);selectedMedia=null;["preview-video","preview-audio","preview-image"].forEach(id=>{const e=$(id);if(e){e.hidden=true;e.removeAttribute("src")}});if($("media-preview"))$("media-preview").hidden=true}
 function preview(file,type){resetPreview();const url=URL.createObjectURL(file);selectedMedia={file,type,url};$("media-preview").hidden=false;const el=$(type==="video"?"preview-video":type==="audio"?"preview-audio":"preview-image");el.src=url;el.hidden=false}
@@ -241,6 +242,11 @@ async function initCreate(){
  async function createCapsule(d,u){
   const err=validateDraft(d);if(err)return show(status,err,false);
   if(!u)return false;
+  const access=await capsuleAccess();
+  if(!access.can_create){
+   if(access.existing_slug){localStorage.removeItem(draftKey);location.href="dashboard.html?slug="+encodeURIComponent(access.existing_slug);return true}
+   if(submit)submit.disabled=false;show(status,access.reason,false);return false;
+  }
   if(submit)submit.disabled=true;
   show(status,"Création de la capsule…");
   const existing=await sb.from("capsules").select("slug").eq("id",d.id).maybeSingle();
@@ -267,6 +273,13 @@ async function initCreate(){
  }
 
  const currentUser=await user();
+ if(currentUser){
+  try{const access=await capsuleAccess();if(!access.can_create){
+   localStorage.removeItem(draftKey);
+   if(access.existing_slug){location.href="dashboard.html?slug="+encodeURIComponent(access.existing_slug);return}
+   show(status,access.reason,false);submit.disabled=true;return;
+  }}catch(error){show(status,error.message,false);submit.disabled=true;return}
+ }
  const pending=readDraft();
  if(currentUser){emailInput.value=currentUser.email;emailInput.readOnly=true;$("email-help").textContent="Cette capsule sera enregistrée dans votre compte."}
  if(pending){$("couple").value=pending.couple;dateInput.value=pending.wedding;dateDisplay.value=frFromIso(pending.wedding);if(!currentUser)emailInput.value=pending.email}
@@ -532,6 +545,7 @@ async function renderIntroPreview(c){
 }
 function uploadIntro(c){
  if(introSavePending)return introSavePending;
+ if(!organizerState.intro)return Promise.resolve(true);
  introSavePending=performIntroSave(c).finally(()=>introSavePending=null);return introSavePending;
 }
 async function performIntroSave(c){
@@ -1367,13 +1381,9 @@ async function renderManifest(c,manifest){
   list.append(article);
  }
 }
-async function renderCapsuleList(caps){
+async function renderCapsuleList(caps,access){
  $("dashboard-title").textContent="Mes capsules";document.querySelectorAll('[data-owner-tab-link]').forEach(el=>el.hidden=true);
- $("dashboard-content").innerHTML='<p class="hint">Vos brouillons et vos capsules actives, réunis dans votre espace.</p><p id="capsules-status" class="status" role="status"></p><div class="capsule-grid">'+caps.map(c=>`<article class="capsule-card"><a class="capsule-card-link" href="dashboard.html?slug=${encodeURIComponent(c.slug)}"><img data-capsule-thumbnail="${esc(c.id)}" class="capsule-thumbnail" src="assets/themes/${esc(qrOptions(c).style)}.webp" alt="Carte de ${esc(c.couple_name)}"><span class="capsule-badge">${c.status==="active"?"Active":"Brouillon privé"}</span><h2>${esc(c.couple_name)}</h2><p>${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[c.plan]||"Premium")}</p><p data-capsule-count="${esc(c.id)}">Chargement du nombre de souvenirs…</p><strong>${c.status==="active"?"Ouvrir ma capsule":"Continuer la préparation"} →</strong></a>${c.status==='draft'?`<button class="delete-draft" data-delete-draft="${esc(c.id)}" type="button">Supprimer le brouillon</button>`:''}</article>`).join('')+'<a class="capsule-card capsule-new" href="create.html"><span aria-hidden="true">+</span><h2>Créer une capsule</h2><p>Préparez un nouvel événement.</p></a></div>';
- document.querySelectorAll('[data-delete-draft]').forEach(button=>button.addEventListener('click',async()=>{
-  const c=caps.find(x=>x.id===button.dataset.deleteDraft);if(!c||!confirm('Supprimer définitivement le brouillon « '+c.couple_name+' » ?'))return;
-  button.disabled=true;try{const{data,error}=await sb.from('capsules').delete().eq('id',c.id).eq('status','draft').select('id');if(error)throw error;if(!data?.length)throw new Error('Ce brouillon n’existe plus ou a déjà été activé.');button.closest('.capsule-card').remove();show($("capsules-status"),'Brouillon supprimé.')}catch(e){show($("capsules-status"),'Suppression impossible : '+e.message,false);button.disabled=false}
- }));
+ $("dashboard-content").innerHTML='<p class="hint">Retrouvez vos capsules et poursuivez leur personnalisation.</p><div class="capsule-grid">'+caps.map(c=>`<article class="capsule-card"><a class="capsule-card-link" href="dashboard.html?slug=${encodeURIComponent(c.slug)}"><img data-capsule-thumbnail="${esc(c.id)}" class="capsule-thumbnail" src="assets/themes/${esc(qrOptions(c).style)}.webp" alt="Carte de ${esc(c.couple_name)}"><span class="capsule-badge">${c.status==="active"?"Active":"En préparation"}</span><h2>${esc(c.couple_name)}</h2><p>${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[c.plan]||"Premium")}</p><p data-capsule-count="${esc(c.id)}">Chargement du nombre de souvenirs…</p><strong>${c.status==="active"?"Ouvrir ma capsule":"Personnaliser ma capsule"} →</strong></a></article>`).join('')+(access.can_create?'<a class="capsule-card capsule-new" href="create.html"><span aria-hidden="true">+</span><h2>Créer une capsule</h2><p>Préparez votre événement.</p></a>':'')+'</div>'+(!access.can_create?'<p class="hint">'+esc(access.reason)+'</p>':'');
  const observer=new IntersectionObserver(entries=>{entries.filter(e=>e.isIntersecting).forEach(async entry=>{
   observer.unobserve(entry.target);const c=caps.find(x=>x.id===entry.target.dataset.capsuleThumbnail);
   try{const url=new URL('capsule.html?t='+encodeURIComponent(c.guest_token),location.href).href;const canvas=await buildPrintCardCanvas(c,url);const thumb=document.createElement('canvas');thumb.width=160;thumb.height=240;thumb.getContext('2d').drawImage(canvas,0,0,160,240);entry.target.src=thumb.toDataURL('image/png')}catch(e){}
@@ -1382,7 +1392,7 @@ async function renderCapsuleList(caps){
 }
 function setupCapsuleSettings(c){
  const panel=document.createElement('details');panel.className='capsule-settings';
- panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===c.plan?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${c.status==='active'?'La formule est fixée après activation.':'Modifiable tant que la capsule est en brouillon.'}</small></div></div>`;
+ panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===c.plan?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div></div>`;
  document.querySelector('[data-owner-panel="configuration"]').prepend(panel);
  ['capsule-name','capsule-date','capsule-plan'].forEach(id=>$(id).addEventListener('input',()=>markDirty('settings')));
 }
@@ -1403,7 +1413,7 @@ async function renderOrganizerLifecycle(c){
  const {data,error}=await sb.rpc("owner_capsule_usage",{p_capsule_id:c.id});
  const panel=document.createElement("section");panel.className="capsule-lifecycle";
  if(error||!data){panel.textContent="Les dates et le stockage sont momentanément indisponibles.";document.querySelector('[data-owner-panel="configuration"]').prepend(panel);return}
- const names={draft:"Brouillon privé",scheduled:"Prête à partager",open:"Dépôts ouverts",closed:"Souvenirs à découvrir",full:"Stockage rempli",expired:"Conservation terminée",missing_date:"Date à compléter"};
+ const names={draft:"En préparation",scheduled:"Prête à partager",open:"Dépôts ouverts",closed:"Souvenirs à découvrir",full:"Stockage rempli",expired:"Conservation terminée",missing_date:"Date à compléter"};
  const ratio=Math.min(100,Math.round(data.used_bytes/data.quota_bytes*100)),warning=ratio>=95?"Il reste très peu de place pour les fichiers. Les petits mots restent possibles.":ratio>=80?"Votre capsule approche de sa limite de stockage.":"";
  panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(data.expires_at))+'.</p><details '+(warning?"open":"")+'><summary>Stockage : '+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</summary><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress><p>'+esc(warning||"Le stockage comprend les fichiers et les envois en cours.")+'</p></details>'+(c.activation_source==="free_beta"||c.status==="draft"?'<small>Pendant le lancement gratuit : tous les formats et jusqu’à 5 Go après activation.</small>':"");
  document.querySelector('[data-owner-panel="configuration"]').prepend(panel);
@@ -1416,7 +1426,13 @@ async function initDashboard(){
  $("logout")?.addEventListener("click",async()=>{if(organizerState.saving){show($("organizer-save-error"),"Patientez jusqu’à la fin de l’enregistrement avant de vous déconnecter.",false);return}if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return;Object.assign(organizerState,{qr:false,intro:false,settings:false});await sb.auth.signOut();location.href="index.html"});
  const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
- if(!qs.get("slug")){await renderCapsuleList(caps);return}
+ let access;
+ try{access=await capsuleAccess()}catch(error){return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>'}
+ const listLink=$("capsule-list-link");if(listLink){listLink.hidden=caps.length<=1;listLink.textContent="Mes capsules"}
+ if(!qs.get("slug")){
+  if(caps.length===1){location.replace("dashboard.html?slug="+encodeURIComponent(caps[0].slug)+location.hash);return}
+  await renderCapsuleList(caps,access);return;
+ }
  const c=caps.find(x=>x.slug===qs.get("slug"));
  if(!c)return $("dashboard-content").innerHTML='<div class="notice">Capsule introuvable. <a href="dashboard.html">Revenir à mes capsules</a></div>';
  $("dashboard-title").textContent=c.couple_name;
@@ -1425,7 +1441,7 @@ async function initDashboard(){
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
  await renderOrganizerLifecycle(c);
  const stage=document.createElement("section");stage.className="activation-panel";
- stage.innerHTML=c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">Brouillon privé</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Valider ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[c.plan]||"Premium")}</p><p>Tarif prévu de cette formule : <span id="activation-price">${esc(PLAN_PRICES[c.plan]||PLAN_PRICES.premium)}</span> par capsule. <strong>À régler aujourd’hui : 0 €.</strong></p><p>Le paiement sera proposé ultérieurement. Pour le moment, l’activation est gratuite et tous les formats sont accessibles. Aucun paiement ne vous sera demandé pour cette activation.</p><button id="activate-capsule" class="btn primary" type="button">Activer gratuitement</button><p id="activation-status" class="status" role="status"></p></dialog>`;
+ stage.innerHTML=c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Activer ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[c.plan]||"Premium")}</p><p>Tarif prévu de cette formule : <span id="activation-price">${esc(PLAN_PRICES[c.plan]||PLAN_PRICES.premium)}</span> par capsule. <strong>À régler aujourd’hui : 0 €.</strong></p><p>Le paiement sera proposé ultérieurement. Pour le moment, l’activation est gratuite et tous les formats sont accessibles. Aucun paiement ne vous sera demandé pour cette activation.</p><button id="activate-capsule" class="btn primary" type="button">Activer gratuitement</button><p id="activation-status" class="status" role="status"></p></dialog>`;
  document.querySelector('[data-owner-panel="configuration"]').append(stage);
  if(c.status!=="active"){
   ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title="Activez votre capsule pour partager votre carte"});
@@ -1446,10 +1462,10 @@ async function initDashboard(){
  setupOwnerTabs(c,manifest||[]);
  applyQrPreview(url.href,c);
  const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-show-initials"];
- let qrSaveTimer=null,saveAllPending=null;
+ let qrSaveTimer=null,autoSaveTimer=null,saveAllPending=null;
  function saveAll(){
   if(saveAllPending)return saveAllPending;
-  clearTimeout(qrSaveTimer);organizerState.saving++;saveIndicator();$("save-organizer").disabled=true;
+  clearTimeout(qrSaveTimer);clearTimeout(autoSaveTimer);organizerState.saving++;saveIndicator();$("save-organizer").disabled=true;
   saveAllPending=(async()=>{try{
    if(!await saveCapsuleSettings(c))return false;
    if(introSavePending&&!await introSavePending)return false;
@@ -1487,6 +1503,19 @@ async function initDashboard(){
    printPrintCard(c,url.href);
  });
  setupIntro(c);
+ function scheduleAutoSave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer=setTimeout(async()=>{
+   if(organizerState.saving){scheduleAutoSave();return}
+   if(organizerState.settings&&(!$("capsule-name").value.trim()||!$("capsule-date").value))return;
+   const kind=$("intro-kind").value;
+   if(organizerState.intro&&(kind==="text"&&!$("intro-text").value.trim()||(kind==="image"||kind==="video")&&!$("intro-file").files[0]&&introKind(c)!==kind))return;
+   await saveAll();
+  },800);
+ }
+ ["capsule-name","capsule-date","capsule-plan","intro-kind","intro-file","intro-text"].forEach(id=>{
+  $(id).addEventListener("input",scheduleAutoSave);$(id).addEventListener("change",scheduleAutoSave);
+ });
  async function refreshMemories(){
   const button=$("refresh-memories");button.disabled=true;show($("memory-status"),'Chargement des souvenirs…');
   try{const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(manifest);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'Souvenirs à jour.')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser les souvenirs » pour réessayer.',false)}finally{button.disabled=false}
