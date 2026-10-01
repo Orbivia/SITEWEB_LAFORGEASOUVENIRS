@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.58.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,7 +50,7 @@ Deno.serve(async(req)=>{
   }
   if(action==="get_intro"){
    const{data:state,error:stateError}=await db.rpc("guest_capsule_state",{p_capsule_id:capsule.id});
-   if(stateError)throw stateError;if(state?.state==="expired")return json({error:"La période de conservation est terminée."},410);
+   if(stateError)throw stateError;if(state?.state==="suspended")return json({error:"Les dépôts sont temporairement en pause."},403);if(state?.state==="expired")return json({error:"La période de conservation est terminée."},410);
    if(!capsule.intro_path)return json({ok:true,signed_url:null});
    const{data,error}=await db.storage.from("capsule-media").createSignedUrl(capsule.intro_path,3600);
    if(error)throw error;return json({ok:true,signed_url:data?.signedUrl||null,media_type:/\.(jpg|jpeg|png|webp)$/i.test(capsule.intro_path)?"image":"video"});
