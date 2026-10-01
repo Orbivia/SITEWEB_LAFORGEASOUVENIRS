@@ -2471,6 +2471,9 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 .create-page .create-intro h1{font-size:clamp(2.4rem,6vw,3.6rem);margin:0 0 8px}
 .create-page .create-intro p{font-size:.92rem}
 .create-page .create-form{max-width:600px;margin:24px auto 40px}
+.create-page .field-error{display:block;margin-top:6px;color:#9c1b1b;font-size:.85rem;line-height:1.4}
+.create-page .field-error[hidden]{display:none}
+.create-page input[aria-invalid="true"]{border:2px solid #b42318;background:#fff8f7}
 .create-page .create-details{margin-top:20px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
 .create-page .create-details summary{padding:14px 0 0;font-weight:600;cursor:pointer}
 .create-page .create-details summary:focus-visible{outline:3px solid #c7a052;outline-offset:3px;border-radius:4px}
