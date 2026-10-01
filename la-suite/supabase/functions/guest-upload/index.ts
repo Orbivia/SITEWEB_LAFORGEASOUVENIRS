@@ -5,7 +5,6 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
-const MAX_BYTES = 100 * 1024 * 1024;
 const ALLOWED_TYPES = new Set([
   "video/mp4","video/quicktime","video/webm",
   "audio/webm","audio/mpeg","audio/wav","audio/x-wav","audio/mp4","audio/ogg",
@@ -40,8 +39,19 @@ Deno.serve(async(req)=>{
  if(req.method!=="POST")return json({error:"Method not allowed"},405);
  try{
   const body=await req.json(),action=String(body?.action||""),guestToken=String(body?.guest_token||"");
-  if(!/^[a-f0-9]{36}$/.test(guestToken))return json({error:"Lien de capsule invalide."},400);
   const db=createClient(Deno.env.get("SUPABASE_URL")!,Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,{auth:{persistSession:false,autoRefreshToken:false}});
+  if(action==="init_intro"||action==="finalize_intro"){
+   const token=(req.headers.get("Authorization")||"").replace(/^Bearer /i,"");
+   const{data:auth,error:authError}=await db.auth.getUser(token);
+   if(authError||!auth.user)return json({error:"Connectez-vous pour enregistrer votre accueil."},401);
+   const{data:result,error}=await db.rpc("organizer_intro_backend",{p_action:action==="init_intro"?"reserve":"finalize",p_user:auth.user.id,p_capsule:body.capsule_id,p_payload:{mime:body.file_type,bytes:body.file_size,path:body.path}});
+   if(error)return json({error:error.message},409);
+   if(action==="finalize_intro")return json(result);
+   const{data:signed,error:signedError}=await db.storage.from("capsule-media").createSignedUploadUrl(result.path);
+   if(signedError||!signed)throw signedError||new Error("Unable to create upload URL");
+   return json({...result,token:signed.token});
+  }
+  if(!/^[a-f0-9]{36}$/.test(guestToken))return json({error:"Lien de capsule invalide."},400);
   const{data:capsule,error:capsuleError}=await db.from("capsules").select("id,intro_path,status,couple_name,wedding_date,welcome_message").eq("guest_token",guestToken).maybeSingle();
   if(capsuleError||!capsule||capsule.status!=="active")return json({error:"Cette capsule est introuvable."},404);
   if(action==="get_status"){
@@ -52,6 +62,7 @@ Deno.serve(async(req)=>{
    const{data:state,error:stateError}=await db.rpc("guest_capsule_state",{p_capsule_id:capsule.id});
    if(stateError)throw stateError;if(state?.state==="suspended")return json({error:"Les dépôts sont temporairement en pause."},403);if(state?.state==="expired")return json({error:"La période de conservation est terminée."},410);
    if(!capsule.intro_path)return json({ok:true,signed_url:null});
+   if(!capsule.intro_path.startsWith(capsule.id+"/organizer/"))return json({error:"Accueil indisponible."},403);
    const{data,error}=await db.storage.from("capsule-media").createSignedUrl(capsule.intro_path,3600);
    if(error)throw error;return json({ok:true,signed_url:data?.signedUrl||null,media_type:/\.(jpg|jpeg|png|webp)$/i.test(capsule.intro_path)?"image":"video"});
   }
