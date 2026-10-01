@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>La Suite — Capsule temporelle</title>
-<meta name="description" content="Une capsule temporelle simple pour vos événements : QR code personnalisable, vidéo, audio, photo et messages programmés pour plus tard.">
+<meta name="description" content="Une capsule temporelle pour vos événements : photos, voix et vidéos déposées par QR code, à découvrir immédiatement ou jusqu’à 30 mois plus tard. Découvrez les formules La Suite.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20260930-guest1">
+<link rel="stylesheet" href="styles.css?v=20261001-offers1">
 </head>
 
 <body class="suite-public">
@@ -41,8 +41,8 @@
       <h1>Vos souvenirs d’aujourd’hui,<br>à découvrir plus tard.</h1>
       <p>
         Vos invités scannent un QR code, découvrent votre message d’accueil,
-        puis déposent une vidéo, un audio, une photo ou un texte.
-        Chacun choisit quand son souvenir vous sera livré.
+        puis déposent leurs souvenirs le jour de l’événement ou le lendemain.
+        Chacun choisit quand vous pourrez les découvrir : tout de suite ou jusqu’à 30 mois plus tard.
       </p>
       <a class="suite-cta" href="create.html">Créer ma capsule</a>
     </div>
@@ -63,7 +63,7 @@
   <i class="fa-solid fa-heart icon-accent icon-heart"></i>
 </div>
           <h3>Créez votre capsule</h3>
-          <p>Créez l’espace de votre événement et ajoutez votre courte vidéo d’accueil.</p>
+          <p>Créez l’espace de votre événement et personnalisez votre accueil avec un texte, une image ou une courte vidéo, si vous le souhaitez.</p>
         </article>
 
         <article class="principle-card">
@@ -79,7 +79,7 @@
   <i class="fa-solid fa-user icon-user icon-user-right"></i>
 </div>
           <h3>Vos invités participent</h3>
-          <p>Ils filment, enregistrent ou importent leur souvenir directement depuis leur téléphone.</p>
+          <p>Le jour J et le lendemain, ils déposent leurs souvenirs depuis leur téléphone, dans les formats de votre formule.</p>
         </article>
 
         <article class="principle-card">
@@ -88,7 +88,7 @@
   <i class="fa-solid fa-lock icon-accent icon-lock"></i>
 </div>
           <h3>À découvrir plus tard</h3>
-          <p>Chaque invité choisit une date et le souvenir reste verrouillé jusqu’au moment prévu.</p>
+          <p>Chaque invité choisit une ouverture immédiate ou une date dans les 30 mois suivant l’événement. Le souvenir reste verrouillé jusque-là.</p>
         </article>
       </div>
     </div>
@@ -98,60 +98,113 @@
     <div class="suite-container">
       <div class="pricing-heading">
         <span class="pricing-kicker">Tarifs</span>
-        <h2>Une formule adaptée à chaque souvenir</h2>
-        <p>Trois formules pour vos souvenirs, avec un QR code personnalisable et une découverte programmée. Tarifs prévus ci-dessous : pendant cette phase de lancement, l’activation est gratuite et tous les formats sont accessibles avec jusqu’à 5 Go par capsule.</p>
+        <h2>Choisissez les souvenirs à garder</h2>
+        <p>Des photos, la voix de vos proches ou des vidéos : comparez les formats et la capacité de chaque formule. Les tarifs prévus correspondent à une capsule pour un événement, sans abonnement.</p>
       </div>
+
+      <aside class="pricing-launch" aria-labelledby="launch-title">
+        <div>
+          <h3 id="launch-title">Le lancement est gratuit</h3>
+          <p>Aujourd’hui, toutes les capsules activées profitent des photos, textes, audios et vidéos, avec <strong>5 Go de stockage</strong>. Aucun paiement n’est demandé. Les formules ci-dessous présentent la future offre payante.</p>
+        </div>
+        <a class="pricing-button pricing-button-primary" href="create.html">Créer gratuitement ma capsule</a>
+      </aside>
 
       <div class="pricing-grid">
         <article class="pricing-card">
           <div class="pricing-icon pricing-icons" aria-hidden="true"><i class="fa-solid fa-camera"></i></div>
           <h3>Essentiel</h3>
-          <p class="pricing-subtitle">Pour conserver les images et petits mots de vos invités.</p>
-          <div class="pricing-price"><strong>9,90&nbsp;€</strong><span>tarif prévu par capsule</span></div>
+          <p class="pricing-subtitle">Les photos et les petits mots de vos invités.</p>
+          <div class="pricing-price"><strong>9,90&nbsp;€</strong><span>tarif prévu<br>par capsule</span></div>
+          <p class="pricing-capacity"><strong>1 Go</strong><span>de stockage prévu</span></p>
           <ul class="pricing-features">
-            <li><i class="fa-solid fa-check"></i> Photos</li>
-            <li><i class="fa-solid fa-check"></i> Messages texte</li>
-            <li><i class="fa-solid fa-check"></i> QR code personnalisable</li>
-            <li><i class="fa-solid fa-check"></i> Date de dévoilement choisie par l’invité</li>
-          <li><i class="fa-solid fa-check"></i> 1 Go de stockage inclus</li>
+            <li><i class="fa-solid fa-check" aria-hidden="true"></i> Photos et messages texte</li>
+            <li class="pricing-unavailable"><i class="fa-solid fa-minus" aria-hidden="true"></i> Audio non inclus</li>
+            <li class="pricing-unavailable"><i class="fa-solid fa-minus" aria-hidden="true"></i> Vidéo non incluse</li>
           </ul>
-          <a class="pricing-button" href="create.html?plan=photo">Choisir Essentiel</a>
+          <a class="pricing-button" href="create.html?plan=photo">Préparer ma capsule Essentiel</a>
         </article>
 
         <article class="pricing-card pricing-card-featured">
           <div class="pricing-badge">Photos &amp; voix</div>
           <div class="pricing-icon pricing-icons" aria-hidden="true"><i class="fa-solid fa-camera"></i><i class="fa-solid fa-microphone"></i></div>
           <h3>Plus</h3>
-          <p class="pricing-subtitle">Les photos, avec en plus la voix de vos proches.</p>
-          <div class="pricing-price"><strong>14,90&nbsp;€</strong><span>tarif prévu par capsule</span></div>
+          <p class="pricing-subtitle">Les photos et les mots, avec la voix de vos proches.</p>
+          <div class="pricing-price"><strong>14,90&nbsp;€</strong><span>tarif prévu<br>par capsule</span></div>
+          <p class="pricing-capacity"><strong>2 Go</strong><span>de stockage prévu</span></p>
           <ul class="pricing-features">
-            <li><i class="fa-solid fa-check"></i> Photos et messages texte</li>
-            <li><i class="fa-solid fa-check"></i> Enregistrements audio</li>
-            <li><i class="fa-solid fa-check"></i> QR code personnalisable</li>
-            <li><i class="fa-solid fa-check"></i> Date de dévoilement choisie par l’invité</li>
-          <li><i class="fa-solid fa-check"></i> 2 Go de stockage inclus</li>
+            <li><i class="fa-solid fa-check" aria-hidden="true"></i> Photos et messages texte</li>
+            <li><i class="fa-solid fa-check" aria-hidden="true"></i> Enregistrements audio</li>
+            <li class="pricing-unavailable"><i class="fa-solid fa-minus" aria-hidden="true"></i> Vidéo non incluse</li>
           </ul>
-          <a class="pricing-button pricing-button-primary" href="create.html?plan=audio">Choisir Plus</a>
+          <a class="pricing-button pricing-button-primary" href="create.html?plan=audio">Préparer ma capsule Plus</a>
         </article>
 
         <article class="pricing-card">
           <div class="pricing-icon pricing-icons" aria-hidden="true"><i class="fa-solid fa-camera"></i><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-video"></i></div>
           <h3>Premium</h3>
-          <p class="pricing-subtitle">La capsule complète pour revivre les voix, les images et les moments en vidéo.</p>
-          <div class="pricing-price"><strong>24,90&nbsp;€</strong><span>tarif prévu par capsule</span></div>
+          <p class="pricing-subtitle">Tous les formats pour revivre aussi les moments en vidéo.</p>
+          <div class="pricing-price"><strong>24,90&nbsp;€</strong><span>tarif prévu<br>par capsule</span></div>
+          <p class="pricing-capacity"><strong>5 Go</strong><span>de stockage prévu</span></p>
           <ul class="pricing-features">
-            <li><i class="fa-solid fa-check"></i> Photos et messages texte</li>
-            <li><i class="fa-solid fa-check"></i> Enregistrements audio</li>
-            <li><i class="fa-solid fa-check"></i> Vidéos enregistrées ou importées</li>
-            <li><i class="fa-solid fa-check"></i> QR code personnalisable</li>
-            <li><i class="fa-solid fa-check"></i> Date de dévoilement choisie par l’invité</li>
-          <li><i class="fa-solid fa-check"></i> 5 Go de stockage inclus</li>
+            <li><i class="fa-solid fa-check" aria-hidden="true"></i> Photos et messages texte</li>
+            <li><i class="fa-solid fa-check" aria-hidden="true"></i> Enregistrements audio</li>
+            <li><i class="fa-solid fa-check" aria-hidden="true"></i> Vidéos enregistrées ou importées</li>
           </ul>
-          <a class="pricing-button" href="create.html?plan=premium">Choisir Premium</a>
+          <a class="pricing-button" href="create.html?plan=premium">Préparer ma capsule Premium</a>
         </article>
       </div>
-      <p class="pricing-calendar">Pour les nouvelles capsules : dépôts le jour de l’événement et le lendemain, heure de Paris. Souvenirs à dévoiler immédiatement ou dans les 30 mois suivant l’événement. Conservation pendant 3 ans à partir de l’événement. Photos : 10 Mo · Audios : 3 min et 20 Mo · Vidéos : 1 min et 50 Mo. Les invités participent sans compte.</p>
-</div>
+      <div class="pricing-included">
+        <h3>Dans toutes les formules</h3>
+        <ul>
+          <li><i class="fa-solid fa-qrcode" aria-hidden="true"></i> QR code et carte personnalisables à télécharger ou imprimer</li>
+          <li><i class="fa-regular fa-comment" aria-hidden="true"></i> Message d’accueil facultatif</li>
+          <li><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i> Invités sans compte ni application</li>
+          <li><i class="fa-solid fa-download" aria-hidden="true"></i> Lecture et téléchargement des souvenirs dès leur ouverture</li>
+        </ul>
+      </div>
+
+      <div class="pricing-timing" aria-labelledby="timing-title">
+        <h3 id="timing-title">Trois dates à retenir</h3>
+        <div class="pricing-timing-grid">
+          <article>
+            <span class="pricing-timing-label">Pour déposer</span>
+            <h4>Le jour J et le lendemain</h4>
+            <p>Les invités envoient leurs souvenirs pendant ces deux jours, jusqu’à 23 h 59 le lendemain de l’événement, heure de Paris.</p>
+          </article>
+          <article>
+            <span class="pricing-timing-label">Pour découvrir</span>
+            <h4>Tout de suite ou jusqu’à 30 mois</h4>
+            <p>Chaque invité choisit la date d’ouverture de son souvenir, au plus tard 2 ans et demi après l’événement. Il reste verrouillé avant cette date.</p>
+          </article>
+          <article>
+            <span class="pricing-timing-label">Pour conserver</span>
+            <h4>Un accès pendant 3 ans</h4>
+            <p>Votre capsule reste accessible jusqu’au troisième anniversaire de l’événement. Téléchargez vos souvenirs ouverts avant cette échéance pour les garder.</p>
+          </article>
+        </div>
+      </div>
+
+      <div class="pricing-faq" aria-labelledby="pricing-faq-title">
+        <h3 id="pricing-faq-title">Quelques précisions</h3>
+        <details>
+          <summary>Combien de souvenirs peut-on déposer&nbsp;?</summary>
+          <p>La capacité est partagée par toute la capsule, et non attribuée à chaque invité. Le nombre de fichiers dépend de leur taille : une photo prend généralement moins de place qu’une vidéo. Vous suivez le stockage utilisé dans votre espace organisateur.</p>
+        </details>
+        <details>
+          <summary>Quelles sont les limites par fichier&nbsp;?</summary>
+          <p>Photos : 10 Mo maximum. Audios : 3 minutes et 20 Mo maximum. Vidéos : 1 minute et 50 Mo maximum. Les formats disponibles dépendent de la formule ; pendant le lancement gratuit, ils sont tous accessibles.</p>
+        </details>
+        <details>
+          <summary>Que se passe-t-il lorsque le stockage est plein&nbsp;?</summary>
+          <p>Les nouveaux fichiers ne peuvent plus être déposés. Les messages texte restent possibles pendant la période de dépôt, et les souvenirs déjà reçus restent conservés jusqu’à la fin des 3 ans.</p>
+        </details>
+        <details>
+          <summary>Les 3 ans commencent-ils à l’ouverture du souvenir&nbsp;?</summary>
+          <p>Ils commencent à la date de l’événement. Un souvenir ouvert 2 ans et demi après l’événement reste donc accessible pendant environ 6 mois, jusqu’à la fin des 3 ans.</p>
+        </details>
+      </div>
+    </div>
   </section>
 
   <section class="suite-final suite-container">
