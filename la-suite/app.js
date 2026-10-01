@@ -545,6 +545,7 @@ async function renderIntroPreview(c){
 }
 function uploadIntro(c){
  if(introSavePending)return introSavePending;
+ if(!organizerState.intro)return Promise.resolve(true);
  introSavePending=performIntroSave(c).finally(()=>introSavePending=null);return introSavePending;
 }
 async function performIntroSave(c){
