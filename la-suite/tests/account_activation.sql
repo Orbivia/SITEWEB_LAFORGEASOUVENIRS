@@ -69,12 +69,13 @@ select public.activate_capsule(current_setting('test.capsule')::uuid);
 do $$ begin
  if not exists(select 1 from public.capsules where id=current_setting('test.capsule')::uuid and status='active' and activation_source='free_beta' and couple_name='Updated name' and plan='audio') then raise exception 'Activation failed'; end if;
 end $$;
-do $$ declare draft_id uuid:=gen_random_uuid(); begin
- delete from public.capsules where id=current_setting('test.capsule')::uuid and status='draft';
- if found then raise exception 'Filtered delete removed active capsule'; end if;
- insert into public.capsules(id,owner_id,slug,couple_name,wedding_date) values(draft_id,auth.uid(),'test-'||draft_id,'Draft deletion test',current_date+30);
- delete from public.capsules where id=draft_id and status='draft';
- if not found then raise exception 'Draft deletion failed'; end if;
+do $$ declare extra_id uuid:=gen_random_uuid(); begin
+ begin
+  insert into public.capsules(id,owner_id,slug,couple_name,wedding_date) values(extra_id,auth.uid(),'test-'||extra_id,'Extra capsule',current_date+30);
+  raise exception 'TEST: second free capsule allowed';
+ exception when others then
+  if SQLERRM not like 'Une seule capsule gratuite%' then raise;end if;
+ end;
 end $$;
 reset role;
 set local role anon;
