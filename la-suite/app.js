@@ -210,6 +210,34 @@ async function initCreate(){
   if(d.wedding<minDate)return"Choisissez une date d'événement future.";
   return"";
  }
+ const validationFields=[[$("couple"),$("couple-error")],[dateDisplay,$("wedding-date-error")],[emailInput,$("email-error")]];
+ function fieldError(input){
+  const value=input.value.trim();
+  if(input.id==="couple")return !value?"Indiquez le nom de votre capsule.":value.length>50?"Le nom est limité à 50 caractères.":"";
+  if(input===dateDisplay){
+   if(!value)return "Choisissez la date de votre événement.";
+   const date=parseFrDate(value);
+   return !date?"Saisissez une date valide au format JJ/MM/AAAA.":date<minDate?"Choisissez une date à partir de demain.":"";
+  }
+  return !value?"Indiquez votre adresse e-mail.":input.validity.typeMismatch||!/^\S+@\S+\.\S+$/.test(value)?"Saisissez une adresse e-mail valide.":"";
+ }
+ function renderFieldError(input,error){
+  const message=fieldError(input);
+  error.textContent=message;error.hidden=!message;
+  if(message)input.setAttribute("aria-invalid","true");else input.removeAttribute("aria-invalid");
+  return message;
+ }
+ function validateFields(){
+  let first=null;
+  validationFields.forEach(([input,error])=>{if(renderFieldError(input,error)&&!first)first=input});
+  if(first){show(status,"Complétez ou corrigez les champs indiqués pour continuer.",false);first.focus();return false}
+  return true;
+ }
+ validationFields.forEach(([input,error])=>input.addEventListener("input",()=>{
+  if(input.getAttribute("aria-invalid")==="true")renderFieldError(input,error);
+  if(validationFields.every(([field])=>field.getAttribute("aria-invalid")!=="true")&&status.dataset.validation){show(status,"");delete status.dataset.validation}
+ }));
+ dateInput.addEventListener("change",()=>{if(dateDisplay.getAttribute("aria-invalid")==="true")renderFieldError(dateDisplay,$("wedding-date-error"))});
  async function createCapsule(d,u){
   const err=validateDraft(d);if(err)return show(status,err,false);
   if(!u)return false;
@@ -253,6 +281,8 @@ async function initCreate(){
  form.addEventListener("submit",async e=>{
   e.preventDefault();
   e.stopPropagation();
+  if(!validateFields()){status.dataset.validation="true";return}
+  delete status.dataset.validation;
   const fd=new FormData(form);
   const displayedDate=String(dateDisplay?.value||"").trim();
   const d={
@@ -282,6 +312,7 @@ async function initCreate(){
    show(status,"Impossible de continuer : "+(msg||"erreur inconnue"),false);
   }
  })
+ form.noValidate=true;
 }
 
 
