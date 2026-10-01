@@ -55,30 +55,12 @@
     <div class="field">
       <label for="email">Adresse e-mail</label>
       <input id="email" name="email" type="email" autocomplete="email" required placeholder="vous@exemple.fr" aria-describedby="email-help">
-      <small class="field-help" id="email-help">Pour retrouver votre capsule.</small>
+      <small class="field-help" id="email-help">Pour accéder à votre espace organisateur.</small>
     </div>
 
-    <div class="field">
-      <label for="plan">Formule envisagée</label>
-      <select id="plan" name="plan" aria-describedby="plan-help">
-        <option value="photo">Essentiel — Photo</option>
-        <option value="audio">Plus — Photo + Audio</option>
-        <option value="premium">Premium — Photo + Audio + Vidéo</option>
-      </select>
-      <small class="field-help" id="plan-help">Tous les formats et 5 Go inclus pendant le lancement.</small>
-    </div>
-    <button class="btn primary create-submit" type="submit">Continuer</button>
+    <input id="plan" name="plan" type="hidden" value="premium">
+    <button class="btn primary create-submit" type="submit">Créer ma capsule</button>
     <div id="status" class="status" role="status" aria-live="polite"></div>
-    <details class="create-details">
-      <summary>Les dates et la suite</summary>
-      <p>Vous personnaliserez votre carte QR et votre accueil avant d’activer la capsule. La date de l’événement reste modifiable jusqu’à l’activation.</p>
-      <ul>
-        <li><strong>Dépôts :</strong> le jour de l’événement et le lendemain, heure de Paris.</li>
-        <li><strong>Ouverture :</strong> immédiatement ou jusqu’à 30 mois après l’événement.</li>
-        <li><strong>Accès :</strong> jusqu’au troisième anniversaire de l’événement.</li>
-      </ul>
-      <a href="index.html#tarifs">Comparer les formules</a>
-    </details>
   </form>
 </main>
 
