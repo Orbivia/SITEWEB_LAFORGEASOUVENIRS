@@ -88,21 +88,30 @@ const PLAN_PRICES={photo:"9,90 €",audio:"14,90 €",premium:"24,90 €"};
 function authDestination(){if(qs.get("next")==="admin")return "admin.html";return qs.get("next")==="create"?"create.html?resume=1":"dashboard.html"}
 async function initAuth(){
  const form=$("auth-form");if(!form)return;
- const status=$("status"),submit=form.querySelector('[type="submit"]');
+ const status=$("status"),submit=form.querySelector('[type="submit"]'),adminAccess=qs.get("next")==="admin";
+ if(adminAccess){
+  document.title="Connexion à l’administration — La Suite";
+  form.closest("section").querySelector(".eyebrow").textContent="Administration privée";
+  const nav=document.querySelector(".suite-organizer-link");if(nav){nav.href="admin.html";nav.querySelector("span").textContent="Administration"}
+  document.querySelector(".organizer-access-help").textContent="Utilisez votre compte habituel. Si vous avez oublié votre mot de passe, choisissez « Mot de passe oublié ».";
+ }
  if(!configured)return show(status,"Le service de connexion est indisponible. Rechargez la page.",false);
  let mode=qs.get("mode")==="signup"?"signup":qs.get("mode")==="recovery"?"recovery":"login";
  function render(){
   const recovery=mode==="recovery",reset=mode==="reset";
   $("auth-title").textContent=({login:"Bienvenue dans votre espace",signup:"Créez votre compte",reset:"Retrouver votre accès",recovery:"Choisissez votre mot de passe"})[mode];
-  $("auth-description").textContent=reset?"Recevez un lien pour définir ou réinitialiser votre mot de passe.":recovery?"Utilisez au moins 10 caractères pour sécuriser votre espace.":"Retrouvez vos capsules, personnalisez-les et partagez vos souvenirs.";
+  if(adminAccess&&mode==="login")$("auth-title").textContent="Connexion à l’administration";
+  $("auth-description").textContent=reset?"Recevez un lien pour définir ou réinitialiser votre mot de passe.":recovery?"Utilisez au moins 10 caractères pour sécuriser votre espace.":adminAccess?"Connectez-vous pour accéder à votre administration.":"Retrouvez vos capsules, personnalisez-les et partagez vos souvenirs.";
   $("email-field").hidden=recovery;$("email").required=!recovery;
   $("password-field").hidden=reset;$("password").required=!reset;
+  $("password-field").querySelector("small").hidden=mode==="login"||reset;
+  if(adminAccess){document.querySelector('[data-auth-mode="login"]').hidden=mode==="login";document.querySelector('[data-auth-mode="signup"]').hidden=true;document.querySelector('[data-auth-mode="reset"]').textContent="Mot de passe oublié";}
   $("password").minLength=mode==="login"?1:10;$("password").autocomplete=mode==="login"?"current-password":"new-password";
   $("password-confirm-field").hidden=!(recovery||mode==="signup");$("password-confirm").required=recovery||mode==="signup";
   submit.textContent=({login:"Me connecter",signup:"Créer mon compte",reset:"Recevoir le lien",recovery:"Enregistrer mon mot de passe"})[mode];
   $("auth-options").hidden=false;
   $("resend-confirmation").hidden=true;
-  show(status,"");
+  status.textContent="";status.className="status";
  }
  render();
  sb.auth.onAuthStateChange(event=>{if(event==="PASSWORD_RECOVERY"){mode="recovery";render()}});
@@ -123,7 +132,9 @@ async function initAuth(){
    if((mode==="signup"||mode==="recovery")&&password!==$("password-confirm").value)throw new Error("Les mots de passe ne correspondent pas.");
    let result;
    if(mode==="reset"){
-    result=await sb.auth.resetPasswordForEmail(email,{redirectTo:new URL("auth.html?mode=recovery",location.href).href});
+    const recoveryUrl=new URL("auth.html?mode=recovery",location.href);
+    if(["admin","create"].includes(qs.get("next")))recoveryUrl.searchParams.set("next",qs.get("next"));
+    result=await sb.auth.resetPasswordForEmail(email,{redirectTo:recoveryUrl.href});
     if(result.error)throw result.error;
     return show(status,"Si cette adresse est associée à un compte, un lien vous sera envoyé. Pensez à vérifier les indésirables.");
    }
