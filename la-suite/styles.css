@@ -2465,3 +2465,43 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 @media(max-width:540px){.guest-step-heading h2{font-size:18px}.memory-type-choices{grid-template-columns:repeat(2,minmax(0,1fr))}.memory-type{flex-direction:row;justify-content:center;padding:16px 8px}.guest-form .delivery-box{padding:16px}.guest-success{padding:28px 18px}.capsule-lifecycle{padding:18px}.guest-form .submit-memory{width:100%}.delivery-choices button{flex-grow:1}}
 
 .pricing-calendar{max-width:900px;margin:28px auto 0;font-size:14px;color:#736853;line-height:1.8;text-align:center}
+
+/* Public offer: separate the free launch, future plans and shared dates. */
+.suite-public .pricing-launch{display:flex;align-items:center;justify-content:space-between;gap:28px;margin:0 0 42px;padding:24px 28px;border:1px solid #d9c393;border-radius:18px;background:#f8f0df}
+.suite-public .pricing-launch h3{margin:0 0 6px;font-size:1.2rem}
+.suite-public .pricing-launch p{margin:0;max-width:700px;color:#5f5340;font-size:.92rem}
+.suite-public .pricing-launch .pricing-button{width:auto;max-width:100%;flex:0 0 auto;padding:12px 18px;text-align:center}
+.suite-public .pricing-price{flex-wrap:wrap;row-gap:8px}
+.suite-public .pricing-price span{line-height:1.45}
+.suite-public .pricing-capacity{display:flex;align-items:baseline;gap:10px;margin:18px 0 0}
+.suite-public .pricing-capacity strong{font-size:1.5rem;color:#6e521c}
+.suite-public .pricing-capacity span{font-size:.84rem;color:#666}
+.suite-public .pricing-features .pricing-unavailable{color:#77706a}
+.suite-public .pricing-unavailable i{color:inherit}
+.suite-public .pricing-card .pricing-button{padding:10px 12px;text-align:center}
+.suite-public .pricing-included{margin-top:28px;padding:24px 28px;border:1px solid #e9dfd5;border-radius:18px;background:#fff}
+.suite-public .pricing-included h3,.suite-public .pricing-timing>h3,.suite-public .pricing-faq>h3{margin:0 0 18px;font-family:"Cormorant Garamond",Georgia,serif;font-size:1.9rem;line-height:1.15}
+.suite-public .pricing-included ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 28px;list-style:none;margin:0;padding:0}
+.suite-public .pricing-included li{display:flex;gap:12px;align-items:baseline;font-size:.9rem;color:#5f5954}
+.suite-public .pricing-included i{flex:0 0 20px;color:#987028;text-align:center}
+.suite-public .pricing-timing{margin-top:38px}
+.suite-public .pricing-timing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.suite-public .pricing-timing article{padding:22px;border:1px solid #e9dfd5;border-radius:16px;background:#fff}
+.suite-public .pricing-timing-label{display:block;margin-bottom:10px;color:#795920;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.suite-public .pricing-timing h4{margin:0 0 10px;font-size:1rem;line-height:1.4}
+.suite-public .pricing-timing p{margin:0;color:#5f5954;font-size:.87rem;line-height:1.65}
+.suite-public .pricing-faq{max-width:850px;margin:38px auto 0}
+.suite-public .pricing-faq details{border-top:1px solid #e3d8ca}
+.suite-public .pricing-faq details:last-child{border-bottom:1px solid #e3d8ca}
+.suite-public .pricing-faq summary{padding:16px 0;font-size:.93rem;font-weight:600;cursor:pointer}
+.suite-public .pricing-faq summary:focus-visible{outline:3px solid #c7a052;outline-offset:3px;border-radius:4px}
+.suite-public .pricing-faq details p{margin:0 0 18px;color:#5f5954;font-size:.9rem;line-height:1.65}
+@media(max-width:850px){
+  .suite-public .pricing-launch{align-items:flex-start;flex-direction:column;gap:18px}
+  .suite-public .pricing-timing-grid{grid-template-columns:1fr}
+}
+@media(max-width:650px){
+  .suite-public .pricing-launch,.suite-public .pricing-included{padding:20px}
+  .suite-public .pricing-launch .pricing-button{width:100%;flex:auto}
+  .suite-public .pricing-included ul{grid-template-columns:1fr}
+}
