@@ -3,7 +3,6 @@ const qs=new URLSearchParams(location.search);
 const cfg=window.LA_SUITE_CONFIG||{};
 const configured=Boolean(cfg.SUPABASE_URL&&cfg.SUPABASE_ANON_KEY&&window.supabase);
 const sb=configured?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null;
-const maxBytes=cfg.MAX_VIDEO_BYTES||100*1024*1024;
 let selectedMedia=null,activeStream=null,recorder=null,recordedChunks=[];
 const organizerState={qr:false,intro:false,settings:false,saving:0,error:false};
 let qrSaveQueue=Promise.resolve(),introSavePending=null,introPreviewUrl=null,countdownTimer=null;
@@ -564,7 +563,7 @@ async function performIntroSave(c){
  const kind=$("intro-kind").value,f=$("intro-file")?.files?.[0],s=$("intro-status"),button=$("upload-intro");
  const text=$("intro-text").value.trim();
  if(kind==="text"&&!text){show(s,"Écrivez votre message d’accueil.",false);return false}
- let path=null;
+ let path=null,introFinalized=false;
  button.disabled=true;organizerState.saving++;saveIndicator();
  const fields=[...document.querySelectorAll(".intro-editor-fields input,.intro-editor-fields select,.intro-editor-fields textarea")];fields.forEach(el=>el.disabled=true);
  try{
@@ -575,13 +574,16 @@ async function performIntroSave(c){
     if(!allowed.includes(f.type))throw new Error(kind==="image"?"Choisissez une image JPG, PNG ou WebP.":"Choisissez une vidéo MP4, MOV ou WebM.");
     if(f.size>(kind==="image"?10000000:50000000))throw new Error(kind==="image"?"L’image dépasse 10 Mo.":"La vidéo dépasse 50 Mo.");
     if(kind==="video"){const duration=await videoDuration(f);if(!Number.isFinite(duration)||duration>12.05)throw new Error("La vidéo doit durer 12 secondes maximum.")}
-    path=c.id+"/organizer/intro-"+crypto.randomUUID()+"."+ext(f.type);
     show(s,"Envoi du répondeur…");
-    const up=await sb.storage.from("capsule-media").upload(path,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;
+    const prepared=await guestInvoke({action:"init_intro",capsule_id:c.id,file_type:f.type,file_size:f.size});
+    path=prepared.path;
+    const up=await sb.storage.from("capsule-media").uploadToSignedUrl(path,prepared.token,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;
+    await guestInvoke({action:"finalize_intro",capsule_id:c.id,path});
+    introFinalized=true;
    }
   }
   const payload={intro_path:path,welcome_message:kind==="text"?text:null};
-  const{error}=await sb.from("capsules").update(payload).eq("id",c.id);if(error)throw error;
+  if(!introFinalized){const{error}=await sb.from("capsules").update(payload).eq("id",c.id);if(error)throw error;}
   Object.assign(c,payload);$("intro-file").value="";organizerState.intro=false;organizerState.error=false;await renderIntroPreview(c);renderIntroDraft(c);
   show(s,kind==="none"?"Répondeur désactivé. Vos invités accèdent directement au dépôt de souvenirs.":"Votre répondeur est enregistré.");
   return true;

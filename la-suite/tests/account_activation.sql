@@ -62,6 +62,10 @@ end $$;
 reset role;
 update auth.users set email_confirmed_at=now() where id=current_setting('test.owner')::uuid;
 set local role authenticated;
+reset role;
+-- Rolled-back metadata fixture for the now-validated greeting path.
+insert into storage.objects(bucket_id,name,metadata) values('capsule-media',current_setting('test.capsule')||'/organizer/greeting.png','{"size":100,"mimetype":"image/png"}');
+set local role authenticated;
 update public.capsules set welcome_message='Bienvenue dans notre capsule',intro_path=current_setting('test.capsule')||'/organizer/greeting.png' where id=current_setting('test.capsule')::uuid;
 update public.capsules set couple_name='Updated name',wedding_date=current_date+40,plan='audio' where id=current_setting('test.capsule')::uuid;
 select public.activate_capsule(current_setting('test.capsule')::uuid);

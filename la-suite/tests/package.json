@@ -1,6 +1,10 @@
 {
   "private": true,
-  "scripts": { "test": "node account-flow.cjs" },
+  "scripts": {
+    "test": "npm run test:unit && npm run test:browser",
+    "test:unit": "node backup-integrity.cjs && node admin-endpoint.cjs && node guest-intro.cjs",
+    "test:browser": "node account-flow.cjs && node guest-flow.cjs && node admin-flow.cjs"
+  },
   "devDependencies": {
     "playwright": "^1.58.0",
     "qrcodejs": "1.0.0",

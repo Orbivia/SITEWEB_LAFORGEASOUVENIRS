@@ -1,126 +1,98 @@
-# La Suite — MVP
+# La Suite — état et exploitation
 
-Cette branche introduit le premier socle de **La Suite**, capsule temporelle de La Forge à Souvenirs.
+Site publié par GitHub Pages : https://laforgeasouvenirs.fr/la-suite/. Supabase héberge Auth, PostgreSQL, les médias privés et les fonctions serveur. Projet actuel : `yejzxsrmqudhvaikaitb`, région `eu-west-2`. État revu le 1er octobre 2026 ; [AUDIT.md](AUDIT.md) présente les corrections et les problèmes restant ouverts.
 
-## Déjà préparé
+## Parcours client
 
-- Landing page dédiée
-- Création d'une capsule
-- Compte propriétaire avec e-mail / mot de passe, confirmation par e-mail et récupération du mot de passe
-- Page invité accessible avec un token non devinable
-- Sélection et validation des vidéos jusqu'à 100 Mo
-- Tableau de bord + lien invité + QR code
-- Schéma Supabase avec RLS
-- Bucket vidéo privé
-- Edge Function `guest-upload` pour générer des uploads signés
-- Lecture des messages et vidéos bloquée jusqu'à la date d'ouverture
-- Fallback local tant que Supabase n'est pas configuré
-- Aucun secret serveur dans GitHub
+Le formulaire demande nom, date et e-mail, avec validation visible. La préparation locale expire après 24 h. L’inscription demande un mot de passe d’au moins dix caractères, sa confirmation et la confirmation de l’adresse avant activation. Connexion et récupération : `auth.html`.
 
-## Mise en service Supabase
+L’interface ne propose pas de gestion de brouillons : une capsule unique ouvre directement son espace. Le serveur conserve un état interne `draft` pendant la préparation, puis `active`. Les anciens comptes avec plusieurs capsules les conservent. Les réglages et la carte QR sont enregistrés automatiquement ; les échecs restent visibles et peuvent être relancés. Les modifications restantes déclenchent un avertissement à la fermeture.
 
-1. Créer un projet Supabase `la-suite`.
-2. Exécuter `supabase/schema.sql`, puis les fichiers `supabase/migrations/*.sql` dans l’ordre (une seule fois).
-3. Déployer l'Edge Function :
-   `supabase/functions/guest-upload/index.ts`
-4. Dans Authentication > URL Configuration, ajouter :
-   - le domaine de production ;
-   - l'URL de la branche de prévisualisation si nécessaire.
-5. Renseigner uniquement les valeurs publiques dans `supabase-config.js` :
-   - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
-6. Ne jamais ajouter `SUPABASE_SERVICE_ROLE_KEY` au dépôt. Supabase l'expose à l'Edge Function via les secrets d'environnement.
-7. Tester sur Android et iPhone : création, QR, upload MP4/MOV/WebM, ouverture différée.
+Le lancement gratuit autorise une capsule gratuite par compte. Le droit est consommé à l’activation et reste consommé après suppression. Un verrou par compte et une limite de cinq créations réussies en 24 h évitent les créations simultanées.
 
-## Sécurité prévue
+L’activation gratuite donne les droits Premium, soit 5 Go **par capsule**. Ce quota applicatif ne réserve pas 5 Go chez l’hébergeur : la capacité globale doit couvrir tous les clients et les sauvegardes. Aucun encaissement n’est branché. Catalogue futur : Essentiel/`photo` 1 Go, Plus/`audio` 2 Go, Premium/`premium` 5 Go.
 
-- bucket `capsule-media` privé ;
-- pas de policy d'upload anonyme ;
-- upload invité via URL signée ;
-- URL invité basée sur `guest_token`, pas sur un slug facilement devinable ;
-- RLS propriétaire sur les capsules ;
-- contenu des messages inaccessible au propriétaire avant `unlock_date` ;
-- limite serveur de 100 Mo et liste blanche de types vidéo.
+## Invités, calendrier et fichiers
 
-## Avant commercialisation
+Le QR contient un jeton aléatoire de 36 caractères hexadécimaux. Les invités n’ont pas de compte. Ils choisissent Photo, Petit mot, Audio ou Vidéo, un prénom facultatif et une réception immédiate ou différée.
 
-Ajouter au minimum : anti-abus (Turnstile ou équivalent), suppression complète d'une capsule, politique de confidentialité/RGPD, durée de conservation, e-mails d'ouverture, sauvegarde/export et paiement.
+| Format | Taille maximale | Durée |
+| --- | --- | --- |
+| Photo JPEG/PNG/WebP/HEIC/HEIF | 10 Mo | — |
+| Audio | 20 Mo | 3 minutes |
+| Vidéo MP4/MOV/WebM | 50 Mo | 1 minute |
+| Petit mot | 4 000 caractères | — |
 
-## Parcours de compte et activation (septembre 2026)
+Les unités sont décimales. JPEG/PNG/WebP sont optimisés à 2 048 px maximum dans le navigateur. HEIC/HEIF restent d’origine, avec aperçu dépendant du navigateur. Le serveur vérifie taille réelle et MIME déclaré dans Storage ; la durée et le contenu binaire ne sont pas vérifiés indépendamment du navigateur.
 
-- Préparation locale conservée 24 h sur ce navigateur, puis connexion/inscription et création d’un brouillon privé. Les mots de passe ne sont jamais enregistrés par l’application.
-- « Mes capsules » permet de retrouver chaque capsule, y compris les brouillons.
-- Les anciennes connexions par lien restent compatibles : « première connexion » permet de définir un mot de passe sur la même adresse.
-- Configurer les URL de retour autorisées dans Supabase Auth : `https://laforgeasouvenirs.fr/la-suite/dashboard.html`, `https://laforgeasouvenirs.fr/la-suite/create.html?resume=1` et `https://laforgeasouvenirs.fr/la-suite/auth.html?mode=recovery` (et leurs équivalents de prévisualisation). La confirmation de l’adresse est activée sur le projet.
-- Formules : `photo` = Essentiel, `audio` = Plus, `premium` = Premium. La formule est une intention commerciale ; durant la phase gratuite, tous les médias restent accessibles.
-- Le bouton « Activer gratuitement » appelle `activate_capsule`, qui vérifie le propriétaire, la confirmation de l’e-mail et le paramètre serveur. L’opération est idempotente. Les modifications directes des champs d’activation sont refusées aux clients.
-- Les capsules existantes restent actives (`activation_source=legacy`). Les nouvelles activations gratuites portent `free_beta`, jamais un statut payé.
-- Les invités ne peuvent consulter ou alimenter que les capsules actives, via le jeton du QR code. L’Edge Function vérifie aussi cet état avant toute création de message ou d’URL signée.
+Les nouvelles capsules acceptent les dépôts le jour de l’événement et le lendemain, en Europe/Paris. Le dévoilement peut aller jusqu’au dernier jour des trente mois suivants. Les souvenirs sont lisibles à partir de `delivery_at`, jusqu’au troisième anniversaire de l’événement. Date et formule sont figées après activation. Les capsules historiques gardent leur ancienne fenêtre de dépôt, avec la limite de conservation de trois ans.
 
-### Branchement du paiement ultérieur
+`guest-upload` réserve les octets sous verrou de capsule et délivre une URL signée. L’envoi invité utilise TUS, avec progression et reprise sur la page. Les réservations durent 25 h ; fichiers et réservations sans objet sont comptés une seule fois. La finalisation vérifie taille, MIME et quota. L’identifiant de requête évite les doublons. Une recharge ne conserve pas le fichier choisi. Les petits mots restent possibles lorsque le quota média est rempli. La limite globale de 50 Mo borne chaque upload signé, mais ne garantit pas à elle seule la taille réservée.
 
-1. Désactiver `capsule_billing_settings.free_activation_enabled` côté serveur avant le lancement payant.
-2. Ajouter une création de commande/checkout serveur liée au propriétaire, à la capsule et à un catalogue de prix serveur. Ne pas accepter un montant envoyé par le navigateur.
-3. Vérifier les webhooks du prestataire et leur idempotence ; seule une confirmation serveur doit activer la capsule avec `activation_source=payment`. Le retour du navigateur ne constitue pas une preuve de paiement.
-4. Ajouter les états attente/échec/remboursement et la facture à l’espace organisateur ; appliquer les droits média de la formule côté serveur et côté interface, en conservant les droits des capsules legacy/free_beta.
+## Accueil et espace organisateur
 
-Aucun prestataire de paiement, encaissement ou webhook fictif n’est branché aujourd’hui.
+L’accueil facultatif peut être un texte de 2 000 caractères, une image JPG/PNG/WebP de 10 Mo ou une vidéo de 12 secondes et 50 Mo. Il utilise `welcome_message` et `intro_path`.
 
-### Vérification
+Les médias d’accueil passent par `guest-upload`, avec JWT vérifié, propriété, réservation de quota et finalisation serveur. Le navigateur n’a aucun droit INSERT/UPDATE Storage direct. Le serveur refuse capsules suspendues/expirées et fichiers incompatibles. Dix réservations d’accueil simultanées au maximum sont admises par capsule.
 
-Tests navigateur : depuis `la-suite/tests`, exécuter `npm install`, `npx playwright install chromium`, puis `npm test`. Le navigateur peut aussi être fourni via `CHROMIUM_EXECUTABLE_PATH`.
+Un trigger interdit d’utiliser comme accueil un souvenir privé ou un fichier d’une autre capsule. `get_intro` vérifie aussi le dossier `<capsule>/organizer/` avant de signer un lien. Les fichiers remplacés ou désactivés restent privés et comptés ; leur purge physique n’est pas automatisée.
 
-`tests/account_activation.sql` vérifie dans une transaction annulée les brouillons privés, l’isolation entre comptes, les modifications directes interdites, la confirmation e-mail, le coupe-circuit des activations gratuites et l’idempotence. Les essais navigateur couvrent inscription, connexion, récupération, conservation de la préparation, activation et affichage mobile/ordinateur avec réponses Auth simulées. La réception des e-mails et les liens réels restent à vérifier avec une boîte de test autorisée.
+La carte propose titre, petit mot, explication et personnalisation QR, avec limites de 42/120/240 caractères. Les textes sont rendus sans HTML utilisateur. L’organisateur voit échéances, stockage et avertissements à 80 %/95 %. Les téléchargements obtiennent de nouveaux liens signés ; les médias peuvent être rechargés après expiration du lien.
 
-Les avis Supabase sur les fonctions SECURITY DEFINER sont attendus : la lecture publique est limitée au jeton d’une capsule active, l’activation à son propriétaire confirmé. La table de réglage serveur est volontairement sans policy et sans droits clients. La protection contre les mots de passe compromis était désactivée avant cette évolution ; réglage à activer dans Supabase Auth avant commercialisation : https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+## Administration et sauvegardes
 
-## Configuration et répondeur facultatif
+`admin.html` contient Capsules/Clients/Sauvegardes. Connexion : https://laforgeasouvenirs.fr/la-suite/auth.html?next=admin. Le rôle est dans une table privée, attribué par invitation unique de 48 h à une adresse confirmée. Un champ de profil modifiable ne donne aucun droit. Quotas et suspension sont protégés côté SQL.
 
-La carte propose désormais « Notre capsule temporelle », un petit mot et une explication adaptée aux formats de la formule. Les anciens textes par défaut sont remplacés à l’affichage ; les textes personnalisés restent conservés. Le QR garde ses dimensions fixes. Les limites sont de 42 / 120 / 240 caractères pour le titre, le petit mot et l’explication.
+`suite-admin` vérifie chaque JWT via Auth et le rôle privé. Le cron dispose d’un secret Vault séparé et ne peut appeler que le worker. Les listes ne montrent ni contenu des souvenirs, ni liens invités, ni mots de passe.
 
-Le répondeur est facultatif : aucun, texte (2 000 caractères), image JPG/PNG/WebP (10 Mo) ou vidéo MP4/MOV/WebM (12 secondes, 100 Mo). Il réutilise `welcome_message` et `intro_path`, sans migration. Les médias restent privés dans le dossier du propriétaire ; `get_intro` fournit un lien signé et son type uniquement pour une capsule active. Désactiver le répondeur retire son affichage sans supprimer définitivement les fichiers précédemment envoyés.
+La sauvegarde automatique est prévue à 02:00 UTC. Le worker traite cinq fichiers maximum par appel, avec bail de deux minutes et reprise serveur. Réglages, messages, dates et médias sont chiffrés en AES-256-GCM ; les fichiers inchangés sont dédupliqués. Un fichier manquant ou changé produit un échec visible.
 
-Les tests navigateur couvrent les trois formats, la désactivation et l’échec de sauvegarde. `node tests/guest-intro.cjs` (Node 24) vérifie la réponse image/vidéo et le refus des actions invité sur un brouillon.
+Rétention des tâches : sept jours, raccourcie par la première échéance de conservation des capsules incluses. Le nettoyage s’exécute aussi avec une file occupée, et chaque heure si les services sont disponibles. Les objets chiffrés sans référence et âgés de plus de 24 h sont supprimés via l’API Storage. Ce délai protège les écritures et implique une période de grâce pour les objets récents. Les imports non expirés sont protégés par leur chemin `stored_key`. Les exports locaux sont sous la responsabilité de l’administrateur.
 
-## Fiabilisation de l’espace organisateur
+L’archive `.lasuite` restaure les lignes et médias manquants sans écraser les réglages actuels, nouveaux souvenirs ou dates de dévoilement. **Elle nécessite le projet, la clé Vault et les comptes organisateurs d’origine.** Elle n’inclut pas les mots de passe Auth et ne suffit pas pour reprendre après perte de tout le projet. Prévoir une sauvegarde opérateur indépendante de la base/Auth, des médias et des secrets Vault.
 
-- Une file de sauvegarde conserve l’ordre des modifications de carte. L’indicateur distingue l’enregistrement en cours, les modifications restantes et les échecs ; le bouton « Tout enregistrer » permet de réessayer. Un avertissement navigateur protège une sortie avec des modifications restantes.
-- Avant la validation puis l’activation, les paramètres, le répondeur et la carte sont enregistrés. Une erreur ou une modification survenue pendant la sauvegarde bloque la validation. Un envoi du répondeur déjà en cours est attendu, sans double upload.
-- Nom et date sont modifiables ; la formule l’est en brouillon. Le texte d’explication proposé est ajusté au changement de formule, sans remplacer un texte personnalisé. L’activation est suivie d’une confirmation avec partage, téléchargement et impression.
-- Le répondeur propose un aperçu local immédiat, séparé de sa version enregistrée.
-- La liste des capsules affiche une miniature générée à la demande et les comptes de souvenirs via `owner_capsule_stats`. La suppression nécessite une confirmation et filtre à la fois l’identifiant et le statut brouillon ; les règles de propriété Supabase restent appliquées. Les anciens fichiers de répondeur non référencés restent privés dans le stockage et nécessitent une tâche de nettoyage distincte ; cette suppression n’est pas une purge physique du stockage.
-- Les souvenirs peuvent être actualisés sans recharger la configuration. Les erreurs sont affichées, chaque téléchargement obtient un nouveau lien signé, et les médias peuvent être rechargés ; la lecture audio/vidéo renouvelle son URL après expiration.
+Chrome/Edge ordinateur permettent un téléchargement progressif. Le repli en mémoire sur les autres navigateurs est plafonné à 150 Mo. Les sauvegardes consomment du stockage supplémentaire, avec les versions modifiées ; la déduplication ne dispense pas de dimensionner l’hébergement.
 
-Vérifications : tests navigateur avec sauvegardes échouées et retardées, conservation du répondeur à l’activation, paramètres, aperçu, confirmation et suppression de brouillon, erreurs de chargement et renouvellement de média. Le test SQL transactionnel vérifie aussi les modifications/suppressions entre comptes et le filtre protégeant une capsule devenue active. Aucun changement de schéma ni du parcours invité.
+## Installation et mises à jour
 
-## Parcours invité et quotas (septembre 2026)
+Le projet actuel est déjà installé. **Ne pas réexécuter le schéma initial ou les anciennes migrations en production.** Appliquer uniquement les migrations manquantes avec leur suivi de version Supabase.
 
-- Choix Photo / Petit mot / Audio / Vidéo, prénom facultatif, date immédiate par défaut et raccourcis 1 / 6 / 12 mois ou date libre. Les formats absents de la formule sont masqués ; en lancement gratuit les droits restent Premium (5 Go), conformément à l’offre annoncée.
-- Envoi TUS signé avec progression, reprises automatiques puis bouton Réessayer. Le fichier et le texte restent en mémoire sur cette page après une erreur. Une fermeture/recharge ne conserve pas le fichier : la reprise inter-pages n’est pas promise. L’identifiant de requête rend les retries texte et média idempotents ; une confirmation finale échouée se relance sans réenvoyer le fichier.
-- Photos JPEG/PNG/WebP optimisées dans le navigateur (2048 px maximum, JPEG qualité 0,88). HEIC/HEIF conservés, aperçu dépendant du navigateur. Photos 10 Mo, audios 20 Mo / 3 min, vidéos 50 Mo / 1 min. Les durées sont vérifiées dans le navigateur ; le serveur vérifie les tailles réelles et le MIME déclaré dans Storage, pas le contenu binaire ni une durée indépendante.
-- Catalogue payant prévu : Essentiel 1 Go, Plus 2 Go, Premium 5 Go, unités décimales. Le texte reste possible après saturation média.
-- Réservations atomiques sous verrou de capsule : objets Storage existants + réservations qui n’ont pas encore d’objet. Les réservations restent 25 h pour couvrir une reprise TUS ; l’objet n’est pas compté deux fois. Un quota rempli par des fichiers plus gros que leur déclaration empêche leur finalisation ; les objets dont taille/MIME ne correspondent pas sont supprimés via l’API Storage. Les URLs signées sont plafonnées globalement à 50 Mo ; elles ne garantissent pas à elles seules la taille réservée de chaque fichier.
-- Nouveaux brouillons : dépôts à J et J+1 en Europe/Paris, dévoilement jusqu’au dernier jour des 30 mois suivant l’événement, accès jusqu’à son troisième anniversaire. Les envois réservés avant fermeture disposent de leur période de reprise. La date et la formule sont figées après activation. Les anciennes capsules actives gardent leur fenêtre initiale ; les anciens brouillons passent aux nouvelles règles à l’activation.
-- Les brouillons/envois incomplets ne sont pas comptés comme souvenirs reçus. L’organisateur voit l’état, les échéances, le stockage et les avertissements à 80 % / 95 %.
-- Pas de paiement ajouté. Les emails d’ouverture/expiration, sauvegardes médias indépendantes, purge automatique des objets expirés/orphelins et protections anti-abus restent à configurer avant commercialisation. La fin d’accès à 3 ans n’est pas une purge physique des médias.
+Pour un nouveau projet, sur environnement de test :
 
-Migration : `supabase/migrations/20260930182838_guest_experience_quotas_calendar.sql` (version générée par Supabase). Tests SQL transactionnels annulés : `tests/guest_limits.sql`. CI : syntaxe, endpoint invité et parcours Playwright organisateur/invité avec services simulés. Aucun email ni souvenir réel n’est envoyé par ces tests.
+1. Exécuter `supabase/schema.sql` comme socle historique, puis `supabase/migrations/*.sql` dans l’ordre des versions, une fois chacun. Le schéma initial seul ne représente pas le produit actuel.
+2. Activer les extensions nécessaires, dont Vault, pg_cron et pg_net. Les migrations créent clé de chiffrement et jeton worker dans Vault. Ne jamais les régénérer si des archives existent.
+3. Adapter l’URL de `la_suite_internal.run_backup_worker()` : les migrations historiques ciblent le projet actuel. Renseigner les valeurs publiques du nouveau projet dans `supabase-config.js`.
+4. Déployer `guest-upload` et `suite-admin`, avec leurs dépendances relatives. `verify_jwt=false` permet le jeton invité et le cron ; l’authentification propre à chaque action est implémentée dans les fonctions. La service-role reste exclusivement côté serveur.
+5. Configurer Auth, SMTP et les URL ci-dessous. Attribuer l’administration par invitation serveur ; aucune route publique ne peut la créer.
+6. Tester parcours et restauration avant publication. La reconstruction complète sur un deuxième projet vierge n’a pas encore été exécutée.
 
-## Une capsule gratuite par compte (octobre 2026)
+URL Auth autorisées en production :
 
-Le parcours affiche « En préparation » puis « Active ». Un compte avec une seule capsule ouvre directement son espace ; les comptes existants avec plusieurs capsules les conservent. La page de création retrouve la capsule existante pendant le lancement gratuit. Les paramètres et l’accueil sont enregistrés automatiquement, en plus de la personnalisation QR.
+- `https://laforgeasouvenirs.fr/la-suite/dashboard.html`
+- `https://laforgeasouvenirs.fr/la-suite/admin.html`
+- `https://laforgeasouvenirs.fr/la-suite/create.html?resume=1`
+- `https://laforgeasouvenirs.fr/la-suite/auth.html?mode=recovery`
+- `https://laforgeasouvenirs.fr/la-suite/auth.html?mode=recovery&next=create`
+- `https://laforgeasouvenirs.fr/la-suite/auth.html?mode=recovery&next=admin`
 
-La migration `20261001092247_single_free_capsule_per_account.sql` ajoute un verrou par compte, une limite de cinq créations réussies sur 24 h, et une seule capsule non payée par compte pendant le lancement. Le droit gratuit est consommé à l’activation et reste consommé après suppression de la capsule. Les activations gratuites existantes sont reprises sans supprimer les capsules. Quand l’activation gratuite est désactivée, les créations supplémentaires restent possibles pour le futur parcours payant ; celui-ci doit confirmer chaque achat côté serveur.
+Ajouter explicitement les équivalents de prévisualisation nécessaires. SMTP et allowlist ne sont pas garantis par les tests simulés. Le [SMTP par défaut Supabase](https://supabase.com/docs/guides/auth/auth-smtp) est limité aux adresses de l’équipe et à deux mails par heure. Configurer un SMTP de production avec SPF/DKIM/DMARC ; ne pas désactiver la confirmation pour contourner un problème de mail.
 
-Les informations de limite sont privées, avec RLS activée et aucun accès client. `owner_capsule_access()` expose seulement la situation du compte connecté. Tests transactionnels sans données conservées : `tests/account_limits.sql` et `tests/account_activation.sql`.
+## Vérification
 
+Node 24. Depuis `la-suite/tests` : `npm install`, `npx playwright install chromium`, puis `npm test`. `test:unit` exécute fonctions et chiffrement ; `test:browser` exécute les parcours organisateur/invité/admin sur mobile et ordinateur. `CHROMIUM_EXECUTABLE_PATH` et `QA_NODE_MODULES` permettent d’utiliser des dépendances déjà installées.
 
-## Administration privée
+Les scripts SQL `tests/*.sql` commencent par BEGIN et finissent par ROLLBACK. Ils vérifient isolation, activation, limites de compte, quotas, calendrier, rôles, restauration et régressions de l’audit. Faux comptes et métadonnées Storage ne sont jamais conservés ; aucun média physique n’est créé. La CI exécute syntaxe, unités et navigateur ; les contrôles SQL se font séparément sur une base Supabase de test ou dans une transaction contrôlée annulée.
 
-`admin.html` affiche Capsules / Clients / Sauvegardes. L’accès repose sur un rôle serveur privé, attribué une seule fois par invitation de 48 heures, à un compte dont l’adresse est confirmée. Les réglages de quota et de suspension sont protégés côté SQL. `suite-admin` vérifie chaque JWT via Auth et le rôle serveur ; le cron utilise un secret Vault distinct. Les données de contenu, liens invités et mots de passe ne sont pas exposés dans les listes administrateur.
+La bibliothèque Supabase navigateur et serveur est fixée à `2.58.0`. Les essais navigateur simulent Supabase ; ils ne prouvent ni la livraison des mails ni les envois réels sur tous les téléphones.
 
-Sauvegarde quotidienne à 02:00 UTC, conservée sept jours, AES-256-GCM pour les réglages, dates, messages et fichiers. Les fichiers inchangés sont dédupliqués. Le worker traite au maximum cinq fichiers par invocation avec un bail de deux minutes ; il reprend la file même si le navigateur est fermé. Les archives `.lasuite` permettent une restauration sur **ce projet**, dont la clé est dans Vault. Conserver aussi une sauvegarde opérateur du projet/Vault pour une migration ou perte du projet entier. Les mots de passe Auth ne sont pas inclus et les comptes d’origine doivent exister. Restauration additive : seules les capsules, messages et médias manquants sont ajoutés ; aucun contenu actuel n’est écrasé, les dates de dévoilement restent inchangées.
+## Avant ouverture commerciale
 
-Téléchargement progressif sur Chrome/Edge ordinateur ; sur les autres navigateurs, téléchargement jusqu’à 150 Mo en mémoire. Les sauvegardes nécessitent du stockage supplémentaire (environ une seconde copie des médias, plus les versions modifiées), compatible avec le quota du projet Supabase. Une erreur ne produit jamais un état « prête ». Les copies distantes sont purgées après sept jours et au plus tard à la fin de conservation de la première capsule de l’archive. Les fichiers exportés localement restent sous la responsabilité de l’administrateur.
+- Adapter l’hébergement. Au 1er octobre 2026 l’organisation est sur Free : 1 Go de Storage inclus pour le projet, à comparer aux 5 Go annoncés par capsule et aux sauvegardes. [Capacité et facturation](https://supabase.com/docs/guides/platform/manage-your-usage/storage-size).
+- Valider SMTP, inscription et récupération avec une adresse extérieure ; activer la protection Auth contre les mots de passe compromis.
+- Ajouter CAPTCHA/anti-abus et limites de débit pour les liens invités publics. Les quotas média ne bornent pas le nombre de petits mots ou les envois malveillants.
+- Automatiser la purge physique des médias expirés, introductions remplacées et uploads abandonnés via Storage API. La fin d’accès à trois ans ne supprime pas encore les fichiers ni leur facturation.
+- Finaliser confidentialité, conservation, suppression et notifications d’ouverture/expiration ; ajouter des alertes indépendantes si cron/sauvegardes cessent de fonctionner.
+- Préparer une restauration complète après perte du projet, distincte de la restauration additive actuelle.
+- Pour un lancement payant : checkout/catalogue serveur, webhooks vérifiés et idempotents, états échec/remboursement/facture. Désactiver `capsule_billing_settings.free_activation_enabled` avant l’ouverture payante. Le retour du navigateur ne prouve pas un paiement.
 
-Contrôles : `tests/admin_security.sql` dans une transaction annulée ; `node tests/backup-integrity.cjs` ; `node tests/admin-flow.cjs`. Les tables privées sans politique RLS sont volontairement inaccessibles. Le signalement Supabase « pg_net dans public » concerne une extension non déplaçable ; ses objets HTTP sont dans le schéma `net`, hors API exposée.
+Les tables privées sans policy RLS sont volontairement inaccessibles. Les RPC SECURITY DEFINER nécessaires vérifient propriété ou jeton et fixent leur `search_path`. Le signalement pg_net dans public est suivi : l’extension n’est pas déplaçable ; ses objets HTTP sont dans `net`, hors API exposée.

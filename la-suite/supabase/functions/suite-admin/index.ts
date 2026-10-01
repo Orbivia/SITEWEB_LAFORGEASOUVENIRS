@@ -38,7 +38,8 @@ Deno.serve(async req=>{
   }
   if(action==='import_finish'){await rpc('import_finish',{id:body.id});return response({ok:true});}
   if(action!=='tick')return response({error:'Action invalide.'},400);
-  job=await rpc('lease');if(!job){const garbage=await rpc('cleanup');for(let i=0;i<garbage.garbage.length;i+=100){const {error}=await db.storage.from('capsule-backups').remove(garbage.garbage.slice(i,i+100));if(error)throw error;}return response({ok:true,idle:true});}
+  const garbage=await rpc('cleanup');for(let i=0;i<garbage.garbage.length;i+=100){const {error}=await db.storage.from('capsule-backups').remove(garbage.garbage.slice(i,i+100));if(error)throw error;}
+  job=await rpc('lease');if(!job)return response({ok:true,idle:true});
   const started=Date.now();let processed=0;
   if(job.state==='restoring'){
    const manifest=JSON.parse(new TextDecoder().decode(await open(key,await download('capsule-backups',job.manifest_path),job.manifest_aad||job.manifest_path)));
