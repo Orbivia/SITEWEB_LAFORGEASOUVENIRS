@@ -28,6 +28,7 @@ jobs:
           node --check la-suite/admin.js
           node --check la-suite/backup-archive.js
           node la-suite/tests/backup-integrity.cjs
+          node la-suite/tests/admin-endpoint.cjs
           node la-suite/tests/guest-intro.cjs
       - name: Browser flows
         working-directory: la-suite/tests

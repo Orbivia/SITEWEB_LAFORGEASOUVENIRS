@@ -7,6 +7,7 @@
  let data={capsules:[],clients:[],backups:[]},busy=false,authorized=false,timer=null;
  function status(text,error=false){$('admin-status').textContent=text;$('admin-status').className='status show '+(error?'err':'ok');}
  function setBusy(value){busy=value;document.querySelectorAll('#admin-content button:not([data-tab]),#capsule-dialog button:not(.dialog-close)').forEach(b=>b.disabled=value);}
+ window.addEventListener('hashchange',()=>{if(/^[a-f0-9]{64}$/.test(new URLSearchParams(location.hash.slice(1)).get('invite')||''))location.reload();});
  const inviteKey='la_suite_admin_invite';const hash=new URLSearchParams(location.hash.slice(1));if(/^[a-f0-9]{64}$/.test(hash.get('invite')||'')){localStorage.setItem(inviteKey,JSON.stringify({token:hash.get('invite'),at:Date.now()}));history.replaceState(null,'',location.pathname);}
  let invite=null;try{invite=JSON.parse(localStorage.getItem(inviteKey)||'null');if(invite&&Date.now()-invite.at>48*3600000){localStorage.removeItem(inviteKey);invite=null;}}catch{}
  if(!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY||!window.supabase){$('access-message').textContent='Service indisponible. Rechargez la page.';return;}
