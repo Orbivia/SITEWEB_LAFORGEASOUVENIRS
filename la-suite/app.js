@@ -3,7 +3,7 @@ const qs=new URLSearchParams(location.search);
 const cfg=window.LA_SUITE_CONFIG||{};
 const configured=Boolean(cfg.SUPABASE_URL&&cfg.SUPABASE_ANON_KEY&&window.supabase);
 const sb=configured?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null;
-let selectedMedia=null,activeStream=null,recorder=null,recordedChunks=[];
+let selectedMedia=null,activeStream=null,recorder=null;
 const organizerState={qr:false,intro:false,settings:false,saving:0,error:false};
 let qrSaveQueue=Promise.resolve(),introSavePending=null,introPreviewUrl=null,countdownTimer=null;
 function memoryCountLabel(value){const n=Number(value)||0;return n+" souvenir"+(n>1?"s":"")+" reçu"+(n>1?"s":"")}
@@ -38,7 +38,15 @@ async function countdown(el){el.hidden=false;for(let i=3;i>0;i--){el.textContent
 function bestMime(kind){const c=kind==="video"?["video/webm;codecs=vp8,opus","video/webm","video/mp4"]:["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg"];return c.find(x=>window.MediaRecorder&&MediaRecorder.isTypeSupported(x))||""}
 
 
-let recorderTimer=null,recorderStarted=0,recorderPreparing=false,recorderGeneration=0;
+let recorderTimer=null,recorderStopTimer=null,recorderPreparing=false,recorderGeneration=0;
+function recordingTime(seconds){return String(Math.floor(seconds/60)).padStart(2,"0")+":"+String(seconds%60).padStart(2,"0")}
+function renderRecordingTimer(kind,started,limit){
+ const elapsed=Math.min(limit,Math.max(0,Math.floor((Date.now()-started)/1000))),left=limit-elapsed,clock=$(kind+"-timer");
+ clock.hidden=false;clock.querySelector(".record-elapsed").textContent=recordingTime(elapsed);
+ clock.querySelector(".record-remaining").textContent=recordingTime(left)+" restantes";
+ clock.classList.toggle("ending",left<=10);
+ return left;
+}
 async function prepareRecorder(kind){
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw new Error("Enregistrement indisponible");
  stopStream();const generation=recorderGeneration;
@@ -54,33 +62,45 @@ async function startRecorder(kind){
  $("start-"+kind).disabled=true;
  try{
   if(!activeStream)await prepareRecorder(kind);
+  guestSelectionVersion++;resetPreview();guestTransaction=null;
+  $("guest-message").querySelector('[type="submit"]').disabled=true;show($("status"),"Préparez-vous à enregistrer…");
   await countdown($(kind==="video"?"video-countdown":"audio-countdown"));
   if(generation!==recorderGeneration||!activeStream)return;
-  recordedChunks=[];const mime=bestMime(kind),options={audioBitsPerSecond:64000};
+  const chunks=[],mime=bestMime(kind),options={audioBitsPerSecond:64000},stream=activeStream;
   if(mime)options.mimeType=mime;if(kind==="video")options.videoBitsPerSecond=1500000;
-  const current=new MediaRecorder(activeStream,options);recorder=current;recorderStarted=Date.now();let bytes=0;
-  current.ondataavailable=e=>{if(e.data?.size){recordedChunks.push(e.data);bytes+=e.data.size;if(bytes>=GUEST_LIMITS[kind]*0.95&&current.state==="recording")current.stop()}};
+  const current=new MediaRecorder(stream,options),limit=kind==="video"?60:180,started=Date.now();recorder=current;let bytes=0;
+  current.ondataavailable=e=>{if(e.data?.size){chunks.push(e.data);bytes+=e.data.size;if(bytes>=GUEST_LIMITS[kind]*0.95&&current.state==="recording")current.stop()}};
   current.onstop=()=>{
-   clearInterval(recorderTimer);const duration=Math.min((Date.now()-recorderStarted)/1000,kind==="video"?60:180);
+   if(recorder===current){clearInterval(recorderTimer);clearTimeout(recorderStopTimer);recorder=null;}
+   const duration=Math.min((Date.now()-started)/1000,limit);
    const actual=(current.mimeType||mime||(kind==="video"?"video/webm":"audio/webm")).split(";")[0];
-   const file=new File([new Blob(recordedChunks,{type:actual})],"souvenir."+ext(actual),{type:actual});
-   stopStream();if(kind==="video")$("live-video").srcObject=null;
-   $("prepare-"+kind).hidden=false;$("start-"+kind).hidden=true;$("stop-"+kind).hidden=true;
-   $(kind+"-countdown").hidden=true;
-   if(generation===recorderGeneration&&guestType===kind)acceptGuestFile(file,kind,duration);
+   const file=new File([new Blob(chunks,{type:actual})],"souvenir."+ext(actual),{type:actual});
+   stream.getTracks().forEach(t=>t.stop());if(activeStream===stream)activeStream=null;
+   if(kind==="video"&&$("live-video").srcObject===stream)$("live-video").srcObject=null;
+   if(generation===recorderGeneration&&guestType===kind){
+    $("prepare-"+kind).hidden=false;$("start-"+kind).hidden=true;$("stop-"+kind).hidden=true;
+    $(kind+"-countdown").hidden=true;$(kind+"-timer").hidden=true;
+    if(kind==="audio")$("audio-indicator").textContent="Enregistrement terminé";
+    acceptGuestFile(file,kind,duration);
+   }
   };
   current.start(500);
   $("start-"+kind).hidden=true;$("stop-"+kind).hidden=false;
-  const durationLimit=kind==="video"?60:180,clock=$(kind+"-countdown");clock.hidden=false;
+  renderRecordingTimer(kind,started,limit);
+  show($("status"),"Enregistrement en cours… Arrêtez quand vous avez terminé.");
+  if(kind==="audio")$("audio-indicator").textContent="Enregistrement en cours";
+  recorderStopTimer=setTimeout(()=>{if(recorder===current&&current.state==="recording")stopRecorder()},limit*1000);
   recorderTimer=setInterval(()=>{
-   const left=Math.max(0,durationLimit-Math.floor((Date.now()-recorderStarted)/1000));
-   clock.textContent="● "+Math.floor(left/60)+":"+String(left%60).padStart(2,"0")+" restantes";
-   if(kind==="audio")$("audio-indicator").textContent="Enregistrement en cours";
+   const left=renderRecordingTimer(kind,started,limit);
    if(left===0)stopRecorder();
   },250);
+ }catch(error){
+  stopRecorder();stopStream();$(kind+"-countdown").hidden=true;$(kind+"-timer").hidden=true;
+  $("prepare-"+kind).hidden=false;$("start-"+kind).hidden=true;$("stop-"+kind).hidden=true;
+  $("guest-message").querySelector('[type="submit"]').disabled=false;throw error;
  }finally{recorderPreparing=false;$("start-"+kind).disabled=false}
 }
-function stopRecorder(){clearInterval(recorderTimer);if(recorder&&recorder.state!=="inactive")recorder.stop()}
+function stopRecorder(){clearInterval(recorderTimer);clearTimeout(recorderStopTimer);if(recorder&&recorder.state!=="inactive")recorder.stop()}
 
 const PLAN_NAMES={photo:"Essentiel",audio:"Plus",premium:"Premium"};
 const PLAN_PRICES={photo:"9,90 €",audio:"14,90 €",premium:"24,90 €"};
@@ -363,7 +383,8 @@ function setGuestMode(mode){
  document.querySelectorAll(".media-panel").forEach(p=>p.classList.remove("active"));
  $(mode+"-panel")?.classList.add("active");
  document.querySelectorAll("[data-media-mode]").forEach(b=>b.classList.toggle("active",b.dataset.mediaMode===mode));
- ["video","audio"].forEach(k=>{$("prepare-"+k).hidden=false;$("start-"+k).hidden=true;$("stop-"+k).hidden=true});
+ ["video","audio"].forEach(k=>{$("prepare-"+k).hidden=false;$("start-"+k).hidden=true;$("stop-"+k).hidden=true;$(k+"-countdown").hidden=true;$(k+"-timer").hidden=true});
+ $("audio-indicator").textContent="Microphone prêt à être activé";
 }
 function chooseGuestType(type){
  guestType=type;guestSelectionVersion++;resetPreview();guestTransaction=null;
