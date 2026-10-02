@@ -29,6 +29,8 @@ Les nouvelles capsules acceptent les dépôts le jour de l’événement et le l
 
 `guest-upload` réserve les octets sous verrou de capsule et délivre une URL signée. L’envoi invité utilise TUS, avec progression et reprise sur la page. Les réservations durent 25 h ; fichiers et réservations sans objet sont comptés une seule fois. La finalisation vérifie taille, MIME et quota. L’identifiant de requête évite les doublons. Une recharge ne conserve pas le fichier choisi. Les petits mots restent possibles lorsque le quota média est rempli. La limite globale de 50 Mo borne chaque upload signé, mais ne garantit pas à elle seule la taille réservée.
 
+La prise en direct est disponible : appareil photo natif sur les mobiles compatibles, caméra et micro via le navigateur pour vidéo/audio. Un décompte de trois secondes précède l’enregistrement ; un chrono compact affiche durée écoulée et temps restant. Arrêt manuel ou automatique à une minute vidéo / trois minutes audio, puis aperçu ou écoute avant envoi. Caméra et micro sont libérés à l’arrêt. Si le navigateur ou les permissions empêchent la capture, le choix d’un fichier reste disponible. Les tests utilisent le vrai MediaRecorder de Chromium avec caméra/micro simulés, sur mobile et ordinateur ; une vérification sur téléphones physiques reste nécessaire.
+
 ## Accueil et espace organisateur
 
 L’accueil facultatif peut être un texte de 2 000 caractères, une image JPG/PNG/WebP de 10 Mo ou une vidéo de 12 secondes et 50 Mo. Il utilise `welcome_message` et `intro_path`.

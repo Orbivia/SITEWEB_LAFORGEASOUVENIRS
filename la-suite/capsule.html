@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20260930-guest1">
+<link rel="stylesheet" href="styles.css?v=20261002-recorder1">
 </head>
 <body class="suite-shell-page">
 <header class="forge-style-header">
@@ -60,23 +60,27 @@
   <div class="recorder-stage">
     <video id="live-video" autoplay muted playsinline></video>
     <div id="video-countdown" class="record-countdown" hidden></div>
+    <div id="video-timer" class="record-timer" role="timer" aria-label="Durée de la vidéo et temps restant" hidden><span class="record-dot" aria-hidden="true"></span><strong class="record-elapsed">00:00</strong><span class="record-remaining">01:00 restantes</span></div>
   </div>
   <div class="recorder-actions">
     <button type="button" class="btn secondary" id="prepare-video">Activer la caméra</button>
     <button type="button" class="btn primary" id="start-video" hidden>Démarrer</button>
-    <button type="button" class="btn danger" id="stop-video" hidden>Terminé</button>
+    <button type="button" class="btn danger" id="stop-video" hidden>Arrêter</button>
   </div>
+  <p class="recorder-limit-help">1 minute maximum · arrêt automatique, puis aperçu avant envoi.</p>
 </div>
 <div id="audio-panel" class="media-panel">
   <div class="audio-recorder">
     <div id="audio-indicator" class="audio-indicator">Microphone prêt à être activé</div>
     <div id="audio-countdown" class="record-countdown inline" hidden></div>
+    <div id="audio-timer" class="record-timer inline" role="timer" aria-label="Durée de l’audio et temps restant" hidden><span class="record-dot" aria-hidden="true"></span><strong class="record-elapsed">00:00</strong><span class="record-remaining">03:00 restantes</span></div>
   </div>
   <div class="recorder-actions">
     <button type="button" class="btn secondary" id="prepare-audio">Activer le micro</button>
     <button type="button" class="btn primary" id="start-audio" hidden>Démarrer</button>
-    <button type="button" class="btn danger" id="stop-audio" hidden>Terminé</button>
+    <button type="button" class="btn danger" id="stop-audio" hidden>Arrêter</button>
   </div>
+  <p class="recorder-limit-help">3 minutes maximum · arrêt automatique, puis écoute avant envoi.</p>
 </div>
 <div id="photo-panel" class="media-panel">
   <div class="upload-box">
@@ -134,5 +138,5 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="app.js?v=20261001-audit1"></script>
+<script src="app.js?v=20261002-recorder1"></script>
 </body></html>
