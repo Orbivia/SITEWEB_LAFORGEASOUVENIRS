@@ -42,3 +42,15 @@ Quota invité lié au navigateur par capsule, contrôle serveur sous verrou, ré
 ## Complément offre — 3 octobre 2026
 
 Présentation du lancement simplifiée, tarifs futurs repliés, droits gratuits conservés, date suggérée modifiable par les invités, ZIP64 des seuls souvenirs ouverts. Outbox privée avec reprises idempotentes et opt-out ; Stripe avec montant serveur, webhook signé et reprise/remboursement. Les deux services restent désactivés. Tests SQL en transaction et tests SDK Stripe/ZIP avec lecteur standard. Voir [SERVICE-SETUP.md](SERVICE-SETUP.md) pour activer et tester les fournisseurs ; tests simulés sans envoi ni encaissement réel.
+
+## Revue complète — 3 octobre 2026
+
+- Enregistrement organisateur confirmé par retour de la ligne modifiée ; un accès perdu ou zéro ligne modifiée ne produit plus de faux succès. Activation bloquée tant que les modifications ne sont pas enregistrées.
+- Compte à rebours masqué sans souvenir en attente ; actualisation automatique à l’ouverture, état explicite après expiration et commandes de partage/export/configuration désactivées.
+- Fin/changement de session : fermeture des vues privées organisateur et administrateur ; sondage admin suspendu pendant une opération et en arrière-plan.
+- Date de première activation à partir de demain en Europe/Paris, vérifiée côté serveur. Longueurs des textes vérifiées en base, y compris par API.
+- Références privées de paiement conservées après suppression de capsule/compte pour traiter un paiement tardif et son remboursement ; aucun contenu ou e-mail client dans ces lignes. Les services payants restent désactivés.
+- Notifications périmées annulées si la date de conservation actuelle diffère du message préparé.
+- Navigation de connexion allégée, formule gratuite simplifiée, guide administrateur affiché en HTML. Stockage local bloqué : message et lien de connexion au lieu d’une préparation perdue silencieusement.
+
+Validation : six suites unitaires, dix suites SQL annulées et trois parcours navigateur. SMTP client extérieur, capacité totale Storage et anti-abus public restent les points à finaliser avant ouverture large.

@@ -103,3 +103,9 @@ Les erreurs caméra/micro sont affichées près des commandes. Changer de mode a
 ## Offre et découverte
 
 Le lancement gratuit est l’action principale de la page ; les trois tarifs futurs sont repliés. Les équivalences en photos sont indicatives et supposent 2 Mo par photo. L’organisateur suggère une ouverture au premier anniversaire par défaut, peut choisir une autre échéance ou laisser les invités décider. Les invités peuvent remplacer cette suggestion. Téléchargement groupé ZIP des seuls souvenirs ouverts ; services et limites détaillés dans [SERVICE-SETUP.md](SERVICE-SETUP.md).
+
+### Revue et protections complémentaires
+
+Les sauvegardes de réglages confirment la ligne modifiée et signalent la perte d’accès. La première activation exige une date à partir du lendemain en Europe/Paris. Les limites des champs sont appliquées en base. La session expirée ferme les vues privées ; la capsule expirée désactive les actions et remplace le compte à rebours. Le prochain souvenir est actualisé automatiquement à son ouverture. Régression SQL : `tests/review_security.sql` (transaction annulée).
+
+Une suppression de capsule/compte conserve uniquement les références privées de commande nécessaires au traitement d’un paiement tardif et de son remboursement. Notifications et paiements restent désactivés tant que les fournisseurs ne sont pas configurés et testés.

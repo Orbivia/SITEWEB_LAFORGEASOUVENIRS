@@ -15,7 +15,7 @@ function saveIndicator(){
  el.dataset.state=organizerState.error?"error":organizerDirty()?"pending":"saved";
 }
 function markDirty(part){organizerState[part]=true;organizerState.error=false;saveIndicator()}
-window.addEventListener("beforeunload",e=>{if(organizerDirty()||organizerState.saving){e.preventDefault();e.returnValue=""}});
+window.addEventListener("beforeunload",e=>{if(!ownerSessionEnded&&(organizerDirty()||organizerState.saving)){e.preventDefault();e.returnValue=""}});
 
 
 const $=id=>document.getElementById(id);
@@ -118,7 +118,12 @@ async function startRecorder(kind){
 function stopRecorder(){clearInterval(recorderTimer);clearTimeout(recorderStopTimer);if(recorder&&recorder.state!=="inactive")recorder.stop()}
 
 const PLAN_NAMES={photo:"Essentiel",audio:"Plus",premium:"Premium"};
-const PLAN_PRICES={photo:"9,90 €",audio:"14,90 €",premium:"24,90 €"};
+let ownerSessionEnded=false;
+async function updateOwnedCapsule(c,payload){
+ if(ownerSessionEnded)throw Error('Reconnectez-vous pour enregistrer votre capsule.');
+ const {data,error}=await sb.from('capsules').update(payload).eq('id',c.id).select('id').single();
+ if(error||!data?.id||data.id!==c.id||ownerSessionEnded)throw error||Error('La capsule n’est plus accessible. Reconnectez-vous avant de réessayer.');
+}
 function authDestination(){if(qs.get("next")==="admin")return "admin.html";return qs.get("next")==="create"?"create.html?resume=1":"dashboard.html"}
 async function initAuth(){
  const form=$("auth-form");if(!form)return;
@@ -139,6 +144,7 @@ async function initAuth(){
   $("email-field").hidden=recovery;$("email").required=!recovery;
   $("password-field").hidden=reset;$("password").required=!reset;
   $("password-field").querySelector("small").hidden=mode==="login"||reset;
+  document.querySelectorAll('[data-auth-mode]').forEach(button=>button.hidden=button.dataset.authMode===mode||(recovery&&button.dataset.authMode==='signup'));
   if(adminAccess){document.querySelector('[data-auth-mode="login"]').hidden=mode==="login";document.querySelector('[data-auth-mode="signup"]').hidden=true;document.querySelector('[data-auth-mode="reset"]').textContent="Mot de passe oublié";}
   $("password").minLength=mode==="login"?1:10;$("password").autocomplete=mode==="login"?"current-password":"new-password";
   $("password-confirm-field").hidden=!(recovery||mode==="signup");$("password-confirm").required=recovery||mode==="signup";
@@ -179,7 +185,7 @@ async function initAuth(){
    if(mode==="signup"){
     result=await sb.auth.signUp({email,password,options:{emailRedirectTo:new URL(authDestination(),location.href).href}});
     if(result.error)throw result.error;
-    if(!result.data.session){$("resend-confirmation").hidden=false;$("password").value="";$("password-confirm").value="";return show(status,"Consultez votre boîte mail pour confirmer votre adresse, puis connectez-vous. Votre préparation est conservée 24 h dans ce navigateur. Si vous avez déjà un compte, utilisez « J’ai déjà un compte ».")}
+    if(!result.data.session){$("resend-confirmation").hidden=false;$("password").value="";$("password-confirm").value="";return show(status,"Consultez votre boîte mail pour confirmer votre adresse, puis connectez-vous."+(qs.get('next')==='create'?" Votre préparation est conservée 24 h dans ce navigateur.":"")+" Si vous avez déjà un compte, utilisez « J’ai déjà un compte ».")}
    }else{
     result=await sb.auth.signInWithPassword({email,password});if(result.error)throw result.error;
    }
@@ -197,9 +203,10 @@ async function initCreate(){
  const draftKey="la_suite_create_draft";
  const pad=n=>String(n).padStart(2,"0");
  const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
- const today=new Date();today.setHours(0,0,0,0);
- const tomorrow=new Date(today);tomorrow.setDate(tomorrow.getDate()+1);
- const minDate=iso(tomorrow);
+ const tomorrow=new Date(parisDay()+'T12:00:00Z');tomorrow.setUTCDate(tomorrow.getUTCDate()+1);
+ const minDate=tomorrow.toISOString().slice(0,10);
+ const clearDraft=()=>{try{localStorage.removeItem(draftKey)}catch{}};
+ const storeDraft=d=>{try{localStorage.setItem(draftKey,JSON.stringify(d));return true}catch{return false}};
 
  function parseFrDate(value){
   const m=String(value||"").trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
@@ -244,9 +251,9 @@ async function initCreate(){
  function readDraft(){
   try{
    const d=JSON.parse(localStorage.getItem(draftKey)||"null");
-   if(!d||Date.now()-Number(d.saved_at||0)>24*60*60*1000){localStorage.removeItem(draftKey);return null}
+   if(!d||Date.now()-Number(d.saved_at||0)>24*60*60*1000){clearDraft();return null}
    return d;
-  }catch(e){localStorage.removeItem(draftKey);return null}
+  }catch(e){clearDraft();return null}
  }
  function validateDraft(d){
   if(!d?.couple||!d?.email)return"Complétez les champs obligatoires.";
@@ -289,13 +296,13 @@ async function initCreate(){
   if(!u)return false;
   const access=await capsuleAccess();
   if(!access.can_create){
-   if(access.existing_slug){localStorage.removeItem(draftKey);location.href="dashboard.html?slug="+encodeURIComponent(access.existing_slug);return true}
+   if(access.existing_slug){clearDraft();location.href="dashboard.html?slug="+encodeURIComponent(access.existing_slug);return true}
    if(submit)submit.disabled=false;show(status,access.reason,false);return false;
   }
   if(submit)submit.disabled=true;
   show(status,"Création de la capsule…");
   const existing=await sb.from("capsules").select("slug").eq("id",d.id).maybeSingle();
-  if(existing.data){localStorage.removeItem(draftKey);location.href="dashboard.html?slug="+encodeURIComponent(existing.data.slug);return true}
+  if(existing.data){clearDraft();location.href="dashboard.html?slug="+encodeURIComponent(existing.data.slug);return true}
   const{data,error}=await sb.from("capsules").insert({
    id:d.id,
    plan:PLAN_NAMES[d.plan]?d.plan:"premium",
@@ -307,7 +314,7 @@ async function initCreate(){
    unlock_date:null
   }).select("id,slug,guest_token").single();
   if(error){if(submit)submit.disabled=false;show(status,"Création impossible : "+error.message,false);return false}
-  localStorage.removeItem(draftKey);
+  clearDraft();
   location.href="dashboard.html?slug="+encodeURIComponent(data.slug);
   return true
  }
@@ -320,7 +327,7 @@ async function initCreate(){
  const currentUser=await user();
  if(currentUser){
   try{const access=await capsuleAccess();if(!access.can_create){
-   localStorage.removeItem(draftKey);
+   clearDraft();
    if(access.existing_slug){location.href="dashboard.html?slug="+encodeURIComponent(access.existing_slug);return}
    show(status,access.reason,false);submit.disabled=true;return;
   }}catch(error){show(status,error.message,false);submit.disabled=true;return}
@@ -331,7 +338,7 @@ async function initCreate(){
  $("plan").value=PLAN_NAMES[qs.get("plan")]?qs.get("plan"):(pending?.plan||"premium");
  if(qs.get("resume")==="1"&&currentUser&&pending){
   pending.id=pending.id||crypto.randomUUID();
-  localStorage.setItem(draftKey,JSON.stringify(pending));
+  storeDraft(pending);
   await createCapsule(pending,currentUser);
   return
  }
@@ -353,7 +360,7 @@ async function initCreate(){
   };
   const err=validateDraft(d);if(err)return show(status,err,false);
 
-  localStorage.setItem(draftKey,JSON.stringify(d));
+  if(!storeDraft(d)&&!currentUser){show(status,"Votre navigateur empêche de conserver la préparation. Connectez-vous ou créez votre compte, puis revenez remplir ce formulaire.",false);let link=status.querySelector('a');if(!link){link=document.createElement('a');link.href='auth.html?mode=signup&next=create';link.textContent='Créer mon compte ou me connecter';status.append(document.createElement('br'),link)}return}
   if(submit)submit.disabled=true;
 
   try{
@@ -643,7 +650,7 @@ async function performIntroSave(c){
    }
   }
   const payload={intro_path:path,welcome_message:kind==="text"?text:null};
-  if(!introFinalized){const{error}=await sb.from("capsules").update(payload).eq("id",c.id);if(error)throw error;}
+  if(!introFinalized){await updateOwnedCapsule(c,payload);}
   Object.assign(c,payload);$("intro-file").value="";organizerState.intro=false;organizerState.error=false;await renderIntroPreview(c);renderIntroDraft(c);
   show(s,kind==="none"?"Répondeur désactivé. Vos invités accèdent directement au dépôt de souvenirs.":"Votre répondeur est enregistré.");
   return true;
@@ -1103,7 +1110,7 @@ function saveQrCustomization(c,url,silent=false){
  const payload=collectQrCustomization(c);organizerState.saving++;saveIndicator();
  const run=async()=>{
   try{
-   const{error}=await sb.from("capsules").update(payload).eq("id",c.id);if(error)throw error;
+   await updateOwnedCapsule(c,payload);
    Object.assign(c,payload);applyQrPreview(url,{...c,...collectQrCustomization(c)});
    if(JSON.stringify(payload)===JSON.stringify(collectQrCustomization(c)))organizerState.qr=false;
    organizerState.error=false;show($("qr-status"),"Carte enregistrée.");return true;
@@ -1306,11 +1313,10 @@ async function markOwnerMessagesSeen(c,manifest){
  const current=c?.owner_messages_seen_at?new Date(c.owner_messages_seen_at).getTime():0;
  if(current>=latest){updateOwnerUnreadBadge(0);return}
  const seenAt=new Date(Math.max(Date.now(),latest)).toISOString();
- const{error}=await sb.from("capsules").update({owner_messages_seen_at:seenAt}).eq("id",c.id);
- if(!error){
+ try{await updateOwnedCapsule(c,{owner_messages_seen_at:seenAt});
   c.owner_messages_seen_at=seenAt;
   updateOwnerUnreadBadge(0)
- }
+ }catch{/* Keep the badge until the server confirms the update. */}
 }
 
 function setupOwnerTabs(c,manifest){
@@ -1323,7 +1329,7 @@ function setupOwnerTabs(c,manifest){
   links.forEach(link=>{
    const active=link.dataset.ownerTabLink===target;
    link.classList.toggle("is-active",active);
-   link.setAttribute("aria-current",active?"page":"false")
+   if(active)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")
   });
   panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
   if(updateHash&&location.hash!=="#"+target)history.replaceState(null,"","#"+target);
@@ -1422,11 +1428,19 @@ function setupQrTextCounters(){
  })
 }
 
-function nextCountdown(manifest){
- clearInterval(countdownTimer);
- const next=manifest.filter(m=>!m.is_available).sort((a,b)=>new Date(a.delivery_at)-new Date(b.delivery_at))[0],box=$("next-delivery");box.hidden=false;
- if(!next){box.innerHTML="<strong>Aucun souvenir en attente</strong>";return}
- const tick=()=>{const delta=new Date(next.delivery_at)-new Date();if(delta<=0){box.innerHTML="<strong>Un souvenir est prêt à être découvert. Actualisez la liste.</strong>";return}const d=Math.floor(delta/86400000),h=Math.floor((delta%86400000)/3600000),m=Math.floor((delta%3600000)/60000);box.innerHTML="<span>Prochain souvenir dans</span><strong>"+(d?d+" j ":"")+h+" h "+m+" min</strong>"};tick();countdownTimer=setInterval(tick,60000)
+function capsuleExpired(c){return c?.usage?.state==='expired'||Boolean(c?.usage?.expires_at&&new Date(c.usage.expires_at).getTime()<=Date.now())}
+const autoOpenedMemories=new Set();
+function nextCountdown(c,manifest,onReady){
+ clearInterval(countdownTimer);const box=$("next-delivery");box.hidden=false;
+ if(capsuleExpired(c)){box.textContent='La période de conservation de cette capsule est terminée.';return}
+ const next=manifest.filter(m=>!m.is_available).sort((a,b)=>new Date(a.delivery_at)-new Date(b.delivery_at))[0];
+ if(!next){box.hidden=true;return}
+ const tick=()=>{
+  if(capsuleExpired(c)){clearInterval(countdownTimer);box.textContent='La période de conservation de cette capsule est terminée.';return}
+  const delta=new Date(next.delivery_at)-new Date();
+  if(delta<=0){box.innerHTML='<strong>Un souvenir est prêt à être découvert.</strong>';if(document.visibilityState==='visible'&&!autoOpenedMemories.has(next.id)){autoOpenedMemories.add(next.id);setTimeout(onReady,0)}return}
+  const d=Math.floor(delta/86400000),h=Math.floor((delta%86400000)/3600000),m=Math.floor((delta%3600000)/60000);box.innerHTML='<span>Prochain souvenir dans</span><strong>'+(d?d+' j ':'')+h+' h '+m+' min</strong>';
+ };tick();countdownTimer=setInterval(tick,Math.min(60000,Math.max(1000,new Date(next.delivery_at)-Date.now())));
 }
 
 async function renderManifest(c,manifest){
@@ -1436,9 +1450,9 @@ async function renderManifest(c,manifest){
  if(error)throw error;
  const map=new Map((rows||[]).map(x=>[x.id,x]));list.replaceChildren();
  for(const item of manifest){
-  const row=map.get(item.id),available=item.is_available;
+  const row=map.get(item.id),expired=capsuleExpired(c),available=item.is_available&&!expired;
   const article=document.createElement("article");article.className="memory-row "+(available?"available":"locked");
-  article.innerHTML='<div class="memory-icon">'+icon(item.media_type)+'</div><div class="memory-meta"><strong>'+esc(item.guest_name||"Invité")+'</strong><span>'+label(item.media_type)+' · livraison le '+esc(fdate(item.delivery_at))+'</span></div><div class="memory-actions"><span class="lock-badge '+(available?'open':'locked')+'">'+(available?'Disponible':'🔒 Verrouillé')+'</span></div><div class="memory-content"></div>';
+  article.innerHTML='<div class="memory-icon">'+icon(item.media_type)+'</div><div class="memory-meta"><strong>'+esc(item.guest_name||"Invité")+'</strong><span>'+label(item.media_type)+' · livraison le '+esc(fdate(item.delivery_at))+'</span></div><div class="memory-actions"><span class="lock-badge '+(available?'open':'locked')+'">'+(expired?'Accès terminé':available?'Disponible':'🔒 Verrouillé')+'</span></div><div class="memory-content"></div>';
   const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
   if(available&&row?.message_text){const text=document.createElement('p');text.className='memory-text';text.textContent=row.message_text;content.append(text)}
   if(available&&row?.media_path){
@@ -1465,9 +1479,10 @@ async function renderCapsuleList(caps,access){
  })});document.querySelectorAll('[data-capsule-thumbnail]').forEach(el=>observer.observe(el));
  await Promise.all(caps.map(async c=>{const{data,error}=await sb.rpc('owner_capsule_stats',{p_capsule_id:c.id});const el=document.querySelector('[data-capsule-count="'+c.id+'"]');if(el)el.textContent=error?'Nombre de souvenirs indisponible':memoryCountLabel(data?.[0]?.message_count)}));
 }
+function tomorrowParis(){const d=new Date(parisDay()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
 function setupCapsuleSettings(c){
  const panel=document.createElement('details');panel.className='capsule-settings';
- panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===capsulePlan(c)?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div><div class="field"><label for="capsule-suggestion">Date de découverte suggérée aux invités</label><select id="capsule-suggestion"><option value="none">Laisser chaque invité choisir</option><option value="0">Le jour de l’événement</option><option value="1">Un mois après l’événement</option><option value="6">Six mois après l’événement</option><option value="12">Premier anniversaire</option><option value="24">Deuxième anniversaire</option><option value="custom">Une date précise</option></select><small class="field-help">Vos invités gardent la possibilité de choisir une autre date.</small><input id="capsule-suggestion-date" type="date" aria-label="Date suggérée" value="${esc(c.suggested_delivery_date||'')}" hidden></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Me prévenir par e-mail des ouvertures et avant la fin des 3 ans</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div><div id="capsule-upgrade" class="field" hidden></div></div>`;
+ panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''} ${['free_beta','legacy'].includes(c.activation_source)?'hidden':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===capsulePlan(c)?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Tous les formats sont inclus gratuitement.':c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div><div class="field"><label for="capsule-suggestion">Date de découverte suggérée aux invités</label><select id="capsule-suggestion"><option value="none">Laisser chaque invité choisir</option><option value="0">Le jour de l’événement</option><option value="1">Un mois après l’événement</option><option value="6">Six mois après l’événement</option><option value="12">Premier anniversaire</option><option value="24">Deuxième anniversaire</option><option value="custom">Une date précise</option></select><small class="field-help">Vos invités gardent la possibilité de choisir une autre date.</small><input id="capsule-suggestion-date" type="date" aria-label="Date suggérée" value="${esc(c.suggested_delivery_date||'')}" hidden></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Me prévenir par e-mail des ouvertures et avant la fin des 3 ans</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div><div id="capsule-upgrade" class="field" hidden></div></div>`;
  document.querySelector('[data-owner-panel="configuration"]').prepend(panel);
  $("capsule-suggestion").value=c.suggested_delivery_date?'custom':c.suggested_delivery_months==null?'none':String(c.suggested_delivery_months);
  const suggestionFields=()=>{const custom=$("capsule-suggestion").value==='custom';$("capsule-suggestion-date").hidden=!custom;$("capsule-suggestion-date").required=custom;$("capsule-suggestion-date").min=$("capsule-date").value;$("capsule-suggestion-date").max=$("capsule-date").value?addMonthsClamped($("capsule-date").value,30):""};suggestionFields();$("capsule-suggestion").addEventListener('change',suggestionFields);$("capsule-date").addEventListener('change',suggestionFields);
@@ -1477,11 +1492,12 @@ async function saveCapsuleSettings(c){
  if(!organizerState.settings)return true;
  const name=$("capsule-name").value.trim(),date=$("capsule-date").value,plan=$("capsule-plan").value;
  if(!name||name.length>50||!/^\d{4}-\d{2}-\d{2}$/.test(date)){show($("organizer-save-error"),'Renseignez un nom et une date valides.',false);document.querySelector('.capsule-settings').open=true;return false}
+ if(c.status==='draft'&&date<tomorrowParis()){show($("organizer-save-error"),'Choisissez une date d’événement à partir de demain.',false);document.querySelector('.capsule-settings').open=true;return false}
  const choice=$("capsule-suggestion").value,suggestionDate=$("capsule-suggestion-date").value,notify=$("capsule-notify").checked;
  if(choice==='custom'&&(!suggestionDate||suggestionDate<date||suggestionDate>addMonthsClamped(date,30))){show($("organizer-save-error"),'Choisissez une date suggérée entre l’événement et son trentième mois.',false);document.querySelector('.capsule-settings').open=true;return false}
  const payload={couple_name:name,wedding_date:date,suggested_delivery_months:['none','custom'].includes(choice)?null:Number(choice),suggested_delivery_date:choice==='custom'?suggestionDate:null,notify_by_email:notify};if(c.status==='draft')payload.plan=plan;
  const oldDefault=defaultCardExplanation(capsulePlan(c));
- const{error}=await sb.from('capsules').update(payload).eq('id',c.id);if(error)throw error;
+ await updateOwnedCapsule(c,payload);
  Object.assign(c,payload);$("dashboard-title").textContent=name;$("plan-explanation-help").textContent="Texte proposé pour la formule "+PLAN_NAMES[capsulePlan(c)]+".";
  if($("print-explanation").value===oldDefault){$("print-explanation").value=defaultCardExplanation(capsulePlan(c));organizerState.qr=true}
  organizerState.settings=($("capsule-name").value.trim()!==name||$("capsule-date").value!==date||$("capsule-plan").value!==plan||$("capsule-suggestion").value!==choice||$("capsule-suggestion-date").value!==suggestionDate||$("capsule-notify").checked!==notify);return true;
@@ -1489,7 +1505,7 @@ async function saveCapsuleSettings(c){
 
 
 let exportingMemories=false;
-window.addEventListener('beforeunload',e=>{if(exportingMemories){e.preventDefault();e.returnValue=''}});
+window.addEventListener('beforeunload',e=>{if(exportingMemories&&!ownerSessionEnded){e.preventDefault();e.returnValue=''}});
 async function exportOpenedMemories(c){
  if(exportingMemories)return;
  let writable,parts=[],size=0;const button=$("export-memories"),name='souvenirs-'+slugify(c.couple_name)+'.zip';
@@ -1505,9 +1521,11 @@ async function exportOpenedMemories(c){
   if(!writable){if(entries.reduce((sum,e)=>sum+e.size+500,0)>150000000)throw Error('Vos souvenirs dépassent 150 Mo. Téléchargez-les depuis Chrome ou Edge sur ordinateur pour les enregistrer directement sur disque.');
    writable={write:async bytes=>{size+=bytes.byteLength;if(size>150000000)throw Error('Archive trop volumineuse pour ce navigateur. Utilisez Chrome ou Edge sur ordinateur.');parts.push(bytes)},close:async()=>{const url=URL.createObjectURL(new Blob(parts,{type:'application/zip'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);parts=[]},abort:async()=>{parts=[]}};
   }
+  if(ownerSessionEnded)throw Error("Votre session est terminée. Reconnectez-vous.");
+  if(capsuleExpired(c))throw Error("La période de conservation est terminée.");
   await SouvenirZip.write(entries,writable,(i,total)=>show($("export-status"),'Téléchargement : '+i+' / '+total+' fichiers…'));show($("export-status"),'Vos souvenirs ouverts ont été téléchargés.');
  }catch(e){await writable?.abort?.();if(e.name!=='AbortError')show($("export-status"),e.message||'Téléchargement interrompu. Réessayez.',false)}
- finally{exportingMemories=false;button.disabled=false}
+ finally{exportingMemories=false;button.disabled=capsuleExpired(c)||ownerSessionEnded}
 }
 async function setupOfferServices(c){
  try{
@@ -1524,6 +1542,7 @@ async function renderOrganizerLifecycle(c){
  const {data,error}=await sb.rpc("owner_capsule_usage",{p_capsule_id:c.id});
  const panel=document.createElement("section");panel.className="capsule-lifecycle";
  if(error||!data){panel.textContent="Les dates et le stockage sont momentanément indisponibles.";document.querySelector('[data-owner-panel="configuration"]').prepend(panel);return}
+ c.usage=data;
  const names={suspended:"Dépôts en pause",draft:"En préparation",scheduled:"Prête à partager",open:"Dépôts ouverts",closed:"Souvenirs à découvrir",full:"Stockage rempli",expired:"Conservation terminée",missing_date:"Date à compléter"};
  const ratio=Math.min(100,Math.round(data.used_bytes/data.quota_bytes*100)),warning=ratio>=95?"Il reste très peu de place pour les fichiers. Les petits mots restent possibles.":ratio>=80?"Votre capsule approche de sa limite de stockage.":"";
  panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(data.expires_at))+'.</p><details '+(warning?"open":"")+'><summary>Stockage : '+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</summary><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress><p>'+esc(warning||"Le stockage comprend les fichiers et les envois en cours.")+'</p></details>'+(c.activation_source==="free_beta"||c.status==="draft"?'<small>Pendant le lancement gratuit : tous les formats et jusqu’à 5 Go après activation.</small>':"");
@@ -1534,6 +1553,7 @@ async function initDashboard(){
  if(!$("dashboard-content"))return;
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href="auth.html";
+ sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;clearInterval(countdownTimer);Object.assign(organizerState,{qr:false,intro:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
  sb.rpc("admin_status").then(({data})=>{if(data===true&&$("admin-link"))$("admin-link").hidden=false}).catch(()=>{});
  $("logout")?.addEventListener("click",async()=>{if(organizerState.saving){show($("organizer-save-error"),"Patientez jusqu’à la fin de l’enregistrement avant de vous déconnecter.",false);return}if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return;Object.assign(organizerState,{qr:false,intro:false,settings:false});await sb.auth.signOut();location.href="index.html"});
  const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
@@ -1553,12 +1573,14 @@ async function initDashboard(){
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
  await renderOrganizerLifecycle(c);
  const stage=document.createElement("section");stage.className="activation-panel";
- stage.innerHTML=c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Activer ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p><p><strong>Votre capsule est gratuite pendant les 3 ans d’accès à compter de votre événement.</strong><span id="activation-price" hidden></span></p><p>Photos, petits mots, audios et vidéos sont inclus, avec 5 Go de stockage. Aucun abonnement ni paiement ne sera demandé pour cette capsule, même après le lancement des offres payantes.</p><button id="activate-capsule" class="btn primary" type="button">Activer gratuitement</button><p id="activation-status" class="status" role="status"></p></dialog>`;
+ stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>Les trois ans d’accès sont terminés. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Activer ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p><p><strong>Votre capsule est gratuite pendant les 3 ans d’accès à compter de votre événement.</strong></p><p>Photos, petits mots, audios et vidéos sont inclus, avec 5 Go de stockage. Aucun abonnement ni paiement ne sera demandé pour cette capsule, même après le lancement des offres payantes.</p><button id="activate-capsule" class="btn primary" type="button">Activer gratuitement</button><p id="activation-status" class="status" role="status"></p></dialog>`;
  document.querySelector('[data-owner-panel="configuration"]').append(stage);
- if(c.status!=="active"){
-  ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title="Activez votre capsule pour partager votre carte"});
+ if(c.status!=="active"||capsuleExpired(c)){
+  ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title=capsuleExpired(c)?"La période de conservation est terminée":"Activez votre capsule pour partager votre carte"});
   const guestLink=$("open-guest-link");if(guestLink)guestLink.hidden=true;
-  $("review-activation").addEventListener("click",async()=>{if(await saveAll()){ $("activation-dialog").querySelector('[data-activation-summary]').textContent=c.couple_name+" · "+fdate(c.wedding_date)+" · "+PLAN_NAMES[capsulePlan(c)];$("activation-price").textContent=PLAN_PRICES[c.plan];$("activation-dialog").showModal()}});
+ }
+ if(c.status!=="active"){
+  $("review-activation").addEventListener("click",async()=>{if(await saveAll()){ $("activation-dialog").querySelector('[data-activation-summary]').textContent=c.couple_name+" · "+fdate(c.wedding_date)+" · "+PLAN_NAMES[capsulePlan(c)];$("activation-dialog").showModal()}});
   $("activate-capsule").addEventListener("click",async()=>{
    const button=$("activate-capsule");button.disabled=true;
    try{
@@ -1584,10 +1606,10 @@ async function initDashboard(){
    if(!await saveCapsuleSettings(c))return false;
    if(introSavePending&&!await introSavePending)return false;
    if(organizerState.intro&&!await uploadIntro(c))return false;
-   if(!await saveQrCustomization(c,url.href,true))return false;
+   if(organizerState.qr&&!await saveQrCustomization(c,url.href,true))return false;
    organizerState.error=false;if(organizerDirty()){show($("organizer-save-error"),"Des modifications ont été faites pendant la sauvegarde. Enregistrez-les avant de continuer.",false);return false}show($("organizer-save-error"),'');return true;
   }catch(e){organizerState.error=true;show($("organizer-save-error"),'Enregistrement impossible : '+e.message,false);return false}
-  finally{organizerState.saving--;saveIndicator();$("save-organizer").disabled=false;saveAllPending=null}})();
+  finally{organizerState.saving--;saveIndicator();if($("save-organizer"))$("save-organizer").disabled=false;saveAllPending=null}})();
   return saveAllPending;
  }
  $("save-organizer").addEventListener('click',saveAll);
@@ -1630,11 +1652,15 @@ async function initDashboard(){
  ["capsule-name","capsule-date","capsule-plan","capsule-suggestion","capsule-suggestion-date","capsule-notify","intro-kind","intro-file","intro-text"].forEach(id=>{
   $(id).addEventListener("input",scheduleAutoSave);$(id).addEventListener("change",scheduleAutoSave);
  });
+ let refreshInProgress=false;
  async function refreshMemories(){
+  if(refreshInProgress||ownerSessionEnded)return;refreshInProgress=true;
   const button=$("refresh-memories");button.disabled=true;show($("memory-status"),'Chargement des souvenirs…');
-  try{const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);$("export-memories").disabled=!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(manifest);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'Souvenirs à jour.')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser les souvenirs » pour réessayer.',false)}finally{button.disabled=false}
+  try{const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'Souvenirs à jour.')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser les souvenirs » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(capsuleExpired(c)||manifest.some(m=>!m.is_available&&new Date(m.delivery_at)<=new Date())))refreshMemories()});
+ if(capsuleExpired(c)){document.querySelectorAll('[data-owner-panel="configuration"] input,[data-owner-panel="configuration"] select,[data-owner-panel="configuration"] textarea,[data-owner-panel="configuration"] button').forEach(e=>e.disabled=true)}
  if(qs.get('activated')==='1'&&c.status==='active'){
   const success=document.createElement('section');success.className='activation-success';success.innerHTML='<div class="eyebrow">Capsule active</div><h2>Votre capsule est prête à être partagée !</h2><p>Votre carte et votre répondeur sont enregistrés. Invitez maintenant vos proches à participer.</p><div class="success-actions"><button class="btn primary" data-success-action="share-link">Partager le lien</button><button class="btn secondary" data-success-action="download-print-card">Télécharger la carte</button><button class="btn secondary" data-success-action="print-print-card">Imprimer</button></div>';
   $("dashboard-content").prepend(success);success.querySelectorAll('[data-success-action]').forEach(button=>button.addEventListener('click',()=>$(button.dataset.successAction).click()));
