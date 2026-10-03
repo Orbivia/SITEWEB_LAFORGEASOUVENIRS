@@ -122,7 +122,8 @@ let ownerSessionEnded=false;
 async function updateOwnedCapsule(c,payload){
  if(ownerSessionEnded)throw Error('Reconnectez-vous pour enregistrer votre capsule.');
  const {data,error}=await sb.from('capsules').update(payload).eq('id',c.id).select('id').single();
- if(error||!data?.id||data.id!==c.id||ownerSessionEnded)throw error||Error('La capsule n’est plus accessible. Reconnectez-vous avant de réessayer.');
+ if(error?.code==='PGRST116'||!error&&(!data?.id||data.id!==c.id)||ownerSessionEnded)throw Error('La capsule n’est plus accessible. Reconnectez-vous avant de réessayer.');
+ if(error)throw error;
 }
 function authDestination(){if(qs.get("next")==="admin")return "admin.html";return qs.get("next")==="create"?"create.html?resume=1":"dashboard.html"}
 async function initAuth(){
