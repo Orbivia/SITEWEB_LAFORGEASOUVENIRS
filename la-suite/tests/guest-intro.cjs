@@ -2,7 +2,7 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),asse
 const {stripTypeScriptTypes}=require('node:module');
 let capsule={id:'test',status:'draft',intro_path:'test/organizer/greeting.png'},signedCalls=0,handler,state='open',user=null,backendError=null,backendArgs=null;
 const chain={select:()=>chain,eq:()=>chain,maybeSingle:async()=>({data:capsule})};
-const createClient=()=>({auth:{getUser:async()=>({data:{user}})},from:()=>chain,rpc:async(name,args)=>{if(name==='organizer_intro_backend'){backendArgs=args;return backendError?{error:{message:backendError}}:{data:{path:'test/organizer/signed.png',ok:true}}}return{data:{state}}},storage:{from:()=>({createSignedUploadUrl:async()=>({data:{token:'signed-upload-token'}}),createSignedUrl:async()=>{signedCalls++;return{data:{signedUrl:'https://example.test/signed'}}}})}});
+const createClient=()=>({auth:{getUser:async()=>({data:{user}})},from:()=>chain,rpc:async(name,args)=>{if(name==='reserve_guest_memory'){backendArgs=args;return{data:{complete:true,ok:true,message_id:'test-message'}}}if(name==='organizer_intro_backend'){backendArgs=args;return backendError?{error:{message:backendError}}:{data:{path:'test/organizer/signed.png',ok:true}}}return{data:{state}}},storage:{from:()=>({createSignedUploadUrl:async()=>({data:{token:'signed-upload-token'}}),createSignedUrl:async()=>{signedCalls++;return{data:{signedUrl:'https://example.test/signed'}}}})}});
 const source=fs.readFileSync(path.join(__dirname,'../supabase/functions/guest-upload/index.ts'),'utf8').replace(/^import .*;\n/,'');
 const ctx={createClient,Deno:{env:{get:()=>''},serve:fn=>handler=fn},Response,crypto,console};
 vm.runInNewContext(stripTypeScriptTypes(source),ctx);
@@ -18,6 +18,10 @@ vm.runInNewContext(stripTypeScriptTypes(source),ctx);
  capsule.intro_path=null;assert.equal((await(await invoke('get_intro')).json()).signed_url,null);
  for(const path of ['test/private-memory.mp4','other/organizer/intro.mp4']){capsule.intro_path=path;const before=signedCalls;assert.equal((await invoke('get_intro')).status,403);assert.equal(signedCalls,before);}
  capsule.intro_path='test/organizer/intro.mp4';for(const value of ['suspended','expired']){state=value;const before=signedCalls;assert.equal((await invoke('get_intro')).status,value==='expired'?410:403);assert.equal(signedCalls,before);}
+ state='open';
+ assert.equal((await invoke('submit_text')).status,400);
+ const guestId='12345678-1234-4123-8123-123456789abc';
+ response=await handler(new Request('https://example.test/',{method:'POST',body:JSON.stringify({action:'submit_text',guest_token:'a'.repeat(36),guest_id:guestId,message_text:'A memory'})}));assert.equal(response.status,200);assert.equal(backendArgs.p_guest_id,guestId);
  assert.equal((await invoke('init_intro')).status,401);
  user={id:'verified-owner'};response=await invoke('init_intro');assert.equal(response.status,200);assert.equal((await response.json()).token,'signed-upload-token');assert.equal(backendArgs.p_user,'verified-owner');
  backendError='La capsule est pleine';assert.equal((await invoke('init_intro')).status,409);backendError=null;

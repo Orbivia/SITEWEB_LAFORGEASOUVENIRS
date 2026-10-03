@@ -39,6 +39,9 @@ Deno.serve(async req=>{
   if(action==='import_finish'){await rpc('import_finish',{id:body.id});return response({ok:true});}
   if(action!=='tick')return response({error:'Action invalide.'},400);
   const garbage=await rpc('cleanup');for(let i=0;i<garbage.garbage.length;i+=100){const {error}=await db.storage.from('capsule-backups').remove(garbage.garbage.slice(i,i+100));if(error)throw error;}
+  const {data:mediaGarbage,error:mediaError}=await db.rpc('media_cleanup_backend',{p_action:'candidates'});if(mediaError)throw mediaError;
+  if(mediaGarbage.garbage.length){const {error}=await db.storage.from('capsule-media').remove(mediaGarbage.garbage);if(error)throw error;}
+  const {error:ackError}=await db.rpc('media_cleanup_backend',{p_action:'ack',p_paths:mediaGarbage.garbage});if(ackError)throw ackError;
   job=await rpc('lease');if(!job)return response({ok:true,idle:true});
   const started=Date.now();let processed=0;
   if(job.state==='restoring'){
