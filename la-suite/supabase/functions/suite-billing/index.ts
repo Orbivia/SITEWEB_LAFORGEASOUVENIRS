@@ -13,7 +13,7 @@ Deno.serve(async req=>{
    if(!key||!secret)return reply({error:'Paiement non configuré.'},503);
    const stripe=new Stripe(key);let event;
    try{event=await stripe.webhooks.constructEventAsync(await req.text(),req.headers.get('stripe-signature')!,secret,undefined,Stripe.createSubtleCryptoProvider());}catch{return reply({error:'Signature invalide.'},400);}
-   if(event.livemode!==key.startsWith('sk_live_')&&event.livemode!==key.startsWith('rk_live_'))return reply({error:'Mode de paiement invalide.'},400);
+   if(event.livemode!==(key.startsWith('sk_live_')||key.startsWith('rk_live_')))return reply({error:'Mode de paiement invalide.'},400);
    if(!['checkout.session.completed','checkout.session.async_payment_succeeded'].includes(event.type))return reply({ok:true});
    // Retrieve canonical session: the redirect never changes a capsule's rights.
    const session=await stripe.checkout.sessions.retrieve((event.data.object as any).id);

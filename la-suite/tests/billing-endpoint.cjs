@@ -15,5 +15,6 @@ const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/st
  assert.equal((await invoke(body+' ',{'stripe-signature':signature})).status,400);
  result=await invoke(body,{'stripe-signature':signature});assert.equal(result.status,200);assert.equal(calls.filter(c=>c[0]==='settle').length,1);
  session.payment_status='unpaid';assert.equal((await invoke(body,{'stripe-signature':signature})).status,200);assert.equal(calls.filter(c=>c[0]==='settle').length,1);
+ const liveBody=JSON.stringify({...event,livemode:true}),liveSignature=Stripe.webhooks.generateTestHeaderString({payload:liveBody,secret});assert.equal((await invoke(liveBody,{'stripe-signature':liveSignature})).status,400);
  assert(signatureChecks>=4);console.log('PASS: official Stripe SDK rejects forged/altered webhooks; verified paid session alone settles; checkout uses server amount, never client price');
 })().catch(e=>{console.error(e);process.exit(1)});
