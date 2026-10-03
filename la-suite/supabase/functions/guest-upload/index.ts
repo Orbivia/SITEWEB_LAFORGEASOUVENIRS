@@ -67,6 +67,8 @@ Deno.serve(async(req)=>{
    if(error)throw error;return json({ok:true,signed_url:data?.signedUrl||null,media_type:/\.(jpg|jpeg|png|webp)$/i.test(capsule.intro_path)?"image":"video"});
   }
   if(action==="submit_text"||action==="init_media"){
+   const guestId=String(body?.guest_id||'');
+   if(!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(guestId))return json({error:'Rechargez cette page avant de réessayer.'},400);
    const guestName=String(body?.guest_name||"").trim(),messageText=String(body?.message_text||"").trim();
    const fileType=String(body?.file_type||"").split(";")[0],fileSize=action==="submit_text"?0:Number(body?.file_size),mediaType=action==="submit_text"?"text":TYPE_GROUPS[fileType];
    if(action==="init_media"&&(!ALLOWED_TYPES.has(fileType)||!Number.isSafeInteger(fileSize)))return json({error:"Choisissez un fichier compatible."},400);
@@ -74,7 +76,7 @@ Deno.serve(async(req)=>{
    if(duration!=null&&(!Number.isFinite(duration)||duration<=0||duration>(mediaType==="video"?60.1:180.1)))return json({error:"Vidéo : 1 minute maximum. Audio : 3 minutes maximum."},400);
    const requestId=String(body?.request_id||crypto.randomUUID());
    if(!/^[a-f0-9-]{36}$/i.test(requestId))return json({error:"Envoi invalide."},400);
-   const{data:reserved,error}=await db.rpc("reserve_guest_memory",{p_capsule_id:capsule.id,p_request_id:requestId,p_name:guestName,p_text:messageText,p_type:mediaType,p_mime:action==="submit_text"?null:fileType,p_bytes:fileSize,p_delivery:parseDelivery(body?.delivery_at)});
+   const{data:reserved,error}=await db.rpc("reserve_guest_memory",{p_capsule_id:capsule.id,p_request_id:requestId,p_name:guestName,p_text:messageText,p_type:mediaType,p_mime:action==="submit_text"?null:fileType,p_bytes:fileSize,p_delivery:parseDelivery(body?.delivery_at),p_guest_id:guestId});
    if(error)return json({error:error.message},409);
    if(reserved.complete)return json(reserved);
    const{data:signed,error:signedError}=await db.storage.from("capsule-media").createSignedUploadUrl(reserved.path);
