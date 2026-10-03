@@ -41,3 +41,5 @@ Chrome/Edge sur ordinateur : écriture directe sur disque, compatible avec des a
 - [Stripe : Checkout](https://docs.stripe.com/api/checkout/sessions/create)
 - [Supabase : signatures Stripe dans une Edge Function](https://supabase.com/docs/guides/functions/examples/stripe-webhooks)
 - [Supabase Auth : SMTP personnalisé](https://supabase.com/docs/guides/auth/auth-smtp)
+
+Si une capsule ou son compte est supprimé pendant un paiement, les identifiants de commande et du prestataire restent privés pour permettre le remboursement du paiement confirmé tardivement. Aucun souvenir ou e-mail client n’est conservé dans ces commandes. Tester également ce cas avant de vendre les changements de formule. Un rappel déjà préparé est annulé si la date de conservation de la capsule a changé.

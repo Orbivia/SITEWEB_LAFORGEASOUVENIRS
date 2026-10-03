@@ -46,7 +46,7 @@ do $$ declare o jsonb;o2 jsonb;out jsonb;pid uuid;job jsonb;original date;begin
  if jsonb_array_length(out->'upgrades')<>0 or public.guest_capsule_state(current_setting('test.capsule')::uuid)->>'effective_plan'<>'premium' then raise exception 'Free beta rights lost or upgrade sold';end if;
  -- Freeze queue payload and retry the same job; disable cancels leases.
  update la_suite_internal.offer_services set notifications_enabled=true;
- insert into la_suite_internal.notifications(capsule_id,kind,period,recipient,label,slug,opened_count,expires_at) values(current_setting('test.capsule')::uuid,'opened',current_date,'offer-test@example.invalid','Frozen name','frozen-slug',1,now()+interval '1 day') returning id into pid;
+ insert into la_suite_internal.notifications(capsule_id,kind,period,recipient,label,slug,opened_count,expires_at) values(current_setting('test.capsule')::uuid,'opened',current_date,'offer-test@example.invalid','Frozen name','frozen-slug',1,(select (wedding_date::timestamp+interval '3 years') at time zone 'Europe/Paris' from public.capsules where id=current_setting('test.capsule')::uuid)) returning id into pid;
  job:=public.offer_backend('notify_lease',null,'{"sender":"La Suite <no-reply@example.invalid>"}');
  if job->>'id'<>pid::text or job->>'sender'<>'La Suite <no-reply@example.invalid>' then raise exception 'Notification lease failed';end if;
  perform public.offer_backend('notify_result',null,jsonb_build_object('id',pid,'lease',job->>'lease','provider_id',null));
