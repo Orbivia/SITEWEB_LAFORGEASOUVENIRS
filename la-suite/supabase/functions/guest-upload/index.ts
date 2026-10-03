@@ -52,11 +52,11 @@ Deno.serve(async(req)=>{
    return json({...result,token:signed.token});
   }
   if(!/^[a-f0-9]{36}$/.test(guestToken))return json({error:"Lien de capsule invalide."},400);
-  const{data:capsule,error:capsuleError}=await db.from("capsules").select("id,intro_path,status,couple_name,wedding_date,welcome_message").eq("guest_token",guestToken).maybeSingle();
+  const{data:capsule,error:capsuleError}=await db.from("capsules").select("id,intro_path,status,couple_name,wedding_date,welcome_message,suggested_delivery_months,suggested_delivery_date").eq("guest_token",guestToken).maybeSingle();
   if(capsuleError||!capsule||capsule.status!=="active")return json({error:"Cette capsule est introuvable."},404);
   if(action==="get_status"){
    const{data,error}=await db.rpc("guest_capsule_state",{p_capsule_id:capsule.id});if(error)throw error;
-   return json({ok:true,...data,couple_name:capsule.couple_name,wedding_date:capsule.wedding_date,welcome_message:capsule.welcome_message,has_intro:Boolean(capsule.intro_path)});
+   return json({ok:true,...data,couple_name:capsule.couple_name,wedding_date:capsule.wedding_date,welcome_message:capsule.welcome_message,has_intro:Boolean(capsule.intro_path),suggested_delivery_months:capsule.suggested_delivery_months,suggested_delivery_date:capsule.suggested_delivery_date});
   }
   if(action==="get_intro"){
    const{data:state,error:stateError}=await db.rpc("guest_capsule_state",{p_capsule_id:capsule.id});

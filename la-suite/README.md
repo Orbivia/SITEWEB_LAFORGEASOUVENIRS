@@ -1,6 +1,6 @@
 # La Suite — état et exploitation
 
-Site publié par GitHub Pages : https://laforgeasouvenirs.fr/la-suite/. Supabase héberge Auth, PostgreSQL, les médias privés et les fonctions serveur. Projet actuel : `yejzxsrmqudhvaikaitb`, région `eu-west-2`. État revu le 1er octobre 2026 ; [AUDIT.md](AUDIT.md) présente les corrections et les problèmes restant ouverts.
+Site publié par GitHub Pages : https://laforgeasouvenirs.fr/la-suite/. Supabase héberge Auth, PostgreSQL, les médias privés et les fonctions serveur. Projet actuel : `yejzxsrmqudhvaikaitb`, région `eu-west-2`. État revu le 3 octobre 2026 ; [AUDIT.md](AUDIT.md) présente les corrections et les problèmes restant ouverts.
 
 ## Parcours client
 
@@ -10,7 +10,7 @@ L’interface ne propose pas de gestion de brouillons : une capsule unique ouvre
 
 Le lancement gratuit autorise une capsule gratuite par compte. Le droit est consommé à l’activation et reste consommé après suppression. Un verrou par compte et une limite de cinq créations réussies en 24 h évitent les créations simultanées.
 
-L’activation gratuite donne les droits Premium, soit 5 Go **par capsule**. Ce quota applicatif ne réserve pas 5 Go chez l’hébergeur : la capacité globale doit couvrir tous les clients et les sauvegardes. Aucun encaissement n’est branché. Catalogue futur : Essentiel/`photo` 1 Go, Plus/`audio` 2 Go, Premium/`premium` 5 Go.
+L’activation gratuite donne les droits Premium, soit 5 Go **par capsule**. Ce quota applicatif ne réserve pas 5 Go chez l’hébergeur : la capacité globale doit couvrir tous les clients et les sauvegardes. Aucun encaissement n’est actif. Les intégrations Resend et Stripe sont préparées et désactivées ; voir [SERVICE-SETUP.md](SERVICE-SETUP.md). La vente/activation payante initiale reste à finaliser. Les droits gratuits sont maintenus pendant les trois ans à compter de l’événement. Catalogue futur : Essentiel/`photo` 1 Go, Plus/`audio` 2 Go, Premium/`premium` 5 Go.
 
 ## Invités, calendrier et fichiers
 
@@ -99,3 +99,7 @@ La bibliothèque Supabase navigateur et serveur est fixée à `2.58.0`. Les essa
 Les tables privées sans policy RLS sont volontairement inaccessibles. Les RPC SECURITY DEFINER nécessaires vérifient propriété ou jeton et fixent leur `search_path`. Le signalement pg_net dans public est suivi : l’extension n’est pas déplaçable ; ses objets HTTP sont dans `net`, hors API exposée.
 
 Les erreurs caméra/micro sont affichées près des commandes. Changer de mode annule le compte à rebours et les autorisations tardives. En arrière-plan, l’enregistrement est arrêté ; si un fichier a été récupéré, son aperçu est conservé avec un avertissement. Un enregistrement vide est refusé. Essai réel Android/iPhone toujours nécessaire : les navigateurs peuvent interrompre les événements en verrouillant le téléphone.
+
+## Offre et découverte
+
+Le lancement gratuit est l’action principale de la page ; les trois tarifs futurs sont repliés. Les équivalences en photos sont indicatives et supposent 2 Mo par photo. L’organisateur suggère une ouverture au premier anniversaire par défaut, peut choisir une autre échéance ou laisser les invités décider. Les invités peuvent remplacer cette suggestion. Téléchargement groupé ZIP des seuls souvenirs ouverts ; services et limites détaillés dans [SERVICE-SETUP.md](SERVICE-SETUP.md).

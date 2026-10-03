@@ -465,10 +465,17 @@ async function acceptGuestFile(file,type,duration,interruption){
  }catch(error){if(version===guestSelectionVersion)showCapture(error.message,false)}
  finally{if(version===guestSelectionVersion)$("guest-message").querySelector('[type="submit"]').disabled=false}
 }
+let deliveryTouched=false;
+function suggestedDelivery(state){
+ if(state?.suggested_delivery_date)return state.suggested_delivery_date;
+ if(Number.isInteger(state?.suggested_delivery_months))return addMonthsClamped(state.wedding_date,state.suggested_delivery_months);
+ return null;
+}
 function chooseDelivery(choice){
  const now=choice==="now";$("deliver-now").checked=now;$("delivery-date-wrap").hidden=choice!=="custom";$("delivery_date").required=!now;
  document.querySelectorAll("[data-delivery]").forEach(b=>{const active=b.dataset.delivery===choice;b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active))});
  if(now)$("delivery_date").value="";
+ else if(choice==="suggested")$("delivery_date").value=suggestedDelivery(guestState);
  else if(choice!=="custom")$("delivery_date").value=addMonthsClamped(parisDay(),Number(choice));
  else{$("delivery_date").focus()}
  updateDeliveryHelp();guestTransaction=null;
@@ -487,8 +494,8 @@ function initGuestControls(){
   $("start-"+kind).addEventListener("click",()=>startRecorder(kind).catch(()=>showCapture("L’enregistrement n’a pas démarré. Réessayez ou choisissez un fichier.",false)));
   $("stop-"+kind).addEventListener("click",stopRecorder);
  }
- document.querySelectorAll("[data-delivery]").forEach(b=>b.addEventListener("click",()=>chooseDelivery(b.dataset.delivery)));
- $("delivery_date").addEventListener("change",()=>{guestTransaction=null;updateDeliveryHelp()});
+ document.querySelectorAll("[data-delivery]").forEach(b=>b.addEventListener("click",()=>{deliveryTouched=true;chooseDelivery(b.dataset.delivery)}));
+ $("delivery_date").addEventListener("change",()=>{deliveryTouched=true;guestTransaction=null;updateDeliveryHelp()});
  $("delivery_date").min=parisDay();
  window.addEventListener("beforeunload",e=>{if(guestBusy||selectedMedia||$("message_text")?.value.trim()){e.preventDefault();e.returnValue=""}});
  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")interruptCapture("L’enregistrement a été arrêté lorsque vous avez quitté la page. Vérifiez l’aperçu avant l’envoi.")});
@@ -511,6 +518,10 @@ function renderGuestState(state){
  if(!allowed.includes(guestType)||state.state==="full")chooseGuestType("text");
  const max=parisDay(new Date(new Date(state.delivery_before).getTime()-1000));$("delivery_date").max=max;
  document.querySelectorAll("[data-delivery]").forEach(b=>{if(/^\d+$/.test(b.dataset.delivery))b.hidden=addMonthsClamped(parisDay(),Number(b.dataset.delivery))>max});
+ const suggestion=suggestedDelivery(state),button=document.querySelector('[data-delivery="suggested"]');
+ const valid=suggestion&&suggestion>=parisDay()&&suggestion<=max;button.hidden=!valid;
+ if(valid)button.textContent="Date suggérée : "+fdate(suggestion);
+ if(!deliveryTouched)chooseDelivery(valid?"suggested":"now");
 }
 function uploadGuestFile(file,transaction){
  if(transaction.uploaded)return Promise.resolve();
@@ -545,7 +556,7 @@ async function initCapsule(){
   }).catch(()=>{});
  }catch(error){$("guest-state").textContent=error.message;return}
  $("another-memory").addEventListener("click",async()=>{
-  $("guest-success").hidden=true;$("guest-message").hidden=false;chooseGuestType("image");chooseDelivery("now");show($("status"),"");
+  $("guest-success").hidden=true;$("guest-message").hidden=false;chooseGuestType("image");deliveryTouched=false;chooseDelivery("now");show($("status"),"");
   try{guestState=await guestInvoke({action:"get_status",guest_token:token});renderGuestState(guestState)}catch(error){$("guest-state").textContent=error.message}
   $("guest-state").scrollIntoView({behavior:"smooth",block:"start"});
  });
@@ -1263,7 +1274,7 @@ function ownerShell(c,url,count){
   <div class="section-title-row">
    <div><div class="eyebrow">Souvenirs reçus</div><h2 id="memory-count">${count} contenu(s)</h2></div>
   </div>
-  <button id="refresh-memories" class="btn secondary" type="button">Actualiser les souvenirs</button><p id="memory-status" class="status" role="status"></p><div id="memory-list" class="memory-list"></div>
+  <div class="memory-tools"><button id="refresh-memories" class="btn secondary" type="button">Actualiser les souvenirs</button><button id="export-memories" class="btn primary" type="button" disabled>Télécharger les souvenirs ouverts</button></div><p id="export-status" class="status" role="status"></p><p id="memory-status" class="status" role="status"></p><div id="memory-list" class="memory-list"></div>
  </section>
 </div>`
 }
@@ -1455,22 +1466,58 @@ async function renderCapsuleList(caps,access){
 }
 function setupCapsuleSettings(c){
  const panel=document.createElement('details');panel.className='capsule-settings';
- panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===c.plan?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div></div>`;
+ panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===c.plan?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div><div class="field"><label for="capsule-suggestion">Date de découverte suggérée aux invités</label><select id="capsule-suggestion"><option value="none">Laisser chaque invité choisir</option><option value="0">Le jour de l’événement</option><option value="1">Un mois après l’événement</option><option value="6">Six mois après l’événement</option><option value="12">Premier anniversaire</option><option value="24">Deuxième anniversaire</option><option value="custom">Une date précise</option></select><small class="field-help">Vos invités gardent la possibilité de choisir une autre date.</small><input id="capsule-suggestion-date" type="date" aria-label="Date suggérée" value="${esc(c.suggested_delivery_date||'')}" hidden></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Me prévenir par e-mail des ouvertures et avant la fin des 3 ans</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div><div id="capsule-upgrade" class="field" hidden></div></div>`;
  document.querySelector('[data-owner-panel="configuration"]').prepend(panel);
- ['capsule-name','capsule-date','capsule-plan'].forEach(id=>$(id).addEventListener('input',()=>markDirty('settings')));
+ $("capsule-suggestion").value=c.suggested_delivery_date?'custom':c.suggested_delivery_months==null?'none':String(c.suggested_delivery_months);
+ const suggestionFields=()=>{const custom=$("capsule-suggestion").value==='custom';$("capsule-suggestion-date").hidden=!custom;$("capsule-suggestion-date").required=custom;$("capsule-suggestion-date").min=$("capsule-date").value;$("capsule-suggestion-date").max=addMonthsClamped($("capsule-date").value,30)};suggestionFields();$("capsule-suggestion").addEventListener('change',suggestionFields);$("capsule-date").addEventListener('change',suggestionFields);
+ ['capsule-name','capsule-date','capsule-plan','capsule-suggestion','capsule-suggestion-date','capsule-notify'].forEach(id=>$(id).addEventListener('input',()=>markDirty('settings')));
 }
 async function saveCapsuleSettings(c){
  if(!organizerState.settings)return true;
  const name=$("capsule-name").value.trim(),date=$("capsule-date").value,plan=$("capsule-plan").value;
  if(!name||name.length>50||!/^\d{4}-\d{2}-\d{2}$/.test(date)){show($("organizer-save-error"),'Renseignez un nom et une date valides.',false);document.querySelector('.capsule-settings').open=true;return false}
- const payload={couple_name:name,wedding_date:date};if(c.status==='draft')payload.plan=plan;
+ const choice=$("capsule-suggestion").value,suggestionDate=$("capsule-suggestion-date").value,notify=$("capsule-notify").checked;
+ if(choice==='custom'&&(!suggestionDate||suggestionDate<date||suggestionDate>addMonthsClamped(date,30))){show($("organizer-save-error"),'Choisissez une date suggérée entre l’événement et son trentième mois.',false);document.querySelector('.capsule-settings').open=true;return false}
+ const payload={couple_name:name,wedding_date:date,suggested_delivery_months:['none','custom'].includes(choice)?null:Number(choice),suggested_delivery_date:choice==='custom'?suggestionDate:null,notify_by_email:notify};if(c.status==='draft')payload.plan=plan;
  const oldDefault=defaultCardExplanation(c.plan);
  const{error}=await sb.from('capsules').update(payload).eq('id',c.id);if(error)throw error;
  Object.assign(c,payload);$("dashboard-title").textContent=name;$("plan-explanation-help").textContent="Texte proposé pour la formule "+PLAN_NAMES[c.plan]+".";
  if($("print-explanation").value===oldDefault){$("print-explanation").value=defaultCardExplanation(c.plan);organizerState.qr=true}
- organizerState.settings=($("capsule-name").value.trim()!==name||$("capsule-date").value!==date||$("capsule-plan").value!==plan);return true;
+ organizerState.settings=($("capsule-name").value.trim()!==name||$("capsule-date").value!==date||$("capsule-plan").value!==plan||$("capsule-suggestion").value!==choice||$("capsule-suggestion-date").value!==suggestionDate||$("capsule-notify").checked!==notify);return true;
 }
 
+
+let exportingMemories=false;
+window.addEventListener('beforeunload',e=>{if(exportingMemories){e.preventDefault();e.returnValue=''}});
+async function exportOpenedMemories(c){
+ if(exportingMemories)return;
+ let writable,parts=[],size=0;const button=$("export-memories"),name='souvenirs-'+slugify(c.couple_name)+'.zip';
+ exportingMemories=true;button.disabled=true;
+ try{
+  // Keep the native picker inside the click gesture, before the first request.
+  if(window.showSaveFilePicker){const handle=await window.showSaveFilePicker({suggestedName:name,types:[{description:'Souvenirs ZIP',accept:{'application/zip':['.zip']}}]});writable=await handle.createWritable()}
+  const {data:bundle,error}=await sb.rpc('owner_export_bundle',{p_capsule_id:c.id});if(error)throw error;
+  if(!bundle?.messages?.length)throw Error('Aucun souvenir ouvert à télécharger. Actualisez la liste.');
+  const text=new Blob([bundle.name+' — '+fdate(bundle.date)+'\n\n'+bundle.messages.map(m=>(m.guest_name||'Invité')+' · '+fdate(m.delivery_at)+'\n'+(m.message_text||'Souvenir '+m.media_type)+'\n').join('\n')],{type:'text/plain;charset=utf-8'});
+  const entries=[{name:'Vos-messages.txt',size:text.size,load:async()=>text}];
+  bundle.messages.filter(m=>m.path).forEach((m,i)=>{const ext=m.path.split('.').pop().replace(/[^a-z0-9]/gi,'').slice(0,8)||'bin';entries.push({name:String(i+1).padStart(4,'0')+'-'+(slugify(m.guest_name||'invite')||'invite')+'.'+ext,size:Number(m.bytes),load:async()=>{const {data,error}=await sb.storage.from('capsule-media').download(m.path);if(error||!data)throw error||Error('Fichier indisponible.');return data}})});
+  if(!writable){if(entries.reduce((sum,e)=>sum+e.size+500,0)>150000000)throw Error('Vos souvenirs dépassent 150 Mo. Téléchargez-les depuis Chrome ou Edge sur ordinateur pour les enregistrer directement sur disque.');
+   writable={write:async bytes=>{size+=bytes.byteLength;if(size>150000000)throw Error('Archive trop volumineuse pour ce navigateur. Utilisez Chrome ou Edge sur ordinateur.');parts.push(bytes)},close:async()=>{const url=URL.createObjectURL(new Blob(parts,{type:'application/zip'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);parts=[]},abort:async()=>{parts=[]}};
+  }
+  await SouvenirZip.write(entries,writable,(i,total)=>show($("export-status"),'Téléchargement : '+i+' / '+total+' fichiers…'));show($("export-status"),'Vos souvenirs ouverts ont été téléchargés.');
+ }catch(e){await writable?.abort?.();if(e.name!=='AbortError')show($("export-status"),e.message||'Téléchargement interrompu. Réessayez.',false)}
+ finally{exportingMemories=false;button.disabled=false}
+}
+async function setupOfferServices(c){
+ try{
+  const {data,error}=await sb.functions.invoke('suite-billing',{body:{action:'status',capsule_id:c.id}});if(error||!data)return;
+  $("notification-preference").hidden=!data.notifications_enabled;
+  if(data.payments_enabled&&data.upgrades?.length){const panel=$("capsule-upgrade");panel.hidden=false;panel.innerHTML='<label>Passer à une formule supérieure</label><p class="field-help">Payez uniquement la différence. La date de l’événement et les souvenirs restent conservés.</p><div class="upgrade-options">'+data.upgrades.map(x=>'<button type="button" class="btn secondary" data-upgrade="'+esc(x.plan)+'">'+esc(PLAN_NAMES[x.plan])+' · +'+(x.cents/100).toLocaleString('fr-FR',{style:'currency',currency:'EUR'})+'</button>').join('')+'</div><p class="status" role="status"></p>';
+   panel.querySelectorAll('[data-upgrade]').forEach(button=>button.onclick=async()=>{if(!confirm('Continuer vers le paiement sécurisé pour '+button.textContent+' ?'))return;button.disabled=true;try{const {data,error}=await sb.functions.invoke('suite-billing',{body:{action:'checkout',capsule_id:c.id,plan:button.dataset.upgrade}});if(error||!data?.url)throw error||Error(data?.error||'Paiement indisponible.');const target=new URL(data.url);if(target.protocol!=='https:'||target.hostname!=='checkout.stripe.com')throw Error('Lien de paiement invalide.');location.href=data.url}catch(e){show(panel.querySelector('.status'),'Paiement indisponible. Réessayez plus tard.',false);button.disabled=false}});
+  }
+  if(qs.get('upgrade')==='return')show($("memory-status"),'Le changement de formule sera visible dès la confirmation du paiement. Actualisez la page dans quelques instants.');
+ }catch(_){}
+}
 
 async function renderOrganizerLifecycle(c){
  const {data,error}=await sb.rpc("owner_capsule_usage",{p_capsule_id:c.id});
@@ -1488,7 +1535,7 @@ async function initDashboard(){
  const u=await user();if(!u)return location.href="auth.html";
  sb.rpc("admin_status").then(({data})=>{if(data===true&&$("admin-link"))$("admin-link").hidden=false}).catch(()=>{});
  $("logout")?.addEventListener("click",async()=>{if(organizerState.saving){show($("organizer-save-error"),"Patientez jusqu’à la fin de l’enregistrement avant de vous déconnecter.",false);return}if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return;Object.assign(organizerState,{qr:false,intro:false,settings:false});await sb.auth.signOut();location.href="index.html"});
- const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
+ const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
  let access;
  try{access=await capsuleAccess()}catch(error){return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>'}
@@ -1505,7 +1552,7 @@ async function initDashboard(){
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
  await renderOrganizerLifecycle(c);
  const stage=document.createElement("section");stage.className="activation-panel";
- stage.innerHTML=c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Activer ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[c.plan]||"Premium")}</p><p>Tarif prévu de cette formule : <span id="activation-price">${esc(PLAN_PRICES[c.plan]||PLAN_PRICES.premium)}</span> par capsule. <strong>À régler aujourd’hui : 0 €.</strong></p><p>Le paiement sera proposé ultérieurement. Pour le moment, l’activation est gratuite et tous les formats sont accessibles. Aucun paiement ne vous sera demandé pour cette activation.</p><button id="activate-capsule" class="btn primary" type="button">Activer gratuitement</button><p id="activation-status" class="status" role="status"></p></dialog>`;
+ stage.innerHTML=c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Activer ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[c.plan]||"Premium")}</p><p><strong>Votre capsule est gratuite pendant les 3 ans d’accès à compter de votre événement.</strong><span id="activation-price" hidden></span></p><p>Photos, petits mots, audios et vidéos sont inclus, avec 5 Go de stockage. Aucun abonnement ni paiement ne sera demandé pour cette capsule, même après le lancement des offres payantes.</p><button id="activate-capsule" class="btn primary" type="button">Activer gratuitement</button><p id="activation-status" class="status" role="status"></p></dialog>`;
  document.querySelector('[data-owner-panel="configuration"]').append(stage);
  if(c.status!=="active"){
   ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title="Activez votre capsule pour partager votre carte"});
@@ -1521,6 +1568,8 @@ async function initDashboard(){
   });
  }
  setupCapsuleSettings(c);
+ setupOfferServices(c);
+ $("export-memories").addEventListener("click",()=>exportOpenedMemories(c));
  const savebar=document.createElement('div');savebar.className='organizer-savebar';savebar.innerHTML='<span id="organizer-save-state" role="status" aria-live="polite">Tout est enregistré</span><button class="btn secondary" id="save-organizer" type="button">Tout enregistrer</button><p id="organizer-save-error" class="status" role="status"></p>';
  document.querySelector('[data-owner-panel="configuration"]').prepend(savebar);
  setupOwnerTabs(c,manifest||[]);
@@ -1577,12 +1626,12 @@ async function initDashboard(){
    await saveAll();
   },800);
  }
- ["capsule-name","capsule-date","capsule-plan","intro-kind","intro-file","intro-text"].forEach(id=>{
+ ["capsule-name","capsule-date","capsule-plan","capsule-suggestion","capsule-suggestion-date","capsule-notify","intro-kind","intro-file","intro-text"].forEach(id=>{
   $(id).addEventListener("input",scheduleAutoSave);$(id).addEventListener("change",scheduleAutoSave);
  });
  async function refreshMemories(){
   const button=$("refresh-memories");button.disabled=true;show($("memory-status"),'Chargement des souvenirs…');
-  try{const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(manifest);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'Souvenirs à jour.')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser les souvenirs » pour réessayer.',false)}finally{button.disabled=false}
+  try{const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);$("export-memories").disabled=!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(manifest);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'Souvenirs à jour.')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser les souvenirs » pour réessayer.',false)}finally{button.disabled=false}
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  if(qs.get('activated')==='1'&&c.status==='active'){

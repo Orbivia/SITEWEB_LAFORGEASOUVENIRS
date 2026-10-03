@@ -1,5 +1,6 @@
 import {createClient} from 'https://esm.sh/@supabase/supabase-js@2.58.0';
 import {importKey,seal,open} from './crypto.ts';
+import {processNotifications} from './notifications.ts';
 const cors={'Access-Control-Allow-Origin':'https://laforgeasouvenirs.fr','Access-Control-Allow-Headers':'authorization,apikey,content-type,x-client-info,x-suite-worker','Access-Control-Allow-Methods':'POST,OPTIONS'};
 const response=(body:unknown,status=200)=>new Response(JSON.stringify(body),{status,headers:{...cors,'Content-Type':'application/json','Cache-Control':'no-store'}});
 Deno.serve(async req=>{
@@ -12,6 +13,11 @@ Deno.serve(async req=>{
   if(req.headers.has('x-suite-worker')){const runtime=await rpc('runtime');worker=req.headers.get('x-suite-worker')===runtime.worker;if(!worker)return response({error:'Accès refusé.'},403);}
   else {const token=(req.headers.get('Authorization')||'').replace(/^Bearer /i,'');const {data,error}=await db.auth.getUser(token);if(error||!data.user)return response({error:'Connectez-vous pour continuer.'},401);userId=data.user.id;if(!await rpc('member',{user_id:userId}))return response({error:'Accès réservé à l’administrateur.'},403);}
   const action=String(body.action||'');if(worker&&action!=='tick')return response({error:'Accès refusé.'},403);
+  if(action==='services'||action==='configure_services'){
+   const configured={notifications:Boolean(Deno.env.get('RESEND_API_KEY')&&Deno.env.get('NOTIFICATION_FROM')),payments:Boolean(Deno.env.get('STRIPE_SECRET_KEY')&&Deno.env.get('STRIPE_WEBHOOK_SECRET'))};
+   if(action==='configure_services'&&(body.notifications_enabled===true&&!configured.notifications||body.payments_enabled===true&&!configured.payments))return response({error:'Configurez d’abord les clés et les services nécessaires.'},409);
+   const {data,error}=await db.rpc('offer_backend',{p_action:action==='services'?'services':'configure',p_user:userId,p_payload:{notifications_enabled:body.notifications_enabled,payments_enabled:body.payments_enabled}});if(error)throw error;return response({...data,configured});
+  }
   if(action==='overview')return response(await rpc('overview'));
   if(action==='manage')return response({ok:await rpc('manage',{id:body.id,suspended:body.suspended,quota:body.quota,actor:userId})});
   if(action==='backup')return response(await rpc('queue',{id:body.id||null,actor:userId}));
@@ -38,6 +44,7 @@ Deno.serve(async req=>{
   }
   if(action==='import_finish'){await rpc('import_finish',{id:body.id});return response({ok:true});}
   if(action!=='tick')return response({error:'Action invalide.'},400);
+  try{await processNotifications(db,name=>Deno.env.get(name));}catch{console.error('suite notifications worker interrupted');}
   const garbage=await rpc('cleanup');for(let i=0;i<garbage.garbage.length;i+=100){const {error}=await db.storage.from('capsule-backups').remove(garbage.garbage.slice(i,i+100));if(error)throw error;}
   const {data:mediaGarbage,error:mediaError}=await db.rpc('media_cleanup_backend',{p_action:'candidates'});if(mediaError)throw mediaError;
   if(mediaGarbage.garbage.length){const {error}=await db.storage.from('capsule-media').remove(mediaGarbage.garbage);if(error)throw error;}

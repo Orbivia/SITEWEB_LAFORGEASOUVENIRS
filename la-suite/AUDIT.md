@@ -23,7 +23,7 @@ Périmètre : code/documentation, policies/RPC et buckets réels, rôles admin, 
 | Moyenne | Durée et type binaire sans contrôle serveur indépendant | Implémenter ce contrôle ou accepter cette limite pour une bêta restreinte. |
 | Moyenne | Protection Auth contre mots de passe compromis désactivée | Activer le réglage Supabase Auth. |
 | Moyenne | Pas d’alerte indépendante sur une absence d’exécution cron | Surveiller la dernière sauvegarde réussie. Une erreur de tâche ne couvre pas une absence de tâche. |
-| À finaliser | Paiements, notifications, confidentialité et suppression | Lancement gratuit ; aucun paiement ni mail d’ouverture automatique branché. |
+| À finaliser | Paiements, notifications, confidentialité et suppression | Lancement gratuit ; notifications et changements de formule intégrés mais désactivés tant que leurs services ne sont pas configurés. Activation payante initiale, livraison réelle des e-mails et conditions de vente à finaliser. |
 
 ## Validation et limites
 
@@ -38,3 +38,7 @@ Sources : [SMTP](https://supabase.com/docs/guides/auth/auth-smtp), [Storage incl
 ## Complément du 3 octobre
 
 Quota invité lié au navigateur par capsule, contrôle serveur sous verrou, réservations incluses et tentatives idempotentes. Erreurs locales de capture, compte à rebours annulable, autorisation tardive fermée, interruption micro/arrière-plan avec aperçu récupérable. SMTP extérieur non validé ; offre Free et deux petits objets de sauvegarde (2 486 octets) observés avant intervention. Aucun changement de facturation.
+
+## Complément offre — 3 octobre 2026
+
+Présentation du lancement simplifiée, tarifs futurs repliés, droits gratuits conservés, date suggérée modifiable par les invités, ZIP64 des seuls souvenirs ouverts. Outbox privée avec reprises idempotentes et opt-out ; Stripe avec montant serveur, webhook signé et reprise/remboursement. Les deux services restent désactivés. Tests SQL en transaction et tests SDK Stripe/ZIP avec lecteur standard. Voir [SERVICE-SETUP.md](SERVICE-SETUP.md) pour activer et tester les fournisseurs ; tests simulés sans envoi ni encaissement réel.
