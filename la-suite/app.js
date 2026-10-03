@@ -1107,6 +1107,7 @@ async function printPrintCard(c,url){
  }
 }
 function saveQrCustomization(c,url,silent=false){
+ if(ownerSessionEnded)return Promise.resolve(false);
  const payload=collectQrCustomization(c);organizerState.saving++;saveIndicator();
  const run=async()=>{
   try{
@@ -1579,7 +1580,7 @@ async function initDashboard(){
   ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title=capsuleExpired(c)?"La période de conservation est terminée":"Activez votre capsule pour partager votre carte"});
   const guestLink=$("open-guest-link");if(guestLink)guestLink.hidden=true;
  }
- if(c.status!=="active"){
+ if(c.status!=="active"&&!capsuleExpired(c)){
   $("review-activation").addEventListener("click",async()=>{if(await saveAll()){ $("activation-dialog").querySelector('[data-activation-summary]').textContent=c.couple_name+" · "+fdate(c.wedding_date)+" · "+PLAN_NAMES[capsulePlan(c)];$("activation-dialog").showModal()}});
   $("activate-capsule").addEventListener("click",async()=>{
    const button=$("activate-capsule");button.disabled=true;
@@ -1600,6 +1601,7 @@ async function initDashboard(){
  const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-show-initials"];
  let qrSaveTimer=null,autoSaveTimer=null,saveAllPending=null;
  function saveAll(){
+  if(ownerSessionEnded||!$("save-organizer"))return Promise.resolve(false);
   if(saveAllPending)return saveAllPending;
   clearTimeout(qrSaveTimer);clearTimeout(autoSaveTimer);organizerState.saving++;saveIndicator();$("save-organizer").disabled=true;
   saveAllPending=(async()=>{try{
@@ -1642,6 +1644,7 @@ async function initDashboard(){
  function scheduleAutoSave(){
   clearTimeout(autoSaveTimer);
   autoSaveTimer=setTimeout(async()=>{
+   if(ownerSessionEnded)return;
    if(organizerState.saving){scheduleAutoSave();return}
    if(organizerState.settings&&(!$("capsule-name").value.trim()||!$("capsule-date").value))return;
    const kind=$("intro-kind").value;
@@ -1661,7 +1664,7 @@ async function initDashboard(){
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(capsuleExpired(c)||manifest.some(m=>!m.is_available&&new Date(m.delivery_at)<=new Date())))refreshMemories()});
  if(capsuleExpired(c)){document.querySelectorAll('[data-owner-panel="configuration"] input,[data-owner-panel="configuration"] select,[data-owner-panel="configuration"] textarea,[data-owner-panel="configuration"] button').forEach(e=>e.disabled=true)}
- if(qs.get('activated')==='1'&&c.status==='active'){
+ if(qs.get('activated')==='1'&&c.status==='active'&&!capsuleExpired(c)){
   const success=document.createElement('section');success.className='activation-success';success.innerHTML='<div class="eyebrow">Capsule active</div><h2>Votre capsule est prête à être partagée !</h2><p>Votre carte et votre répondeur sont enregistrés. Invitez maintenant vos proches à participer.</p><div class="success-actions"><button class="btn primary" data-success-action="share-link">Partager le lien</button><button class="btn secondary" data-success-action="download-print-card">Télécharger la carte</button><button class="btn secondary" data-success-action="print-print-card">Imprimer</button></div>';
   $("dashboard-content").prepend(success);success.querySelectorAll('[data-success-action]').forEach(button=>button.addEventListener('click',()=>$(button.dataset.successAction).click()));
   history.replaceState(null,'','dashboard.html?slug='+encodeURIComponent(c.slug));
