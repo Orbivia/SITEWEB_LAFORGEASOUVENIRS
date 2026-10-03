@@ -52,6 +52,7 @@ const root=path.resolve(__dirname,'..'),artifacts=process.env.QA_SCREENSHOTS||re
  // Permission errors stay next to capture; late permissions never reopen abandoned media.
  await page.locator('[data-memory-type="video"]').click();await page.locator('#capture-memory').click();await page.evaluate(()=>window._failPermission=true);await page.locator('#prepare-video').click();
  await page.waitForFunction(()=>document.querySelector('#capture-status').textContent.includes('Autorisez'));assert(await page.locator('#capture-status').isVisible());assert(await page.locator('#prepare-video').isEnabled());
+ for(const width of [390,1280]){await page.setViewportSize({width,height:900});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await page.screenshot({path:path.join(artifacts,'guest-camera-error-'+width+'.png'),fullPage:true})}
  await page.evaluate(()=>{window._failPermission=false;window._delayMedia=true});await page.locator('#prepare-video').click();await page.waitForFunction(()=>Boolean(window._releaseMedia));await page.locator('[data-memory-type="text"]').click();
  await page.evaluate(()=>{window._delayMedia=false;window._releaseMedia()});await page.waitForFunction(()=>_captureStreams.at(-1).getTracks().every(t=>t.readyState==='ended'));assert(await page.locator('#video-timer').isHidden());
  // Cancel a countdown and immediately use another recording mode.

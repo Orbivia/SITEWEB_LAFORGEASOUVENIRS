@@ -19,7 +19,7 @@ window.addEventListener("beforeunload",e=>{if(organizerDirty()||organizerState.s
 
 
 const $=id=>document.getElementById(id);
-function show(el,msg,ok=true){if(!el)return;el.textContent=msg;el.className="status show "+(ok?"ok":"err")}
+function show(el,msg,ok=true){if(!el)return;el.textContent=msg;el.className=msg?"status show "+(ok?"ok":"err"):"status"}
 function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
 function slugify(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"").slice(0,50)}
 function rid(){return Math.random().toString(36).slice(2,8)}
