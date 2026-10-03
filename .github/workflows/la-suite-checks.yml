@@ -30,6 +30,9 @@ jobs:
           node la-suite/tests/backup-integrity.cjs
           node la-suite/tests/admin-endpoint.cjs
           node la-suite/tests/guest-intro.cjs
+          node la-suite/tests/souvenir-zip.cjs
+          node la-suite/tests/offer-services.cjs
+          node la-suite/tests/billing-endpoint.cjs
       - name: Browser flows
         working-directory: la-suite/tests
         env:

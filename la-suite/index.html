@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20261001-offers1">
+<link rel="stylesheet" href="styles.css?v=20261003-offer2">
 </head>
 
 <body class="suite-public">
@@ -99,18 +99,18 @@
       <div class="pricing-heading">
         <span class="pricing-kicker">Tarifs</span>
         <h2>Choisissez les souvenirs à garder</h2>
-        <p>Des photos, la voix de vos proches ou des vidéos : comparez les formats et la capacité de chaque formule. Les tarifs prévus correspondent à une capsule pour un événement, sans abonnement.</p>
+        <p>Les photos du jour J, la voix de vos proches, leurs petits mots… à retrouver maintenant ou à découvrir pour un prochain anniversaire.</p>
       </div>
 
       <aside class="pricing-launch" aria-labelledby="launch-title">
         <div>
           <h3 id="launch-title">Le lancement est gratuit</h3>
-          <p>Aujourd’hui, <strong>une capsule gratuite par compte</strong> inclut les photos, textes, audios et vidéos, avec <strong>5 Go de stockage</strong>. Aucun paiement n’est demandé. Les formules ci-dessous présentent la future offre payante.</p>
+          <p>Aujourd’hui, <strong>une capsule gratuite par compte</strong> inclut les photos, textes, audios et vidéos, avec <strong>5 Go de stockage</strong>. <strong>Cette capsule restera gratuite pendant ses 3 ans d’accès, à compter de votre événement</strong>, même si une offre payante est lancée ensuite. Aucun abonnement ni paiement n’est demandé.</p>
         </div>
         <a class="pricing-button pricing-button-primary" href="create.html">Créer gratuitement ma capsule</a>
       </aside>
 
-      <div class="pricing-grid">
+      <details class="future-offer"><summary>Découvrir les futures formules payantes</summary><p class="hint">Tarifs prévus par événement, sans abonnement. Pendant le lancement, votre capsule gratuite inclut déjà tous les formats.</p><div class="pricing-grid">
         <article class="pricing-card">
           <div class="pricing-icon pricing-icons" aria-hidden="true"><i class="fa-solid fa-camera"></i></div>
           <h3>Essentiel</h3>
@@ -122,7 +122,7 @@
             <li class="pricing-unavailable"><i class="fa-solid fa-minus" aria-hidden="true"></i> Audio non inclus</li>
             <li class="pricing-unavailable"><i class="fa-solid fa-minus" aria-hidden="true"></i> Vidéo non incluse</li>
           </ul>
-          <a class="pricing-button" href="create.html?plan=photo">Préparer ma capsule Essentiel</a>
+          <a class="pricing-button" href="create.html">Créer ma capsule gratuite</a>
         </article>
 
         <article class="pricing-card pricing-card-featured">
@@ -137,7 +137,7 @@
             <li><i class="fa-solid fa-check" aria-hidden="true"></i> Enregistrements audio</li>
             <li class="pricing-unavailable"><i class="fa-solid fa-minus" aria-hidden="true"></i> Vidéo non incluse</li>
           </ul>
-          <a class="pricing-button pricing-button-primary" href="create.html?plan=audio">Préparer ma capsule Plus</a>
+          <a class="pricing-button pricing-button-primary" href="create.html">Créer ma capsule gratuite</a>
         </article>
 
         <article class="pricing-card">
@@ -151,16 +151,18 @@
             <li><i class="fa-solid fa-check" aria-hidden="true"></i> Enregistrements audio</li>
             <li><i class="fa-solid fa-check" aria-hidden="true"></i> Vidéos enregistrées ou importées</li>
           </ul>
-          <a class="pricing-button" href="create.html?plan=premium">Préparer ma capsule Premium</a>
+          <a class="pricing-button" href="create.html">Créer ma capsule gratuite</a>
         </article>
       </div>
+      </details>
+      <p class="pricing-estimate">À titre indicatif, 1 Go représente environ 500 photos de 2 Mo ; 2 Go, environ 1 000 ; 5 Go, environ 2 500. Les fichiers audio et vidéo partagent cette capacité et réduisent le nombre de photos possible.</p>
       <div class="pricing-included">
         <h3>Dans toutes les formules</h3>
         <ul>
           <li><i class="fa-solid fa-qrcode" aria-hidden="true"></i> QR code et carte personnalisables à télécharger ou imprimer</li>
           <li><i class="fa-regular fa-comment" aria-hidden="true"></i> Message d’accueil facultatif</li>
           <li><i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i> Invités sans compte ni application</li>
-          <li><i class="fa-solid fa-download" aria-hidden="true"></i> Lecture et téléchargement des souvenirs dès leur ouverture</li>
+          <li><i class="fa-solid fa-download" aria-hidden="true"></i> Lecture et téléchargement de tous les souvenirs ouverts dans un fichier ZIP</li>
         </ul>
       </div>
 
@@ -175,7 +177,7 @@
           <article>
             <span class="pricing-timing-label">Pour découvrir</span>
             <h4>Tout de suite ou jusqu’à 30 mois</h4>
-            <p>Chaque invité choisit la date d’ouverture de son souvenir, au plus tard 2 ans et demi après l’événement. Il reste verrouillé avant cette date.</p>
+            <p>Vous suggérez une date de découverte, par exemple votre premier anniversaire. Chaque invité peut la garder ou choisir une autre date, au plus tard 2 ans et demi après l’événement. Il reste verrouillé avant cette date.</p>
           </article>
           <article>
             <span class="pricing-timing-label">Pour conserver</span>
