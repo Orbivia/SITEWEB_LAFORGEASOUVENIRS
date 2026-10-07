@@ -2578,3 +2578,33 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
   .suite-public .pricing-timing article{padding:18px}
   .suite-public .suite-final{padding-top:32px;padding-bottom:32px}
 }
+
+/* Organizer: persistent tabs and compact editors. */
+.owner-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:18px 0;background:#f3efe8;border:1px solid #e6dfd5;border-radius:14px;padding:5px}
+.owner-tabs [role=tab]{position:relative;min-width:0;border:0;border-radius:10px;padding:12px 8px;background:transparent;color:#625b52;font:600 .95rem Inter,Arial,sans-serif;cursor:pointer}
+.owner-tabs [aria-selected=true]{background:#fff;color:#b70909;box-shadow:0 2px 7px #0000000d}
+.owner-tabs [role=tab]:focus-visible,.customization-section summary:focus-visible{outline:3px solid #c7a052;outline-offset:2px}
+.owner-tabs .owner-unread-badge{position:static;display:inline-block;margin-left:4px}.owner-tabs .owner-unread-badge[hidden]{display:none}
+.owner-overview .capsule-lifecycle{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;padding:14px 18px;margin:0;font-size:.9rem}
+.owner-overview .capsule-lifecycle strong{font-size:1rem}.owner-storage{margin-left:auto;white-space:nowrap}
+.owner-overview .capsule-lifecycle progress{width:100%;height:5px;margin:0}.owner-overview .capsule-lifecycle small,.owner-overview .capsule-lifecycle p{width:100%;margin:0}
+.owner-overview .capsule-settings{margin:10px 0;padding:12px 18px}.owner-overview .capsule-settings>summary{font-size:.9rem}
+.owner-overview .organizer-savebar{display:flex;align-items:center;flex-wrap:wrap;gap:8px 16px;margin:10px 0 0;padding:8px 12px;background:transparent;border:0}
+.owner-overview .organizer-savebar .btn{width:auto;margin-left:auto;min-height:36px;padding:8px 14px;font-size:.8rem}.organizer-savebar>span{font-size:.8rem}.organizer-savebar .status:empty{display:none}
+.owner-dates{border:1px solid #e6dfd5;border-radius:14px;padding:14px 18px;margin-bottom:18px}.owner-dates summary{cursor:pointer;font-weight:600}.owner-dates p{font-size:.9rem}
+.qr-designer-controls{background:transparent;border:0;padding:0;box-shadow:none}
+.customization-section{border:1px solid #e6dfd5;border-radius:14px;background:#fff;margin:10px 0;min-width:0}
+.customization-section>summary{display:flex;align-items:center;gap:12px;list-style:none;cursor:pointer;padding:14px 16px;margin:0;font-size:1rem;font-weight:600}
+.customization-section>summary::-webkit-details-marker{display:none}.customization-section>summary:after{content:'+';margin-left:auto;font-size:1.3rem;color:#766c5a}.customization-section[open]>summary:after{content:'−'}
+.customization-section>summary img{width:32px;height:32px}.customization-section-body{padding:0 16px 16px;min-width:0}.customization-section-body>.field-help{margin-top:0}
+.qr-print-guide>summary{cursor:pointer;font-size:.9rem;font-weight:600}.qr-print-guide:not([open]){padding:14px 16px}.qr-print-guide[open] .qr-print-guide-grid{margin-top:14px}
+.intro-preview-card[hidden],.activation-panel[hidden]{display:none!important}.intro-preview-card #intro-preview-wrap[hidden]{display:none}.intro-preview-card .field-help{display:none}
+@media(max-width:720px){
+ .dashboard-head{margin-bottom:18px}.dashboard-head h1{font-size:2.2rem}
+ .qr-designer-panel{padding:16px}.qr-designer-head{margin-bottom:12px}.qr-designer-head h2,.intro-video-head h2{font-size:1.8rem}.qr-designer-head p{display:none}
+ .qr-designer-grid{gap:16px}.qr-designer-controls{padding:0}.qr-preview-sticky{position:static}.qr-preview-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.qr-preview-actions .btn{font-size:.78rem;padding:10px 6px;min-width:0}
+ .intro-video-head{margin-bottom:16px}.intro-video-head p{font-size:.9rem}.intro-video-limit{display:none}.intro-editor-grid{gap:16px}.intro-preview-card{padding:16px}.intro-preview-card #intro-preview-wrap{min-height:0}
+ .owner-messages-hero{padding:18px}.owner-messages-hero h2{font-size:1.8rem}.owner-tabs [role=tab]{font-size:.85rem}
+}
+
+#upload-intro[hidden]{display:none!important}

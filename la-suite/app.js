@@ -11,7 +11,8 @@ function organizerDirty(){return organizerState.qr||organizerState.intro||organi
 function saveIndicator(){
  const el=$("organizer-save-state");if(!el)return;
  el.textContent=organizerState.saving?"Enregistrement…":organizerState.error?"Enregistrement incomplet. Réessayez.":organizerDirty()?"Modifications non enregistrées":"Tout est enregistré";
- const retry=$("save-organizer");if(retry)retry.textContent=organizerState.error?"Réessayer l’enregistrement":"Tout enregistrer";
+ const retry=$("save-organizer");if(retry){retry.textContent=organizerState.error?"Réessayer":"Enregistrer";retry.disabled=Boolean(organizerState.saving)||(!organizerDirty()&&!organizerState.error)}
+ const introButton=$("upload-intro");if(introButton){introButton.disabled=Boolean(organizerState.saving)||!organizerState.intro;introButton.hidden=$("intro-kind")?.value==="none"&&!organizerState.intro;}
  el.dataset.state=organizerState.error?"error":organizerDirty()?"pending":"saved";
 }
 function markDirty(part){organizerState[part]=true;organizerState.error=false;saveIndicator()}
@@ -626,10 +627,12 @@ function introKind(c){return c.intro_path?(/\.(jpg|jpeg|png|webp)$/i.test(c.intr
 async function renderIntroPreview(c){
  const wrap=$("intro-preview-wrap");if(!wrap)return;
  wrap.replaceChildren();
+ const card=wrap.closest(".intro-preview-card");if(card)card.hidden=introKind(c)==="none"&&!organizerState.intro;
+ wrap.hidden=introKind(c)==="none";
  if(c.welcome_message){const text=document.createElement("p");text.className="intro-text-preview";text.textContent=c.welcome_message;wrap.append(text)}
  if(!c.intro_path)return;
  const{data,error}=await sb.storage.from("capsule-media").createSignedUrl(c.intro_path,300);
- if(error||!data?.signedUrl){wrap.append(document.createTextNode("Aperçu indisponible. Votre répondeur reste enregistré."));return}
+ if(error||!data?.signedUrl){wrap.append(document.createTextNode("Aperçu indisponible. Votre message d’accueil reste enregistré."));return}
  const media=document.createElement(introKind(c)==="image"?"img":"video");media.className="intro-preview";media.src=data.signedUrl;
  if(media.tagName==="IMG")media.alt="Votre image d’accueil";else{media.controls=true;media.playsInline=true}
  wrap.append(media);
@@ -648,13 +651,13 @@ async function performIntroSave(c){
  const fields=[...document.querySelectorAll(".intro-editor-fields input,.intro-editor-fields select,.intro-editor-fields textarea")];fields.forEach(el=>el.disabled=true);
  try{
   if(kind==="image"||kind==="video"){
-   if(!f){if(introKind(c)!==kind||!c.intro_path)throw new Error("Choisissez un fichier pour votre répondeur.");path=c.intro_path}
+   if(!f){if(introKind(c)!==kind||!c.intro_path)throw new Error("Choisissez un fichier pour votre message d’accueil.");path=c.intro_path}
    else{
     const allowed=kind==="image"?["image/jpeg","image/png","image/webp"]:["video/mp4","video/quicktime","video/webm"];
     if(!allowed.includes(f.type))throw new Error(kind==="image"?"Choisissez une image JPG, PNG ou WebP.":"Choisissez une vidéo MP4, MOV ou WebM.");
     if(f.size>(kind==="image"?10000000:50000000))throw new Error(kind==="image"?"L’image dépasse 10 Mo.":"La vidéo dépasse 50 Mo.");
     if(kind==="video"){const duration=await videoDuration(f);if(!Number.isFinite(duration)||duration>12.05)throw new Error("La vidéo doit durer 12 secondes maximum.")}
-    show(s,"Envoi du répondeur…");
+    show(s,"Envoi du message d’accueil…");
     const prepared=await guestInvoke({action:"init_intro",capsule_id:c.id,file_type:f.type,file_size:f.size});
     path=prepared.path;
     const up=await sb.storage.from("capsule-media").uploadToSignedUrl(path,prepared.token,f,{contentType:f.type,upsert:false});if(up.error)throw up.error;
@@ -665,13 +668,14 @@ async function performIntroSave(c){
   const payload={intro_path:path,welcome_message:kind==="text"?text:null};
   if(!introFinalized){await updateOwnedCapsule(c,payload);}
   Object.assign(c,payload);$("intro-file").value="";organizerState.intro=false;organizerState.error=false;await renderIntroPreview(c);renderIntroDraft(c);
-  show(s,kind==="none"?"Répondeur désactivé. Vos invités accèdent directement au dépôt de souvenirs.":"Votre répondeur est enregistré.");
+  show(s,kind==="none"?"Message d’accueil désactivé. Vos invités accèdent directement au dépôt de souvenirs.":"Votre message d’accueil est enregistré.");
   return true;
- }catch(e){organizerState.error=true;show(s,e.message||"Impossible d’enregistrer votre répondeur.",false);return false}finally{button.disabled=false;fields.forEach(el=>el.disabled=false);organizerState.saving--;saveIndicator()}
+ }catch(e){organizerState.error=true;show(s,e.message||"Impossible d’enregistrer votre message d’accueil.",false);return false}finally{button.disabled=false;fields.forEach(el=>el.disabled=false);organizerState.saving--;saveIndicator()}
 }
 function renderIntroDraft(c){
  const wrap=$("intro-live-preview");if(!wrap)return;
  wrap.replaceChildren();if(introPreviewUrl){URL.revokeObjectURL(introPreviewUrl);introPreviewUrl=null}
+ const card=wrap.closest(".intro-preview-card");if(card)card.hidden=!organizerState.intro&&introKind(c)==="none";
  if(!organizerState.intro){wrap.hidden=true;return}wrap.hidden=false;
  const title=document.createElement("strong");title.textContent="Aperçu — non enregistré";wrap.append(title);
  const kind=$("intro-kind").value,file=$("intro-file").files[0];
@@ -688,7 +692,7 @@ function setupIntro(c){
   file.accept=kind.value==="image"?"image/jpeg,image/png,image/webp":"video/mp4,video/quicktime,video/webm";
   $("intro-file-label").textContent=kind.value==="image"?"Votre image":"Votre vidéo";
   $("intro-file-help").textContent=kind.value==="image"?"JPG, PNG ou WebP · 10 Mo maximum.":"MP4, MOV ou WebM · 12 secondes et 50 Mo maximum.";
-  $("upload-intro").textContent=kind.value==="none"?"Enregistrer sans répondeur":"Enregistrer mon répondeur";
+  $("upload-intro").textContent=kind.value==="none"?"Retirer le message d’accueil":"Enregistrer mon message d’accueil";
  }
  kind.addEventListener("change",()=>{file.value="";update();markDirty("intro");renderIntroDraft(c);show($("intro-status"),"Modifications à enregistrer.")});update();
  file.addEventListener("change",()=>{markDirty("intro");renderIntroDraft(c);show($("intro-status"),file.files[0]?"Fichier sélectionné. Enregistrez pour le publier.":"")});
@@ -1144,6 +1148,12 @@ async function shareGuestLink(url){
 function ownerShell(c,url,count){
  const o=qrOptions(c);
  return `
+<div class="owner-overview" id="owner-overview"></div>
+<nav class="owner-tabs" role="tablist" aria-label="Votre capsule">
+ <button id="owner-tab-configuration" type="button" role="tab" aria-controls="owner-panel-configuration" data-owner-tab-link="configuration">Ma carte</button>
+ <button id="owner-tab-accueil" type="button" role="tab" aria-controls="owner-panel-accueil" data-owner-tab-link="accueil">Accueil</button>
+ <button id="owner-tab-messages" type="button" role="tab" aria-controls="owner-panel-messages" data-owner-tab-link="messages">Souvenirs <span id="owner-unread-badge" class="owner-unread-badge" hidden></span></button>
+</nav>
 <div class="owner-panel" data-owner-panel="configuration">
 <section class="qr-designer-panel">
  <div class="qr-designer-head">
@@ -1248,38 +1258,40 @@ function ownerShell(c,url,count){
     <div class="qr-preview-stage">
      <img id="qr-artwork-preview" class="qr-artwork-preview" alt="Aperçu de votre carte QR personnalisée, identique à l’impression">
     </div>
-    <p class="qr-preview-tip">Carte 10 × 15 cm centrée sur une feuille A4 avec repères de découpe.</p><p class="qr-brand-note"><img class="customization-inline-icon" src="assets/customization/pieds_de_page.webp" alt="" width="24" height="24">Le logo La Suite figure en bas à droite de votre carte.</p>
+    <p class="qr-preview-tip">Carte 10 × 15 cm centrée sur une feuille A4 avec repères de découpe.</p>
     <div class="qr-preview-actions">
      <button class="btn secondary" id="share-link" type="button"><img class="customization-inline-icon" src="assets/customization/lien.webp" alt="" width="24" height="24">Partager</button>
      <a class="btn secondary" id="open-guest-link" href="${esc(url)}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Voir la page invité</a>
      <button class="btn secondary" id="download-print-card" type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>Télécharger A4</button>
      <button class="btn primary" id="print-print-card" type="button"><i class="fa-solid fa-print" aria-hidden="true"></i>Imprimer</button>
     </div>
-    <div class="qr-print-guide">
-     <h4>Pour le jour J</h4>
+    <details class="qr-print-guide">
+     <summary>Conseils pour le jour J</summary>
      <div class="qr-print-guide-grid">
       <div><i class="fa-regular fa-file-lines" aria-hidden="true"></i><span><strong>Imprimez sur A4</strong><small>Découpez ensuite la carte 10 × 15 cm grâce aux repères.</small></span></div>
       <div><i class="fa-regular fa-image" aria-hidden="true"></i><span><strong>Placez-la dans un cadre</strong><small>Un cadre 10 × 15 cm ou un petit chevalet fonctionne très bien.</small></span></div>
       <div><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span><strong>Multipliez les points d’accès</strong><small>Tables, bar, livre d’or ou photobooth : plusieurs QR codes facilitent les participations.</small></span></div><div><i class="fa-solid fa-share-nodes" aria-hidden="true"></i><span><strong>Pensez aussi aux absents</strong><small>N’hésitez pas à partager votre carte ou votre lien avec les personnes absentes : elles peuvent, elles aussi, vous laisser un souvenir.</small></span></div>
      </div>
-    </div>
+    </details>
     <div id="qr-status" class="status"></div>
    </div>
   </div>
  </div>
 </section>
 
+</div>
+<div class="owner-panel" data-owner-panel="accueil" hidden>
 <section class="qr-designer-panel intro-video-panel">
- <div class="intro-video-head"><div><div class="eyebrow">Un accueil à votre image · Facultatif</div><h2>Votre répondeur</h2><p>Visible à l’ouverture de votre QR code. Accueillez vos invités avec un texte, une vidéo ou une image avant qu’ils déposent leur souvenir.</p></div><span class="intro-video-limit">En option</span></div>
+ <div class="intro-video-head"><div><div class="eyebrow">Un accueil à votre image · Facultatif</div><h2>Votre message d’accueil</h2><p>Visible à l’ouverture de votre QR code. Accueillez vos invités avec un texte, une vidéo ou une image avant qu’ils déposent leur souvenir.</p></div><span class="intro-video-limit">Facultatif</span></div>
  <div class="intro-video-body intro-editor-grid">
   <div class="intro-editor-fields">
-   <div class="field"><label for="intro-kind">Comment souhaitez-vous accueillir vos invités ?</label><select id="intro-kind"><option value="none">Sans répondeur</option><option value="text">Un texte</option><option value="video">Une vidéo</option><option value="image">Une image</option></select><small class="field-help">Vous pouvez passer cette étape ou modifier votre répondeur à tout moment.</small></div>
+   <div class="field"><label for="intro-kind">Comment souhaitez-vous accueillir vos invités ?</label><select id="intro-kind"><option value="none">Sans message d’accueil</option><option value="text">Un texte</option><option value="video">Une vidéo</option><option value="image">Une image</option></select><small class="field-help">Vous pouvez passer cette étape ou modifier votre message d’accueil à tout moment.</small></div>
    <div class="field" id="intro-text-field" hidden><label for="intro-text">Votre message</label><textarea id="intro-text" rows="6" maxlength="2000" placeholder="Bienvenue dans notre capsule ! Laissez-nous un petit mot, une émotion, un souvenir…">${esc(c.welcome_message||"")}</textarea><small class="field-help">2 000 caractères maximum.</small></div>
    <div class="field" id="intro-media-field" hidden><label id="intro-file-label" for="intro-file">Votre fichier</label><input id="intro-file" type="file"><small class="field-help" id="intro-file-help"></small></div>
-   <button id="upload-intro" class="btn primary" type="button">Enregistrer mon répondeur</button>
+   <button id="upload-intro" class="btn primary" type="button">Enregistrer mon message d’accueil</button>
    <div id="intro-status" class="status" role="status" aria-live="polite"></div>
   </div>
-  <div class="intro-preview-card"><div id="intro-live-preview" hidden></div><span class="eyebrow">Répondeur enregistré</span><div id="intro-preview-wrap"></div><p class="field-help">Sans répondeur, vos invités accèdent directement au dépôt de souvenirs.</p></div>
+  <div class="intro-preview-card"><div id="intro-live-preview" hidden></div><span class="eyebrow">Message d’accueil enregistré</span><div id="intro-preview-wrap"></div><p class="field-help">Sans message d’accueil, vos invités accèdent directement au dépôt de souvenirs.</p></div>
  </div>
 </section>
 
@@ -1335,17 +1347,33 @@ async function markOwnerMessagesSeen(c,manifest){
  }catch{/* Keep the badge until the server confirms the update. */}
 }
 
+function compactOwnerEditors(){
+ const controls=document.querySelector(".qr-designer-controls");
+ const personalization=controls.querySelector(".qr-personalization-group");
+ personalization.querySelector(".qr-control-title").remove();
+ personalization.replaceWith(...personalization.children);
+ const titles=["Textes","Ambiance","Typographie","Couleurs","Monogramme"];
+ [...controls.children].forEach((group,index)=>{
+  const heading=group.querySelector(".customization-heading");
+  const details=document.createElement("details");details.className="customization-section";
+  const summary=document.createElement("summary");summary.className="customization-heading";
+  summary.append(heading.querySelector("img"));const title=document.createElement("span");title.textContent=titles[index];summary.append(title);heading.remove();
+  const body=document.createElement("div");body.className="customization-section-body";body.append(...group.childNodes);
+  details.append(summary,body);group.replaceWith(details);
+ });
+}
+
 function setupOwnerTabs(c,manifest){
  const links=[...document.querySelectorAll("[data-owner-tab-link]")];
  const panels=[...document.querySelectorAll("[data-owner-panel]")];
  if(!links.length||!panels.length)return;
 
  const activate=async(name,updateHash=true)=>{
-  const target=name==="messages"?"messages":"configuration";
+  const target=["configuration","accueil","messages"].includes(name)?name:"configuration";
   links.forEach(link=>{
    const active=link.dataset.ownerTabLink===target;
    link.classList.toggle("is-active",active);
-   if(active)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current")
+   link.setAttribute("aria-selected",String(active));link.tabIndex=active?0:-1;
   });
   panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
   if(updateHash&&location.hash!=="#"+target)history.replaceState(null,"","#"+target);
@@ -1358,7 +1386,13 @@ function setupOwnerTabs(c,manifest){
  }));
 
  updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));
- activate(location.hash==="#messages"?"messages":"configuration",false)
+ links.forEach((link,index)=>link.addEventListener("keydown",e=>{
+  let next;if(e.key==="ArrowRight")next=(index+1)%links.length;else if(e.key==="ArrowLeft")next=(index+links.length-1)%links.length;else if(e.key==="Home")next=0;else if(e.key==="End")next=links.length-1;else return;
+  e.preventDefault();links[next].focus();activate(links[next].dataset.ownerTabLink);
+ }));
+ panels.forEach(panel=>{panel.id="owner-panel-"+panel.dataset.ownerPanel;panel.setAttribute("role","tabpanel");panel.setAttribute("aria-labelledby","owner-tab-"+panel.dataset.ownerPanel)});
+ window.addEventListener("hashchange",()=>activate(location.hash.slice(1),false));
+ activate(location.hash.slice(1),false)
 }
 
 function setupQrCustomizerUi(){
@@ -1498,8 +1532,8 @@ async function renderCapsuleList(caps,access){
 function tomorrowParis(){const d=new Date(parisDay()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
 function setupCapsuleSettings(c){
  const panel=document.createElement('details');panel.className='capsule-settings';
- panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''} ${['free_beta','legacy'].includes(c.activation_source)?'hidden':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===capsulePlan(c)?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Tous les formats sont inclus gratuitement.':c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div><div class="field"><label for="capsule-suggestion">Date de découverte suggérée aux invités</label><select id="capsule-suggestion"><option value="none">Laisser chaque invité choisir</option><option value="0">Le jour de l’événement</option><option value="1">Un mois après l’événement</option><option value="6">Six mois après l’événement</option><option value="12">Premier anniversaire</option><option value="24">Deuxième anniversaire</option><option value="custom">Une date précise</option></select><small class="field-help">Vos invités gardent la possibilité de choisir une autre date.</small><input id="capsule-suggestion-date" type="date" aria-label="Date suggérée" value="${esc(c.suggested_delivery_date||'')}" hidden></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Me prévenir par e-mail des ouvertures et avant la fin des 3 ans</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div><div id="capsule-upgrade" class="field" hidden></div></div>`;
- document.querySelector('[data-owner-panel="configuration"]').prepend(panel);
+ panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''} ${['free_beta','legacy'].includes(c.activation_source)?'hidden':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===capsulePlan(c)?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div><div class="field"><label for="capsule-suggestion">Date de découverte suggérée aux invités</label><select id="capsule-suggestion"><option value="none">Laisser chaque invité choisir</option><option value="0">Le jour de l’événement</option><option value="1">Un mois après l’événement</option><option value="6">Six mois après l’événement</option><option value="12">Premier anniversaire</option><option value="24">Deuxième anniversaire</option><option value="custom">Une date précise</option></select><small class="field-help">Vos invités gardent la possibilité de choisir une autre date.</small><input id="capsule-suggestion-date" type="date" aria-label="Date suggérée" value="${esc(c.suggested_delivery_date||'')}" hidden></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Me prévenir par e-mail des ouvertures et avant la fin des 3 ans</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div><div id="capsule-upgrade" class="field" hidden></div></div>`;
+ $("owner-overview").append(panel);
  $("capsule-suggestion").value=c.suggested_delivery_date?'custom':c.suggested_delivery_months==null?'none':String(c.suggested_delivery_months);
  const suggestionFields=()=>{const custom=$("capsule-suggestion").value==='custom';$("capsule-suggestion-date").hidden=!custom;$("capsule-suggestion-date").required=custom;$("capsule-suggestion-date").min=$("capsule-date").value;$("capsule-suggestion-date").max=$("capsule-date").value?addMonthsClamped($("capsule-date").value,30):""};suggestionFields();$("capsule-suggestion").addEventListener('change',suggestionFields);$("capsule-date").addEventListener('change',suggestionFields);
  ['capsule-name','capsule-date','capsule-plan','capsule-suggestion','capsule-suggestion-date','capsule-notify'].forEach(id=>$(id).addEventListener('input',()=>markDirty('settings')));
@@ -1559,12 +1593,15 @@ async function setupOfferServices(c){
 async function renderOrganizerLifecycle(c){
  const {data,error}=await sb.rpc("owner_capsule_usage",{p_capsule_id:c.id});
  const panel=document.createElement("section");panel.className="capsule-lifecycle";
- if(error||!data){panel.textContent="Les dates et le stockage sont momentanément indisponibles.";document.querySelector('[data-owner-panel="configuration"]').prepend(panel);return}
+ if(error||!data){panel.textContent="Les dates et le stockage sont momentanément indisponibles.";$("owner-overview").append(panel);return}
  c.usage=data;
  const names={suspended:"Dépôts en pause",draft:"En préparation",scheduled:"Prête à partager",open:"Dépôts ouverts",closed:"Souvenirs à découvrir",full:"Stockage rempli",expired:"Conservation terminée",missing_date:"Date à compléter"};
  const ratio=Math.min(100,Math.round(data.used_bytes/data.quota_bytes*100)),warning=ratio>=95?"Il reste très peu de place pour les fichiers. Les petits mots restent possibles.":ratio>=80?"Votre capsule approche de sa limite de stockage.":"";
- panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(data.expires_at))+'.</p><details '+(warning?"open":"")+'><summary>Stockage : '+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</summary><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress><p>'+esc(warning||"Le stockage comprend les fichiers et les envois en cours.")+'</p></details>'+(c.activation_source==="free_beta"?'<small>Pendant le lancement gratuit : tous les formats et jusqu’à 5 Go après activation.</small>':"");
- document.querySelector('[data-owner-panel="configuration"]').prepend(panel);
+ panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><span class="owner-storage">'+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</span><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress>'+(warning?'<p>'+esc(warning)+'</p>':'')+(['free_beta','legacy'].includes(c.activation_source)?'<small>Capsule offerte lors du lancement · tous les formats · 5 Go.</small>':'');
+ const dates=document.createElement("details");dates.className="owner-dates";
+ dates.innerHTML='<summary>Dates de votre capsule</summary><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(data.expires_at))+'.</p>';
+ document.querySelector('[data-owner-panel="messages"]').prepend(dates);
+ $("owner-overview").append(panel);
 }
 
 async function initDashboard(){
@@ -1589,11 +1626,12 @@ async function initDashboard(){
  const url=new URL("capsule.html",location.href);url.search="?t="+encodeURIComponent(c.guest_token);
  let manifest=[];
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
+ compactOwnerEditors();
  await renderOrganizerLifecycle(c);
  const freeLaunch=access.free_launch===true;
  const stage=document.createElement("section");stage.className="activation-panel";
  stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>Les trois ans d’accès sont terminés. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Activer ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p>${freeLaunch?'<p>Votre capsule reste gratuite pendant ses 3 ans d’accès, avec tous les formats et 5 Go.</p>':'<p data-activation-price></p><p>Paiement unique, sans abonnement. Les dépôts seront ouverts le jour de votre événement et le lendemain. Accès pendant 3 ans à compter de l’événement.</p>'}<button id="activate-capsule" class="btn primary" type="button">${freeLaunch?"Activer gratuitement":"Continuer vers le paiement"}</button><p id="activation-status" class="status" role="status"></p></dialog>`;
- document.querySelector('[data-owner-panel="configuration"]').append(stage);
+ $("dashboard-content").append(stage);if(c.status==="active"&&!capsuleExpired(c))stage.hidden=true;
  if(c.status!=="active"||capsuleExpired(c)){
   ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title=capsuleExpired(c)?"La période de conservation est terminée":"Activez votre capsule pour partager votre carte"});
   const guestLink=$("open-guest-link");if(guestLink)guestLink.hidden=true;
@@ -1619,7 +1657,7 @@ async function initDashboard(){
  }
  $("export-memories").addEventListener("click",()=>exportOpenedMemories(c));
  const savebar=document.createElement('div');savebar.className='organizer-savebar';savebar.innerHTML='<span id="organizer-save-state" role="status" aria-live="polite">Tout est enregistré</span><button class="btn secondary" id="save-organizer" type="button">Tout enregistrer</button><p id="organizer-save-error" class="status" role="status"></p>';
- document.querySelector('[data-owner-panel="configuration"]').prepend(savebar);
+ $("owner-overview").append(savebar);
  setupOwnerTabs(c,manifest||[]);
  applyQrPreview(url.href,c);
  const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-show-initials"];
@@ -1635,7 +1673,7 @@ async function initDashboard(){
    if(organizerState.qr&&!await saveQrCustomization(c,url.href,true))return false;
    organizerState.error=false;if(organizerDirty()){show($("organizer-save-error"),"Des modifications ont été faites pendant la sauvegarde. Enregistrez-les avant de continuer.",false);return false}show($("organizer-save-error"),'');return true;
   }catch(e){organizerState.error=true;show($("organizer-save-error"),'Enregistrement impossible : '+e.message,false);return false}
-  finally{organizerState.saving--;saveIndicator();if($("save-organizer"))$("save-organizer").disabled=false;saveAllPending=null}})();
+  finally{organizerState.saving--;saveIndicator();saveAllPending=null}})();
   return saveAllPending;
  }
  $("save-organizer").addEventListener('click',saveAll);
@@ -1664,7 +1702,7 @@ async function initDashboard(){
    applyQrPreview(url.href,c);
    printPrintCard(c,url.href);
  });
- setupIntro(c);
+ setupIntro(c);saveIndicator();
  function scheduleAutoSave(){
   clearTimeout(autoSaveTimer);
   autoSaveTimer=setTimeout(async()=>{
@@ -1687,9 +1725,9 @@ async function initDashboard(){
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(capsuleExpired(c)||manifest.some(m=>!m.is_available&&new Date(m.delivery_at)<=new Date())))refreshMemories()});
- if(capsuleExpired(c)){document.querySelectorAll('[data-owner-panel="configuration"] input,[data-owner-panel="configuration"] select,[data-owner-panel="configuration"] textarea,[data-owner-panel="configuration"] button').forEach(e=>e.disabled=true)}
+ if(capsuleExpired(c)){document.querySelectorAll('#dashboard-content input,#dashboard-content select,#dashboard-content textarea,.owner-panel button,#save-organizer').forEach(e=>e.disabled=true)}
  if(qs.get('activated')==='1'&&c.status==='active'&&!capsuleExpired(c)){
-  const success=document.createElement('section');success.className='activation-success';success.innerHTML='<div class="eyebrow">Capsule active</div><h2>Votre capsule est prête à être partagée !</h2><p>Votre carte et votre répondeur sont enregistrés. Invitez maintenant vos proches à participer.</p><div class="success-actions"><button class="btn primary" data-success-action="share-link">Partager le lien</button><button class="btn secondary" data-success-action="download-print-card">Télécharger la carte</button><button class="btn secondary" data-success-action="print-print-card">Imprimer</button></div>';
+  const success=document.createElement('section');success.className='activation-success';success.innerHTML='<div class="eyebrow">Capsule active</div><h2>Votre capsule est prête à être partagée !</h2><p>Votre carte et votre message d’accueil sont enregistrés. Invitez maintenant vos proches à participer.</p><div class="success-actions"><button class="btn primary" data-success-action="share-link">Partager le lien</button><button class="btn secondary" data-success-action="download-print-card">Télécharger la carte</button><button class="btn secondary" data-success-action="print-print-card">Imprimer</button></div>';
   $("dashboard-content").prepend(success);success.querySelectorAll('[data-success-action]').forEach(button=>button.addEventListener('click',()=>$(button.dataset.successAction).click()));
   history.replaceState(null,'','dashboard.html?slug='+encodeURIComponent(c.slug));
  }
