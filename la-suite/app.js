@@ -1785,7 +1785,7 @@ async function initDashboard(){
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(capsuleExpired(c)||manifest.some(m=>!m.is_available&&new Date(m.delivery_at)<=new Date())))refreshMemories()});
- if(capsuleExpired(c)){document.querySelectorAll('#dashboard-content input,#dashboard-content select,#dashboard-content textarea,.owner-panel button,#save-organizer').forEach(e=>e.disabled=true)}
+ if(capsuleExpired(c)){document.querySelectorAll('#dashboard-content input,#dashboard-content select,#dashboard-content textarea,.owner-panel button:not(#export-whole-capsule),#save-organizer').forEach(e=>e.disabled=true)}
  if(qs.get('activated')==='1'&&c.status==='active'&&!capsuleExpired(c)){
   const success=document.createElement('section');success.className='activation-success';success.innerHTML='<div class="eyebrow">Capsule active</div><h2>Votre capsule est prête à être partagée !</h2><p>Votre carte et votre message d’accueil sont enregistrés. Invitez maintenant vos proches à participer.</p><div class="success-actions"><button class="btn primary" data-success-action="share-link">Partager le lien</button><button class="btn secondary" data-success-action="download-print-card">Télécharger la carte</button><button class="btn secondary" data-success-action="print-print-card">Imprimer</button></div>';
   $("dashboard-content").prepend(success);success.querySelectorAll('[data-success-action]').forEach(button=>button.addEventListener('click',()=>$(button.dataset.successAction).click()));
