@@ -1,19 +1,20 @@
-(async function(){
- 'use strict';const $=id=>document.getElementById(id),cfg=window.LA_SUITE_CONFIG||{};
+'use strict';
+window.initSuiteAdmin=async function({client,embedded=false,isActive=()=>true,onBusy=()=>{},onDenied=()=>{}}={}){
+ const $=id=>document.getElementById(id),cfg=window.LA_SUITE_CONFIG||{};
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const date=v=>v?new Date(v.length===10?v+'T12:00:00':v).toLocaleDateString('fr-FR'):'—';const bytes=v=>Number(v)>=1e9?(Number(v)/1e9).toFixed(1)+' Go':Math.round(Number(v)/1e6)+' Mo';
  const states={draft:'En préparation',scheduled:'Prête à partager',open:'Dépôts ouverts',closed:'Dépôts terminés',full:'Stockage rempli',expired:'Conservation terminée',suspended:'Dépôts en pause',missing_date:'Date à compléter'};
  const backupStates={queued:'En attente',running:'Sauvegarde en cours',ready:'Sauvegarde prête',failed:'À réessayer',restoring:'Restauration en cours',restored:'Restaurée',importing:'Import en cours'};
  let data={capsules:[],clients:[],backups:[]},busy=false,authorized=false,timer=null;
  function status(text,error=false){$('admin-status').textContent=text;$('admin-status').className='status show '+(error?'err':'ok');}
- function setBusy(value){busy=value;document.querySelectorAll('#admin-content button:not([data-tab]),#capsule-dialog button:not(.dialog-close)').forEach(b=>b.disabled=value);}
+ function setBusy(value){busy=value;onBusy(value);document.querySelectorAll('#admin-content button:not([data-tab]),#capsule-dialog button:not(.dialog-close)').forEach(b=>b.disabled=value);}
  window.addEventListener('hashchange',()=>{if(/^[a-f0-9]{64}$/.test(new URLSearchParams(location.hash.slice(1)).get('invite')||''))location.reload();});
  const inviteKey='la_suite_admin_invite';const hash=new URLSearchParams(location.hash.slice(1));let invite=null;if(/^[a-f0-9]{64}$/.test(hash.get('invite')||'')){invite={token:hash.get('invite'),at:Date.now()};try{localStorage.setItem(inviteKey,JSON.stringify(invite));history.replaceState(null,'',location.pathname)}catch{}}
  try{invite=invite||JSON.parse(localStorage.getItem(inviteKey)||'null');if(invite&&Date.now()-invite.at>48*3600000){localStorage.removeItem(inviteKey);invite=null;}}catch{}
  if(!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY||!window.supabase){$('access-message').textContent='Service indisponible. Rechargez la page.';return;}
- const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
+ const sb=client||window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
  let sessionOwner=null;
- function clearPrivateView(){authorized=false;clearTimeout(timer);data={capsules:[],clients:[],backups:[]};['capsule-cards','client-cards','backup-cards','admin-stats','capsule-detail'].forEach(id=>$(id).replaceChildren());$('admin-content').hidden=true;$('admin-access').hidden=false;$('access-message').textContent='Votre session est terminée. Reconnectez-vous.';$('admin-auth').hidden=false;$('admin-signup').hidden=true;if($('capsule-dialog').open)$('capsule-dialog').close();if($('confirm-dialog').open)$('confirm-dialog').dispatchEvent(new Event('cancel',{cancelable:true}));}
+ function clearPrivateView(){authorized=false;onBusy(false);clearTimeout(timer);data={capsules:[],clients:[],backups:[]};['capsule-cards','client-cards','backup-cards','admin-stats','capsule-detail'].forEach(id=>$(id).replaceChildren());$('admin-content').hidden=true;$('admin-access').hidden=false;$('access-message').textContent='Votre session est terminée. Reconnectez-vous.';$('admin-auth').hidden=false;$('admin-signup').hidden=true;if($('capsule-dialog').open)$('capsule-dialog').close();if($('confirm-dialog').open)$('confirm-dialog').dispatchEvent(new Event('cancel',{cancelable:true}));if(embedded)onDenied();}
  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||sessionOwner&&session?.user?.id&&session.user.id!==sessionOwner)clearPrivateView()});
  async function api(action,payload={}){const {data,error}=await sb.functions.invoke('suite-admin',{body:{action,...payload}});if(error){if([401,403].includes(error.context?.status))clearPrivateView();let message=error.message;try{message=(await error.context.json()).error||message;}catch{}throw Error(message);}if(data?.error)throw Error(data.error);return data;}
  async function confirmAction(title,text){$('confirm-title').textContent=title;$('confirm-text').textContent=text;$('confirm-dialog').showModal();return new Promise(resolve=>{function done(value){$('confirm-dialog').close();$('confirm-yes').onclick=null;$('confirm-no').onclick=null;$('confirm-dialog').oncancel=null;resolve(value);}$('confirm-yes').onclick=()=>done(true);$('confirm-no').onclick=()=>done(false);$('confirm-dialog').oncancel=()=>done(false);});}
@@ -33,7 +34,7 @@
   }catch(e){$('offer-services').textContent='Les services sont momentanément indisponibles. Actualisez la page.';}
  }
  function scheduleRefresh(){
-  clearTimeout(timer);if(!authorized)return;timer=setTimeout(async()=>{if(!authorized)return;if(busy||document.visibilityState!=='visible'){scheduleRefresh();return}try{await refresh()}catch(e){status('Actualisation impossible. Cliquez sur Actualiser.',true);scheduleRefresh()}},15000);
+  clearTimeout(timer);if(!authorized)return;timer=setTimeout(async()=>{if(!authorized)return;if(busy||!isActive()||document.visibilityState!=='visible'){scheduleRefresh();return}try{await refresh()}catch(e){status('Actualisation impossible. Cliquez sur Actualiser.',true);scheduleRefresh()}},15000);
  }
  async function refresh(){if(!authorized)return;data=await api('overview');if(!authorized)return;render();await refreshServices();if(busy)setBusy(true);scheduleRefresh();}
 
@@ -56,14 +57,14 @@
   });
  }
  $('search').oninput=renderCapsules;$('filter').onchange=renderCapsules;$('refresh').onclick=()=>run(async()=>{status('État actualisé.');});
- document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>{x.setAttribute('aria-selected',String(x===b));$('panel-'+x.dataset.tab).hidden=x!==b;});});
  $('backup-all').onclick=()=>run(async()=>{await api('backup');status('Sauvegarde lancée. Elle continue en arrière-plan.');await api('tick');});
  $('import-backup').onclick=()=>{$('archive-input').value='';$('archive-input').click();};$('archive-input').onchange=async()=>{if($('archive-input').files[0])try{await importArchive($('archive-input').files[0]);}catch(e){status(e.message,true);}};
- $('admin-content').onclick=async e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.capsule)detail(b.dataset.capsule);if(b.dataset.client){$('search').value=email(b.dataset.client);$('filter').value='all';document.querySelector('[data-tab=capsules]').click();renderCapsules();}if(b.dataset.export)run(()=>exportArchive(b.dataset.export));if(b.dataset.restore){if(await confirmAction('Restaurer les éléments manquants ?','Les nouveaux souvenirs et les réglages actuels seront conservés. Les dates de dévoilement de la sauvegarde restent respectées.'))run(async()=>{await api('restore',{id:b.dataset.restore});status('Restauration lancée.');await api('tick');});}if(b.dataset.retry)run(async()=>{await api('retry',{id:b.dataset.retry});status('Opération relancée.');await api('tick');});};
- $('admin-logout').onclick=async()=>{if(busy){status('Patientez jusqu’à la fin de l’opération.',true);return;}clearTimeout(timer);await sb.auth.signOut();location.href='admin.html';};
+ $('admin-content').onclick=async e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.capsule)detail(b.dataset.capsule);if(b.dataset.client){$('search').value=email(b.dataset.client);$('filter').value='all';$('panel-clients').parentElement.open=false;renderCapsules();$('search').focus();}if(b.dataset.export)run(()=>exportArchive(b.dataset.export));if(b.dataset.restore){if(await confirmAction('Restaurer les éléments manquants ?','Les nouveaux souvenirs et les réglages actuels seront conservés. Les dates de dévoilement de la sauvegarde restent respectées.'))run(async()=>{await api('restore',{id:b.dataset.restore});status('Restauration lancée.');await api('tick');});}if(b.dataset.retry)run(async()=>{await api('retry',{id:b.dataset.retry});status('Opération relancée.');await api('tick');});};
+ if($('admin-logout'))$('admin-logout').onclick=async()=>{if(busy){status('Patientez jusqu’à la fin de l’opération.',true);return;}clearTimeout(timer);await sb.auth.signOut();location.href='admin.html';};
  try{const {data:user,error}=await sb.auth.getUser();if(error||!user.user){$('access-message').textContent=invite?'Connectez-vous ou créez votre compte pour activer votre accès administrateur.':'Connectez-vous avec votre compte administrateur.';$('admin-auth').hidden=false;$('admin-signup').hidden=!invite;return;}
-  const {data:member,error:memberError}=await sb.rpc('admin_status');if(memberError)throw memberError;if(!member){if(!invite){$('access-message').textContent='Ce compte ne dispose pas d’un accès administrateur.';$('admin-logout').hidden=false;return;}const {error}=await sb.rpc('admin_claim',{p_token:invite.token});if(error)throw error;}
-  try{localStorage.removeItem(inviteKey)}catch{}sessionOwner=user.user.id;authorized=true;$('admin-logout').hidden=false;$('admin-access').hidden=true;$('admin-content').hidden=false;await refresh();
+  const {data:member,error:memberError}=await sb.rpc('admin_status');if(memberError)throw memberError;if(member!==true){if(embedded){clearPrivateView();return;}if(!invite){$('access-message').textContent='Ce compte ne dispose pas d’un accès administrateur.';if($('admin-logout'))$('admin-logout').hidden=false;return;}const {error}=await sb.rpc('admin_claim',{p_token:invite.token});if(error)throw error;}
+  try{localStorage.removeItem(inviteKey)}catch{}sessionOwner=user.user.id;authorized=true;if($('admin-logout'))$('admin-logout').hidden=false;$('admin-access').hidden=true;$('admin-content').hidden=false;await refresh();
  }catch(e){$('access-message').textContent=e.message||'Vérification impossible. Rechargez la page.';status(e.message,true);}
-})();
+};
+if(document.getElementById('admin-access'))window.initSuiteAdmin();
 

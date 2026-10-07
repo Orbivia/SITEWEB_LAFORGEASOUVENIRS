@@ -136,7 +136,7 @@ async function updateOwnedCapsule(c,payload){
  if(error?.code==='PGRST116'||!error&&(!data?.id||data.id!==c.id)||ownerSessionEnded)throw Error('La capsule n’est plus accessible. Reconnectez-vous avant de réessayer.');
  if(error)throw error;
 }
-function authDestination(){if(qs.get("next")==="admin")return "admin.html";return qs.get("next")==="create"?"create.html?resume=1":"dashboard.html"}
+function authDestination(){if(qs.get("next")==="admin")return "dashboard.html?view=service";return qs.get("next")==="create"?"create.html?resume=1":"dashboard.html"}
 async function initAuth(){
  const form=$("auth-form");if(!form)return;
  const status=$("status"),submit=form.querySelector('[type="submit"]'),adminAccess=qs.get("next")==="admin";
@@ -1544,15 +1544,6 @@ async function renderManifest(c,manifest){
   list.append(article);
  }
 }
-async function renderCapsuleList(caps,access){
- document.body.classList.remove("studio-ready");$("dashboard-title").textContent="Mes capsules";document.querySelectorAll('[data-owner-tab-link]').forEach(el=>el.hidden=true);
- $("dashboard-content").innerHTML='<p class="hint">Retrouvez vos capsules et poursuivez leur personnalisation.</p><div class="capsule-grid">'+caps.map(c=>`<article class="capsule-card"><a class="capsule-card-link" href="dashboard.html?slug=${encodeURIComponent(c.slug)}"><img data-capsule-thumbnail="${esc(c.id)}" class="capsule-thumbnail" src="assets/themes/${esc(qrOptions(c).style)}.webp" alt="Carte de ${esc(c.couple_name)}"><span class="capsule-badge">${c.status==="active"?"Active":"En préparation"}</span><h2>${esc(c.couple_name)}</h2><p>${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p><p data-capsule-count="${esc(c.id)}">Chargement du nombre de souvenirs…</p><strong>${c.status==="active"?"Ouvrir ma capsule":"Personnaliser ma capsule"} →</strong></a></article>`).join('')+(access.can_create?'<a class="capsule-card capsule-new" href="create.html"><span aria-hidden="true">+</span><h2>Créer une capsule</h2><p>Préparez votre événement.</p></a>':'')+'</div>'+(!access.can_create?'<p class="hint">'+esc(access.reason)+'</p>':'');
- const observer=new IntersectionObserver(entries=>{entries.filter(e=>e.isIntersecting).forEach(async entry=>{
-  observer.unobserve(entry.target);const c=caps.find(x=>x.id===entry.target.dataset.capsuleThumbnail);
-  try{const url=new URL('capsule.html?t='+encodeURIComponent(c.guest_token),location.href).href;const canvas=await buildPrintCardCanvas(c,url);const thumb=document.createElement('canvas');thumb.width=160;thumb.height=240;thumb.getContext('2d').drawImage(canvas,0,0,160,240);entry.target.src=thumb.toDataURL('image/png')}catch(e){}
- })});document.querySelectorAll('[data-capsule-thumbnail]').forEach(el=>observer.observe(el));
- await Promise.all(caps.map(async c=>{const{data,error}=await sb.rpc('owner_capsule_stats',{p_capsule_id:c.id});const el=document.querySelector('[data-capsule-count="'+c.id+'"]');if(el)el.textContent=error?'Nombre de souvenirs indisponible':memoryCountLabel(data?.[0]?.message_count)}));
-}
 function tomorrowParis(){const d=new Date(parisDay()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
 function openCapsuleSettings(){
  const dialog=$("capsule-settings-dialog");if(!dialog||dialog.open)return;
@@ -1640,21 +1631,19 @@ async function renderOrganizerLifecycle(c){
 async function initDashboard(){
  if(!$("dashboard-content"))return;
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
- const u=await user();if(!u)return location.href="auth.html";
+ const u=await user();if(!u)return location.href=qs.get("view")==="service"?"auth.html?next=admin":"auth.html";
  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;clearInterval(countdownTimer);Object.assign(organizerState,{qr:false,intro:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
- sb.rpc("admin_status").then(({data})=>{if(data===true&&$("admin-link"))$("admin-link").hidden=false}).catch(()=>{});
- $("logout")?.addEventListener("click",async()=>{if(organizerState.saving){show($("organizer-save-error"),"Patientez jusqu’à la fin de l’enregistrement avant de vous déconnecter.",false);return}if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return;Object.assign(organizerState,{qr:false,intro:false,settings:false});await sb.auth.signOut();location.href="index.html"});
+ const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
  const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
  let access;
  try{access=await capsuleAccess()}catch(error){return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>'}
- const listLink=$("capsule-list-link");if(listLink){listLink.hidden=caps.length<=1&&!access.can_create;listLink.textContent="Mes capsules"}
- if(!qs.get("slug")){
-  if(caps.length===1&&!access.can_create){location.replace("dashboard.html?slug="+encodeURIComponent(caps[0].slug)+location.hash);return}
-  await renderCapsuleList(caps,access);return;
- }
+ if(!qs.get("slug")&&caps.length){let last;try{last=localStorage.getItem('la_suite_last_'+u.id)}catch{}const chosen=caps.find(c=>c.slug===last)||caps[0];location.replace("dashboard.html?slug="+encodeURIComponent(chosen.slug)+(qs.get("view")==="service"?"&view=service":"")+location.hash);return;}
  const c=caps.find(x=>x.slug===qs.get("slug"));
- if(!c)return $("dashboard-content").innerHTML='<div class="notice">Capsule introuvable. <a href="dashboard.html">Revenir à mes capsules</a></div>';
+ await window.SuiteWorkspace.setup({sb,user:u,caps,access,selected:c,canLeave:()=>!organizerDirty()&&!organizerState.saving,logout});
+ if(!caps.length){$("dashboard-title").textContent="Mon espace";$("dashboard-content").innerHTML='<section class="workspace-empty"><h2>Votre première capsule</h2><p>Créez votre capsule, personnalisez votre carte et partagez-la avec vos invités.</p>'+ (access.can_create?'<a class="btn primary" href="create.html">Créer une capsule</a>':'<p>'+esc(access.reason||"Création momentanément indisponible.")+'</p>')+'</section>';return;}
+ if(!c)return $("dashboard-content").innerHTML='<div class="notice">Capsule introuvable. Utilisez le sélecteur pour ouvrir une autre capsule.</div>';
+ try{localStorage.setItem('la_suite_last_'+u.id,c.slug)}catch{}
  $("dashboard-title").textContent=c.couple_name;
  const url=new URL("capsule.html",location.href);url.search="?t="+encodeURIComponent(c.guest_token);
  let manifest=[];
