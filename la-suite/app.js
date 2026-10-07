@@ -1581,13 +1581,19 @@ function nextCountdown(c,manifest,onReady){
  };tick();countdownTimer=setInterval(tick,Math.min(60000,Math.max(1000,new Date(next.delivery_at)-Date.now())));
 }
 
+let memoryMediaObserver=null;
+const pendingMediaUrls=new WeakMap();
 async function renderManifest(c,manifest){
  const list=$("memory-list");
- if(!manifest.length){list.innerHTML='<div class="notice">Aucun souvenir reçu pour le moment.</div>';return}
+ if(!manifest.length){memoryMediaObserver?.disconnect();list.innerHTML='<div class="notice">Aucun souvenir reçu pour le moment.</div>';return}
  const{data:rows,error}=await sb.from("messages").select("id,guest_name,message_text,media_type,media_path,delivery_at,created_at").eq("capsule_id",c.id);
  if(error)throw error;
- const map=new Map((rows||[]).map(x=>[x.id,x]));list.replaceChildren();
+ const map=new Map((rows||[]).map(x=>[x.id,x]));list.replaceChildren();memoryMediaObserver?.disconnect();
+ memoryMediaObserver=window.IntersectionObserver?new IntersectionObserver(entries=>{
+  for(const entry of entries){if(!entry.isIntersecting)continue;memoryMediaObserver?.unobserve(entry.target);const load=pendingMediaUrls.get(entry.target);pendingMediaUrls.delete(entry.target);if(!ownerSessionEnded)load?.();}
+ },{rootMargin:'200px'}):null;
  for(const item of manifest){
+  let loadMedia=null;
   const row=map.get(item.id),expired=capsuleExpired(c),available=item.is_available&&!expired;
   const article=document.createElement("article");article.className="memory-row "+(available?"available":"locked");
   article.innerHTML='<div class="memory-icon">'+icon(item.media_type)+'</div><div class="memory-meta"><strong>'+esc(item.guest_name||"Invité")+'</strong><span>'+label(item.media_type)+' · découverte le '+esc(fdate(item.delivery_at))+'</span></div><div class="memory-actions"><span class="lock-badge '+(available?'open':'locked')+'">'+(expired?'Accès terminé':available?'Disponible':'<i class="fa-solid fa-lock" aria-hidden="true"></i> Verrouillé')+'</span></div><div class="memory-content"></div>';
@@ -1603,9 +1609,10 @@ async function renderManifest(c,manifest){
    if(row.media_type!=='image')media.addEventListener('play',async()=>{if(Date.now()-signedAt>240000){media.pause();if(await renew())media.play().catch(()=>{})}});
    const download=document.createElement('button');download.type='button';download.className='mini-link';download.textContent='Télécharger';
    download.addEventListener('click',async()=>{download.disabled=true;try{const{data,error}=await sb.storage.from('capsule-media').createSignedUrl(row.media_path,300,{download:true});if(error||!data?.signedUrl)throw error||new Error('Lien indisponible');const link=document.createElement('a');link.href=data.signedUrl;link.download='';document.body.append(link);link.click();link.remove();status.textContent=''}catch(e){status.textContent='Téléchargement impossible. Réessayez.'}finally{download.disabled=false}});
-   actions.append(refresh,download);content.append(media,status);renew();
+   actions.append(refresh,download);content.append(media,status);loadMedia=renew;
   }else if(available&&!row){content.textContent='Ce souvenir n’a pas pu être chargé. Actualisez la liste.'}
   list.append(article);
+  if(loadMedia){if(memoryMediaObserver){pendingMediaUrls.set(article,loadMedia);memoryMediaObserver.observe(article)}else loadMedia();}
  }
 }
 function tomorrowParis(){const d=new Date(parisDay()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
@@ -1708,7 +1715,7 @@ async function initDashboard(){
  if(!$("dashboard-content"))return;
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href=qs.get("view")==="service"?"auth.html?next=admin":"auth.html";
- sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;clearInterval(countdownTimer);Object.assign(organizerState,{qr:false,intro:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
+ sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
  const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
  const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
