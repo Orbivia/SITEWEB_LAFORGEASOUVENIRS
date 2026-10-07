@@ -11,7 +11,7 @@ function organizerDirty(){return organizerState.qr||organizerState.intro||organi
 function saveIndicator(){
  const el=$("organizer-save-state");if(!el)return;
  el.textContent=organizerState.saving?"Enregistrement…":organizerState.error?"Enregistrement incomplet. Réessayez.":organizerDirty()?"Modifications non enregistrées":"Tout est enregistré";
- const bar=el.closest(".organizer-savebar");if(bar)bar.hidden=!organizerState.error;
+ const bar=el.closest(".organizer-savebar");if(bar)bar.hidden=!organizerState.error&&!$("organizer-save-error")?.textContent;
  const retry=$("save-organizer");if(retry){retry.textContent=organizerState.error?"Réessayer":"Enregistrer";retry.disabled=Boolean(organizerState.saving)||(!organizerDirty()&&!organizerState.error)}
  const introButton=$("upload-intro");if(introButton){introButton.disabled=Boolean(organizerState.saving)||!organizerState.intro;introButton.hidden=$("intro-kind")?.value==="none"&&!organizerState.intro;}
  el.dataset.state=organizerState.error?"error":organizerDirty()?"pending":"saved";
