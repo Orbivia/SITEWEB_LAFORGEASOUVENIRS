@@ -2670,3 +2670,33 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
  #workspace-account-dialog .studio-sheet-head{padding-top:6px;padding-bottom:8px}
  #workspace-account-dialog .studio-sheet-body{padding-top:16px;padding-bottom:12px}
 }
+
+/* Card screen: local print sheet, storage in memories, stable navigation. */
+.qr-print-guide[hidden]{display:none!important}
+.studio-sheet .qr-print-guide{border:0;background:transparent;box-shadow:none;padding:0;margin:16px 0 0}
+.studio-sheet .qr-print-guide>summary{display:none}
+.workspace-service-head h2{display:none}
+#workspace-service-create{display:flex;justify-content:center;gap:8px;margin-bottom:16px}
+@media(max-width:760px){
+ .workspace-ready .owner-tabs{position:fixed;bottom:0!important;left:0;right:0;transform:none;z-index:30}
+ .studio-ready .qr-artwork-preview{max-height:var(--studio-card-height,calc(100svh - 350px));width:auto;max-width:100%}
+ .studio-ready .dashboard-head{margin-bottom:8px}
+ .studio-ready .owner-overview:empty{display:none}
+ .studio-ready .studio-guest-link{font-size:.75rem;margin:8px 0}
+ .studio-ready .studio-tools{margin:8px 0;gap:8px}
+ .studio-ready .qr-preview-actions{gap:8px}
+ .studio-ready .dashboard-page{padding-bottom:82px}
+ .studio-ready .owner-panel[data-owner-panel=messages] .capsule-lifecycle{padding:12px 16px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px;background:#f7f3eb;border-radius:12px}
+ .studio-ready .owner-panel[data-owner-panel=messages] .capsule-lifecycle progress{width:100%}
+}
+
+@media(max-width:760px){.studio-ready .owner-overview:not(:has(.organizer-savebar:not([hidden]))){margin:0}}
+
+@media(min-width:761px){
+ .studio-ready .owner-tabs{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);width:min(1100px,calc(100% - 32px));margin:0;z-index:30;box-shadow:0 -3px 20px #00000008}
+ .studio-ready .dashboard-page{padding-top:22px;padding-bottom:90px}
+ .studio-ready .forge-style-footer{display:none}
+ .studio-ready .owner-overview:not(:has(.organizer-savebar:not([hidden]))){margin:0}
+ .studio-ready .qr-preview-stage{min-height:0;padding:16px;display:flex;justify-content:center;align-items:center}
+ .studio-ready .qr-artwork-preview{width:auto;max-width:100%;max-height:max(180px,calc(100dvh - 530px))}
+}

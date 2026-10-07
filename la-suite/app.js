@@ -1349,6 +1349,7 @@ async function markOwnerMessagesSeen(c,manifest){
 
 function compactOwnerEditors(){
  document.body.classList.add("studio-ready");
+ document.body.append(document.querySelector(".owner-tabs"));
  const controls=document.querySelector(".qr-designer-controls"),personalization=controls.querySelector(".qr-personalization-group");
  personalization.querySelector(".qr-control-title").remove();personalization.replaceWith(...personalization.children);
  const titles=["Textes","Ambiance","Typographie","Couleurs","Monogramme"];
@@ -1363,27 +1364,42 @@ function compactOwnerEditors(){
  $("dashboard-content").append(dialog);
  const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<button type="button" data-studio-tool="textes"><img src="assets/customization/tableau.webp" alt="">Textes</button><button type="button" data-studio-tool="style"><img src="assets/customization/decoration.webp" alt="">Style</button><button type="button" data-studio-tool="couleurs"><img src="assets/customization/couleurs.webp" alt="">Couleurs</button>';
  const actions=document.querySelector(".qr-preview-actions");actions.before(tools);
- const exportButton=document.createElement("button");exportButton.type="button";exportButton.id="studio-export";exportButton.className="btn secondary";exportButton.innerHTML='<i class="fa-solid fa-download" aria-hidden="true"></i>Exporter';actions.append(exportButton);
+ const exportButton=document.createElement("button");exportButton.type="button";exportButton.id="studio-export";exportButton.className="btn secondary";exportButton.innerHTML='<i class="fa-solid fa-print" aria-hidden="true"></i>Impression';actions.append(exportButton);
  const exportControls=document.createElement("div");exportControls.className="studio-export-controls";exportControls.hidden=true;
  exportControls.append($("download-print-card"),$("print-print-card"));actions.after(exportControls);
+ const printGuide=document.querySelector(".qr-print-guide");printGuide.hidden=true;
  const guestLink=$("open-guest-link");guestLink.className="studio-guest-link";guestLink.textContent="Voir la page invité";actions.after(guestLink);
  let moved=[],trigger=null;
- const restore=()=>{moved.forEach(({node,slot,open})=>{slot.replaceWith(node);if(node.tagName==="DETAILS")node.open=open;else node.hidden=true});moved=[];if(trigger?.isConnected)trigger.focus();trigger=null};
+ const restore=()=>{moved.forEach(({node,slot,open,hidden})=>{slot.replaceWith(node);node.hidden=hidden;if(node.tagName==="DETAILS")node.open=open});moved=[];if(trigger?.isConnected)trigger.focus();trigger=null};
  const open=(title,nodes,button)=>{
   if(dialog.open)return;
   trigger=button;$("studio-editor-title").textContent=title;
-  nodes.forEach(node=>{const slot=document.createElement("span");slot.hidden=true;node.before(slot);moved.push({node,slot,open:node.open});if(node.tagName==="DETAILS")node.open=true;node.hidden=false;dialog.querySelector(".studio-sheet-body").append(node)});
+  nodes.forEach(node=>{const slot=document.createElement("span");slot.hidden=true;node.before(slot);moved.push({node,slot,open:node.open,hidden:node.hidden});if(node.tagName==="DETAILS")node.open=true;node.hidden=false;dialog.querySelector(".studio-sheet-body").append(node)});
   dialog.showModal();
  };
  tools.querySelectorAll("button").forEach(button=>button.addEventListener("click",()=>{const key=button.dataset.studioTool;open(key==="textes"?"Les mots de votre carte":key==="style"?"Le style de votre carte":"Vos couleurs",key==="textes"?[sections[0]]:key==="style"?[sections[1],sections[2],sections[4]]:[sections[3]],button)}));
- exportButton.addEventListener("click",()=>open("Exporter votre carte",[exportControls],exportButton));
+ exportButton.addEventListener("click",()=>open("Impression et conseils",[exportControls,printGuide],exportButton));
  dialog.querySelector(".studio-close").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",restore);
  dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
  const mobile=matchMedia("(max-width:760px)");mobile.addEventListener("change",()=>{if(dialog.open)dialog.close()});
- if(!mobile.matches)sections[0].open=true;
+ 
  const settingsButton=document.createElement("button");settingsButton.id="studio-settings";settingsButton.className="studio-settings-button";settingsButton.type="button";settingsButton.setAttribute("aria-label","Paramètres de la capsule");settingsButton.setAttribute("aria-haspopup","dialog");settingsButton.setAttribute("aria-controls","capsule-settings-dialog");settingsButton.setAttribute("aria-expanded","false");settingsButton.innerHTML='<i class="fa-solid fa-sliders" aria-hidden="true"></i>';
  document.querySelector(".dashboard-head").append(settingsButton);
  settingsButton.addEventListener("click",openCapsuleSettings);
+ // Use the space left by the actual header and controls, including short phones.
+ let fitFrame;
+ const fit=()=>{cancelAnimationFrame(fitFrame);fitFrame=requestAnimationFrame(()=>{
+  if(!mobile.matches||!document.body.classList.contains('studio-card-active'))return;
+  const stage=document.querySelector('.qr-preview-stage'),image=$('qr-artwork-preview'),sticky=stage?.parentElement,nav=document.querySelector('.owner-tabs');
+  if(!stage||!image||!nav)return;
+  const viewport=window.visualViewport, height=viewport&&Math.abs(viewport.scale-1)<.05?viewport.height:innerHeight;
+  const r=stage.getBoundingClientRect(), below=sticky.getBoundingClientRect().bottom-r.bottom;
+  const activation=document.querySelector('.activation-panel'), extra=activation&&!activation.hidden?activation.getBoundingClientRect().height+20:0;
+  const value=Math.floor(Math.max(130,height-r.top-below-nav.getBoundingClientRect().height-44-extra));
+  if(image.style.getPropertyValue('--studio-card-height')!==value+'px')image.style.setProperty('--studio-card-height',value+'px');
+ })};
+ const observer=new ResizeObserver(fit);observer.observe($('dashboard-content'));observer.observe(document.querySelector('.suite-topbar'));observer.observe(document.querySelector('.dashboard-head'));
+ window.addEventListener('resize',fit);window.visualViewport?.addEventListener('resize',fit);window.addEventListener('studio-layout',fit);$('qr-artwork-preview').addEventListener('load',fit);fit();
 }
 
 function setupOwnerTabs(c,manifest){
@@ -1401,6 +1417,7 @@ function setupOwnerTabs(c,manifest){
   panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
   if(updateHash&&matchMedia("(max-width:760px)").matches)window.scrollTo({top:0,behavior:"instant"});
   if(updateHash&&location.hash!=="#"+target)history.replaceState(null,"","#"+target);
+  document.body.classList.toggle("studio-card-active",target==="configuration");window.dispatchEvent(new Event("studio-layout"));
   if(target==="messages")await markOwnerMessagesSeen(c,manifest)
  };
 
@@ -1617,7 +1634,7 @@ async function setupOfferServices(c){
 async function renderOrganizerLifecycle(c){
  const {data,error}=await sb.rpc("owner_capsule_usage",{p_capsule_id:c.id});
  const panel=document.createElement("section");panel.className="capsule-lifecycle";
- if(error||!data){panel.textContent="Les dates et le stockage sont momentanément indisponibles.";$("owner-overview").append(panel);return}
+ if(error||!data){panel.textContent="Les dates et le stockage sont momentanément indisponibles.";document.querySelector('[data-owner-panel="messages"]').prepend(panel);return}
  c.usage=data;
  const names={suspended:"Dépôts en pause",draft:"En préparation",scheduled:"Prête à partager",open:"Dépôts ouverts",closed:"Souvenirs à découvrir",full:"Stockage rempli",expired:"Conservation terminée",missing_date:"Date à compléter"};
  const ratio=Math.min(100,Math.round(data.used_bytes/data.quota_bytes*100)),warning=ratio>=95?"Il reste très peu de place pour les fichiers. Les petits mots restent possibles.":ratio>=80?"Votre capsule approche de sa limite de stockage.":"";
@@ -1625,7 +1642,7 @@ async function renderOrganizerLifecycle(c){
  const dates=document.createElement("details");dates.className="owner-dates";
  dates.innerHTML='<summary>Dates de votre capsule</summary><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(data.expires_at))+'.</p>';
  document.querySelector('[data-owner-panel="messages"]').prepend(dates);
- $("owner-overview").append(panel);
+ document.querySelector('[data-owner-panel="messages"]').prepend(panel);
 }
 
 async function initDashboard(){
