@@ -2951,8 +2951,8 @@ html:has(body.studio-ready){scroll-padding-bottom:90px}
 .studio-preview-button img{display:block;min-height:0;width:100%;max-height:calc(100% - 40px);object-fit:contain;filter:drop-shadow(0 3px 9px #38291b18)}
 .studio-preview-button span{flex:none;text-decoration:underline;text-underline-offset:3px}
 .studio-sheet-footer{display:none}
-#studio-editor[data-editor-mode=customize] .studio-sheet-footer{display:flex;align-items:center;justify-content:space-between;gap:14px;flex:none;border-top:1px solid var(--line);padding:12px 20px;background:white}
-#studio-save-state{font:500 .75rem/1.4 Inter,Arial,sans-serif;color:#70685f;min-width:0}
+#studio-editor[data-editor-mode=customize] .studio-sheet-footer{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;flex:none;border-top:1px solid var(--line);padding:12px 20px;background:white}
+#studio-save-state{font:500 .75rem/1.4 Inter,Arial,sans-serif;color:#70685f;min-width:0;text-align:center}
 #studio-save-state[data-state=error]{color:#a41111}
 #studio-done{min-height:44px;min-width:110px;margin:0;flex:none}
 #studio-editor[data-editor-mode=customize] .qr-style-choice.is-selected::after{content:'';position:absolute;right:6px;top:6px;width:22px;height:22px;border-radius:50%;background:#8b713e;box-shadow:0 1px 4px #0002}

@@ -15,7 +15,7 @@ function saveIndicator(){
  const retry=$("save-organizer");if(retry){retry.textContent=organizerState.error?"Réessayer":"Enregistrer";retry.disabled=Boolean(organizerState.saving)||(!organizerDirty()&&!organizerState.error)}
  const introButton=$("upload-intro");if(introButton){introButton.disabled=Boolean(organizerState.saving)||!organizerState.intro;introButton.hidden=!organizerState.intro;}
  el.dataset.state=organizerState.error?"error":organizerDirty()?"pending":"saved";
- const cardState=$("studio-save-state");if(cardState){cardState.textContent=el.textContent;cardState.dataset.state=el.dataset.state;}
+ const cardState=$("studio-save-state");if(cardState){cardState.hidden=!organizerState.error;cardState.textContent=organizerState.error?el.textContent:'';cardState.dataset.state=el.dataset.state;}
 }
 function markDirty(part){organizerState[part]=true;organizerState.error=false;saveIndicator()}
 window.addEventListener("beforeunload",e=>{if(!ownerSessionEnded&&(organizerDirty()||organizerState.saving)){e.preventDefault();e.returnValue=""}});
@@ -1394,7 +1394,7 @@ function compactOwnerEditors(){
   const body=document.createElement("div");body.className="customization-section-body";body.append(...group.childNodes);details.append(summary,body);group.replaceWith(details);return details;
  });
  const dialog=document.createElement("dialog");dialog.id="studio-editor";dialog.className="studio-sheet";dialog.setAttribute("aria-labelledby","studio-editor-title");
- dialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-editor-title"></h2><button class="studio-close" type="button" aria-label="Fermer les réglages">×</button></div><div class="studio-sheet-body"></div><div class="studio-sheet-footer"><span id="studio-save-state" role="status" aria-live="polite">Tout est enregistré</span><button id="studio-done" class="btn primary" type="button">Terminé</button></div>';
+ dialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-editor-title"></h2><button class="studio-close" type="button" aria-label="Fermer les réglages">×</button></div><div class="studio-sheet-body"></div><div class="studio-sheet-footer"><span id="studio-save-state" role="status" aria-live="polite" hidden></span><button id="studio-done" class="btn primary" type="button">Terminé</button></div>';
  $("dashboard-content").append(dialog);
  const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<h2>Votre carte</h2><button type="button" data-studio-tool="style" aria-haspopup="dialog"><img src="assets/customization/decoration.webp" alt="">Personnaliser</button>';
  const actions=document.querySelector(".qr-preview-actions");document.querySelector(".qr-preview-stage").before(tools);
