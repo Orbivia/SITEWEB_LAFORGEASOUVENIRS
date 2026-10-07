@@ -1285,7 +1285,7 @@ function ownerShell(c,url,count){
 </div>
 <div class="owner-panel" data-owner-panel="accueil" hidden>
 <section class="qr-designer-panel intro-video-panel">
- <div class="intro-video-head"><div><div class="eyebrow">Un accueil à votre image · Facultatif</div><h2>Votre message d’accueil</h2><p>Visible à l’ouverture de votre QR code. Accueillez vos invités avec un texte, une vidéo ou une image avant qu’ils déposent leur souvenir.</p></div><span class="intro-video-limit">Facultatif</span></div>
+ <div class="intro-video-head"><div><h2>Accueillez vos invités</h2><p>Un message à découvrir avant de déposer un souvenir.</p></div><span class="intro-video-limit">Facultatif</span></div>
  <div class="intro-video-body intro-editor-grid">
   <div class="intro-editor-fields">
    <div class="field"><label for="intro-kind">Comment souhaitez-vous accueillir vos invités ?</label><select id="intro-kind"><option value="none">Sans message d’accueil</option><option value="text">Un texte</option><option value="video">Une vidéo</option><option value="image">Une image</option></select><small class="field-help">Vous pouvez passer cette étape ou modifier votre message d’accueil à tout moment.</small></div>
@@ -1303,9 +1303,8 @@ function ownerShell(c,url,count){
 <div class="owner-panel" data-owner-panel="messages" hidden>
  <section class="owner-messages-hero">
   <div>
-   <div class="eyebrow">Vos messages</div>
-   <h2>Les souvenirs de vos invités</h2>
-   <p>Retrouvez ici les souvenirs reçus. Ceux programmés pour plus tard restent verrouillés jusqu’à leur date de dévoilement.</p>
+   <h2>Vos souvenirs</h2>
+   <p>Les souvenirs programmés restent verrouillés jusqu’à leur ouverture.</p>
   </div>
   <div id="next-delivery" class="next-delivery" hidden></div>
  </section>
@@ -1313,7 +1312,7 @@ function ownerShell(c,url,count){
   <div class="section-title-row">
    <div><div class="eyebrow">Souvenirs reçus</div><h2 id="memory-count">${count} contenu(s)</h2></div>
   </div>
-  <div class="memory-tools"><button id="refresh-memories" class="btn secondary" type="button">Actualiser les souvenirs</button><button id="export-memories" class="btn primary" type="button" disabled>Télécharger les souvenirs ouverts</button></div><p id="export-status" class="status" role="status"></p><p id="memory-status" class="status" role="status"></p><div id="memory-list" class="memory-list"></div>
+  <div class="memory-tools"><button id="refresh-memories" class="btn secondary" type="button">Actualiser</button><button id="export-memories" class="btn primary" type="button" disabled>Télécharger les souvenirs ouverts</button></div><p id="export-status" class="status" role="status"></p><p id="memory-status" class="status" role="status"></p><div id="memory-list" class="memory-list"></div>
  </section>
 </div>`
 }
@@ -1365,7 +1364,7 @@ function compactOwnerEditors(){
  const dialog=document.createElement("dialog");dialog.id="studio-editor";dialog.className="studio-sheet";dialog.setAttribute("aria-labelledby","studio-editor-title");
  dialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-editor-title"></h2><button class="studio-close" type="button" aria-label="Fermer les réglages">×</button></div><div class="studio-sheet-body"></div>';
  $("dashboard-content").append(dialog);
- const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<button type="button" data-studio-tool="textes"><img src="assets/customization/tableau.webp" alt="">Textes</button><button type="button" data-studio-tool="style"><img src="assets/customization/decoration.webp" alt="">Style</button><button type="button" data-studio-tool="couleurs"><img src="assets/customization/couleurs.webp" alt="">Couleurs</button>';
+ const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<button type="button" data-studio-tool="style" aria-haspopup="dialog"><img src="assets/customization/decoration.webp" alt="">Personnaliser</button>';
  const actions=document.querySelector(".qr-preview-actions");actions.before(tools);
  const exportButton=document.createElement("button");exportButton.type="button";exportButton.id="studio-export";exportButton.className="btn secondary";exportButton.innerHTML='<i class="fa-solid fa-print" aria-hidden="true"></i>Imprimer la carte';exportButton.hidden=true;actions.append(exportButton);
  const exportControls=document.createElement("div");exportControls.className="studio-export-controls";exportControls.hidden=true;
@@ -1378,21 +1377,26 @@ function compactOwnerEditors(){
   if(dialog.open)return;
   trigger=button;dialog.dataset.editorMode=mode;$("studio-editor-title").textContent=title;
   nodes.forEach(node=>{const slot=document.createElement("span");slot.hidden=true;node.before(slot);moved.push({node,slot,open:node.open,hidden:node.hidden});if(node.tagName==="DETAILS")node.open=true;node.hidden=false;dialog.querySelector(".studio-sheet-body").append(node)});
-  if(mode==='style'){
-   const tabs=document.createElement('nav');tabs.className='studio-config-tabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Style de la carte');
-   ['Ambiance','Typographie','Monogramme'].forEach((name,i)=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.setAttribute('role','tab');b.onclick=()=>activateStyle(i);tabs.append(b)});
-   const activateStyle=index=>{nodes.forEach((n,i)=>{n.hidden=i!==index;n.setAttribute('role','tabpanel');n.setAttribute('aria-label',['Ambiance','Typographie','Monogramme'][i])});[...tabs.children].forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1})};
-   tabs.onkeydown=e=>{const index=[...tabs.children].indexOf(document.activeElement);if(index<0)return;let next;if(e.key==='ArrowRight')next=(index+1)%3;else if(e.key==='ArrowLeft')next=(index+2)%3;else return;e.preventDefault();activateStyle(next);tabs.children[next].focus()};
-   dialog.querySelector('.studio-sheet-body').prepend(tabs);activateStyle(0);
-   const choices=[...nodes[0].querySelectorAll('[data-qr-style]')],pages=document.createElement('div');pages.className='studio-theme-pages';
-   const previous=document.createElement('button'),next=document.createElement('button'),count=document.createElement('span');previous.type=next.type='button';previous.textContent='Précédent';next.textContent='Suivant';count.setAttribute('aria-live','polite');pages.append(previous,count,next);nodes[0].querySelector('.customization-section-body').append(pages);
+  if(mode==='customize'){
+   const tabs=document.createElement('nav');tabs.className='studio-config-tabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Personnaliser la carte');
+   const groups=[[sections[1]],[sections[0]],[sections[2],sections[3],sections[4]]];
+   const activate=index=>{nodes.forEach(n=>n.hidden=!groups[index].includes(n));[...tabs.children].forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1});dialog.dataset.customTab=String(index)};
+   ['Style','Textes','Détails'].forEach((name,i)=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.setAttribute('role','tab');b.dataset.customTab=String(i);b.onclick=()=>activate(i);tabs.append(b)});
+   tabs.onkeydown=e=>{const index=[...tabs.children].indexOf(document.activeElement);if(index<0||!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const next=(index+(e.key==='ArrowRight'?1:2))%3;activate(next);tabs.children[next].focus()};
+   dialog.querySelector('.studio-sheet-body').prepend(tabs);activate(0);
+   const choices=[...sections[1].querySelectorAll('[data-qr-style]')],pages=document.createElement('div');pages.className='studio-theme-pages';
+   const previous=document.createElement('button'),next=document.createElement('button'),count=document.createElement('span');previous.type=next.type='button';previous.textContent='Précédent';next.textContent='Suivant';count.setAttribute('aria-live','polite');pages.append(previous,count,next);sections[1].querySelector('.customization-section-body').append(pages);
    let page=Math.floor(Math.max(0,choices.findIndex(b=>b.classList.contains('is-selected')))/6);const renderPage=()=>{choices.forEach((b,i)=>b.hidden=Math.floor(i/6)!==page);count.textContent=(page+1)+' / '+Math.ceil(choices.length/6);previous.disabled=page===0;next.disabled=page>=Math.ceil(choices.length/6)-1};previous.onclick=()=>{page--;renderPage()};next.onclick=()=>{page++;renderPage()};renderPage();
-   const menu=nodes[1].querySelector('.qr-font-menu');menu.hidden=false;
-   editorCleanup=()=>{tabs.remove();pages.remove();choices.forEach(b=>b.hidden=false);menu.hidden=true;nodes.forEach(n=>{n.removeAttribute('role');n.removeAttribute('aria-label')})};
+   const fontSelect=document.createElement('select');fontSelect.id='studio-font-select';fontSelect.setAttribute('aria-label','Typographie');
+   sections[2].querySelectorAll('[data-qr-font]').forEach(b=>{const option=document.createElement('option');option.value=b.dataset.qrFont;option.textContent=b.querySelector('small').textContent;option.selected=option.value===$('qr-font').value;fontSelect.append(option)});
+   const sample=document.createElement('p');sample.className='studio-font-example qr-font-sample-'+$('qr-font').value;sample.textContent='Justine & Pierre';
+   fontSelect.onchange=()=>{sections[2].querySelector('[data-qr-font="'+fontSelect.value+'"]').click();sample.className='studio-font-example qr-font-sample-'+fontSelect.value};
+   sections[2].querySelector('.customization-section-body').append(fontSelect,sample);
+   editorCleanup=()=>{tabs.remove();pages.remove();fontSelect.remove();sample.remove();choices.forEach(b=>b.hidden=false);delete dialog.dataset.customTab;};
   }
   dialog.showModal();
  };
- tools.querySelectorAll("button").forEach(button=>button.addEventListener("click",()=>{const key=button.dataset.studioTool;open(key==="textes"?"Les mots de votre carte":key==="style"?"Le style de votre carte":"Vos couleurs",key==="textes"?[sections[0]]:key==="style"?[sections[1],sections[2],sections[4]]:[sections[3]],button,key==="style"?"style":"standard")}));
+ tools.querySelector('[data-studio-tool]').addEventListener('click',e=>open('Personnaliser la carte',sections,e.currentTarget,'customize'));
  exportButton.addEventListener("click",()=>{$("capsule-settings-dialog").close();open("Impression et conseils",[exportControls,printGuide],$("studio-settings"))});
  dialog.querySelector(".studio-close").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",restore);
  dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
@@ -1583,7 +1587,7 @@ function openCapsuleSettings(){
 }
 function setupCapsuleSettings(c){
  const panel=document.createElement('details');panel.className='capsule-settings';panel.open=true;
- panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''} ${['free_beta','legacy'].includes(c.activation_source)?'hidden':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===capsulePlan(c)?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Me prévenir par e-mail des ouvertures et avant la fin des 3 ans</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div><div id="capsule-upgrade" class="field" hidden></div></div>`;
+ panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain. Date fixe après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''} ${['free_beta','legacy'].includes(c.activation_source)?'hidden':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===capsulePlan(c)?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les rappels par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div><div id="capsule-upgrade" class="field" hidden></div></div>`;
  const dialog=document.createElement("dialog");dialog.id="capsule-settings-dialog";dialog.className="studio-sheet studio-settings-dialog";dialog.setAttribute("aria-labelledby","capsule-settings-title");
  dialog.innerHTML='<div class="studio-sheet-head"><h2 id="capsule-settings-title">Paramètres de la capsule</h2><button class="studio-close" type="button" aria-label="Fermer les paramètres">×</button></div><div class="studio-sheet-body"><p id="settings-save-error" class="status" role="alert" hidden></p><button id="settings-save-retry" class="btn secondary" type="button" hidden>Réessayer</button></div>';
  dialog.querySelector(".studio-sheet-body").append(panel);const cardExport=$("studio-export");cardExport.hidden=false;dialog.querySelector(".studio-sheet-body").append(cardExport);
@@ -1592,10 +1596,6 @@ function setupCapsuleSettings(c){
  const exportError=document.createElement('p');exportError.id='capsule-export-error';exportError.className='status';exportError.setAttribute('role','status');
  dialog.querySelector('.studio-sheet-body').append(capsuleExport,exportHelp,exportError);window.addEventListener('suite-admin-status',()=>{capsuleExport.hidden=!window.SuiteWorkspace.canExportCapsule?.();exportHelp.hidden=capsuleExport.hidden});
  capsuleExport.onclick=async()=>{capsuleExport.disabled=true;dialog.close();try{await window.SuiteWorkspace.exportCapsule(c.id)}catch(e){dialog.showModal();show(exportError,'Export impossible : '+e.message,false)}finally{capsuleExport.disabled=false}};
- const exportPane=document.createElement('section');exportPane.id='capsule-export-pane';exportPane.hidden=true;exportPane.append(cardExport,capsuleExport,exportHelp,exportError);dialog.querySelector('.studio-sheet-body').append(exportPane);
- const tabs=document.createElement('nav');tabs.className='studio-config-tabs settings-tabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Réglages de la capsule');
- const setTab=i=>{panel.hidden=i!==0;exportPane.hidden=i!==1;[...tabs.children].forEach((b,k)=>{b.setAttribute('aria-selected',String(k===i));b.tabIndex=k===i?0:-1})};
- ['Capsule','Exports'].forEach((label,i)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.setAttribute('role','tab');b.dataset.settingsTab=String(i);b.onclick=()=>setTab(i);tabs.append(b)});tabs.onkeydown=e=>{if(!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const i=panel.hidden?0:1;setTab(i);tabs.children[i].focus()};dialog.querySelector('.studio-sheet-body').prepend(tabs);setTab(0);dialog.addEventListener('close',()=>setTab(0));
  $("dashboard-content").append(dialog);
  dialog.querySelector(".studio-close").addEventListener("click",()=>dialog.close());
  dialog.addEventListener("close",()=>{$("studio-settings").setAttribute("aria-expanded","false");$("studio-settings").focus()});
