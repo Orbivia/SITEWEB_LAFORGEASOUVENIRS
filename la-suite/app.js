@@ -1151,9 +1151,9 @@ function ownerShell(c,url,count){
  return `
 <div class="owner-overview" id="owner-overview"></div>
 <nav class="owner-tabs" role="tablist" aria-label="Votre capsule">
- <button id="owner-tab-configuration" type="button" role="tab" aria-controls="owner-panel-configuration" data-owner-tab-link="configuration">Ma carte</button>
- <button id="owner-tab-accueil" type="button" role="tab" aria-controls="owner-panel-accueil" data-owner-tab-link="accueil">Accueil</button>
- <button id="owner-tab-messages" type="button" role="tab" aria-controls="owner-panel-messages" data-owner-tab-link="messages">Souvenirs <span id="owner-unread-badge" class="owner-unread-badge" hidden></span></button>
+ <button id="owner-tab-configuration" type="button" role="tab" aria-controls="owner-panel-configuration" data-owner-tab-link="configuration"><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span>Carte</span></button>
+ <button id="owner-tab-accueil" type="button" role="tab" aria-controls="owner-panel-accueil" data-owner-tab-link="accueil"><i class="fa-regular fa-comment" aria-hidden="true"></i><span>Accueil</span></button>
+ <button id="owner-tab-messages" type="button" role="tab" aria-controls="owner-panel-messages" data-owner-tab-link="messages"><i class="fa-regular fa-images" aria-hidden="true"></i><span>Souvenirs</span> <span id="owner-unread-badge" class="owner-unread-badge" hidden></span></button>
 </nav>
 <div class="owner-panel" data-owner-panel="configuration">
 <section class="qr-designer-panel">
@@ -1348,19 +1348,42 @@ async function markOwnerMessagesSeen(c,manifest){
 }
 
 function compactOwnerEditors(){
- const controls=document.querySelector(".qr-designer-controls");
- const personalization=controls.querySelector(".qr-personalization-group");
- personalization.querySelector(".qr-control-title").remove();
- personalization.replaceWith(...personalization.children);
+ document.body.classList.add("studio-ready");
+ const controls=document.querySelector(".qr-designer-controls"),personalization=controls.querySelector(".qr-personalization-group");
+ personalization.querySelector(".qr-control-title").remove();personalization.replaceWith(...personalization.children);
  const titles=["Textes","Ambiance","Typographie","Couleurs","Monogramme"];
- [...controls.children].forEach((group,index)=>{
-  const heading=group.querySelector(".customization-heading");
-  const details=document.createElement("details");details.className="customization-section";
-  const summary=document.createElement("summary");summary.className="customization-heading";
+ const sections=[...controls.children].map((group,index)=>{
+  const heading=group.querySelector(".customization-heading"),details=document.createElement("details"),summary=document.createElement("summary");
+  details.className="customization-section";details.dataset.studioSection=String(index);summary.className="customization-heading";
   summary.append(heading.querySelector("img"));const title=document.createElement("span");title.textContent=titles[index];summary.append(title);heading.remove();
-  const body=document.createElement("div");body.className="customization-section-body";body.append(...group.childNodes);
-  details.append(summary,body);group.replaceWith(details);
+  const body=document.createElement("div");body.className="customization-section-body";body.append(...group.childNodes);details.append(summary,body);group.replaceWith(details);return details;
  });
+ const dialog=document.createElement("dialog");dialog.id="studio-editor";dialog.className="studio-sheet";dialog.setAttribute("aria-labelledby","studio-editor-title");
+ dialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-editor-title"></h2><button class="studio-close" type="button" aria-label="Fermer les réglages">×</button></div><div class="studio-sheet-body"></div>';
+ $("dashboard-content").append(dialog);
+ const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<button type="button" data-studio-tool="textes"><img src="assets/customization/tableau.webp" alt="">Textes</button><button type="button" data-studio-tool="style"><img src="assets/customization/decoration.webp" alt="">Style</button><button type="button" data-studio-tool="couleurs"><img src="assets/customization/couleurs.webp" alt="">Couleurs</button>';
+ const actions=document.querySelector(".qr-preview-actions");actions.before(tools);
+ const exportButton=document.createElement("button");exportButton.type="button";exportButton.id="studio-export";exportButton.className="btn secondary";exportButton.innerHTML='<i class="fa-solid fa-download" aria-hidden="true"></i>Exporter';actions.append(exportButton);
+ const exportControls=document.createElement("div");exportControls.className="studio-export-controls";exportControls.hidden=true;
+ exportControls.append($("download-print-card"),$("print-print-card"));actions.after(exportControls);
+ const guestLink=$("open-guest-link");guestLink.className="studio-guest-link";guestLink.textContent="Voir la page invité";actions.after(guestLink);
+ let moved=[],trigger=null;
+ const restore=()=>{moved.forEach(({node,slot,open})=>{slot.replaceWith(node);if(node.tagName==="DETAILS")node.open=open;else node.hidden=true});moved=[];if(trigger?.isConnected)trigger.focus();trigger=null};
+ const open=(title,nodes,button)=>{
+  if(dialog.open)return;
+  trigger=button;$("studio-editor-title").textContent=title;
+  nodes.forEach(node=>{const slot=document.createElement("span");slot.hidden=true;node.before(slot);moved.push({node,slot,open:node.open});if(node.tagName==="DETAILS")node.open=true;node.hidden=false;dialog.querySelector(".studio-sheet-body").append(node)});
+  dialog.showModal();
+ };
+ tools.querySelectorAll("button").forEach(button=>button.addEventListener("click",()=>{const key=button.dataset.studioTool;open(key==="textes"?"Les mots de votre carte":key==="style"?"Le style de votre carte":"Vos couleurs",key==="textes"?[sections[0]]:key==="style"?[sections[1],sections[2],sections[4]]:[sections[3]],button)}));
+ exportButton.addEventListener("click",()=>open("Exporter votre carte",[exportControls],exportButton));
+ dialog.querySelector(".studio-close").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",restore);
+ dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
+ const mobile=matchMedia("(max-width:760px)");mobile.addEventListener("change",()=>{if(dialog.open)dialog.close()});
+ if(!mobile.matches)sections[0].open=true;
+ const settingsButton=document.createElement("button");settingsButton.id="studio-settings";settingsButton.className="studio-settings-button";settingsButton.type="button";settingsButton.setAttribute("aria-label","Paramètres de la capsule");settingsButton.setAttribute("aria-expanded","false");settingsButton.innerHTML='<i class="fa-solid fa-sliders" aria-hidden="true"></i>';
+ document.querySelector(".dashboard-head").append(settingsButton);
+ settingsButton.addEventListener("click",()=>{const panel=document.querySelector(".capsule-settings");panel.hidden=!panel.hidden;panel.open=!panel.hidden;settingsButton.setAttribute("aria-expanded",String(!panel.hidden))});
 }
 
 function setupOwnerTabs(c,manifest){
@@ -1376,6 +1399,7 @@ function setupOwnerTabs(c,manifest){
    link.setAttribute("aria-selected",String(active));link.tabIndex=active?0:-1;
   });
   panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
+  if(updateHash&&matchMedia("(max-width:760px)").matches)window.scrollTo({top:0,behavior:"instant"});
   if(updateHash&&location.hash!=="#"+target)history.replaceState(null,"","#"+target);
   if(target==="messages")await markOwnerMessagesSeen(c,manifest)
  };
@@ -1521,7 +1545,7 @@ async function renderManifest(c,manifest){
  }
 }
 async function renderCapsuleList(caps,access){
- $("dashboard-title").textContent="Mes capsules";document.querySelectorAll('[data-owner-tab-link]').forEach(el=>el.hidden=true);
+ document.body.classList.remove("studio-ready");$("dashboard-title").textContent="Mes capsules";document.querySelectorAll('[data-owner-tab-link]').forEach(el=>el.hidden=true);
  $("dashboard-content").innerHTML='<p class="hint">Retrouvez vos capsules et poursuivez leur personnalisation.</p><div class="capsule-grid">'+caps.map(c=>`<article class="capsule-card"><a class="capsule-card-link" href="dashboard.html?slug=${encodeURIComponent(c.slug)}"><img data-capsule-thumbnail="${esc(c.id)}" class="capsule-thumbnail" src="assets/themes/${esc(qrOptions(c).style)}.webp" alt="Carte de ${esc(c.couple_name)}"><span class="capsule-badge">${c.status==="active"?"Active":"En préparation"}</span><h2>${esc(c.couple_name)}</h2><p>${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p><p data-capsule-count="${esc(c.id)}">Chargement du nombre de souvenirs…</p><strong>${c.status==="active"?"Ouvrir ma capsule":"Personnaliser ma capsule"} →</strong></a></article>`).join('')+(access.can_create?'<a class="capsule-card capsule-new" href="create.html"><span aria-hidden="true">+</span><h2>Créer une capsule</h2><p>Préparez votre événement.</p></a>':'')+'</div>'+(!access.can_create?'<p class="hint">'+esc(access.reason)+'</p>':'');
  const observer=new IntersectionObserver(entries=>{entries.filter(e=>e.isIntersecting).forEach(async entry=>{
   observer.unobserve(entry.target);const c=caps.find(x=>x.id===entry.target.dataset.capsuleThumbnail);
@@ -1531,7 +1555,7 @@ async function renderCapsuleList(caps,access){
 }
 function tomorrowParis(){const d=new Date(parisDay()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
 function setupCapsuleSettings(c){
- const panel=document.createElement('details');panel.className='capsule-settings';
+ const panel=document.createElement('details');panel.className='capsule-settings';panel.hidden=true;
  panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''} ${['free_beta','legacy'].includes(c.activation_source)?'hidden':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===capsulePlan(c)?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div><div class="field"><label for="capsule-suggestion">Date de découverte suggérée aux invités</label><select id="capsule-suggestion"><option value="none">Laisser chaque invité choisir</option><option value="0">Le jour de l’événement</option><option value="1">Un mois après l’événement</option><option value="6">Six mois après l’événement</option><option value="12">Premier anniversaire</option><option value="24">Deuxième anniversaire</option><option value="custom">Une date précise</option></select><small class="field-help">Vos invités gardent la possibilité de choisir une autre date.</small><input id="capsule-suggestion-date" type="date" aria-label="Date suggérée" value="${esc(c.suggested_delivery_date||'')}" hidden></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Me prévenir par e-mail des ouvertures et avant la fin des 3 ans</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div><div id="capsule-upgrade" class="field" hidden></div></div>`;
  $("owner-overview").append(panel);
  $("capsule-suggestion").value=c.suggested_delivery_date?'custom':c.suggested_delivery_months==null?'none':String(c.suggested_delivery_months);
@@ -1541,10 +1565,10 @@ function setupCapsuleSettings(c){
 async function saveCapsuleSettings(c){
  if(!organizerState.settings)return true;
  const name=$("capsule-name").value.trim(),date=$("capsule-date").value,plan=$("capsule-plan").value;
- if(!name||name.length>50||!/^\d{4}-\d{2}-\d{2}$/.test(date)){show($("organizer-save-error"),'Renseignez un nom et une date valides.',false);document.querySelector('.capsule-settings').open=true;return false}
- if(c.status==='draft'&&date<tomorrowParis()){show($("organizer-save-error"),'Choisissez une date d’événement à partir de demain.',false);document.querySelector('.capsule-settings').open=true;return false}
+ if(!name||name.length>50||!/^\d{4}-\d{2}-\d{2}$/.test(date)){show($("organizer-save-error"),'Renseignez un nom et une date valides.',false);document.querySelector('.capsule-settings').hidden=false;document.querySelector('.capsule-settings').open=true;$("studio-settings").setAttribute("aria-expanded","true");return false}
+ if(c.status==='draft'&&date<tomorrowParis()){show($("organizer-save-error"),'Choisissez une date d’événement à partir de demain.',false);document.querySelector('.capsule-settings').hidden=false;document.querySelector('.capsule-settings').open=true;$("studio-settings").setAttribute("aria-expanded","true");return false}
  const choice=$("capsule-suggestion").value,suggestionDate=$("capsule-suggestion-date").value,notify=$("capsule-notify").checked;
- if(choice==='custom'&&(!suggestionDate||suggestionDate<date||suggestionDate>addMonthsClamped(date,30))){show($("organizer-save-error"),'Choisissez une date suggérée entre l’événement et son trentième mois.',false);document.querySelector('.capsule-settings').open=true;return false}
+ if(choice==='custom'&&(!suggestionDate||suggestionDate<date||suggestionDate>addMonthsClamped(date,30))){show($("organizer-save-error"),'Choisissez une date suggérée entre l’événement et son trentième mois.',false);document.querySelector('.capsule-settings').hidden=false;document.querySelector('.capsule-settings').open=true;$("studio-settings").setAttribute("aria-expanded","true");return false}
  const payload={couple_name:name,wedding_date:date,suggested_delivery_months:['none','custom'].includes(choice)?null:Number(choice),suggested_delivery_date:choice==='custom'?suggestionDate:null,notify_by_email:notify};if(c.status==='draft')payload.plan=plan;
  const oldDefault=defaultCardExplanation(capsulePlan(c));
  await updateOwnedCapsule(c,payload);
