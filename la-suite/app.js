@@ -13,7 +13,7 @@ function saveIndicator(){
  el.textContent=organizerState.saving?"Enregistrement…":organizerState.error?"Enregistrement incomplet. Réessayez.":organizerDirty()?"Modifications non enregistrées":"Tout est enregistré";
  const bar=el.closest(".organizer-savebar");if(bar)bar.hidden=!organizerState.error&&!$("organizer-save-error")?.textContent;
  const retry=$("save-organizer");if(retry){retry.textContent=organizerState.error?"Réessayer":"Enregistrer";retry.disabled=Boolean(organizerState.saving)||(!organizerDirty()&&!organizerState.error)}
- const introButton=$("upload-intro");if(introButton){introButton.disabled=Boolean(organizerState.saving)||!organizerState.intro;introButton.hidden=$("intro-kind")?.value==="none"&&!organizerState.intro;}
+ const introButton=$("upload-intro");if(introButton){introButton.disabled=Boolean(organizerState.saving)||!organizerState.intro;introButton.hidden=!organizerState.intro;}
  el.dataset.state=organizerState.error?"error":organizerDirty()?"pending":"saved";
 }
 function markDirty(part){organizerState[part]=true;organizerState.error=false;saveIndicator()}
@@ -28,7 +28,7 @@ function rid(){return Math.random().toString(36).slice(2,8)}
 function fParis(v){return new Date(v).toLocaleDateString('fr-FR',{timeZone:'Europe/Paris'})}
 function fdate(v){if(!v)return"—";return new Date(String(v).length===10?v+"T12:00:00":v).toLocaleDateString("fr-FR")}
 function label(t){return t==="video"?"Vidéo":t==="audio"?"Audio":t==="image"?"Image":"Texte"}
-function icon(t){return t==="video"?"▶":t==="audio"?"♫":t==="image"?"▣":"✎"}
+function icon(t){const name={video:"video",audio:"microphone",image:"camera",text:"comment"}[t]||"comment";return '<i class="fa-solid fa-'+name+'" aria-hidden="true"></i>'}
 function ext(m){m=m?.split(";")[0];return({"video/mp4":"mp4","video/quicktime":"mov","video/webm":"webm","audio/webm":"webm","audio/mpeg":"mp3","audio/wav":"wav","audio/x-wav":"wav","audio/mp4":"m4a","audio/ogg":"ogg","image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/heic":"heic","image/heif":"heif"})[m]||"bin"}
 function group(m){return m?.startsWith("video/")?"video":m?.startsWith("audio/")?"audio":m?.startsWith("image/")?"image":null}
 async function user(){if(!sb)return null;const{data}=await sb.auth.getUser();return data?.user||null}
@@ -147,19 +147,20 @@ async function initAuth(){
   document.querySelector(".organizer-access-help").textContent="Utilisez votre compte habituel. Si vous avez oublié votre mot de passe, choisissez « Mot de passe oublié ».";
  }
  if(!configured)return show(status,"Le service de connexion est indisponible. Rechargez la page.",false);
- let mode=qs.get("mode")==="signup"?"signup":qs.get("mode")==="recovery"?"recovery":"login";
+ let mode=["signup","recovery","reset"].includes(qs.get("mode"))?qs.get("mode"):"login";
  function render(){
   const recovery=mode==="recovery",reset=mode==="reset";
   $("auth-title").textContent=({login:"Bienvenue dans votre espace",signup:"Créez votre compte",reset:"Retrouver votre accès",recovery:"Choisissez votre mot de passe"})[mode];
   if(adminAccess&&mode==="login")$("auth-title").textContent="Connexion à l’administration";
-  $("auth-description").textContent=reset?"Recevez un lien pour définir ou réinitialiser votre mot de passe.":recovery?"Utilisez au moins 10 caractères pour sécuriser votre espace.":adminAccess?"Connectez-vous pour accéder à votre administration.":"Retrouvez vos capsules, personnalisez-les et partagez vos souvenirs.";
-  $("email-field").hidden=recovery;$("email").required=!recovery;
-  $("password-field").hidden=reset;$("password").required=!reset;
+  $("auth-description").textContent=reset?"Recevez un lien pour définir ou réinitialiser votre mot de passe.":recovery?"Utilisez au moins 10 caractères pour sécuriser votre espace.":adminAccess?"Connectez-vous pour accéder à votre administration.":qs.get("next")==="create"?"Votre préparation est conservée. Connectez-vous ou créez votre compte pour continuer.":"Retrouvez vos capsules et vos souvenirs.";
+  $("email-field").hidden=recovery;$("email").required=!recovery;$("email").disabled=recovery;
+  $("password-field").hidden=reset;$("password").required=!reset;$("password").disabled=reset;
   $("password-field").querySelector("small").hidden=mode==="login"||reset;
   document.querySelectorAll('[data-auth-mode]').forEach(button=>button.hidden=button.dataset.authMode===mode||(recovery&&button.dataset.authMode==='signup'));
   if(adminAccess){document.querySelector('[data-auth-mode="login"]').hidden=mode==="login";document.querySelector('[data-auth-mode="signup"]').hidden=true;document.querySelector('[data-auth-mode="reset"]').textContent="Mot de passe oublié";}
   $("password").minLength=mode==="login"?1:10;$("password").autocomplete=mode==="login"?"current-password":"new-password";
-  $("password-confirm-field").hidden=!(recovery||mode==="signup");$("password-confirm").required=recovery||mode==="signup";
+  $("password-confirm-field").hidden=!(recovery||mode==="signup");$("password-confirm").required=recovery||mode==="signup";$("password-confirm").disabled=!(recovery||mode==="signup");
+  document.querySelector(".organizer-access-help").hidden=!reset;
   submit.textContent=({login:"Me connecter",signup:"Créer mon compte",reset:"Recevoir le lien",recovery:"Enregistrer mon mot de passe"})[mode];
   $("auth-options").hidden=false;
   $("resend-confirmation").hidden=true;
@@ -174,9 +175,9 @@ async function initAuth(){
  document.querySelectorAll('[data-auth-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.authMode;render()}));
  if(qs.get("next")==="create")try{const d=JSON.parse(localStorage.getItem("la_suite_create_draft")||"null");if(d?.email)$("email").value=d.email}catch(e){}
  const authError=new URLSearchParams(location.hash.slice(1)).get("error_description");
- if(authError)show(status,"Ce lien n’est plus valide. Demandez un nouveau lien avec « Mot de passe oublié / première connexion ».",false);
+ if(authError)show(status,"Ce lien n’est plus valide. Demandez un nouveau lien avec « Mot de passe oublié ».",false);
  const initial=await user();
- if(initial&&mode!=="recovery")return location.href=authDestination();
+ if(initial&&!["recovery","reset"].includes(mode))return location.href=authDestination();
  form.addEventListener("submit",async e=>{
   e.preventDefault();submit.disabled=true;
   const email=$("email").value.trim(),password=$("password").value;
@@ -314,6 +315,7 @@ async function initCreate(){
   if(submit)submit.disabled=true;
   show(status,"Création de la capsule…");
   const existing=await sb.from("capsules").select("slug").eq("id",d.id).maybeSingle();
+  if(existing.error)throw existing.error;
   if(existing.data){clearDraft();location.href="dashboard.html?slug="+encodeURIComponent(existing.data.slug);return true}
   const{data,error}=await sb.from("capsules").insert({
    id:d.id,
@@ -325,7 +327,7 @@ async function initCreate(){
    welcome_message:null,
    unlock_date:null
   }).select("id,slug,guest_token").single();
-  if(error){if(submit)submit.disabled=false;show(status,"Création impossible : "+error.message,false);return false}
+  if(error){if(submit)submit.disabled=false;show(status,"Création impossible. Votre préparation est conservée ; réessayez dans quelques instants.",false);return false}
   clearDraft();
   location.href="dashboard.html?slug="+encodeURIComponent(data.slug);
   return true
@@ -342,7 +344,7 @@ async function initCreate(){
    clearDraft();
    if(access.existing_slug){location.href="dashboard.html?slug="+encodeURIComponent(access.existing_slug);return}
    show(status,access.reason,false);submit.disabled=true;return;
-  }}catch(error){show(status,error.message,false);submit.disabled=true;return}
+  }}catch(error){show(status,"Connexion interrompue. Votre préparation est conservée ; réessayez.",false);submit.disabled=false}
  }
  const pending=readDraft();
  if(currentUser){emailInput.value=currentUser.email;emailInput.readOnly=true;$("email-help").textContent="Cette capsule sera enregistrée dans votre compte."}
@@ -354,8 +356,9 @@ async function initCreate(){
  if(qs.get("resume")==="1"&&currentUser&&pending){
   pending.id=pending.id||crypto.randomUUID();
   storeDraft(pending);
-  await createCapsule(pending,currentUser);
-  return
+  try{if(await createCapsule(pending,currentUser))return}
+  catch(error){show(status,"Création impossible. Votre préparation est conservée ; réessayez dans quelques instants.",false)}
+  submit.disabled=false;
  }
 
  form.addEventListener("submit",async e=>{
@@ -438,7 +441,8 @@ function chooseGuestType(type){
  guestType=type;guestSelectionVersion++;resetPreview();guestTransaction=null;
  if(!guestBusy)$("guest-message").querySelector('[type="submit"]').disabled=false;show($("status"),"");
  document.querySelectorAll("[data-memory-type]").forEach(b=>{const selected=b.dataset.memoryType===type;b.classList.toggle("active",selected);b.setAttribute("aria-pressed",String(selected))});
- $("capture-choices").hidden=type==="text";$("message_text").required=type==="text";
+ $("capture-choices").hidden=type==="text";$("file-help").hidden=type==="text";
+ document.querySelector('[data-media-mode="upload"]').textContent=type==="image"?"Choisir une photo":type==="audio"?"Choisir un audio":"Choisir une vidéo";$("message_text").required=type==="text";
  $("message-label").innerHTML=type==="text"?"Votre petit mot":'Un petit mot <span class="optional">(facultatif)</span>';
  $("message_text").placeholder=type==="text"?"Écrivez ce que vous aimeriez leur dire…":"Quelques mots pour accompagner votre souvenir…";
  const capture=$("capture-memory");capture.dataset.mediaMode=type==="image"?"photo":type;
@@ -465,7 +469,8 @@ function guestMediaDuration(file){
  return new Promise((resolve,reject)=>{
   const media=document.createElement(file.type.startsWith("audio/")?"audio":"video"),url=URL.createObjectURL(file);
   const timeout=setTimeout(()=>finish(new Error("La durée de ce fichier est illisible. Essayez un autre fichier ou enregistrez directement ici.")),10000);
-  function finish(error){clearTimeout(timeout);media.removeAttribute("src");URL.revokeObjectURL(url);error?reject(error):resolve(media.duration)}
+  let finished=false;
+  function finish(error){if(finished)return;finished=true;const duration=media.duration;clearTimeout(timeout);media.onloadedmetadata=null;media.onerror=null;media.removeAttribute("src");URL.revokeObjectURL(url);error?reject(error):resolve(duration)}
   media.preload="metadata";media.onloadedmetadata=()=>Number.isFinite(media.duration)&&media.duration>0?finish():finish(new Error("La durée de ce fichier est illisible. Enregistrez directement ici."));
   media.onerror=()=>finish(new Error("Ce fichier ne peut pas être lu. Essayez un autre format."));media.src=url;
  });
@@ -507,7 +512,7 @@ function updateDeliveryHelp(){
 }
 function initGuestControls(){
  document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy)chooseGuestType(b.dataset.memoryType)}));
- document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy)setGuestMode(b.dataset.mediaMode)}));
+ document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy){setGuestMode(b.dataset.mediaMode);if(b.dataset.mediaMode==="upload")$("media-file").click();else if(b.dataset.mediaMode==="photo")$("photo-file").click()}}));
  $("media-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],guestType));
  $("photo-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],"image"));
  $("remove-media").addEventListener("click",()=>{guestSelectionVersion++;resetPreview();guestTransaction=null;$("media-file").value="";$("photo-file").value="";showCapture("")});
@@ -531,7 +536,7 @@ function renderGuestState(state){
  expired:"La période de conservation de cette capsule est terminée.",
  missing_date:"Cette capsule n’est pas encore prête à recevoir des souvenirs.",
  full:"La capsule est pleine pour les fichiers. Vous pouvez toujours laisser un petit mot.",
- open:state.legacy?"Vous pouvez laisser un souvenir dans cette capsule.":"Les dépôts sont ouverts jusqu’au "+fParis(new Date(new Date(state.closes_at).getTime()-1000).toISOString())+" à minuit, heure de Paris."
+ open:state.legacy?"Vous pouvez laisser un souvenir dans cette capsule.":"Les dépôts sont ouverts jusqu’au "+fParis(new Date(new Date(state.closes_at).getTime()-1000).toISOString())+" à 23 h 59, heure de Paris."
  };
  el.textContent=messages[state.state]||"Cette capsule n’est pas disponible.";el.dataset.state=state.state;
  $("guest-message").hidden=!["open","full"].includes(state.state);
@@ -568,18 +573,28 @@ async function initCapsule(){
  const token=qs.get("t")||qs.get("token");
  if(!configured||!token){$("guest-state").textContent="Lien de capsule invalide.";return}
  initGuestControls();chooseGuestType("image");
- try{
-  guestState=await guestInvoke({action:"get_status",guest_token:token});
-  $("capsule-title").textContent=guestState.couple_name;$("capsule-welcome").textContent=guestState.welcome_message||"";
-  $("capsule-welcome").hidden=!guestState.welcome_message;$("intro-section").hidden=!guestState.welcome_message;
-  renderGuestState(guestState);
-  if(guestState.has_intro&&!["expired","suspended"].includes(guestState.state))guestInvoke({action:"get_intro",guest_token:token}).then(r=>{
-   if(r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false}
-  }).catch(()=>{});
- }catch(error){$("guest-state").textContent=error.message;return}
+ let refreshing=false,refreshVersion=0;
+ async function refreshGuestState(){
+  if(refreshing)return;refreshing=true;const version=++refreshVersion;
+  $("organizer-intro").pause();
+  $("guest-message").hidden=true;$("guest-retry").hidden=true;$("guest-state").textContent="Chargement de la capsule…";
+  try{
+   guestState=await guestInvoke({action:"get_status",guest_token:token});
+   $("capsule-title").textContent=guestState.couple_name;$("capsule-welcome").textContent=guestState.welcome_message||"";
+   $("capsule-welcome").hidden=!guestState.welcome_message;$("intro-section").hidden=!guestState.welcome_message;
+   $("organizer-intro").hidden=true;$("organizer-intro-image").hidden=true;
+   renderGuestState(guestState);
+   if(guestState.has_intro&&!["expired","suspended"].includes(guestState.state))guestInvoke({action:"get_intro",guest_token:token}).then(r=>{
+    if(version===refreshVersion&&r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false}
+   }).catch(()=>{});
+  }catch(error){$("guest-state").textContent=error.message;$("guest-retry").hidden=false}
+  finally{refreshing=false}
+ }
+ $("guest-retry").addEventListener("click",refreshGuestState);
+ await refreshGuestState();
  $("another-memory").addEventListener("click",async()=>{
-  $("guest-success").hidden=true;$("guest-message").hidden=false;chooseGuestType("image");deliveryTouched=false;chooseDelivery("now");show($("status"),"");
-  try{guestState=await guestInvoke({action:"get_status",guest_token:token});renderGuestState(guestState)}catch(error){$("guest-state").textContent=error.message}
+  $("guest-success").hidden=true;chooseGuestType("image");deliveryTouched=false;chooseDelivery("now");show($("status"),"");
+  await refreshGuestState();
   $("guest-state").scrollIntoView({behavior:"smooth",block:"start"});
  });
  $("guest-message").addEventListener("submit",async e=>{
@@ -669,16 +684,18 @@ async function performIntroSave(c){
   const payload={intro_path:path,welcome_message:kind==="text"?text:null};
   if(!introFinalized){await updateOwnedCapsule(c,payload);}
   Object.assign(c,payload);$("intro-file").value="";organizerState.intro=false;organizerState.error=false;await renderIntroPreview(c);renderIntroDraft(c);
-  show(s,kind==="none"?"Message d’accueil désactivé. Vos invités accèdent directement au dépôt de souvenirs.":"Votre message d’accueil est enregistré.");
+  show(s,"");
   return true;
  }catch(e){organizerState.error=true;show(s,e.message||"Impossible d’enregistrer votre message d’accueil.",false);return false}finally{button.disabled=false;fields.forEach(el=>el.disabled=false);organizerState.saving--;saveIndicator()}
 }
 function renderIntroDraft(c){
  const wrap=$("intro-live-preview");if(!wrap)return;
+ $("upload-intro").hidden=!organizerState.intro;
+ $("intro-preview-wrap").hidden=organizerState.intro||introKind(c)==="none";
  wrap.replaceChildren();if(introPreviewUrl){URL.revokeObjectURL(introPreviewUrl);introPreviewUrl=null}
  const card=wrap.closest(".intro-preview-card");if(card)card.hidden=!organizerState.intro&&introKind(c)==="none";
  if(!organizerState.intro){wrap.hidden=true;return}wrap.hidden=false;
- const title=document.createElement("strong");title.textContent="Aperçu — non enregistré";wrap.append(title);
+ const title=document.createElement("strong");title.textContent="Aperçu";wrap.append(title);
  const kind=$("intro-kind").value,file=$("intro-file").files[0];
  if(kind==="text"){const text=document.createElement("p");text.className="intro-text-preview";text.textContent=$("intro-text").value||"Votre texte apparaîtra ici.";wrap.append(text)}
  else if(file&&((kind==="image"&&["image/jpeg","image/png","image/webp"].includes(file.type))||(kind==="video"&&file.type.startsWith("video/")))){
@@ -695,10 +712,10 @@ function setupIntro(c){
   $("intro-file-help").textContent=kind.value==="image"?"JPG, PNG ou WebP · 10 Mo maximum.":"MP4, MOV ou WebM · 12 secondes et 50 Mo maximum.";
   $("upload-intro").textContent=kind.value==="none"?"Retirer le message d’accueil":"Enregistrer mon message d’accueil";
  }
- kind.addEventListener("change",()=>{file.value="";update();markDirty("intro");renderIntroDraft(c);show($("intro-status"),"Modifications à enregistrer.")});update();
- file.addEventListener("change",()=>{markDirty("intro");renderIntroDraft(c);show($("intro-status"),file.files[0]?"Fichier sélectionné. Enregistrez pour le publier.":"")});
+ kind.addEventListener("change",()=>{file.value="";update();markDirty("intro");renderIntroDraft(c);show($("intro-status"),"")});update();
+ file.addEventListener("change",()=>{markDirty("intro");renderIntroDraft(c);show($("intro-status"),"")});
  $("intro-text").addEventListener("input",()=>{markDirty("intro");renderIntroDraft(c)});
- $("upload-intro").addEventListener("click",()=>uploadIntro(c));renderIntroPreview(c);
+ $("upload-intro").addEventListener("click",()=>uploadIntro(c));renderIntroPreview(c);renderIntroDraft(c);
 }
 const DEFAULT_CARD_TITLE="Notre capsule temporelle";
 const DEFAULT_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard, à la date que vous choisissez.";
@@ -1298,7 +1315,7 @@ function ownerShell(c,url,count){
    <button id="upload-intro" class="btn primary" type="button">Enregistrer mon message d’accueil</button>
    <div id="intro-status" class="status" role="status" aria-live="polite"></div>
   </div>
-  <div class="intro-preview-card"><div id="intro-live-preview" hidden></div><span class="eyebrow">Message d’accueil enregistré</span><div id="intro-preview-wrap"></div><p class="field-help">Sans message d’accueil, vos invités accèdent directement au dépôt de souvenirs.</p></div>
+  <div class="intro-preview-card"><div id="intro-live-preview" hidden></div><div id="intro-preview-wrap"></div></div>
  </div>
 </section>
 
@@ -1314,7 +1331,7 @@ function ownerShell(c,url,count){
  </section>
  <section class="memories-section">
   <div class="section-title-row">
-   <div><div class="eyebrow">Souvenirs reçus</div><h2 id="memory-count">${count} contenu(s)</h2></div>
+   <p id="memory-count">${memoryCountLabel(count)}</p>
   </div>
   <div class="memory-tools"><button id="refresh-memories" class="btn secondary" type="button">Actualiser</button><button id="export-memories" class="btn primary" type="button" disabled>Télécharger les souvenirs ouverts</button></div><p id="export-status" class="status" role="status"></p><p id="memory-status" class="status" role="status"></p><div id="memory-list" class="memory-list"></div>
  </section>
@@ -1565,7 +1582,7 @@ async function renderManifest(c,manifest){
  for(const item of manifest){
   const row=map.get(item.id),expired=capsuleExpired(c),available=item.is_available&&!expired;
   const article=document.createElement("article");article.className="memory-row "+(available?"available":"locked");
-  article.innerHTML='<div class="memory-icon">'+icon(item.media_type)+'</div><div class="memory-meta"><strong>'+esc(item.guest_name||"Invité")+'</strong><span>'+label(item.media_type)+' · livraison le '+esc(fdate(item.delivery_at))+'</span></div><div class="memory-actions"><span class="lock-badge '+(available?'open':'locked')+'">'+(expired?'Accès terminé':available?'Disponible':'🔒 Verrouillé')+'</span></div><div class="memory-content"></div>';
+  article.innerHTML='<div class="memory-icon">'+icon(item.media_type)+'</div><div class="memory-meta"><strong>'+esc(item.guest_name||"Invité")+'</strong><span>'+label(item.media_type)+' · découverte le '+esc(fdate(item.delivery_at))+'</span></div><div class="memory-actions"><span class="lock-badge '+(available?'open':'locked')+'">'+(expired?'Accès terminé':available?'Disponible':'<i class="fa-solid fa-lock" aria-hidden="true"></i> Verrouillé')+'</span></div><div class="memory-content"></div>';
   const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
   if(available&&row?.message_text){const text=document.createElement('p');text.className='memory-text';text.textContent=row.message_text;content.append(text)}
   if(available&&row?.media_path){
@@ -1781,7 +1798,7 @@ async function initDashboard(){
  async function refreshMemories(){
   if(refreshInProgress||ownerSessionEnded)return;refreshInProgress=true;
   const button=$("refresh-memories");button.disabled=true;show($("memory-status"),'Chargement des souvenirs…');
-  try{await renderOrganizerLifecycle(c);const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'Souvenirs à jour.')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
+  try{await renderOrganizerLifecycle(c);const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(capsuleExpired(c)||manifest.some(m=>!m.is_available&&new Date(m.delivery_at)<=new Date())))refreshMemories()});
