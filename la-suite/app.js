@@ -346,6 +346,9 @@ async function initCreate(){
  if(currentUser){emailInput.value=currentUser.email;emailInput.readOnly=true;$("email-help").textContent="Cette capsule sera enregistrée dans votre compte."}
  if(pending){$("couple").value=pending.couple;dateInput.value=pending.wedding;dateDisplay.value=frFromIso(pending.wedding);if(!currentUser)emailInput.value=pending.email}
  $("plan").value=PLAN_NAMES[qs.get("plan")]?qs.get("plan"):(pending?.plan||"premium");
+ const planDetails={photo:"1 Go · Photos et messages texte.",audio:"2 Go · Photos, messages texte et audio.",premium:"5 Go · Photos, messages texte, audio et vidéo."};
+ const updatePlanDetails=()=>{$("plan-details").textContent=planDetails[$("plan").value]||planDetails.premium};
+ $("plan").addEventListener("change",updatePlanDetails);updatePlanDetails();
  if(qs.get("resume")==="1"&&currentUser&&pending){
   pending.id=pending.id||crypto.randomUUID();
   storeDraft(pending);
