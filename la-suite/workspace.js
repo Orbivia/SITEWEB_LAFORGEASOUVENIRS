@@ -12,6 +12,10 @@
   let ended=false,accountBusy=false,serviceBusy=false,member=false,adminLoaded=false,adminLoading=null,adminController=null;
   window.SuiteWorkspace.canExportCapsule=()=>member&&!ended;window.SuiteWorkspace.exportCapsule=async id=>{if(!member||ended)throw Error('Accès administrateur requis.');if(!canLeave())throw Error('Patientez jusqu’à la fin de la sauvegarde des modifications.');await loadAdmin();if(!adminController)throw Error('Le service est momentanément indisponible.');adminController.exportCapsule(id);};
   document.body.classList.add('workspace-ready');
+  // Reserve the device inset once; Android browser chrome must not resize the tabs.
+  const insetProbe=document.createElement('div');insetProbe.className='workspace-safe-area-probe';document.body.append(insetProbe);
+  const deviceInset=Math.min(34,Math.max(0,parseFloat(getComputedStyle(insetProbe).paddingBottom)||0));insetProbe.remove();
+  document.documentElement.style.setProperty('--workspace-device-inset',deviceInset+'px');
   const header=document.querySelector('.suite-topbar');header.querySelector('[data-suite-burger]')?.remove();header.querySelector('[data-suite-nav]')?.remove();
   const accountButton=document.createElement('button');accountButton.id='workspace-account';accountButton.className='workspace-account-button';accountButton.type='button';accountButton.setAttribute('aria-label','Mon compte');accountButton.setAttribute('aria-haspopup','dialog');accountButton.innerHTML='<i class="fa-regular fa-user" aria-hidden="true"></i><span>Mon compte</span>';header.append(accountButton);
   const title=$('dashboard-title'),selector=document.createElement('button');selector.id='workspace-selector';selector.type='button';selector.className='workspace-selector';selector.setAttribute('aria-haspopup','dialog');selector.setAttribute('aria-label','Choisir une capsule');title.before(selector);selector.append(title);selector.insertAdjacentHTML('beforeend','<i class="fa-solid fa-chevron-down" aria-hidden="true"></i>');
@@ -69,3 +73,4 @@
   viewport?.addEventListener('resize',align);viewport?.addEventListener('scroll',align);window.addEventListener('resize',align);window.addEventListener('scroll',align,{passive:true});align();
  }};
 })();
+

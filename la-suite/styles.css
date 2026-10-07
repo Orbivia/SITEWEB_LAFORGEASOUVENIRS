@@ -2996,3 +2996,18 @@ html:has(body.studio-ready){scroll-padding-bottom:90px}
  #studio-editor[data-preview-expanded=true] .studio-preview-button{height:auto}
  #studio-editor[data-preview-expanded=true] .studio-preview-button img{width:100%;height:auto;max-height:calc(100% - 40px)}
 }
+/* Browser bars may change the viewport, but never the navigation height. */
+.workspace-safe-area-probe{position:fixed;visibility:hidden;pointer-events:none;padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(max-width:760px){
+ .workspace-ready.studio-ready .owner-tabs{height:calc(69px + var(--workspace-device-inset,0px));min-height:calc(69px + var(--workspace-device-inset,0px));max-height:calc(69px + var(--workspace-device-inset,0px));grid-template-rows:52px;align-items:stretch;padding:8px 8px calc(8px + var(--workspace-device-inset,0px));box-sizing:border-box}
+ .workspace-ready.studio-ready .owner-tabs [role=tab]{height:52px;min-height:52px;max-height:52px;justify-content:center}
+ .workspace-ready.studio-ready .owner-tabs [role=tab] span{line-height:14px}
+ .workspace-ready.studio-ready .dashboard-page{padding-bottom:calc(82px + var(--workspace-device-inset,0px))}
+ html:has(body.workspace-ready.studio-ready){scroll-padding-bottom:calc(90px + var(--workspace-device-inset,0px))}
+}
+.intro-file-native{position:absolute;width:1px;height:1px;padding:0!important;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.intro-editor-fields .intro-file-picker{width:100%;min-height:48px;margin:0;background:white;color:#302b25;border:1px solid var(--line)}
+.intro-editor-fields .intro-file-picker:focus-visible{outline:3px solid #c7a052;outline-offset:3px}
+.intro-file-name{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.8rem;color:#70685f;margin-top:8px}
+.intro-file-name[hidden]{display:none}
+.studio-ready .intro-editor-fields #intro-text{min-height:120px}

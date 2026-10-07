@@ -13,6 +13,7 @@ function saveIndicator(){
  el.textContent=organizerState.saving?"Enregistrement…":organizerState.error?"Enregistrement incomplet. Réessayez.":organizerDirty()?"Modifications non enregistrées":"Tout est enregistré";
  const bar=el.closest(".organizer-savebar");if(bar)bar.hidden=!organizerState.error&&!$("organizer-save-error")?.textContent;
  const retry=$("save-organizer");if(retry){retry.textContent=organizerState.error?"Réessayer":"Enregistrer";retry.disabled=Boolean(organizerState.saving)||(!organizerDirty()&&!organizerState.error)}
+ const chooseIntro=$("choose-intro-file");if(chooseIntro)chooseIntro.disabled=Boolean(organizerState.saving);
  const introButton=$("upload-intro");if(introButton){introButton.disabled=Boolean(organizerState.saving)||!organizerState.intro;introButton.hidden=!organizerState.intro;}
  el.dataset.state=organizerState.error?"error":organizerDirty()?"pending":"saved";
  const cardState=$("studio-save-state");if(cardState){cardState.hidden=!organizerState.error;cardState.textContent=organizerState.error?el.textContent:'';cardState.dataset.state=el.dataset.state;}
@@ -684,15 +685,23 @@ async function performIntroSave(c){
   return true;
  }catch(e){organizerState.error=true;show(s,e.message||"Impossible d’enregistrer votre message d’accueil.",false);return false}finally{button.disabled=false;fields.forEach(el=>el.disabled=false);organizerState.saving--;saveIndicator()}
 }
+function syncIntroFilePicker(c){
+ const file=$('intro-file'),button=$('choose-intro-file'),name=$('intro-file-name');if(!file||!button||!name)return;
+ const kind=$('intro-kind').value,existing=introKind(c)===kind&&Boolean(c.intro_path);
+ button.textContent=kind==='image'?(existing?'Changer l’image':'Choisir une image'):(existing?'Changer la vidéo':'Choisir une vidéo');
+ const selected=file.files[0];name.textContent=selected?.name||'';name.title=name.textContent;name.hidden=!selected;
+}
 function renderIntroDraft(c){
- const wrap=$("intro-live-preview");if(!wrap)return;
+ const wrap=$("intro-live-preview");if(!wrap)return;syncIntroFilePicker(c);
  $("upload-intro").hidden=!organizerState.intro;
  $("intro-preview-wrap").hidden=organizerState.intro||introKind(c)==="none";
  wrap.replaceChildren();if(introPreviewUrl){URL.revokeObjectURL(introPreviewUrl);introPreviewUrl=null}
  const card=wrap.closest(".intro-preview-card");if(card)card.hidden=!organizerState.intro&&introKind(c)==="none";
  if(!organizerState.intro){wrap.hidden=true;return}wrap.hidden=false;
- const title=document.createElement("strong");title.textContent="Aperçu";wrap.append(title);
  const kind=$("intro-kind").value,file=$("intro-file").files[0];
+ const ready=kind==='text'?Boolean($('intro-text').value.trim()):Boolean(file&&((kind==='image'&&['image/jpeg','image/png','image/webp'].includes(file.type))||(kind==='video'&&file.type.startsWith('video/'))));
+ if(!ready){wrap.hidden=true;if(card)card.hidden=true;return;}
+ const title=document.createElement("strong");title.textContent="Aperçu";wrap.append(title);
  if(kind==="text"){const text=document.createElement("p");text.className="intro-text-preview";text.textContent=$("intro-text").value||"Votre texte apparaîtra ici.";wrap.append(text)}
  else if(file&&((kind==="image"&&["image/jpeg","image/png","image/webp"].includes(file.type))||(kind==="video"&&file.type.startsWith("video/")))){
   const media=document.createElement(kind==="image"?"img":"video");introPreviewUrl=URL.createObjectURL(file);media.src=introPreviewUrl;media.className="intro-preview";if(kind==="image")media.alt="Aperçu de l’image sélectionnée";else{media.controls=true;media.preload="metadata"}wrap.append(media);
@@ -706,8 +715,9 @@ function setupIntro(c){
   file.accept=kind.value==="image"?"image/jpeg,image/png,image/webp":"video/mp4,video/quicktime,video/webm";
   $("intro-file-label").textContent=kind.value==="image"?"Votre image":"Votre vidéo";
   $("intro-file-help").textContent=kind.value==="image"?"JPG, PNG ou WebP · 10 Mo maximum.":"MP4, MOV ou WebM · 12 secondes et 50 Mo maximum.";
-  $("upload-intro").textContent=kind.value==="none"?"Retirer le message d’accueil":"Enregistrer mon message d’accueil";
+  $("upload-intro").textContent=kind.value==="none"?"Retirer l’accueil":"Enregistrer l’accueil";syncIntroFilePicker(c);
  }
+ $('choose-intro-file').addEventListener('click',()=>file.click());
  kind.addEventListener("change",()=>{file.value="";update();markDirty("intro");renderIntroDraft(c);show($("intro-status"),"")});update();
  file.addEventListener("change",()=>{markDirty("intro");renderIntroDraft(c);show($("intro-status"),"")});
  $("intro-text").addEventListener("input",()=>{markDirty("intro");renderIntroDraft(c)});
@@ -1320,9 +1330,9 @@ function ownerShell(c,url,count){
  <div class="intro-video-head"><div><h2>Accueillez vos invités</h2><p>Un message à découvrir avant de déposer un souvenir.</p></div><span class="intro-video-limit">Facultatif</span></div>
  <div class="intro-video-body intro-editor-grid">
   <div class="intro-editor-fields">
-   <div class="field"><label for="intro-kind">Comment souhaitez-vous accueillir vos invités ?</label><select id="intro-kind"><option value="none">Sans message d’accueil</option><option value="text">Un texte</option><option value="video">Une vidéo</option><option value="image">Une image</option></select><small class="field-help">Vous pouvez passer cette étape ou modifier votre message d’accueil à tout moment.</small></div>
-   <div class="field" id="intro-text-field" hidden><label for="intro-text">Votre message</label><textarea id="intro-text" rows="6" maxlength="2000" placeholder="Bienvenue dans notre capsule ! Laissez-nous un petit mot, une émotion, un souvenir…">${esc(c.welcome_message||"")}</textarea><small class="field-help">2 000 caractères maximum.</small></div>
-   <div class="field" id="intro-media-field" hidden><label id="intro-file-label" for="intro-file">Votre fichier</label><input id="intro-file" type="file"><small class="field-help" id="intro-file-help"></small></div>
+   <div class="field"><label for="intro-kind">Votre message d’accueil</label><select id="intro-kind"><option value="none">Sans message d’accueil</option><option value="text">Un texte</option><option value="video">Une vidéo</option><option value="image">Une image</option></select><small class="field-help">Facultatif · modifiable à tout moment.</small></div>
+   <div class="field" id="intro-text-field" hidden><label for="intro-text">Votre message</label><textarea id="intro-text" rows="4" maxlength="2000" placeholder="Bienvenue dans notre capsule ! Laissez-nous un petit mot, une émotion, un souvenir…">${esc(c.welcome_message||"")}</textarea><small class="field-help">2 000 caractères maximum.</small></div>
+   <div class="field" id="intro-media-field" hidden><label id="intro-file-label" for="intro-file">Votre fichier</label><input id="intro-file" type="file" class="intro-file-native" tabindex="-1"><button id="choose-intro-file" class="btn secondary intro-file-picker" type="button" aria-controls="intro-file">Choisir un fichier</button><span id="intro-file-name" class="intro-file-name" role="status" hidden></span><small class="field-help" id="intro-file-help"></small></div>
    <button id="upload-intro" class="btn primary" type="button">Enregistrer mon message d’accueil</button>
    <div id="intro-status" class="status" role="status" aria-live="polite"></div>
   </div>
