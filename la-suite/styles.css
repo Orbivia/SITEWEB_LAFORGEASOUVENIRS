@@ -2700,3 +2700,17 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
  .studio-ready .qr-preview-stage{min-height:0;padding:16px;display:flex;justify-content:center;align-items:center}
  .studio-ready .qr-artwork-preview{width:auto;max-width:100%;max-height:max(180px,calc(100dvh - 530px))}
 }
+
+/* Capsule selection contains only capsules; service controls live in the account. */
+#workspace-administration .workspace-service-tools{margin:0;border:0;padding:0;background:transparent}
+#workspace-administration .workspace-service-tools>summary{display:none}
+#workspace-administration .studio-sheet-body{max-height:70dvh;overflow-y:auto}
+.workspace-sheet .admin-capsule{padding:12px 14px;margin-bottom:8px;border-radius:12px;box-shadow:none}
+.workspace-sheet .admin-capsule-head{display:flex;flex-direction:row;align-items:center;gap:10px}
+.workspace-sheet .admin-capsule-head h2{font-size:1rem;margin:0}
+.workspace-sheet .admin-capsule-head p{font-size:.8rem;margin:4px 0 0}
+.workspace-sheet .admin-capsule-head .admin-actions{margin-left:auto;flex-wrap:nowrap}
+.workspace-sheet .admin-capsule-head .btn{width:auto;min-height:40px;padding:8px 10px;font-size:.8rem}
+#capsule-settings-dialog #studio-export{width:100%;margin-top:16px}
+.studio-ready .qr-preview-actions{grid-template-columns:1fr}
+@media(max-width:760px){.workspace-sheet .admin-capsule-head button[data-capsule] span{display:none}.workspace-sheet .admin-capsule-head button[data-capsule]{width:40px}.workspace-sheet .admin-capsule-head .admin-actions{gap:6px}}
