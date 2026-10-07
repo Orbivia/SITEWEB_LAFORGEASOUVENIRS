@@ -2714,3 +2714,5 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 #capsule-settings-dialog #studio-export{width:100%;margin-top:16px}
 .studio-ready .qr-preview-actions{grid-template-columns:1fr}
 @media(max-width:760px){.workspace-sheet .admin-capsule-head button[data-capsule] span{display:none}.workspace-sheet .admin-capsule-head button[data-capsule]{width:40px}.workspace-sheet .admin-capsule-head .admin-actions{gap:6px}}
+
+#capsule-settings-dialog #export-whole-capsule{width:100%;margin-top:12px}#capsule-settings-dialog #export-whole-capsule[hidden],#capsule-settings-dialog small[hidden]{display:none}

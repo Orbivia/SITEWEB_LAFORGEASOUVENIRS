@@ -9,7 +9,8 @@
   d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)if(!d.canClose||d.canClose())d.close()}});return d;
  }
  window.SuiteWorkspace={async setup({sb,user,caps,access,selected,canLeave,logout}){
-  let ended=false,accountBusy=false,serviceBusy=false,member=false,adminLoaded=false,adminLoading=null;
+  let ended=false,accountBusy=false,serviceBusy=false,member=false,adminLoaded=false,adminLoading=null,adminController=null;
+  window.SuiteWorkspace.canExportCapsule=()=>member&&!ended;window.SuiteWorkspace.exportCapsule=async id=>{if(!member||ended)throw Error('Accès administrateur requis.');if(!canLeave())throw Error('Patientez jusqu’à la fin de la sauvegarde des modifications.');await loadAdmin();if(!adminController)throw Error('Le service est momentanément indisponible.');adminController.exportCapsule(id);};
   document.body.classList.add('workspace-ready');
   const header=document.querySelector('.suite-topbar');header.querySelector('[data-suite-burger]')?.remove();header.querySelector('[data-suite-nav]')?.remove();
   const accountButton=document.createElement('button');accountButton.id='workspace-account';accountButton.className='workspace-account-button';accountButton.type='button';accountButton.setAttribute('aria-label','Mon compte');accountButton.setAttribute('aria-haspopup','dialog');accountButton.innerHTML='<i class="fa-regular fa-user" aria-hidden="true"></i><span>Mon compte</span>';header.append(accountButton);
@@ -30,9 +31,9 @@
   body.querySelectorAll('[data-workspace-scope]').forEach(b=>b.onclick=()=>switchScope(b.dataset.workspaceScope));
   async function loadAdmin(){
    if(adminLoaded)return;if(adminLoading)return adminLoading;
-   adminLoading=(async()=>{const r=await fetch('admin-panel.html?v=20261007-light4');if(!r.ok)throw Error('Rechargez la page pour réessayer.');const html=await r.text();if(ended||!member)return;$('workspace-service').innerHTML=html;if(access.can_create){const create=$('workspace-create').cloneNode(true);create.id='workspace-service-create';$('workspace-service').prepend(create);}
+   adminLoading=(async()=>{const r=await fetch('admin-panel.html?v=20261007-export5');if(!r.ok)throw Error('Rechargez la page pour réessayer.');const html=await r.text();if(ended||!member)return;$('workspace-service').innerHTML=html;if(access.can_create){const create=$('workspace-create').cloneNode(true);create.id='workspace-service-create';$('workspace-service').prepend(create);}
     const tools=document.querySelector('.workspace-service-tools');service.querySelector('.studio-sheet-body').append(tools);tools.open=true;document.querySelectorAll('#workspace-service .admin-dialog').forEach(d=>document.body.append(d));
-    await window.initSuiteAdmin({client:sb,embedded:true,ownedCaps:caps,isActive:()=>choose.open&&scope==='all'||service.open||$('capsule-dialog')?.open,onBusy:value=>serviceBusy=value,onDenied:()=>{if(ended)return;member=false;service.close();service.querySelector('.studio-sheet-body').replaceChildren();$('workspace-admin-button').hidden=true;switchScope('mine');$('workspace-service').replaceChildren();}});if(ended)return;adminLoaded=true;
+    adminController=await window.initSuiteAdmin({client:sb,embedded:true,ownedCaps:caps,isActive:()=>choose.open&&scope==='all'||service.open||$('capsule-dialog')?.open,onBusy:value=>serviceBusy=value,onDenied:()=>{if(ended)return;member=false;window.dispatchEvent(new Event('suite-admin-status'));service.close();service.querySelector('.studio-sheet-body').replaceChildren();$('workspace-admin-button').hidden=true;switchScope('mine');$('workspace-service').replaceChildren();}});if(ended)return;adminLoaded=true;
    })();try{await adminLoading}finally{adminLoading=null;}
   }
   service.canClose=()=>!serviceBusy;service.addEventListener('cancel',e=>{if(serviceBusy)e.preventDefault()});service.querySelector('.studio-close').onclick=()=>{if(!serviceBusy)service.close()};
@@ -59,7 +60,7 @@
   // Server membership is authoritative; client profile metadata never grants access.
   (async()=>{try{let {data,error}=await sb.rpc('admin_status');if(error)throw error;let invite;try{invite=JSON.parse(localStorage.getItem('la_suite_admin_invite')||'null')}catch{}
    if(data!==true&&invite&&/^[a-f0-9]{64}$/.test(invite.token)&&Date.now()-invite.at<48*3600000){const claimed=await sb.rpc('admin_claim',{p_token:invite.token});if(claimed.error)throw claimed.error;({data,error}=await sb.rpc('admin_status'));if(error)throw error;}
-   if(ended)return;member=data===true;if(member){$('workspace-admin-button').hidden=false;try{localStorage.removeItem('la_suite_admin_invite')}catch{}await switchScope('all');}
+   if(ended)return;member=data===true;window.dispatchEvent(new Event('suite-admin-status'));if(member){$('workspace-admin-button').hidden=false;try{localStorage.removeItem('la_suite_admin_invite')}catch{}await switchScope('all');}
    if(new URLSearchParams(location.search).get('view')==='service'){choose.showModal();if(member)await switchScope('all');else $('workspace-selection-status').textContent='Ce compte ne dispose pas d’un accès administrateur.';}
   }catch(e){if(!ended&&new URLSearchParams(location.search).get('view')==='service'){choose.showModal();$('workspace-selection-status').textContent='Vérification de l’accès impossible. Rechargez la page.';}}})();
   // Follow the visual viewport while Android browser bars expand/collapse.

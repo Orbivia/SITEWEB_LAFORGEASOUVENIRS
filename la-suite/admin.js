@@ -70,6 +70,7 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
   const {data:member,error:memberError}=await sb.rpc('admin_status');if(memberError)throw memberError;if(member!==true){if(embedded){clearPrivateView();return;}if(!invite){$('access-message').textContent='Ce compte ne dispose pas d’un accès administrateur.';if($('admin-logout'))$('admin-logout').hidden=false;return;}const {error}=await sb.rpc('admin_claim',{p_token:invite.token});if(error)throw error;}
   try{localStorage.removeItem(inviteKey)}catch{}sessionOwner=user.user.id;authorized=true;if($('admin-logout'))$('admin-logout').hidden=false;$('admin-access').hidden=true;$('admin-content').hidden=false;await refresh();
  }catch(e){$('access-message').textContent=e.message||'Vérification impossible. Rechargez la page.';status(e.message,true);}
+ return {exportCapsule(id){if(!authorized||busy)throw Error('Veuillez réessayer dans quelques instants.');if(!data.capsules.some(c=>c.id===id))throw Error('Capsule introuvable.');detail(id);$('detail-backup').click();}};
 };
 if(document.getElementById('admin-access'))window.initSuiteAdmin();
 
