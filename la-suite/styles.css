@@ -2716,3 +2716,41 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 @media(max-width:760px){.workspace-sheet .admin-capsule-head button[data-capsule] span{display:none}.workspace-sheet .admin-capsule-head button[data-capsule]{width:40px}.workspace-sheet .admin-capsule-head .admin-actions{gap:6px}}
 
 #capsule-settings-dialog #export-whole-capsule{width:100%;margin-top:12px}#capsule-settings-dialog #export-whole-capsule[hidden],#capsule-settings-dialog small[hidden]{display:none}
+
+/* Shared compact editor treatment; a style choice is always directly available. */
+#studio-editor .customization-section{border:0;background:transparent;margin:0}
+#studio-editor .customization-section>summary{display:none}
+#studio-editor .customization-section-body{padding:0}
+#studio-editor .studio-sheet-body{padding:14px 18px}
+.studio-config-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#f4f0e9;padding:4px;border-radius:10px;margin-bottom:14px}
+.studio-config-tabs button{border:0;border-radius:7px;background:transparent;min-height:40px;font:500 .8rem Inter,Arial,sans-serif;color:#625b52;cursor:pointer}
+.studio-config-tabs [aria-selected=true]{background:white;color:#b70909}
+#studio-editor[data-editor-mode=style] .qr-theme-gallery{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));max-height:none;overflow:visible;gap:8px;padding:0}
+#studio-editor .qr-theme-gallery [hidden]{display:none!important}
+#studio-editor[data-editor-mode=style] .qr-theme-thumbnail{height:108px;width:100%;object-fit:contain}
+#studio-editor[data-editor-mode=style] .qr-theme-name{font-size:.7rem;padding:4px}
+.studio-theme-pages{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:12px;font-size:.8rem;color:#716b60}
+.studio-theme-pages button{min-height:40px;padding:6px 12px;border:1px solid #e5ded4;border-radius:8px;background:white;font:inherit;cursor:pointer}.studio-theme-pages button:disabled{opacity:.4;cursor:default}
+#studio-editor[data-editor-mode=style] .qr-font-trigger{display:none}
+#studio-editor[data-editor-mode=style] .qr-font-menu{position:static;display:grid;grid-template-columns:1fr 1fr;gap:8px;border:0;padding:0;box-shadow:none;max-height:none;overflow:visible}
+#studio-editor[data-editor-mode=style] .qr-font-menu button{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-height:60px;padding:8px 10px;border:1px solid #e5ded4;border-radius:8px;background:white}
+#studio-editor[data-editor-mode=style] .qr-font-menu .is-selected{border-color:#b78b38;background:#faf6ee}
+#studio-editor[data-editor-mode=style] .qr-font-sample{font-size:1.15rem}
+#studio-editor .qr-initials-card input{padding:12px;font-size:1.4rem}
+#studio-editor .qr-print-guide-grid{grid-template-columns:1fr 1fr;gap:8px}
+#studio-editor .qr-print-guide-grid>div{padding:10px;background:#faf7f1}
+#studio-editor .qr-print-guide-grid strong{font-size:.78rem}
+#studio-editor .qr-print-guide-grid small{font-size:.73rem;line-height:1.4}
+#studio-editor .studio-export-controls{grid-template-columns:1fr 1fr;gap:8px}
+#studio-editor .field{margin-bottom:12px}#studio-editor .field-help{font-size:.78rem;line-height:1.4;margin:5px 0 10px}
+#studio-editor textarea{min-height:0;padding:9px 12px;line-height:1.4}#studio-editor input{padding:10px 12px}
+#studio-editor [data-studio-section="0"]>.customization-section-body>.field-help,#studio-editor #plan-explanation-help{display:none}
+@media(max-width:420px){#studio-editor[data-editor-mode=style] .qr-theme-thumbnail{height:86px}.studio-config-tabs button{font-size:.74rem}#studio-editor .studio-sheet-head h2{font-size:1.15rem}}
+
+.settings-tabs{grid-template-columns:1fr 1fr}
+#capsule-settings-dialog #capsule-export-pane[hidden],#capsule-settings-dialog .capsule-settings[hidden],#studio-editor .customization-section[hidden]{display:none!important}
+#capsule-settings-dialog .studio-sheet-body{padding:14px 18px}
+#capsule-settings-dialog .settings-grid{gap:12px}#capsule-settings-dialog .field-help{font-size:.75rem;margin-top:5px}#capsule-settings-dialog input,#capsule-settings-dialog select{padding:10px 12px}
+#studio-editor[data-editor-mode=style] .qr-font-menu{grid-template-columns:repeat(2,minmax(0,1fr))}
+#studio-editor[data-editor-mode=style] .qr-font-menu button{min-width:0}
+#studio-editor[data-editor-mode=style] .qr-font-sample{width:100%;white-space:normal;overflow-wrap:anywhere;overflow:visible;text-overflow:clip;font-size:1rem;line-height:1.12}
