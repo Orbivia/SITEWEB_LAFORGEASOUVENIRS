@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20261003-review3">
+<link rel="stylesheet" href="styles.css?v=20261007-purchases1">
 </head>
 
 <body class="suite-public">
@@ -109,27 +109,20 @@
         <p>Les photos du jour J, la voix de vos proches, leurs petits mots… à retrouver maintenant ou à découvrir pour un prochain anniversaire.</p>
       </div>
 
-      <aside class="pricing-launch" aria-labelledby="launch-title">
-        <div>
-          <h3 id="launch-title">Le lancement est gratuit</h3>
-          <p>Aujourd’hui, <strong>une capsule gratuite par compte</strong> inclut les photos, textes, audios et vidéos, avec <strong>5 Go de stockage</strong>. <strong>Cette capsule restera gratuite pendant ses 3 ans d’accès, à compter de votre événement</strong>, même si une offre payante est lancée ensuite. Aucun abonnement ni paiement n’est demandé.</p>
-        </div>
-        <a class="pricing-button pricing-button-primary" href="create.html">Créer gratuitement ma capsule</a>
-      </aside>
-
-      <details class="future-offer"><summary>Découvrir les futures formules payantes</summary><p class="hint">Tarifs prévus par événement, sans abonnement. Pendant le lancement, votre capsule gratuite inclut déjà tous les formats.</p><div class="pricing-grid">
+      <p class="pricing-purchase-note">Un paiement par capsule, sans abonnement. Personnalisez votre carte, puis activez la formule de votre choix.</p>
+      <div class="pricing-grid">
         <article class="pricing-card">
           <div class="pricing-icon pricing-icons" aria-hidden="true"><i class="fa-solid fa-camera"></i></div>
           <h3>Essentiel</h3>
           <p class="pricing-subtitle">Les photos et les petits mots de vos invités.</p>
-          <div class="pricing-price"><strong>9,90&nbsp;€</strong><span>tarif prévu<br>par capsule</span></div>
-          <p class="pricing-capacity"><strong>1 Go</strong><span>de stockage prévu</span></p>
+          <div class="pricing-price"><strong>9,90&nbsp;€</strong><span>paiement unique<br>par capsule</span></div>
+          <p class="pricing-capacity"><strong>1 Go</strong><span>de stockage</span></p>
           <ul class="pricing-features">
             <li><i class="fa-solid fa-check" aria-hidden="true"></i> Photos et messages texte</li>
             <li class="pricing-unavailable"><i class="fa-solid fa-minus" aria-hidden="true"></i> Audio non inclus</li>
             <li class="pricing-unavailable"><i class="fa-solid fa-minus" aria-hidden="true"></i> Vidéo non incluse</li>
           </ul>
-          <a class="pricing-button" href="create.html">Créer ma capsule gratuite</a>
+          <a class="pricing-button" href="create.html?plan=photo">Choisir Essentiel</a>
         </article>
 
         <article class="pricing-card pricing-card-featured">
@@ -137,31 +130,30 @@
           <div class="pricing-icon pricing-icons" aria-hidden="true"><i class="fa-solid fa-camera"></i><i class="fa-solid fa-microphone"></i></div>
           <h3>Plus</h3>
           <p class="pricing-subtitle">Les photos et les mots, avec la voix de vos proches.</p>
-          <div class="pricing-price"><strong>14,90&nbsp;€</strong><span>tarif prévu<br>par capsule</span></div>
-          <p class="pricing-capacity"><strong>2 Go</strong><span>de stockage prévu</span></p>
+          <div class="pricing-price"><strong>14,90&nbsp;€</strong><span>paiement unique<br>par capsule</span></div>
+          <p class="pricing-capacity"><strong>2 Go</strong><span>de stockage</span></p>
           <ul class="pricing-features">
             <li><i class="fa-solid fa-check" aria-hidden="true"></i> Photos et messages texte</li>
             <li><i class="fa-solid fa-check" aria-hidden="true"></i> Enregistrements audio</li>
             <li class="pricing-unavailable"><i class="fa-solid fa-minus" aria-hidden="true"></i> Vidéo non incluse</li>
           </ul>
-          <a class="pricing-button pricing-button-primary" href="create.html">Créer ma capsule gratuite</a>
+          <a class="pricing-button pricing-button-primary" href="create.html?plan=audio">Choisir Plus</a>
         </article>
 
         <article class="pricing-card">
           <div class="pricing-icon pricing-icons" aria-hidden="true"><i class="fa-solid fa-camera"></i><i class="fa-solid fa-microphone"></i><i class="fa-solid fa-video"></i></div>
           <h3>Premium</h3>
           <p class="pricing-subtitle">Tous les formats pour revivre aussi les moments en vidéo.</p>
-          <div class="pricing-price"><strong>24,90&nbsp;€</strong><span>tarif prévu<br>par capsule</span></div>
-          <p class="pricing-capacity"><strong>5 Go</strong><span>de stockage prévu</span></p>
+          <div class="pricing-price"><strong>24,90&nbsp;€</strong><span>paiement unique<br>par capsule</span></div>
+          <p class="pricing-capacity"><strong>5 Go</strong><span>de stockage</span></p>
           <ul class="pricing-features">
             <li><i class="fa-solid fa-check" aria-hidden="true"></i> Photos et messages texte</li>
             <li><i class="fa-solid fa-check" aria-hidden="true"></i> Enregistrements audio</li>
             <li><i class="fa-solid fa-check" aria-hidden="true"></i> Vidéos enregistrées ou importées</li>
           </ul>
-          <a class="pricing-button" href="create.html">Créer ma capsule gratuite</a>
+          <a class="pricing-button" href="create.html?plan=premium">Choisir Premium</a>
         </article>
       </div>
-      </details>
       <p class="pricing-estimate">À titre indicatif, 1 Go représente environ 500 photos de 2 Mo ; 2 Go, environ 1 000 ; 5 Go, environ 2 500. Les fichiers audio et vidéo partagent cette capacité et réduisent le nombre de photos possible.</p>
       <div class="pricing-included">
         <h3>Dans toutes les formules</h3>
@@ -202,7 +194,7 @@
         </details>
         <details>
           <summary>Quelles sont les limites par fichier&nbsp;?</summary>
-          <p>Photos : 10 Mo maximum. Audios : 3 minutes et 20 Mo maximum. Vidéos : 1 minute et 50 Mo maximum. Les formats disponibles dépendent de la formule ; pendant le lancement gratuit, ils sont tous accessibles.</p>
+          <p>Photos : 10 Mo maximum. Audios : 3 minutes et 20 Mo maximum. Vidéos : 1 minute et 50 Mo maximum. Les formats disponibles dépendent de la formule.</p>
         </details>
         <details>
           <summary>Que se passe-t-il lorsque le stockage est plein&nbsp;?</summary>
@@ -237,3 +229,4 @@
 <script src="suite-shell.js?v=20260927-shell1"></script>
 </body>
 </html>
+

@@ -2551,3 +2551,7 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
   .suite-by-forge{gap:.22em}
   .suite-home-brand{width:100%}
 }
+
+
+/* Customization pack supplied by the product owner. */
+.customization-heading{display:flex;align-items:center;gap:14px;margin:0 0 18px}.customization-heading img{width:48px;height:48px;object-fit:contain;flex:none}.customization-heading h3{margin:0;font-size:20px}.customization-card{background:#fff;border:1px solid #e8e3dc;border-radius:18px;padding:20px;margin-top:18px}.customization-inline-icon{width:24px;height:24px;object-fit:contain;vertical-align:middle;flex:none}.qr-preview-label>span{display:flex;align-items:center;gap:6px}.qr-brand-note{display:flex;align-items:center;gap:8px;color:#68655f;font-size:12px;line-height:1.5}.pricing-purchase-note{text-align:center;margin:0 auto 28px;max-width:680px}.qr-initials-card.customization-card{display:block}.qr-initials-card .qr-check{margin-top:14px}@media(max-width:720px){.customization-card{padding:16px}.customization-heading{gap:12px}.customization-heading h3{font-size:18px}.customization-heading img{width:40px;height:40px}}

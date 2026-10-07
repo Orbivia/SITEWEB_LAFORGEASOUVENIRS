@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20261003-review3">
+<link rel="stylesheet" href="styles.css?v=20261007-purchases1">
 </head>
 <body class="create-page suite-shell-page">
 <header class="forge-style-header">
@@ -32,7 +32,7 @@
 <main class="wrap create-wrap">
   <section class="create-intro">
     <h1>Créez votre capsule</h1>
-    <p>Création gratuite pendant le lancement.</p>
+    <p>Préparez votre capsule et votre carte QR, puis activez-la avec un paiement unique. Sans abonnement.</p>
   </section>
 
   <form class="form-shell create-form" id="create-capsule" action="#" onsubmit="return false;">
@@ -61,7 +61,7 @@
       <small id="email-error" class="field-error" hidden></small>
     </div>
 
-    <input id="plan" name="plan" type="hidden" value="premium">
+    <div class="field"><label for="plan">Votre formule</label><select id="plan" name="plan"><option value="photo">Essentiel · 9,90 € · 1 Go · Photos et textes</option><option value="audio">Plus · 14,90 € · 2 Go · Avec audio</option><option value="premium" selected>Premium · 24,90 € · 5 Go · Avec audio et vidéo</option></select><small class="field-help">Un paiement par capsule. Vous pourrez changer de formule avant le paiement.</small></div>
     <button class="btn primary create-submit" type="submit">Créer ma capsule</button>
     <div id="status" class="status" role="status" aria-live="polite"></div>
   </form>
@@ -81,6 +81,7 @@
 <script src="suite-shell.js?v=20260927-shell1"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
 <script src="supabase-config.js?v=20260927-1"></script>
-<script src="app.js?v=20261003-review3"></script>
+<script src="app.js?v=20261007-purchases1"></script>
 </body>
 </html>
+
