@@ -1103,13 +1103,16 @@ async function buildA4PrintCanvas(c,url){
 async function downloadPrintCard(c,url){
  try{
   const page=await buildA4PrintCanvas(c,url);
+  const filename="la-suite-"+slugify(c.couple_name)+"-A4.png";
+  if(window.LaSuiteAndroid?.saveCard){window.LaSuiteAndroid.saveCard(page.toDataURL("image/png"),filename);return;}
   const a=document.createElement("a");
-  a.download="la-suite-"+slugify(c.couple_name)+"-A4.png";
+  a.download=filename;
   a.href=page.toDataURL("image/png");
   a.click()
  }catch(e){show($("qr-status"),e?.message||"Impossible de préparer le fichier.",false)}
 }
 async function printPrintCard(c,url){
+ if(window.LaSuiteAndroid?.printCard){try{const page=await buildA4PrintCanvas(c,url);window.LaSuiteAndroid.printCard(page.toDataURL("image/png"));}catch(e){show($("qr-status"),e?.message||"Impossible de lancer l’impression.",false)}return;}
  const win=window.open("","_blank");
  if(!win)return show($("qr-status"),"Autorisez les fenêtres pop-up pour lancer l’impression.",false);
  try{
@@ -1587,7 +1590,7 @@ function openCapsuleSettings(){
 }
 function setupCapsuleSettings(c){
  const panel=document.createElement('details');panel.className='capsule-settings';panel.open=true;
- panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain. Date fixe après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''} ${['free_beta','legacy'].includes(c.activation_source)?'hidden':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===capsulePlan(c)?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les rappels par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div><div id="capsule-upgrade" class="field" hidden></div></div>`;
+ panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain. Date fixe après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><input id="capsule-plan" type="hidden" value="${esc(capsulePlan(c))}"><span id="capsule-plan-name">${esc(PLAN_NAMES[capsulePlan(c)])}</span><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'Formule choisie à la création.':'Formule choisie à la création.'}</small></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les rappels par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div></div>`;
  const dialog=document.createElement("dialog");dialog.id="capsule-settings-dialog";dialog.className="studio-sheet studio-settings-dialog";dialog.setAttribute("aria-labelledby","capsule-settings-title");
  dialog.innerHTML='<div class="studio-sheet-head"><h2 id="capsule-settings-title">Paramètres de la capsule</h2><button class="studio-close" type="button" aria-label="Fermer les paramètres">×</button></div><div class="studio-sheet-body"><p id="settings-save-error" class="status" role="alert" hidden></p><button id="settings-save-retry" class="btn secondary" type="button" hidden>Réessayer</button></div>';
  dialog.querySelector(".studio-sheet-body").append(panel);const cardExport=$("studio-export");cardExport.hidden=false;dialog.querySelector(".studio-sheet-body").append(cardExport);
@@ -1611,11 +1614,12 @@ async function saveCapsuleSettings(c){
  if(!name||name.length>50||!/^\d{4}-\d{2}-\d{2}$/.test(date)){show($("organizer-save-error"),'Renseignez un nom et une date valides.',false);openCapsuleSettings();return false}
  if(c.status==='draft'&&date<tomorrowParis()){show($("organizer-save-error"),'Choisissez une date d’événement à partir de demain.',false);openCapsuleSettings();return false}
  const notify=$("capsule-notify").checked;
- const payload={couple_name:name,wedding_date:date,notify_by_email:notify};if(c.status==='draft')payload.plan=plan;
+ const payload={couple_name:name,wedding_date:date,notify_by_email:notify};
  const oldDefault=defaultCardExplanation(capsulePlan(c));
  await updateOwnedCapsule(c,payload);
  Object.assign(c,payload);$("dashboard-title").textContent=name;$("plan-explanation-help").textContent="Texte proposé pour la formule "+PLAN_NAMES[capsulePlan(c)]+".";
  if($("print-explanation").value===oldDefault){$("print-explanation").value=defaultCardExplanation(capsulePlan(c));organizerState.qr=true}
+ await renderOrganizerLifecycle(c);
  organizerState.settings=($("capsule-name").value.trim()!==name||$("capsule-date").value!==date||$("capsule-plan").value!==plan||$("capsule-notify").checked!==notify);return true;
 }
 
@@ -1648,26 +1652,22 @@ async function setupOfferServices(c){
   const {data,error}=await sb.functions.invoke('suite-billing',{body:{action:'status',capsule_id:c.id}});if(error||!data)return;
   $("notification-preference").hidden=!data.notifications_enabled;
   if(c.status==='draft'&&!data.payments_enabled){const access=await capsuleAccess();if(!access.free_launch){$("activate-capsule").disabled=true;show($("activation-status"),"Le paiement est momentanément indisponible. Votre préparation est conservée.",false);}}
-  if(c.status==='draft'&&data.pending_payment){$("capsule-plan").disabled=true;$("capsule-date").disabled=true;const help=$("capsule-plan").nextElementSibling;if(help)help.textContent="Un paiement est en cours. La formule et la date restent fixées jusqu’à son expiration.";}
-  if(data.payments_enabled&&data.upgrades?.length){const panel=$("capsule-upgrade");panel.hidden=false;panel.innerHTML='<label>Passer à une formule supérieure</label><p class="field-help">Payez uniquement la différence. La date de l’événement et les souvenirs restent conservés.</p><div class="upgrade-options">'+data.upgrades.map(x=>'<button type="button" class="btn secondary" data-upgrade="'+esc(x.plan)+'">'+esc(PLAN_NAMES[x.plan])+' · +'+(x.cents/100).toLocaleString('fr-FR',{style:'currency',currency:'EUR'})+'</button>').join('')+'</div><p class="status" role="status"></p>';
-   panel.querySelectorAll('[data-upgrade]').forEach(button=>button.onclick=async()=>{if(!confirm('Continuer vers le paiement sécurisé pour '+button.textContent+' ?'))return;button.disabled=true;try{const {data,error}=await sb.functions.invoke('suite-billing',{body:{action:'checkout',capsule_id:c.id,plan:button.dataset.upgrade}});if(error||!data?.url)throw error||Error(data?.error||'Paiement indisponible.');const target=new URL(data.url);if(target.protocol!=='https:'||target.hostname!=='checkout.stripe.com')throw Error('Lien de paiement invalide.');location.href=data.url}catch(e){show(panel.querySelector('.status'),'Paiement indisponible. Réessayez plus tard.',false);button.disabled=false}});
-  }
-  if(qs.get('upgrade')==='return')show($("memory-status"),'Le changement de formule sera visible dès la confirmation du paiement. Actualisez la page dans quelques instants.');
+  if(c.status==='draft'&&data.pending_payment){$("capsule-plan").disabled=true;$("capsule-date").disabled=true;const help=$("capsule-date").parentElement.querySelector(".field-help");if(help)help.textContent="Un paiement est en cours. La date reste fixée jusqu’à son expiration.";}
  }catch(_){}
 }
 
 async function renderOrganizerLifecycle(c){
  const {data,error}=await sb.rpc("owner_capsule_usage",{p_capsule_id:c.id});
- const panel=document.createElement("section");panel.className="capsule-lifecycle";
+ const root=document.querySelector('[data-owner-panel="messages"]');
+ let panel=root.querySelector(".capsule-lifecycle");if(!panel){panel=document.createElement("section");panel.className="capsule-lifecycle";root.prepend(panel);}
  if(error||!data){panel.textContent="Les dates et le stockage sont momentanément indisponibles.";document.querySelector('[data-owner-panel="messages"]').prepend(panel);return}
  c.usage=data;
  const names={suspended:"Dépôts en pause",draft:"En préparation",scheduled:"Prête à partager",open:"Dépôts ouverts",closed:"Souvenirs à découvrir",full:"Stockage rempli",expired:"Conservation terminée",missing_date:"Date à compléter"};
  const ratio=Math.min(100,Math.round(data.used_bytes/data.quota_bytes*100)),warning=ratio>=95?"Il reste très peu de place pour les fichiers. Les petits mots restent possibles.":ratio>=80?"Votre capsule approche de sa limite de stockage.":"";
  panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><span class="owner-storage">'+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</span><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress>'+(warning?'<p>'+esc(warning)+'</p>':'');
- const dates=document.createElement("details");dates.className="owner-dates";
+ let dates=root.querySelector(".owner-dates");if(!dates){dates=document.createElement("details");dates.className="owner-dates";panel.after(dates);}
  dates.innerHTML='<summary>Dates de votre capsule</summary><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(data.expires_at))+'.</p>';
- document.querySelector('[data-owner-panel="messages"]').prepend(dates);
- document.querySelector('[data-owner-panel="messages"]').prepend(panel);
+
 }
 
 async function initDashboard(){
@@ -1717,7 +1717,7 @@ async function initDashboard(){
  if(qs.get("payment")==="cancel")show($("activation-status"),"Paiement annulé. Votre préparation est conservée ; vous pouvez réessayer.",false);
  if(qs.get("payment")==="return"&&c.status!=="active"){
   const note=document.createElement("p");note.className="notice";note.setAttribute("role","status");note.textContent="Confirmation du paiement en cours. Votre capsule s’activera après confirmation par Stripe.";stage.prepend(note);
-  let attempts=0;const timer=setInterval(async()=>{if(ownerSessionEnded||++attempts>20){clearInterval(timer);return;}try{const {data}=await sb.from("capsules").select("status").eq("id",c.id).maybeSingle();if(data?.status==="active"){clearInterval(timer);location.replace("dashboard.html?slug="+encodeURIComponent(c.slug)+"&activated=1");}}catch{}},3000);
+  let attempts=0;const timer=setInterval(async()=>{if(ownerSessionEnded||++attempts>20){clearInterval(timer);if(!ownerSessionEnded){note.textContent='La confirmation prend plus de temps que prévu. Actualisez pour vérifier l’activation de votre capsule.';const retry=document.createElement('button');retry.type='button';retry.className='btn secondary';retry.textContent='Vérifier l’activation';retry.onclick=()=>location.reload();note.append(document.createElement('br'),retry);}return;}try{const {data}=await sb.from("capsules").select("status").eq("id",c.id).maybeSingle();if(data?.status==="active"){clearInterval(timer);location.replace("dashboard.html?slug="+encodeURIComponent(c.slug)+"&activated=1");}}catch{}},3000);
  }
  $("export-memories").addEventListener("click",()=>exportOpenedMemories(c));
  const savebar=document.createElement('div');savebar.className='organizer-savebar';savebar.hidden=true;savebar.innerHTML='<span id="organizer-save-state" role="status" aria-live="polite">Tout est enregistré</span><button class="btn secondary" id="save-organizer" type="button">Tout enregistrer</button><p id="organizer-save-error" class="status" role="status"></p>';
@@ -1785,7 +1785,7 @@ async function initDashboard(){
  async function refreshMemories(){
   if(refreshInProgress||ownerSessionEnded)return;refreshInProgress=true;
   const button=$("refresh-memories");button.disabled=true;show($("memory-status"),'Chargement des souvenirs…');
-  try{const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'Souvenirs à jour.')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser les souvenirs » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
+  try{await renderOrganizerLifecycle(c);const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'Souvenirs à jour.')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(capsuleExpired(c)||manifest.some(m=>!m.is_available&&new Date(m.delivery_at)<=new Date())))refreshMemories()});
