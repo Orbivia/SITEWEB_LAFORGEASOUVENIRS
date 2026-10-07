@@ -26,7 +26,7 @@ function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&l
 function slugify(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/(^-|-$)/g,"").slice(0,50)}
 function rid(){return Math.random().toString(36).slice(2,8)}
 function fParis(v){return new Date(v).toLocaleDateString('fr-FR',{timeZone:'Europe/Paris'})}
-function fdate(v){if(!v)return"—";return new Date(String(v).length===10?v+"T12:00:00":v).toLocaleDateString("fr-FR")}
+function fdate(v){if(!v)return"—";return fParis(String(v).length===10?v+"T12:00:00Z":v)}
 function label(t){return t==="video"?"Vidéo":t==="audio"?"Audio":t==="image"?"Image":"Texte"}
 function icon(t){const name={video:"video",audio:"microphone",image:"camera",text:"comment"}[t]||"comment";return '<i class="fa-solid fa-'+name+'" aria-hidden="true"></i>'}
 function ext(m){m=m?.split(";")[0];return({"video/mp4":"mp4","video/quicktime":"mov","video/webm":"webm","audio/webm":"webm","audio/mpeg":"mp3","audio/wav":"wav","audio/x-wav":"wav","audio/mp4":"m4a","audio/ogg":"ogg","image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/heic":"heic","image/heif":"heif"})[m]||"bin"}
@@ -468,7 +468,7 @@ async function optimizeGuestPhoto(file){
 function guestMediaDuration(file){
  return new Promise((resolve,reject)=>{
   const media=document.createElement(file.type.startsWith("audio/")?"audio":"video"),url=URL.createObjectURL(file);
-  const timeout=setTimeout(()=>finish(new Error("La durée de ce fichier est illisible. Essayez un autre fichier ou enregistrez directement ici.")),10000);
+  const timeout=setTimeout(()=>finish(new Error("La durée de ce fichier est illisible. Choisissez un autre fichier.")),10000);
   let finished=false;
   function finish(error){if(finished)return;finished=true;const duration=media.duration;clearTimeout(timeout);media.onloadedmetadata=null;media.onerror=null;media.removeAttribute("src");URL.revokeObjectURL(url);error?reject(error):resolve(duration)}
   media.preload="metadata";media.onloadedmetadata=()=>Number.isFinite(media.duration)&&media.duration>0?finish():finish(new Error("La durée de ce fichier est illisible. Enregistrez directement ici."));
@@ -629,25 +629,20 @@ async function initCapsule(){
  });
 }
 
-function videoDuration(file){
- return new Promise((resolve,reject)=>{
-  const video=document.createElement("video"),url=URL.createObjectURL(file);
-  video.preload="metadata";
-  video.onloadedmetadata=()=>{const d=video.duration;URL.revokeObjectURL(url);resolve(d)};
-  video.onerror=()=>{URL.revokeObjectURL(url);reject(new Error("Impossible de lire la durée de la vidéo."))};
-  video.src=url;
- })
-}
+function videoDuration(file){return guestMediaDuration(file)}
 
 function introKind(c){return c.intro_path?(/\.(jpg|jpeg|png|webp)$/i.test(c.intro_path)?"image":"video"):c.welcome_message?"text":"none"}
+let introPreviewRevision=0;
 async function renderIntroPreview(c){
  const wrap=$("intro-preview-wrap");if(!wrap)return;
+ const revision=++introPreviewRevision;
  wrap.replaceChildren();
  const card=wrap.closest(".intro-preview-card");if(card)card.hidden=introKind(c)==="none"&&!organizerState.intro;
  wrap.hidden=introKind(c)==="none";
  if(c.welcome_message){const text=document.createElement("p");text.className="intro-text-preview";text.textContent=c.welcome_message;wrap.append(text)}
  if(!c.intro_path)return;
  const{data,error}=await sb.storage.from("capsule-media").createSignedUrl(c.intro_path,300);
+ if(revision!==introPreviewRevision||ownerSessionEnded)return;
  if(error||!data?.signedUrl){wrap.append(document.createTextNode("Aperçu indisponible. Votre message d’accueil reste enregistré."));return}
  const media=document.createElement(introKind(c)==="image"?"img":"video");media.className="intro-preview";media.src=data.signedUrl;
  if(media.tagName==="IMG")media.alt="Votre image d’accueil";else{media.controls=true;media.playsInline=true}
@@ -802,7 +797,10 @@ function qrInk(color){
  while(luminance()>.10)rgb=rgb.map(x=>Math.floor(x*.9));
  return "#"+rgb.map(x=>x.toString(16).padStart(2,"0")).join("");
 }
+let qrCanvasCache=null;
 function makeQrCanvas(url,o){
+ const key=JSON.stringify([url,qrInk(o.color)]);
+ if(qrCanvasCache?.key===key)return qrCanvasCache.canvas;
  const holder=document.createElement("div");
  const code=new QRCode(holder,{text:url,width:512,height:512,colorDark:qrInk(o.color),colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
  const model=code._oQRCode,n=model.getModuleCount(),cell=12,quiet=4;
@@ -810,7 +808,7 @@ function makeQrCanvas(url,o){
  const ctx=canvas.getContext("2d"); // Light modules and the four-module quiet zone remain transparent.
  ctx.fillStyle=qrInk(o.color);
  for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(model.isDark(y,x))ctx.fillRect((x+quiet)*cell,(y+quiet)*cell,cell,cell);
- return canvas;
+ qrCanvasCache={key,canvas};return canvas;
 }
 function drawQrMonogram(ctx,o,cx,cy,size,background){
  const d=size*.18,r=d/2,theme=qrThemes[o.style];
@@ -977,18 +975,28 @@ function drawQrDivider(ctx,o,x,y){
  }
  ctx.restore();
 }
-let qrPreviewRevision=0;
+let qrPreviewRevision=0,qrPreviewTimer=null,qrPreviewUrl=null;
 function applyQrPreview(url,c){
  const o=qrOptions(c),card=$("qr-artwork-preview");
  if(!card)return;
  $("qr-color-value").textContent=o.color.toUpperCase();
  const revision=++qrPreviewRevision;
  const snapshot={...c};
- buildPrintCardCanvas(snapshot,url).then(canvas=>{
-  if(revision!==qrPreviewRevision)return;
-  const preview=$("qr-artwork-preview");
-  if(preview)preview.src=canvas.toDataURL("image/png");
- }).catch(()=>show($("qr-status"),"Impossible de préparer l’aperçu. Réessayez.",false));
+ clearTimeout(qrPreviewTimer);
+ qrPreviewTimer=setTimeout(async()=>{
+  try{
+   const canvas=await buildPrintCardCanvas(snapshot,url);
+   if(revision!==qrPreviewRevision||ownerSessionEnded)return;
+   const thumbnail=document.createElement('canvas');thumbnail.width=720;thumbnail.height=1080;
+   thumbnail.getContext('2d').drawImage(canvas,0,0,thumbnail.width,thumbnail.height);
+   const blob=await new Promise(resolve=>thumbnail.toBlob(resolve,'image/png'));
+   if(revision!==qrPreviewRevision||ownerSessionEnded)return;
+   if(!blob)throw Error('Aperçu indisponible');
+   const preview=$("qr-artwork-preview");if(!preview)return;
+   const oldUrl=qrPreviewUrl;qrPreviewUrl=URL.createObjectURL(blob);preview.src=qrPreviewUrl;
+   if(oldUrl)URL.revokeObjectURL(oldUrl);
+  }catch{if(revision===qrPreviewRevision&&!ownerSessionEnded)show($("qr-status"),"Impossible de préparer l’aperçu. Réessayez.",false)}
+ },100);
 }
 function loadCanvasImage(src){
  return new Promise((resolve,reject)=>{
@@ -1433,7 +1441,7 @@ function compactOwnerEditors(){
   const viewport=window.visualViewport, height=viewport&&Math.abs(viewport.scale-1)<.05?viewport.height:innerHeight;
   const r=stage.getBoundingClientRect(), below=sticky.getBoundingClientRect().bottom-r.bottom;
   const activation=document.querySelector('.activation-panel'), extra=activation&&!activation.hidden?activation.getBoundingClientRect().height+20:0;
-  const value=Math.floor(Math.max(130,height-r.top-below-nav.getBoundingClientRect().height-44-extra));
+  const value=Math.floor(Math.max(210,height-r.top-below-nav.getBoundingClientRect().height-44-extra));
   if(image.style.getPropertyValue('--studio-card-height')!==value+'px')image.style.setProperty('--studio-card-height',value+'px');
  })};
  const observer=new ResizeObserver(fit);observer.observe($('dashboard-content'));observer.observe(document.querySelector('.suite-topbar'));observer.observe(document.querySelector('.dashboard-head'));
@@ -1586,7 +1594,7 @@ async function renderManifest(c,manifest){
   const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
   if(available&&row?.message_text){const text=document.createElement('p');text.className='memory-text';text.textContent=row.message_text;content.append(text)}
   if(available&&row?.media_path){
-   const media=document.createElement(row.media_type==="image"?'img':row.media_type==='audio'?'audio':'video');media.className='memory-'+(row.media_type==='image'?'image':row.media_type);if(row.media_type==='image')media.alt='Souvenir de '+(item.guest_name||'votre invité');else{media.controls=true;media.preload='metadata'}
+   const media=document.createElement(row.media_type==="image"?'img':row.media_type==='audio'?'audio':'video');media.className='memory-'+(row.media_type==='image'?'image':row.media_type);if(row.media_type==='image'){media.alt='Souvenir de '+(item.guest_name||'votre invité');media.loading='lazy';media.decoding='async'}else{media.controls=true;media.playsInline=true;media.preload='none'}
    const status=document.createElement('p');status.className='hint';status.setAttribute('role','status');
    const refresh=document.createElement('button');refresh.type='button';refresh.className='mini-link';refresh.textContent='Recharger le média';
    let signedAt=0;
@@ -1796,7 +1804,7 @@ async function initDashboard(){
  function scheduleAutoSave(){
   clearTimeout(autoSaveTimer);
   autoSaveTimer=setTimeout(async()=>{
-   if(ownerSessionEnded)return;
+   if(ownerSessionEnded||organizerState.error)return;
    if(organizerState.saving){scheduleAutoSave();return}
    if(organizerState.settings&&(!$("capsule-name").value.trim()||!$("capsule-date").value))return;
    const kind=$("intro-kind").value;

@@ -2931,3 +2931,11 @@ input,select,textarea{border-radius:9px!important}
 
 @media(min-width:761px){.studio-ready .owner-tabs [role=tab]{font-size:.82rem;white-space:nowrap;padding:10px 6px}.studio-ready .owner-tabs [role=tab] i{margin-right:5px}}
 @media(min-width:1000px){.studio-ready .dashboard-head,.studio-ready .qr-designer-grid{max-width:960px}.studio-ready .qr-preview-sticky{grid-template-columns:minmax(0,560px) minmax(0,320px)}.studio-ready .qr-preview-actions .btn{font-size:.8rem}}
+
+/* Long client text stays within the page, including narrow phones. */
+.workspace-selector h1{min-width:0}
+.guest-page .capsule-hero h1,.memory-meta strong,.memory-text{overflow-wrap:anywhere}
+.memory-meta,.memory-content{min-width:0}
+.suite-burger{min-width:44px;min-height:44px}
+html:has(body.studio-ready){scroll-padding-bottom:90px}
+
