@@ -11,6 +11,7 @@ function organizerDirty(){return organizerState.qr||organizerState.intro||organi
 function saveIndicator(){
  const el=$("organizer-save-state");if(!el)return;
  el.textContent=organizerState.saving?"Enregistrement…":organizerState.error?"Enregistrement incomplet. Réessayez.":organizerDirty()?"Modifications non enregistrées":"Tout est enregistré";
+ const bar=el.closest(".organizer-savebar");if(bar)bar.hidden=!organizerState.error;
  const retry=$("save-organizer");if(retry){retry.textContent=organizerState.error?"Réessayer":"Enregistrer";retry.disabled=Boolean(organizerState.saving)||(!organizerDirty()&&!organizerState.error)}
  const introButton=$("upload-intro");if(introButton){introButton.disabled=Boolean(organizerState.saving)||!organizerState.intro;introButton.hidden=$("intro-kind")?.value==="none"&&!organizerState.intro;}
  el.dataset.state=organizerState.error?"error":organizerDirty()?"pending":"saved";
@@ -1131,7 +1132,7 @@ function saveQrCustomization(c,url,silent=false){
    await updateOwnedCapsule(c,payload);
    Object.assign(c,payload);applyQrPreview(url,{...c,...collectQrCustomization(c)});
    if(JSON.stringify(payload)===JSON.stringify(collectQrCustomization(c)))organizerState.qr=false;
-   organizerState.error=false;show($("qr-status"),"Carte enregistrée.");return true;
+   organizerState.error=false;show($("qr-status"),silent?"":"Carte enregistrée.");return true;
   }catch(e){organizerState.qr=true;organizerState.error=true;show($("qr-status"),"Impossible d’enregistrer la carte : "+e.message,false);return false}
   finally{organizerState.saving--;saveIndicator()}
  };
@@ -1158,9 +1159,7 @@ function ownerShell(c,url,count){
 <section class="qr-designer-panel">
  <div class="qr-designer-head">
   <div>
-   <div class="eyebrow">Carte QR code</div>
-   <h2>Personnalisez votre carte</h2>
-   <p>Personnalisez la carte et visualisez le résultat immédiatement.</p>
+   <h2>Votre carte</h2>
   </div>
 
  </div>
@@ -1258,7 +1257,7 @@ function ownerShell(c,url,count){
     <div class="qr-preview-stage">
      <img id="qr-artwork-preview" class="qr-artwork-preview" alt="Aperçu de votre carte QR personnalisée, identique à l’impression">
     </div>
-    <p class="qr-preview-tip">Carte 10 × 15 cm centrée sur une feuille A4 avec repères de découpe.</p>
+
     <div class="qr-preview-actions">
      <button class="btn secondary" id="share-link" type="button"><img class="customization-inline-icon" src="assets/customization/lien.webp" alt="" width="24" height="24">Partager</button>
      <a class="btn secondary" id="open-guest-link" href="${esc(url)}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Voir la page invité</a>
@@ -1266,7 +1265,8 @@ function ownerShell(c,url,count){
      <button class="btn primary" id="print-print-card" type="button"><i class="fa-solid fa-print" aria-hidden="true"></i>Imprimer</button>
     </div>
     <details class="qr-print-guide">
-     <summary>Conseils pour le jour J</summary>
+     <summary>Impression et conseils</summary>
+     <p class="field-help">Carte 10 × 15 cm centrée sur une feuille A4 avec repères de découpe.</p>
      <div class="qr-print-guide-grid">
       <div><i class="fa-regular fa-file-lines" aria-hidden="true"></i><span><strong>Imprimez sur A4</strong><small>Découpez ensuite la carte 10 × 15 cm grâce aux repères.</small></span></div>
       <div><i class="fa-regular fa-image" aria-hidden="true"></i><span><strong>Placez-la dans un cadre</strong><small>Un cadre 10 × 15 cm ou un petit chevalet fonctionne très bien.</small></span></div>
@@ -1597,7 +1597,7 @@ async function renderOrganizerLifecycle(c){
  c.usage=data;
  const names={suspended:"Dépôts en pause",draft:"En préparation",scheduled:"Prête à partager",open:"Dépôts ouverts",closed:"Souvenirs à découvrir",full:"Stockage rempli",expired:"Conservation terminée",missing_date:"Date à compléter"};
  const ratio=Math.min(100,Math.round(data.used_bytes/data.quota_bytes*100)),warning=ratio>=95?"Il reste très peu de place pour les fichiers. Les petits mots restent possibles.":ratio>=80?"Votre capsule approche de sa limite de stockage.":"";
- panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><span class="owner-storage">'+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</span><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress>'+(warning?'<p>'+esc(warning)+'</p>':'')+(['free_beta','legacy'].includes(c.activation_source)?'<small>Capsule offerte lors du lancement · tous les formats · 5 Go.</small>':'');
+ panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><span class="owner-storage">'+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</span><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress>'+(warning?'<p>'+esc(warning)+'</p>':'');
  const dates=document.createElement("details");dates.className="owner-dates";
  dates.innerHTML='<summary>Dates de votre capsule</summary><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(data.expires_at))+'.</p>';
  document.querySelector('[data-owner-panel="messages"]').prepend(dates);
@@ -1656,7 +1656,7 @@ async function initDashboard(){
   let attempts=0;const timer=setInterval(async()=>{if(ownerSessionEnded||++attempts>20){clearInterval(timer);return;}try{const {data}=await sb.from("capsules").select("status").eq("id",c.id).maybeSingle();if(data?.status==="active"){clearInterval(timer);location.replace("dashboard.html?slug="+encodeURIComponent(c.slug)+"&activated=1");}}catch{}},3000);
  }
  $("export-memories").addEventListener("click",()=>exportOpenedMemories(c));
- const savebar=document.createElement('div');savebar.className='organizer-savebar';savebar.innerHTML='<span id="organizer-save-state" role="status" aria-live="polite">Tout est enregistré</span><button class="btn secondary" id="save-organizer" type="button">Tout enregistrer</button><p id="organizer-save-error" class="status" role="status"></p>';
+ const savebar=document.createElement('div');savebar.className='organizer-savebar';savebar.hidden=true;savebar.innerHTML='<span id="organizer-save-state" role="status" aria-live="polite">Tout est enregistré</span><button class="btn secondary" id="save-organizer" type="button">Tout enregistrer</button><p id="organizer-save-error" class="status" role="status"></p>';
  $("owner-overview").append(savebar);
  setupOwnerTabs(c,manifest||[]);
  applyQrPreview(url.href,c);
