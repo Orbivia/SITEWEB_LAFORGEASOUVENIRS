@@ -1381,9 +1381,9 @@ function compactOwnerEditors(){
  dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
  const mobile=matchMedia("(max-width:760px)");mobile.addEventListener("change",()=>{if(dialog.open)dialog.close()});
  if(!mobile.matches)sections[0].open=true;
- const settingsButton=document.createElement("button");settingsButton.id="studio-settings";settingsButton.className="studio-settings-button";settingsButton.type="button";settingsButton.setAttribute("aria-label","Paramètres de la capsule");settingsButton.setAttribute("aria-expanded","false");settingsButton.innerHTML='<i class="fa-solid fa-sliders" aria-hidden="true"></i>';
+ const settingsButton=document.createElement("button");settingsButton.id="studio-settings";settingsButton.className="studio-settings-button";settingsButton.type="button";settingsButton.setAttribute("aria-label","Paramètres de la capsule");settingsButton.setAttribute("aria-haspopup","dialog");settingsButton.setAttribute("aria-controls","capsule-settings-dialog");settingsButton.setAttribute("aria-expanded","false");settingsButton.innerHTML='<i class="fa-solid fa-sliders" aria-hidden="true"></i>';
  document.querySelector(".dashboard-head").append(settingsButton);
- settingsButton.addEventListener("click",()=>{const panel=document.querySelector(".capsule-settings");panel.hidden=!panel.hidden;panel.open=!panel.hidden;settingsButton.setAttribute("aria-expanded",String(!panel.hidden))});
+ settingsButton.addEventListener("click",openCapsuleSettings);
 }
 
 function setupOwnerTabs(c,manifest){
@@ -1554,17 +1554,29 @@ async function renderCapsuleList(caps,access){
  await Promise.all(caps.map(async c=>{const{data,error}=await sb.rpc('owner_capsule_stats',{p_capsule_id:c.id});const el=document.querySelector('[data-capsule-count="'+c.id+'"]');if(el)el.textContent=error?'Nombre de souvenirs indisponible':memoryCountLabel(data?.[0]?.message_count)}));
 }
 function tomorrowParis(){const d=new Date(parisDay()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
+function openCapsuleSettings(){
+ const dialog=$("capsule-settings-dialog");if(!dialog||dialog.open)return;
+ $("studio-settings").setAttribute("aria-expanded","true");dialog.showModal();
+}
 function setupCapsuleSettings(c){
- const panel=document.createElement('details');panel.className='capsule-settings';panel.hidden=true;
+ const panel=document.createElement('details');panel.className='capsule-settings';panel.open=true;
  panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Pour les nouvelles capsules, la date fixe la période de dépôt et reste inchangée après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><select id="capsule-plan" ${c.status==='active'?'disabled':''} ${['free_beta','legacy'].includes(c.activation_source)?'hidden':''}>${Object.entries(PLAN_NAMES).map(([key,name])=>`<option value="${key}" ${key===capsulePlan(c)?'selected':''}>${name}</option>`).join('')}</select><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'La formule est fixée après activation.':'Modifiable avant l’activation.'}</small></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Me prévenir par e-mail des ouvertures et avant la fin des 3 ans</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div><div id="capsule-upgrade" class="field" hidden></div></div>`;
- $("owner-overview").append(panel);
+ const dialog=document.createElement("dialog");dialog.id="capsule-settings-dialog";dialog.className="studio-sheet studio-settings-dialog";dialog.setAttribute("aria-labelledby","capsule-settings-title");
+ dialog.innerHTML='<div class="studio-sheet-head"><h2 id="capsule-settings-title">Paramètres de la capsule</h2><button class="studio-close" type="button" aria-label="Fermer les paramètres">×</button></div><div class="studio-sheet-body"><p id="settings-save-error" class="status" role="alert" hidden></p><button id="settings-save-retry" class="btn secondary" type="button" hidden>Réessayer</button></div>';
+ dialog.querySelector(".studio-sheet-body").append(panel);$("dashboard-content").append(dialog);
+ dialog.querySelector(".studio-close").addEventListener("click",()=>dialog.close());
+ dialog.addEventListener("close",()=>{$("studio-settings").setAttribute("aria-expanded","false");$("studio-settings").focus()});
+ dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
+ $("settings-save-retry").addEventListener("click",()=>$("save-organizer").click());
+ const syncError=()=>{const source=$("organizer-save-error"),target=$("settings-save-error");target.textContent=source?.textContent||"";target.hidden=!target.textContent;$("settings-save-retry").hidden=!target.textContent;};
+ queueMicrotask(()=>{syncError();if($("organizer-save-error"))new MutationObserver(syncError).observe($("organizer-save-error"),{childList:true,subtree:true,characterData:true})});
  ['capsule-name','capsule-date','capsule-plan','capsule-notify'].forEach(id=>$(id).addEventListener('input',()=>markDirty('settings')));
 }
 async function saveCapsuleSettings(c){
  if(!organizerState.settings)return true;
  const name=$("capsule-name").value.trim(),date=$("capsule-date").value,plan=$("capsule-plan").value;
- if(!name||name.length>50||!/^\d{4}-\d{2}-\d{2}$/.test(date)){show($("organizer-save-error"),'Renseignez un nom et une date valides.',false);document.querySelector('.capsule-settings').hidden=false;document.querySelector('.capsule-settings').open=true;$("studio-settings").setAttribute("aria-expanded","true");return false}
- if(c.status==='draft'&&date<tomorrowParis()){show($("organizer-save-error"),'Choisissez une date d’événement à partir de demain.',false);document.querySelector('.capsule-settings').hidden=false;document.querySelector('.capsule-settings').open=true;$("studio-settings").setAttribute("aria-expanded","true");return false}
+ if(!name||name.length>50||!/^\d{4}-\d{2}-\d{2}$/.test(date)){show($("organizer-save-error"),'Renseignez un nom et une date valides.',false);openCapsuleSettings();return false}
+ if(c.status==='draft'&&date<tomorrowParis()){show($("organizer-save-error"),'Choisissez une date d’événement à partir de demain.',false);openCapsuleSettings();return false}
  const notify=$("capsule-notify").checked;
  const payload={couple_name:name,wedding_date:date,notify_by_email:notify};if(c.status==='draft')payload.plan=plan;
  const oldDefault=defaultCardExplanation(capsulePlan(c));

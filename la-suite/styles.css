@@ -2634,3 +2634,9 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 }
 .studio-ready .dashboard-head{flex-direction:row;text-align:left}.studio-ready #share-link img{filter:brightness(0) invert(1)}
 @media(max-width:760px){.studio-ready .dashboard-page{padding-top:14px}.studio-ready .qr-artwork-preview{max-height:min(44svh,440px)}.studio-tools{gap:8px;margin:10px 0}.studio-tools button{min-height:56px;padding:7px 4px}.studio-ready .qr-preview-stage{padding:8px}}
+
+/* Keep settings local and size the mobile card to the available screen. */
+.studio-settings-dialog .capsule-settings{padding:0;margin:0;border:0;background:transparent;box-shadow:none}.studio-settings-dialog .settings-grid{grid-template-columns:1fr;gap:18px}.studio-settings-dialog .settings-grid .field{margin:0}.studio-settings-dialog .field-help{font-size:.8rem;line-height:1.5}.studio-settings-dialog .status[hidden]{display:none}
+@media(max-width:760px){.studio-ready .qr-preview-stage{width:fit-content;max-width:100%;margin-inline:auto}.studio-ready .qr-artwork-preview{max-height:clamp(220px,calc(100svh - 390px),520px)}.studio-ready .owner-tabs{min-height:0;height:auto;padding-bottom:calc(8px + min(env(safe-area-inset-bottom,0px),24px))}.studio-ready .dashboard-page{padding-bottom:90px}}
+
+#settings-save-retry[hidden]{display:none}
