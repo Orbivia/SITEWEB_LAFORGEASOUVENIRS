@@ -15,6 +15,7 @@ function saveIndicator(){
  const retry=$("save-organizer");if(retry){retry.textContent=organizerState.error?"Réessayer":"Enregistrer";retry.disabled=Boolean(organizerState.saving)||(!organizerDirty()&&!organizerState.error)}
  const introButton=$("upload-intro");if(introButton){introButton.disabled=Boolean(organizerState.saving)||!organizerState.intro;introButton.hidden=!organizerState.intro;}
  el.dataset.state=organizerState.error?"error":organizerDirty()?"pending":"saved";
+ const cardState=$("studio-save-state");if(cardState){cardState.textContent=el.textContent;cardState.dataset.state=el.dataset.state;}
 }
 function markDirty(part){organizerState[part]=true;organizerState.error=false;saveIndicator()}
 window.addEventListener("beforeunload",e=>{if(!ownerSessionEnded&&(organizerDirty()||organizerState.saving)){e.preventDefault();e.returnValue=""}});
@@ -713,13 +714,15 @@ function setupIntro(c){
  $("upload-intro").addEventListener("click",()=>uploadIntro(c));renderIntroPreview(c);renderIntroDraft(c);
 }
 const DEFAULT_CARD_TITLE="Notre capsule temporelle";
-const DEFAULT_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard, à la date que vous choisissez.";
+const DEFAULT_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard.";
+const OLD_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard, à la date que vous choisissez.";
+const OLD_CARD_EXPLANATIONS=["une photo ou un texte","une photo, un audio ou un texte","une photo, un audio, une vidéo ou un texte"].map(formats=>"Flashez ce QR code et déposez-y "+formats+". Choisissez la manière la plus naturelle de partager un souvenir avec nous.");
 function capsulePlan(c){return ['free_beta','legacy'].includes(c.activation_source)?'premium':c.plan}
 function defaultCardExplanation(plan){
  const formats={photo:"une photo ou un texte",audio:"une photo, un audio ou un texte",premium:"une photo, un audio, une vidéo ou un texte"};
- return "Flashez ce QR code et déposez-y "+(formats[plan]||formats.premium)+". Choisissez la manière la plus naturelle de partager un souvenir avec nous.";
+ return "Scannez ce QR code pour déposer "+(formats[plan]||formats.premium)+".";
 }
-function cardDefault(value,old,fallback){return !value||value===old?fallback:String(value)}
+function cardDefault(value,old,fallback,optional=false){return value==null||(!optional&&!value)||value===old?fallback:String(value)}
 
 function defaultInitials(name){
  const parts=String(name||"").split(/&|\+| et |\/|,/i).map(x=>x.trim()).filter(Boolean);
@@ -732,8 +735,8 @@ function qrOptions(c){
   initials:(c.qr_initials||defaultInitials(c.couple_name)).slice(0,4),
   color:c.qr_color||"#b78b38",
   title:cardDefault(c.print_title,"Laissez-nous un souvenir",DEFAULT_CARD_TITLE).slice(0,42),
-  note:cardDefault(c.print_note,"Scannez ce code pour nous laisser un souvenir.",DEFAULT_CARD_NOTE).slice(0,120),
-  explanation:cardDefault(c.print_explanation,"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.",defaultCardExplanation(capsulePlan(c))).slice(0,240),
+  note:cardDefault(c.print_note===OLD_CARD_NOTE?null:c.print_note,"Scannez ce code pour nous laisser un souvenir.",DEFAULT_CARD_NOTE,true).slice(0,120),
+  explanation:cardDefault(OLD_CARD_EXPLANATIONS.includes(c.print_explanation)?null:c.print_explanation,"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.",defaultCardExplanation(capsulePlan(c)),true).slice(0,240),
   font:["elegant","classic","modern","romantic","editorial","refined","contemporary","signature"].includes(c.qr_font)?c.qr_font:"elegant",
   style:Object.hasOwn(qrThemes,c.qr_style)?c.qr_style:"romantic",
   size:QR_LARGE_SIZE,
@@ -758,8 +761,8 @@ function collectQrCustomization(c){
   qr_initials:($("qr-initials-input")?.value||defaultInitials(c.couple_name)).trim().slice(0,4),
   qr_color:$("qr-color")?.value||"#b78b38",
   print_title:($("print-title")?.value||DEFAULT_CARD_TITLE).trim().slice(0,42),
-  print_note:($("print-note")?.value||DEFAULT_CARD_NOTE).trim().slice(0,120),
-  print_explanation:($("print-explanation")?.value||defaultCardExplanation(capsulePlan(c))).trim().slice(0,240),
+  print_note:($("print-note")?.value??DEFAULT_CARD_NOTE).trim().slice(0,120),
+  print_explanation:($("print-explanation")?.value??defaultCardExplanation(capsulePlan(c))).trim().slice(0,240),
   qr_font:$("qr-font")?.value||"elegant",
   qr_style:$("qr-style")?.value||"romantic",
   qr_size:QR_LARGE_SIZE,
@@ -1201,8 +1204,8 @@ function ownerShell(c,url,count){
    <div class="qr-control-group">
     ${customizationHeading("tableau","Les mots de votre carte")}<p class="field-help">Les textes sont prêts à l’emploi. Ajustez-les pour qu’ils vous ressemblent.</p>
     <div class="field"><div class="qr-field-label-row"><label for="print-title">Titre de la carte</label><span data-char-count="print-title">0 / 42</span></div><input id="print-title" maxlength="42" value="${esc(o.title)}"></div>
-    <div class="field"><div class="qr-field-label-row"><label for="print-note">Petit mot</label><span data-char-count="print-note">0 / 120</span></div><textarea id="print-note" maxlength="120" rows="2">${esc(o.note)}</textarea></div>
-    <div class="field"><div class="qr-field-label-row"><label for="print-explanation">Texte d'explication</label><span data-char-count="print-explanation">0 / 240</span></div><textarea id="print-explanation" maxlength="240" rows="3">${esc(o.explanation)}</textarea><small id="plan-explanation-help" class="field-help">Texte proposé pour la formule ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}.</small></div>
+    <div class="field"><div class="qr-field-label-row"><label for="print-note">Petit mot</label><span data-char-count="print-note">0 / 120</span><label class="studio-text-toggle"><input id="print-note-visible" type="checkbox" ${o.note?"checked":""}>Afficher</label></div><textarea id="print-note" maxlength="120" rows="2">${esc(o.note)}</textarea></div>
+    <div class="field"><div class="qr-field-label-row"><label for="print-explanation">Texte d'explication</label><span data-char-count="print-explanation">0 / 240</span><label class="studio-text-toggle"><input id="print-explanation-visible" type="checkbox" ${o.explanation?"checked":""}>Afficher</label></div><textarea id="print-explanation" maxlength="240" rows="3">${esc(o.explanation)}</textarea><small id="plan-explanation-help" class="field-help">Texte proposé pour la formule ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}.</small></div>
    </div>
 
    <div class="qr-control-group qr-personalization-group">
@@ -1223,34 +1226,34 @@ function ownerShell(c,url,count){
      <input id="qr-font" type="hidden" value="${esc(o.font)}">
      <div class="qr-font-picker" data-qr-font-picker>
       <button class="qr-font-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
-       <span class="qr-font-current qr-font-sample-${esc(o.font)}">Justine & Pierre</span>
+       <span class="qr-font-current qr-font-sample-${esc(o.font)}">${esc(o.title)}</span>
        <span class="qr-font-current-name">${o.font==="classic"?"Classique":o.font==="modern"?"Moderne":o.font==="romantic"?"Manuscrite":o.font==="editorial"?"Éditoriale":o.font==="refined"?"Raffinée":o.font==="contemporary"?"Contemporaine":o.font==="signature"?"Signature":"Élégante"}</span>
        <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
       </button>
       <div class="qr-font-menu" role="listbox" hidden>
        <button type="button" role="option" data-qr-font="elegant" class="${o.font==="elegant"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-elegant">Justine & Pierre</span><small>Élégante</small>
+        <span class="qr-font-sample qr-font-sample-elegant">${esc(o.title)}</span><small>Élégante</small>
        </button>
        <button type="button" role="option" data-qr-font="classic" class="${o.font==="classic"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-classic">Justine & Pierre</span><small>Classique</small>
+        <span class="qr-font-sample qr-font-sample-classic">${esc(o.title)}</span><small>Classique</small>
        </button>
        <button type="button" role="option" data-qr-font="modern" class="${o.font==="modern"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-modern">Justine & Pierre</span><small>Moderne</small>
+        <span class="qr-font-sample qr-font-sample-modern">${esc(o.title)}</span><small>Moderne</small>
        </button>
        <button type="button" role="option" data-qr-font="romantic" class="${o.font==="romantic"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-romantic">Justine & Pierre</span><small>Manuscrite</small>
+        <span class="qr-font-sample qr-font-sample-romantic">${esc(o.title)}</span><small>Manuscrite</small>
        </button>
        <button type="button" role="option" data-qr-font="editorial" class="${o.font==="editorial"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-editorial">Justine & Pierre</span><small>Éditoriale</small>
+        <span class="qr-font-sample qr-font-sample-editorial">${esc(o.title)}</span><small>Éditoriale</small>
        </button>
        <button type="button" role="option" data-qr-font="refined" class="${o.font==="refined"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-refined">Justine & Pierre</span><small>Raffinée</small>
+        <span class="qr-font-sample qr-font-sample-refined">${esc(o.title)}</span><small>Raffinée</small>
        </button>
        <button type="button" role="option" data-qr-font="contemporary" class="${o.font==="contemporary"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-contemporary">Justine & Pierre</span><small>Contemporaine</small>
+        <span class="qr-font-sample qr-font-sample-contemporary">${esc(o.title)}</span><small>Contemporaine</small>
        </button>
        <button type="button" role="option" data-qr-font="signature" class="${o.font==="signature"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-signature">Justine & Pierre</span><small>Signature</small>
+        <span class="qr-font-sample qr-font-sample-signature">${esc(o.title)}</span><small>Signature</small>
        </button>
       </div>
      </div>
@@ -1391,7 +1394,7 @@ function compactOwnerEditors(){
   const body=document.createElement("div");body.className="customization-section-body";body.append(...group.childNodes);details.append(summary,body);group.replaceWith(details);return details;
  });
  const dialog=document.createElement("dialog");dialog.id="studio-editor";dialog.className="studio-sheet";dialog.setAttribute("aria-labelledby","studio-editor-title");
- dialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-editor-title"></h2><button class="studio-close" type="button" aria-label="Fermer les réglages">×</button></div><div class="studio-sheet-body"></div>';
+ dialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-editor-title"></h2><button class="studio-close" type="button" aria-label="Fermer les réglages">×</button></div><div class="studio-sheet-body"></div><div class="studio-sheet-footer"><span id="studio-save-state" role="status" aria-live="polite">Tout est enregistré</span><button id="studio-done" class="btn primary" type="button">Terminé</button></div>';
  $("dashboard-content").append(dialog);
  const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<h2>Votre carte</h2><button type="button" data-studio-tool="style" aria-haspopup="dialog"><img src="assets/customization/decoration.webp" alt="">Personnaliser</button>';
  const actions=document.querySelector(".qr-preview-actions");document.querySelector(".qr-preview-stage").before(tools);
@@ -1411,18 +1414,22 @@ function compactOwnerEditors(){
    const tabs=document.createElement('nav');tabs.className='studio-config-tabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Personnaliser la carte');
    const groups=[[sections[1]],[sections[0]],[sections[2],sections[3],sections[4]]];
    const activate=index=>{nodes.forEach(n=>n.hidden=!groups[index].includes(n));[...tabs.children].forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1});dialog.dataset.customTab=String(index)};
-   ['Style','Textes','Détails'].forEach((name,i)=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.setAttribute('role','tab');b.dataset.customTab=String(i);b.onclick=()=>activate(i);tabs.append(b)});
+   ['Style','Textes','Police et couleurs'].forEach((name,i)=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.setAttribute('role','tab');b.dataset.customTab=String(i);b.onclick=()=>activate(i);tabs.append(b)});
    tabs.onkeydown=e=>{const index=[...tabs.children].indexOf(document.activeElement);if(index<0||!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const next=(index+(e.key==='ArrowRight'?1:2))%3;activate(next);tabs.children[next].focus()};
-   dialog.querySelector('.studio-sheet-body').prepend(tabs);activate(0);
+   const body=dialog.querySelector('.studio-sheet-body'),config=document.createElement('div'),scroll=document.createElement('div');config.className='studio-config';scroll.className='studio-config-scroll';scroll.append(...nodes);config.append(tabs,scroll);
+   const preview=document.createElement('button');preview.type='button';preview.className='studio-preview-button';preview.setAttribute('aria-expanded','false');preview.innerHTML='<img id="studio-card-preview" alt="Aperçu de votre carte"><span>Agrandir l’aperçu</span>';body.append(preview,config);
+   const artwork=$('qr-artwork-preview'),syncPreview=()=>{const img=$('studio-card-preview');if(img&&artwork.src)img.src=artwork.src};artwork.addEventListener('load',syncPreview);syncPreview();
+   preview.onclick=()=>{const expanded=dialog.dataset.previewExpanded!=='true';dialog.dataset.previewExpanded=String(expanded);preview.setAttribute('aria-expanded',String(expanded));preview.querySelector('span').textContent=expanded?'Revenir aux réglages':'Agrandir l’aperçu';};
+   const setTab=activate;tabs.querySelectorAll('button').forEach((b,i)=>b.onclick=()=>{setTab(i);scroll.scrollTop=0});activate(0);
    const choices=[...sections[1].querySelectorAll('[data-qr-style]')],pages=document.createElement('div');pages.className='studio-theme-pages';
    const previous=document.createElement('button'),next=document.createElement('button'),count=document.createElement('span');previous.type=next.type='button';previous.textContent='Précédent';next.textContent='Suivant';count.setAttribute('aria-live','polite');pages.append(previous,count,next);sections[1].querySelector('.customization-section-body').append(pages);
    let page=Math.floor(Math.max(0,choices.findIndex(b=>b.classList.contains('is-selected')))/6);const renderPage=()=>{choices.forEach((b,i)=>b.hidden=Math.floor(i/6)!==page);count.textContent=(page+1)+' / '+Math.ceil(choices.length/6);previous.disabled=page===0;next.disabled=page>=Math.ceil(choices.length/6)-1};previous.onclick=()=>{page--;renderPage()};next.onclick=()=>{page++;renderPage()};renderPage();
    const fontSelect=document.createElement('select');fontSelect.id='studio-font-select';fontSelect.setAttribute('aria-label','Typographie');
    sections[2].querySelectorAll('[data-qr-font]').forEach(b=>{const option=document.createElement('option');option.value=b.dataset.qrFont;option.textContent=b.querySelector('small').textContent;option.selected=option.value===$('qr-font').value;fontSelect.append(option)});
-   const sample=document.createElement('p');sample.className='studio-font-example qr-font-sample-'+$('qr-font').value;sample.textContent='Justine & Pierre';
+   const sample=document.createElement('p');sample.className='studio-font-example qr-font-sample-'+$('qr-font').value;sample.textContent=$('print-title').value||DEFAULT_CARD_TITLE;
    fontSelect.onchange=()=>{sections[2].querySelector('[data-qr-font="'+fontSelect.value+'"]').click();sample.className='studio-font-example qr-font-sample-'+fontSelect.value};
    sections[2].querySelector('.customization-section-body').append(fontSelect,sample);
-   editorCleanup=()=>{tabs.remove();pages.remove();fontSelect.remove();sample.remove();choices.forEach(b=>b.hidden=false);delete dialog.dataset.customTab;};
+   editorCleanup=()=>{artwork.removeEventListener('load',syncPreview);preview.remove();config.remove();tabs.remove();pages.remove();fontSelect.remove();sample.remove();choices.forEach(b=>b.hidden=false);delete dialog.dataset.customTab;delete dialog.dataset.previewExpanded;};
   }
   dialog.showModal();
  };
@@ -1500,7 +1507,7 @@ function setupQrCustomizerUi(){
   const name=fontPicker.querySelector(".qr-font-current-name");
   if(sample){
    sample.className="qr-font-current qr-font-sample-"+value;
-   sample.textContent="Justine & Pierre"
+   sample.textContent=$("print-title").value||DEFAULT_CARD_TITLE
   }
   if(name)name.textContent=fontNames[value]||fontNames.elegant
  };
@@ -1785,6 +1792,8 @@ async function initDashboard(){
 
  const updateDesigner=()=>{
    markDirty("qr");
+   const sample=document.querySelector('.studio-font-example');if(sample)sample.textContent=$('print-title').value||DEFAULT_CARD_TITLE;
+   const select=$('studio-font-select');if(select){select.value=$('qr-font').value;if(sample)sample.className='studio-font-example qr-font-sample-'+select.value;}
    applyQrPreview(url.href,{...c,...collectQrCustomization(c)});
    clearTimeout(qrSaveTimer);
    qrSaveTimer=setTimeout(()=>saveQrCustomization(c,url.href,true),650);
@@ -1796,6 +1805,14 @@ async function initDashboard(){
  });
  setupQrCustomizerUi();
  setupQrTextCounters();
+ for(const [id,fallback] of [['print-note',DEFAULT_CARD_NOTE],['print-explanation',defaultCardExplanation(capsulePlan(c))]]){
+  const field=$(id),toggle=$(id+'-visible');field.hidden=!toggle.checked;
+  toggle.addEventListener('change',()=>{if(!toggle.checked){field.dataset.previousText=field.value;field.value='';}else field.value=field.dataset.previousText||fallback;field.hidden=!toggle.checked;field.dispatchEvent(new Event('input',{bubbles:true}));});
+ }
+ $('studio-done').addEventListener('click',async()=>{
+  const button=$('studio-done'),dialog=$('studio-editor');button.disabled=true;clearTimeout(qrSaveTimer);
+  try{await qrSaveQueue;if(organizerState.qr&&!await saveQrCustomization(c,url.href,true))return;if(!organizerState.qr)dialog.close();}finally{button.disabled=false;}
+ });
  $("share-link")?.addEventListener("click",()=>shareGuestLink(url.href));
  $("download-print-card")?.addEventListener("click",()=>{
    Object.assign(c,collectQrCustomization(c));
