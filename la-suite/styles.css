@@ -2711,7 +2711,6 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 .workspace-sheet .admin-capsule-head p{font-size:.8rem;margin:4px 0 0}
 .workspace-sheet .admin-capsule-head .admin-actions{margin-left:auto;flex-wrap:nowrap}
 .workspace-sheet .admin-capsule-head .btn{width:auto;min-height:40px;padding:8px 10px;font-size:.8rem}
-#capsule-settings-dialog #studio-export{width:100%;margin-top:16px}
 .studio-ready .qr-preview-actions{grid-template-columns:1fr}
 @media(max-width:760px){.workspace-sheet .admin-capsule-head button[data-capsule] span{display:none}.workspace-sheet .admin-capsule-head button[data-capsule]{width:40px}.workspace-sheet .admin-capsule-head .admin-actions{gap:6px}}
 
@@ -2815,7 +2814,7 @@ input,select,textarea{border-radius:9px!important}
 #studio-editor .qr-print-guide-grid>div{background:transparent;padding:4px 0;border:0}
 #capsule-settings-dialog .capsule-settings>summary{display:none}
 #capsule-settings-dialog .settings-grid{gap:12px}
-#capsule-settings-dialog #studio-export,#capsule-settings-dialog #export-whole-capsule{margin-top:10px;min-height:42px;padding:10px}
+#capsule-settings-dialog #export-whole-capsule{margin-top:10px;min-height:42px;padding:10px}
 #capsule-settings-dialog #capsule-export-error:empty{display:none}
 @media(min-width:761px){
  .studio-ready .qr-artwork-preview{max-height:max(180px,calc(100dvh - 370px))}
@@ -2880,3 +2879,21 @@ input,select,textarea{border-radius:9px!important}
 }
 .suite-public .pricing-included{background:transparent;border:0;border-radius:0;padding:24px 0}
 .suite-public .pricing-timing-grid>article{border:0;border-radius:0;background:transparent;box-shadow:none;padding:18px 0}
+
+/* Card actions are available beside the preview, separate from capsule settings. */
+.studio-ready .studio-card-actions{min-width:0}
+.studio-ready .studio-tools{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0 8px}
+.studio-ready .studio-tools .btn{width:100%;margin:0;min-height:44px}
+.studio-ready .qr-preview-actions{grid-template-columns:1fr 1fr;gap:8px;margin:0}
+.studio-ready #print-print-card{background:white;color:#25211d;border:1px solid var(--line);box-shadow:none}
+.studio-guide-button{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:40px;margin:6px 0 0;padding:8px;border:0;background:transparent;color:var(--muted);font:500 .8rem Inter,Arial,sans-serif;cursor:pointer}
+.studio-guide-button:focus-visible{outline:3px solid #c7a052;outline-offset:2px}
+.studio-ready .studio-guest-link{margin:0 0 4px;font-size:.73rem}
+@media(min-width:1000px){
+ .studio-ready .qr-preview-sticky{grid-template-rows:1fr}
+ .studio-ready .qr-preview-stage{grid-column:1;grid-row:1}
+ .studio-ready .studio-card-actions{grid-column:2;grid-row:1}
+ .studio-ready .studio-tools,.studio-ready .qr-preview-actions,.studio-ready .studio-guest-link{grid-column:auto;grid-row:auto}
+}
+
+@media(min-width:1000px){.studio-ready .qr-preview-actions .btn{font-size:.8rem;padding:10px 6px}}

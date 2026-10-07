@@ -1369,11 +1369,12 @@ function compactOwnerEditors(){
  $("dashboard-content").append(dialog);
  const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<button type="button" data-studio-tool="style" aria-haspopup="dialog"><img src="assets/customization/decoration.webp" alt="">Personnaliser</button>';
  const actions=document.querySelector(".qr-preview-actions");actions.before(tools);
- const exportButton=document.createElement("button");exportButton.type="button";exportButton.id="studio-export";exportButton.className="btn secondary";exportButton.innerHTML='<i class="fa-solid fa-print" aria-hidden="true"></i>Imprimer la carte';exportButton.hidden=true;actions.append(exportButton);
- const exportControls=document.createElement("div");exportControls.className="studio-export-controls";exportControls.hidden=true;
- exportControls.append($("download-print-card"),$("print-print-card"));actions.after(exportControls);
+ const cardActions=document.createElement("div");cardActions.className="studio-card-actions";tools.before(cardActions);
+ const shareButton=$("share-link");tools.append(shareButton);
+ cardActions.append(tools,actions);
  const printGuide=document.querySelector(".qr-print-guide");printGuide.hidden=true;
- const guestLink=$("open-guest-link");guestLink.className="studio-guest-link";guestLink.textContent="Voir la page invité";actions.after(guestLink);
+ const guideButton=document.createElement("button");guideButton.type="button";guideButton.id="studio-guide";guideButton.className="studio-guide-button";guideButton.setAttribute("aria-haspopup","dialog");guideButton.innerHTML='<i class="fa-regular fa-circle-question" aria-hidden="true"></i>Conseils d’utilisation';cardActions.append(guideButton);
+ const guestLink=$("open-guest-link");guestLink.className="studio-guest-link";guestLink.textContent="Voir la page invité";cardActions.append(guestLink);
  let moved=[],trigger=null,editorCleanup=()=>{};
  const restore=()=>{editorCleanup();editorCleanup=()=>{};delete dialog.dataset.editorMode;moved.forEach(({node,slot,open,hidden})=>{slot.replaceWith(node);node.hidden=hidden;if(node.tagName==="DETAILS")node.open=open});moved=[];if(trigger?.isConnected)trigger.focus();trigger=null};
  const open=(title,nodes,button,mode="standard")=>{
@@ -1400,7 +1401,7 @@ function compactOwnerEditors(){
   dialog.showModal();
  };
  tools.querySelector('[data-studio-tool]').addEventListener('click',e=>open('Personnaliser la carte',sections,e.currentTarget,'customize'));
- exportButton.addEventListener("click",()=>{$("capsule-settings-dialog").close();open("Impression et conseils",[exportControls,printGuide],$("studio-settings"))});
+ guideButton.addEventListener("click",()=>open("Conseils d’utilisation",[printGuide],guideButton));
  dialog.querySelector(".studio-close").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",restore);
  dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
  const mobile=matchMedia("(max-width:760px)");mobile.addEventListener("change",()=>{if(dialog.open)dialog.close()});
@@ -1593,7 +1594,7 @@ function setupCapsuleSettings(c){
  panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain. Date fixe après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><input id="capsule-plan" type="hidden" value="${esc(capsulePlan(c))}"><span id="capsule-plan-name">${esc(PLAN_NAMES[capsulePlan(c)])}</span><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'Formule choisie à la création.':'Formule choisie à la création.'}</small></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les rappels par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div></div>`;
  const dialog=document.createElement("dialog");dialog.id="capsule-settings-dialog";dialog.className="studio-sheet studio-settings-dialog";dialog.setAttribute("aria-labelledby","capsule-settings-title");
  dialog.innerHTML='<div class="studio-sheet-head"><h2 id="capsule-settings-title">Paramètres de la capsule</h2><button class="studio-close" type="button" aria-label="Fermer les paramètres">×</button></div><div class="studio-sheet-body"><p id="settings-save-error" class="status" role="alert" hidden></p><button id="settings-save-retry" class="btn secondary" type="button" hidden>Réessayer</button></div>';
- dialog.querySelector(".studio-sheet-body").append(panel);const cardExport=$("studio-export");cardExport.hidden=false;dialog.querySelector(".studio-sheet-body").append(cardExport);
+ dialog.querySelector(".studio-sheet-body").append(panel);
  const capsuleExport=document.createElement('button');capsuleExport.id='export-whole-capsule';capsuleExport.type='button';capsuleExport.className='btn primary';capsuleExport.innerHTML='<i class="fa-solid fa-download" aria-hidden="true"></i>Exporter la capsule';capsuleExport.hidden=!window.SuiteWorkspace.canExportCapsule?.();
  const exportHelp=document.createElement('small');exportHelp.className='field-help';exportHelp.textContent='Archive complète chiffrée : paramètres, carte, accueil et souvenirs, avec leurs dates de découverte.';exportHelp.hidden=capsuleExport.hidden;
  const exportError=document.createElement('p');exportError.id='capsule-export-error';exportError.className='status';exportError.setAttribute('role','status');
