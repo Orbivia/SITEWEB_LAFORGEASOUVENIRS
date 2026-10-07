@@ -1436,6 +1436,7 @@ function setupOwnerTabs(c,manifest){
    link.setAttribute("aria-selected",String(active));link.tabIndex=active?0:-1;
   });
   panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
+  const activation=document.querySelector(".activation-panel");if(activation)activation.hidden=target==="settings"||(c.status==="active"&&!capsuleExpired(c));
   if(updateHash&&matchMedia("(max-width:760px)").matches)window.scrollTo({top:0,behavior:"instant"});
   if(updateHash&&location.hash!=="#"+target)history.replaceState(null,"","#"+target);
   document.body.classList.toggle("studio-card-active",target==="configuration");window.dispatchEvent(new Event("studio-layout"));
