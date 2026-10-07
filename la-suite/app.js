@@ -1160,6 +1160,7 @@ function ownerShell(c,url,count){
  <button id="owner-tab-configuration" type="button" role="tab" aria-controls="owner-panel-configuration" data-owner-tab-link="configuration"><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span>Carte</span></button>
  <button id="owner-tab-accueil" type="button" role="tab" aria-controls="owner-panel-accueil" data-owner-tab-link="accueil"><i class="fa-regular fa-comment" aria-hidden="true"></i><span>Accueil</span></button>
  <button id="owner-tab-messages" type="button" role="tab" aria-controls="owner-panel-messages" data-owner-tab-link="messages"><i class="fa-regular fa-images" aria-hidden="true"></i><span>Souvenirs</span> <span id="owner-unread-badge" class="owner-unread-badge" hidden></span></button>
+ <button id="owner-tab-settings" type="button" role="tab" aria-controls="owner-panel-settings" data-owner-tab-link="settings"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Paramètres</span></button>
 </nav>
 <div class="owner-panel" data-owner-panel="configuration">
 <section class="qr-designer-panel">
@@ -1367,14 +1368,14 @@ function compactOwnerEditors(){
  const dialog=document.createElement("dialog");dialog.id="studio-editor";dialog.className="studio-sheet";dialog.setAttribute("aria-labelledby","studio-editor-title");
  dialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-editor-title"></h2><button class="studio-close" type="button" aria-label="Fermer les réglages">×</button></div><div class="studio-sheet-body"></div>';
  $("dashboard-content").append(dialog);
- const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<button type="button" data-studio-tool="style" aria-haspopup="dialog"><img src="assets/customization/decoration.webp" alt="">Personnaliser</button>';
- const actions=document.querySelector(".qr-preview-actions");actions.before(tools);
- const cardActions=document.createElement("div");cardActions.className="studio-card-actions";tools.before(cardActions);
- const shareButton=$("share-link");tools.append(shareButton);
- cardActions.append(tools,actions);
+ const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<h2>Votre carte</h2><button type="button" data-studio-tool="style" aria-haspopup="dialog"><img src="assets/customization/decoration.webp" alt="">Personnaliser</button>';
+ const actions=document.querySelector(".qr-preview-actions");document.querySelector(".qr-preview-stage").before(tools);
+ const cardActions=document.createElement("div");cardActions.className="studio-card-actions";actions.before(cardActions);
+ const shareButton=$("share-link");
+ cardActions.append(shareButton,actions);
  const printGuide=document.querySelector(".qr-print-guide");printGuide.hidden=true;
- const guideButton=document.createElement("button");guideButton.type="button";guideButton.id="studio-guide";guideButton.className="studio-guide-button";guideButton.setAttribute("aria-haspopup","dialog");guideButton.innerHTML='<i class="fa-regular fa-circle-question" aria-hidden="true"></i>Conseils d’utilisation';cardActions.append(guideButton);
- const guestLink=$("open-guest-link");guestLink.className="studio-guest-link";guestLink.textContent="Voir la page invité";cardActions.append(guestLink);
+ const guideButton=document.createElement("button");guideButton.type="button";guideButton.id="studio-guide";guideButton.className="studio-guide-button";guideButton.setAttribute("aria-haspopup","dialog");guideButton.innerHTML='<i class="fa-regular fa-circle-question" aria-hidden="true"></i>Conseils d’utilisation';const utilities=document.createElement('div');utilities.className='studio-card-utilities';cardActions.append(utilities);utilities.append(guideButton);
+ const guestLink=$("open-guest-link");guestLink.className="studio-guest-link";guestLink.innerHTML='Page invité <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>';utilities.append(guestLink);
  let moved=[],trigger=null,editorCleanup=()=>{};
  const restore=()=>{editorCleanup();editorCleanup=()=>{};delete dialog.dataset.editorMode;moved.forEach(({node,slot,open,hidden})=>{slot.replaceWith(node);node.hidden=hidden;if(node.tagName==="DETAILS")node.open=open});moved=[];if(trigger?.isConnected)trigger.focus();trigger=null};
  const open=(title,nodes,button,mode="standard")=>{
@@ -1406,9 +1407,6 @@ function compactOwnerEditors(){
  dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
  const mobile=matchMedia("(max-width:760px)");mobile.addEventListener("change",()=>{if(dialog.open)dialog.close()});
  
- const settingsButton=document.createElement("button");settingsButton.id="studio-settings";settingsButton.className="studio-settings-button";settingsButton.type="button";settingsButton.setAttribute("aria-label","Paramètres de la capsule");settingsButton.setAttribute("aria-haspopup","dialog");settingsButton.setAttribute("aria-controls","capsule-settings-dialog");settingsButton.setAttribute("aria-expanded","false");settingsButton.innerHTML='<i class="fa-solid fa-sliders" aria-hidden="true"></i>';
- document.querySelector(".dashboard-head").append(settingsButton);
- settingsButton.addEventListener("click",openCapsuleSettings);
  // Use the space left by the actual header and controls, including short phones.
  let fitFrame;
  const fit=()=>{cancelAnimationFrame(fitFrame);fitFrame=requestAnimationFrame(()=>{
@@ -1431,7 +1429,7 @@ function setupOwnerTabs(c,manifest){
  if(!links.length||!panels.length)return;
 
  const activate=async(name,updateHash=true)=>{
-  const target=["configuration","accueil","messages"].includes(name)?name:"configuration";
+  const target=["configuration","accueil","messages","settings"].includes(name)?name:"configuration";
   links.forEach(link=>{
    const active=link.dataset.ownerTabLink===target;
    link.classList.toggle("is-active",active);
@@ -1586,24 +1584,20 @@ async function renderManifest(c,manifest){
 }
 function tomorrowParis(){const d=new Date(parisDay()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
 function openCapsuleSettings(){
- const dialog=$("capsule-settings-dialog");if(!dialog||dialog.open)return;
- $("studio-settings").setAttribute("aria-expanded","true");dialog.showModal();
+ $("owner-tab-settings")?.click();
 }
 function setupCapsuleSettings(c){
- const panel=document.createElement('details');panel.className='capsule-settings';panel.open=true;
- panel.innerHTML=`<summary>Paramètres de la capsule</summary><div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain. Date fixe après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><input id="capsule-plan" type="hidden" value="${esc(capsulePlan(c))}"><span id="capsule-plan-name">${esc(PLAN_NAMES[capsulePlan(c)])}</span><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'Formule choisie à la création.':'Formule choisie à la création.'}</small></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les rappels par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div></div>`;
- const dialog=document.createElement("dialog");dialog.id="capsule-settings-dialog";dialog.className="studio-sheet studio-settings-dialog";dialog.setAttribute("aria-labelledby","capsule-settings-title");
- dialog.innerHTML='<div class="studio-sheet-head"><h2 id="capsule-settings-title">Paramètres de la capsule</h2><button class="studio-close" type="button" aria-label="Fermer les paramètres">×</button></div><div class="studio-sheet-body"><p id="settings-save-error" class="status" role="alert" hidden></p><button id="settings-save-retry" class="btn secondary" type="button" hidden>Réessayer</button></div>';
- dialog.querySelector(".studio-sheet-body").append(panel);
+ const panel=document.createElement('div');panel.className='capsule-settings';
+ panel.innerHTML=`<div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain. Date fixe après activation.</small></div><div class="field"><label for="capsule-plan">Formule</label><input id="capsule-plan" type="hidden" value="${esc(capsulePlan(c))}"><span id="capsule-plan-name">${esc(PLAN_NAMES[capsulePlan(c)])}</span><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'Formule choisie à la création.':'Formule choisie à la création.'}</small></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les rappels par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div></div>`;
+ const settings=document.createElement("section");settings.id="capsule-settings-panel";settings.className="owner-panel studio-settings-panel";settings.dataset.ownerPanel="settings";settings.hidden=true;
+ settings.innerHTML='<h2>Paramètres de la capsule</h2><p id="settings-save-error" class="status" role="alert" hidden></p><button id="settings-save-retry" class="btn secondary" type="button" hidden>Réessayer</button>';
+ settings.append(panel);
  const capsuleExport=document.createElement('button');capsuleExport.id='export-whole-capsule';capsuleExport.type='button';capsuleExport.className='btn primary';capsuleExport.innerHTML='<i class="fa-solid fa-download" aria-hidden="true"></i>Exporter la capsule';capsuleExport.hidden=!window.SuiteWorkspace.canExportCapsule?.();
  const exportHelp=document.createElement('small');exportHelp.className='field-help';exportHelp.textContent='Archive complète chiffrée : paramètres, carte, accueil et souvenirs, avec leurs dates de découverte.';exportHelp.hidden=capsuleExport.hidden;
  const exportError=document.createElement('p');exportError.id='capsule-export-error';exportError.className='status';exportError.setAttribute('role','status');
- dialog.querySelector('.studio-sheet-body').append(capsuleExport,exportHelp,exportError);window.addEventListener('suite-admin-status',()=>{capsuleExport.hidden=!window.SuiteWorkspace.canExportCapsule?.();exportHelp.hidden=capsuleExport.hidden});
- capsuleExport.onclick=async()=>{capsuleExport.disabled=true;dialog.close();try{await window.SuiteWorkspace.exportCapsule(c.id)}catch(e){dialog.showModal();show(exportError,'Export impossible : '+e.message,false)}finally{capsuleExport.disabled=false}};
- $("dashboard-content").append(dialog);
- dialog.querySelector(".studio-close").addEventListener("click",()=>dialog.close());
- dialog.addEventListener("close",()=>{$("studio-settings").setAttribute("aria-expanded","false");$("studio-settings").focus()});
- dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
+ settings.append(capsuleExport,exportHelp,exportError);window.addEventListener('suite-admin-status',()=>{capsuleExport.hidden=!window.SuiteWorkspace.canExportCapsule?.();exportHelp.hidden=capsuleExport.hidden});
+ capsuleExport.onclick=async()=>{capsuleExport.disabled=true;try{await window.SuiteWorkspace.exportCapsule(c.id)}catch(e){openCapsuleSettings();show(exportError,'Export impossible : '+e.message,false)}finally{capsuleExport.disabled=false}};
+ $("dashboard-content").append(settings);
  $("settings-save-retry").addEventListener("click",()=>$("save-organizer").click());
  const syncError=()=>{const source=$("organizer-save-error"),target=$("settings-save-error");target.textContent=source?.textContent||"";target.hidden=!target.textContent;$("settings-save-retry").hidden=!target.textContent;};
  queueMicrotask(()=>{syncError();if($("organizer-save-error"))new MutationObserver(syncError).observe($("organizer-save-error"),{childList:true,subtree:true,characterData:true})});
