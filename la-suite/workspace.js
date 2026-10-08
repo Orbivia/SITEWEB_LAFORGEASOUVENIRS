@@ -52,6 +52,15 @@
   service.addEventListener('close',()=>accountButton.focus());
   const capsulesButton=document.createElement('button');capsulesButton.id='workspace-open-capsules';capsulesButton.type='button';capsulesButton.className='workspace-account-row';capsulesButton.setAttribute('aria-haspopup','dialog');capsulesButton.setAttribute('aria-controls',choose.id);capsulesButton.innerHTML='<i class="fa-solid fa-layer-group" aria-hidden="true"></i>Mes capsules<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';account.querySelector('.studio-sheet-body').prepend(capsulesButton);
   capsulesButton.onclick=async()=>{if(ended||accountBusy)return;account.close();render();choose.showModal();if(member){await switchScope('all')}else{await switchScope('mine');await refreshSummaries()}};
+  const adminButton=document.createElement('button');adminButton.id='workspace-admin-button';adminButton.type='button';adminButton.className='workspace-account-row';adminButton.hidden=true;adminButton.setAttribute('aria-haspopup','dialog');adminButton.setAttribute('aria-controls',service.id);adminButton.innerHTML='<i class="fa-solid fa-sliders" aria-hidden="true"></i>Administration<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';capsulesButton.after(adminButton);
+  window.addEventListener('suite-admin-status',()=>{adminButton.hidden=ended||!member;});
+  async function openAdministration(){
+   if(ended||!member||accountBusy||serviceBusy)return;
+   if(!canLeave()){report('Enregistrez les modifications avant d’ouvrir l’administration.',true);if(!account.open)account.showModal();return;}
+   try{await loadAdmin();if(ended||!member)return;account.close();choose.close();if(!service.open)service.showModal();}
+   catch(e){if(!ended&&member){report('Administration indisponible : '+e.message,true);if(!account.open)account.showModal();}}
+  }
+  adminButton.onclick=openAdministration;
   const summaryTimer=setInterval(()=>{if(ended){clearInterval(summaryTimer);return}if(choose.open&&scope==='mine'&&document.visibilityState==='visible')refreshSummaries()},15000);
   document.addEventListener('visibilitychange',()=>{if(!ended&&choose.open&&scope==='mine'&&document.visibilityState==='visible')refreshSummaries()});
   let currentEmail=user.email||'';$('workspace-email-current').textContent=currentEmail;
@@ -68,12 +77,12 @@
    const {error}=await sb.auth.updateUser({password});if(error)throw error;if(!ended){e.target.reset();e.target.hidden=true;$('workspace-edit-password').setAttribute('aria-expanded','false');report('Votre mot de passe a été modifié.');}
   }catch(e){if(!ended)report('Modification impossible : '+e.message,true)}finally{busy(false)}};
   $('logout').onclick=async()=>{if(accountBusy||serviceBusy)return report('Patientez jusqu’à la fin de l’opération.',true);await logout();};
-  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==user.id){ended=true;member=false;choose.close();account.close();service.close();document.querySelectorAll('.admin-dialog[open]').forEach(d=>d.close());queueMicrotask(()=>{choose.replaceChildren();account.replaceChildren();service.replaceChildren()});document.querySelectorAll('.owner-tabs').forEach(n=>n.remove());}else if(event==='USER_UPDATED'&&session?.user?.email){currentEmail=session.user.email;$('workspace-email-current').textContent=currentEmail;}});
+  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==user.id){ended=true;member=false;adminButton.hidden=true;choose.close();account.close();service.close();document.querySelectorAll('.admin-dialog[open]').forEach(d=>d.close());queueMicrotask(()=>{choose.replaceChildren();account.replaceChildren();service.replaceChildren()});document.querySelectorAll('.owner-tabs').forEach(n=>n.remove());}else if(event==='USER_UPDATED'&&session?.user?.email){currentEmail=session.user.email;$('workspace-email-current').textContent=currentEmail;}});
   // Server membership is authoritative; client profile metadata never grants access.
   (async()=>{try{let {data,error}=await sb.rpc('admin_status');if(error)throw error;let invite;try{invite=JSON.parse(localStorage.getItem('la_suite_admin_invite')||'null')}catch{}
    if(data!==true&&invite&&/^[a-f0-9]{64}$/.test(invite.token)&&Date.now()-invite.at<48*3600000){const claimed=await sb.rpc('admin_claim',{p_token:invite.token});if(claimed.error)throw claimed.error;({data,error}=await sb.rpc('admin_status'));if(error)throw error;}
    if(ended)return;member=data===true;window.dispatchEvent(new Event('suite-admin-status'));if(member){try{localStorage.removeItem('la_suite_admin_invite')}catch{}await switchScope('all');}
-   if(new URLSearchParams(location.search).get('view')==='service'){choose.showModal();if(member)await switchScope('all');else $('workspace-selection-status').textContent='Ce compte ne dispose pas d’un accès administrateur.';}
+   if(new URLSearchParams(location.search).get('view')==='service'){if(member)await openAdministration();else{choose.showModal();$('workspace-selection-status').textContent='Ce compte ne dispose pas d’un accès administrateur.';}}
   }catch(e){if(!ended&&new URLSearchParams(location.search).get('view')==='service'){choose.showModal();$('workspace-selection-status').textContent='Vérification de l’accès impossible. Rechargez la page.';}}})();
   // Follow the visual viewport while Android browser bars expand/collapse.
   const viewport=window.visualViewport;let frame;
@@ -81,4 +90,5 @@
   viewport?.addEventListener('resize',align);viewport?.addEventListener('scroll',align);window.addEventListener('resize',align);window.addEventListener('scroll',align,{passive:true});align();
  }};
 })();
+
 
