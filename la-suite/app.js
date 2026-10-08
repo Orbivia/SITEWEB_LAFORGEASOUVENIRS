@@ -558,14 +558,24 @@ function uploadGuestFile(file,transaction){
  return new Promise((resolve,reject)=>{
   const progress=$("upload-progress");progress.hidden=false;
   if(!transaction.upload){
-   const endpoint=cfg.SUPABASE_URL.replace(".supabase.co",".storage.supabase.co")+"/storage/v1/upload/resumable";
+   const endpoint=cfg.SUPABASE_URL.replace(".supabase.co",".storage.supabase.co")+"/storage/v1/upload/resumable/sign";
    transaction.upload=new tus.Upload(file,{endpoint,headers:{"x-signature":transaction.reserved.token,apikey:cfg.SUPABASE_ANON_KEY,"x-upsert":"false"},
     chunkSize:6*1024*1024,uploadDataDuringCreation:true,removeFingerprintOnSuccess:true,retryDelays:[0,1000,3000,5000],
+    onShouldRetry:error=>{const code=error.originalResponse?.getStatus()||0;return code===0||code===408||code===409||code===423||code>=500},
     fingerprint:()=>Promise.resolve("la-suite:"+transaction.requestId),
     metadata:{bucketName:"capsule-media",objectName:transaction.reserved.path,contentType:file.type,cacheControl:"3600"}});
   }
   transaction.upload.options.onProgress=(sent,total)=>{const percent=Math.round(sent/total*100);progress.value=percent;show($("status"),"Envoi de votre souvenir : "+percent+" %. Gardez cette page ouverte.")};
-  transaction.upload.options.onError=()=>reject(new Error("L’envoi a été interrompu. Gardez cette page ouverte et appuyez sur Réessayer pour le reprendre."));
+  transaction.upload.options.onError=error=>{
+   const code=error.originalResponse?.getStatus()||0;
+   if(code===401||code===403){
+    // Renew the signed permission for the same reservation on the next attempt.
+    transaction.reserved=null;transaction.upload=null;
+    return reject(new Error("L’autorisation d’envoi a expiré ou a été refusée. Gardez cette page ouverte et appuyez sur Réessayer pour la renouveler."));
+   }
+   if(code===413)return reject(new Error("Ce fichier dépasse la taille autorisée. Choisissez un fichier plus léger."));
+   reject(new Error("L’envoi a été interrompu. Gardez cette page ouverte et appuyez sur Réessayer pour le reprendre."));
+  };
   transaction.upload.options.onSuccess=()=>{transaction.uploaded=true;resolve()};
   transaction.upload.start();
  });
