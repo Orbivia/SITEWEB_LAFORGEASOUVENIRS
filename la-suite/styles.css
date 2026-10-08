@@ -3010,3 +3010,79 @@ html:has(body.studio-ready){scroll-padding-bottom:90px}
 .studio-card-preview-stage{flex:1;min-height:0;min-width:0;padding:16px;overflow:hidden}
 .studio-card-preview-stage img{display:block;width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 3px 9px #38291b18)}
 @media(max-width:760px){.studio-card-preview-dialog .studio-sheet-head{padding:10px 12px}.studio-card-preview-dialog .studio-sheet-head h2{font-size:1.05rem}.studio-card-preview-stage{padding:12px}}
+
+/* Compact guest deposit: content first, optional details and date choices on demand. */
+.guest-compact .suite-topbar{min-height:68px;padding-top:8px;padding-bottom:8px}
+.guest-compact .suite-brand img{width:116px}
+.guest-compact .guest-page{max-width:620px;width:calc(100% - 32px);padding-top:24px;padding-bottom:24px}
+.guest-compact .capsule-hero{padding:0;margin:0 0 18px;text-align:left}
+.guest-capsule-label{color:var(--muted);font-size:.75rem;margin:0 0 4px}
+.guest-compact .capsule-hero h1{font-size:2.1rem;line-height:1.15;margin:0}
+.guest-concept{padding:14px 16px;border-left:3px solid #b78b38;border-radius:0 10px 10px 0;background:#f3ede3;margin:0 0 16px}
+.guest-concept h2{font:600 .85rem/1.4 Inter,Arial,sans-serif;margin:0 0 6px}
+.guest-concept p{font-size:.8rem;line-height:1.55;margin:0;color:#655b4d}
+.guest-compact .guest-state{font-size:.75rem;line-height:1.5;padding:0;margin:12px 0 18px}
+.guest-compact .guest-form{margin:0 auto 24px}
+.guest-compact .memory-type-choices{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:18px}
+.guest-compact .memory-type{flex-direction:column;justify-content:center;min-height:74px;gap:7px;padding:10px 3px;font-size:.75rem}
+.guest-compact .memory-type span{white-space:nowrap}
+.guest-compact .memory-type i{font-size:20px}
+.guest-compact .field{margin:14px 0}
+.guest-compact .field label{font-size:.8rem}
+.guest-compact #message_text{min-height:112px;font-size:16px}
+.guest-compact .media-choices{margin-bottom:8px}
+.guest-compact .media-choice{font-size:.8rem;min-height:46px}
+.guest-compact .media-preview{margin:12px 0;padding:12px}
+.guest-compact .media-preview img{max-height:280px;object-fit:contain}
+.guest-extras{border-top:1px solid var(--line);margin-top:16px}
+.guest-extras summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:46px;padding:10px 0;font:500 .8rem/1.4 Inter,Arial,sans-serif;cursor:pointer;list-style:none}
+.guest-extras summary::-webkit-details-marker{display:none}
+.guest-extras summary:after{content:'+';font-size:20px;color:var(--muted)}
+.guest-extras[open] summary:after{content:'−'}
+.guest-extras summary .optional{font-size:.7rem;margin-left:auto}
+.guest-compact .guest-form .delivery-box{padding:0;border:0;margin:16px 0}
+.delivery-summary{display:flex;align-items:center;gap:12px;width:100%;min-height:66px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:white;color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.delivery-summary>i{font-size:20px;color:#75654d}
+.delivery-summary>span:first-of-type{display:flex;flex-direction:column;gap:3px;flex:1}
+.delivery-summary small{font-size:.75rem;color:var(--muted)}
+.delivery-summary strong{font-size:.9rem;font-weight:600}
+.delivery-edit{font-size:.75rem;color:#a41111}
+.delivery-summary:focus-visible,.guest-extras summary:focus-visible{outline:3px solid #c7a052;outline-offset:3px}
+.guest-compact .delivery-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:10px 0}
+.guest-compact .delivery-choices button{min-height:44px;font-size:.8rem}
+.guest-compact .delivery-choices [data-delivery=custom]{grid-column:1/-1}
+.guest-compact #delivery-help{font-size:.75rem;line-height:1.5;margin:9px 0 0}
+.guest-compact .submit-memory{width:100%;min-height:48px;margin:8px 0 0}
+.guest-compact .intro-card{background:#f3ede3;color:var(--ink);box-shadow:none;padding:14px;margin:0 0 18px}
+.guest-compact .intro-card .eyebrow{color:var(--muted)}
+.guest-compact .intro-card .lead{font-size:.9rem;margin-bottom:0}
+.guest-compact .footerbar{padding-top:18px;padding-bottom:18px}
+
+/* The card and guest greeting belong to one organizer page. */
+.studio-ready .owner-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
+.owner-card-and-intro{display:grid;gap:20px;min-width:0}
+.organizer-welcome{min-width:0;border:1px solid var(--line);border-radius:14px;background:white;padding:0 16px}
+.organizer-welcome>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:70px;cursor:pointer;list-style:none;padding:12px 0}
+.organizer-welcome>summary::-webkit-details-marker{display:none}
+.organizer-welcome>summary strong{display:block;font:600 .9rem/1.4 Inter,Arial,sans-serif}
+.organizer-welcome>summary small{display:block;color:var(--muted);font-size:.73rem;line-height:1.45;margin-top:4px}
+.organizer-welcome>summary>i{font-size:12px;color:var(--muted)}
+.organizer-welcome[open]>summary>i{transform:rotate(180deg)}
+.organizer-welcome>summary:focus-visible{outline:3px solid #c7a052;outline-offset:3px}
+.studio-ready .organizer-welcome .intro-video-panel{margin:0;max-width:none;padding:4px 0 16px;border:0;background:transparent;box-shadow:none}
+.studio-ready .organizer-welcome .intro-editor-grid{display:block}
+.studio-ready .organizer-welcome .intro-preview-card{border-top:1px solid var(--line);margin-top:16px;padding:16px 0 0}
+@media(min-width:761px){
+ .owner-card-and-intro{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);max-width:1060px;margin:auto;gap:32px;align-items:start}
+ .studio-ready .owner-card-and-intro .qr-designer-grid{display:block;max-width:none}
+ .studio-ready .owner-card-and-intro .qr-designer-controls{display:none}
+ .studio-ready .owner-card-and-intro .qr-preview-sticky{display:block}
+ .studio-ready .owner-card-and-intro .qr-artwork-preview{max-height:min(48dvh,430px);width:auto;max-width:100%}
+ .studio-ready .owner-tabs{width:460px}
+ .studio-ready .dashboard-head{max-width:1060px}
+}
+@media(max-width:760px){.owner-card-and-intro{gap:16px}.organizer-welcome{padding:0 14px}.organizer-welcome>summary{min-height:66px}.studio-ready .owner-tabs [role=tab]{font-size:.75rem}}
+
+.guest-compact .memory-type-choices:has([data-memory-type=video][hidden]){grid-template-columns:repeat(3,minmax(0,1fr))}
+.guest-compact .memory-type-choices:has([data-memory-type=audio][hidden]){grid-template-columns:repeat(2,minmax(0,1fr))}
+.guest-compact .memory-type-choices:has([data-memory-type=image][hidden]){grid-template-columns:minmax(0,1fr)}

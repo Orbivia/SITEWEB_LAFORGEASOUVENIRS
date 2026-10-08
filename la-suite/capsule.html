@@ -6,9 +6,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20261008-styles1">
+<link rel="stylesheet" href="styles.css?v=20261008-compact1">
 </head>
-<body class="suite-shell-page">
+<body class="suite-shell-page guest-compact">
 <header class="forge-style-header">
   <div class="suite-container suite-topbar">
     <a class="suite-brand" href="index.html" aria-label="La Suite — Accueil">
@@ -19,9 +19,14 @@
 </header>
 <main class="wrap guest-page">
 <section class="capsule-hero">
+  <p class="guest-capsule-label">La capsule de</p>
   <h1 id="capsule-title">Votre capsule</h1>
 
 </section>
+<aside class="guest-concept" aria-labelledby="guest-concept-title">
+ <h2 id="guest-concept-title">Un souvenir aujourd’hui, une émotion plus tard</h2>
+ <p>Laissez un petit mot ou partagez un fichier. Choisissez quand les organisateurs pourront le découvrir : maintenant ou à une date future.</p>
+</aside>
 <section id="intro-section" class="intro-card" hidden>
   <div class="eyebrow">Un message des organisateurs</div>
   <p id="capsule-welcome" class="lead intro-text-preview" hidden></p><video id="organizer-intro" controls playsinline preload="metadata" hidden></video><img id="organizer-intro-image" alt="Le message d’accueil de vos hôtes" hidden>
@@ -30,10 +35,9 @@
 <p id="guest-state" class="guest-state" role="status" aria-live="polite">Chargement de la capsule…</p>
 <button id="guest-retry" class="btn secondary" type="button" hidden>Réessayer</button>
 <form class="form-shell guest-form" id="guest-message" hidden>
- <div class="guest-step-heading"><span>1</span><h2>Quel souvenir souhaitez-vous laisser ?</h2></div>
  <div class="memory-type-choices" role="group" aria-label="Type de souvenir">
-  <button type="button" class="memory-type active" data-memory-type="image" aria-pressed="true"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>Photo</span></button>
-  <button type="button" class="memory-type" data-memory-type="text" aria-pressed="false"><i class="fa-regular fa-comment" aria-hidden="true"></i><span>Petit mot</span></button>
+  <button type="button" class="memory-type active" data-memory-type="text" aria-pressed="true"><i class="fa-regular fa-comment" aria-hidden="true"></i><span>Petit mot</span></button>
+  <button type="button" class="memory-type" data-memory-type="image" aria-pressed="false"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>Photo</span></button>
   <button type="button" class="memory-type" data-memory-type="audio" aria-pressed="false"><i class="fa-solid fa-microphone" aria-hidden="true"></i><span>Audio</span></button>
   <button type="button" class="memory-type" data-memory-type="video" aria-pressed="false"><i class="fa-solid fa-video" aria-hidden="true"></i><span>Vidéo</span></button>
  </div>
@@ -82,12 +86,12 @@
 
  <div id="capture-status" class="status" role="status" aria-live="polite"></div>
 
- <div class="field"><label for="message_text" id="message-label">Un petit mot <span class="optional">(facultatif)</span></label><textarea id="message_text" maxlength="4000" rows="3" placeholder="Quelques mots pour accompagner votre souvenir…"></textarea></div>
- <div class="field"><label for="guest_name">Votre prénom <span class="optional">(facultatif)</span></label><input id="guest_name" maxlength="80" autocomplete="given-name" placeholder="Pour signer votre souvenir"></div>
+ <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre petit mot</label><textarea id="message_text" maxlength="4000" rows="4" placeholder="Écrivez ce que vous aimeriez leur dire…"></textarea></div></div>
+ <details id="guest-extras" class="guest-extras"><summary><span id="guest-extras-label">Signer votre message</span><span class="optional">Facultatif</span></summary><div id="guest-extras-body"><div class="field"><label for="guest_name">Votre prénom</label><input id="guest_name" maxlength="80" autocomplete="given-name" placeholder="Pour signer votre souvenir"></div></div></details>
  <div class="delivery-box">
-  <div class="guest-step-heading"><span>2</span><h2>Quand le découvrir ?</h2></div>
+  <button type="button" id="delivery-summary" class="delivery-summary" aria-expanded="false" aria-controls="delivery-options"><i class="fa-regular fa-calendar" aria-hidden="true"></i><span><small>Quand le découvrir ?</small><strong id="delivery-value">Maintenant</strong></span><span class="delivery-edit">Modifier</span></button>
+  <div id="delivery-options" hidden>
   <div class="delivery-choices" role="group" aria-label="Date de dévoilement">
-   <button type="button" data-delivery="suggested" aria-pressed="false" hidden>Date suggérée</button>
    <button type="button" data-delivery="now" class="active" aria-pressed="true">Maintenant</button>
    <button type="button" data-delivery="1" aria-pressed="false">Dans 1 mois</button>
    <button type="button" data-delivery="6" aria-pressed="false">Dans 6 mois</button>
@@ -96,10 +100,10 @@
   </div>
   <input type="checkbox" id="deliver-now" checked hidden>
   <div class="field" id="delivery-date-wrap" hidden><label for="delivery_date">Date de dévoilement</label><input id="delivery_date" type="date"></div>
+  </div>
   <p class="microcopy" id="delivery-help">Votre souvenir sera accessible dès son envoi.</p>
  </div>
- <div class="guest-step-heading"><span>3</span><h2>Envoyez votre souvenir</h2></div>
- <p class="microcopy">Aucun compte à créer. Jusqu’à 20 fichiers et 200 Mo par invité.</p>
+ <p class="microcopy" id="guest-limits">Jusqu’à 20 fichiers et 200 Mo par invité.</p>
  <button class="btn primary submit-memory" type="submit">Envoyer mon souvenir</button>
  <progress id="upload-progress" max="100" value="0" hidden aria-label="Progression de l’envoi"></progress>
  <div id="status" class="status" role="status" aria-live="polite"></div>
@@ -123,7 +127,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="app.js?v=20261008-styles1"></script>
+<script src="app.js?v=20261008-compact1"></script>
 </body></html>
 
 

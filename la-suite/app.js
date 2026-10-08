@@ -401,7 +401,7 @@ async function initCreate(){
 }
 
 
-let guestState=null,guestType="image",guestBusy=false,guestTransaction=null,guestSelectionVersion=0;
+let guestState=null,guestType="text",guestBusy=false,guestTransaction=null,guestSelectionVersion=0;
 const GUEST_LIMITS={image:10000000,audio:20000000,video:50000000};
 function parisDay(value=new Date()){
  const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(value);
@@ -447,6 +447,9 @@ function chooseGuestType(type){
  document.querySelector('[data-media-mode="upload"]').textContent=type==="image"?"Choisir une photo":type==="audio"?"Choisir un audio":"Choisir une vidéo";$("message_text").required=type==="text";
  $("message-label").innerHTML=type==="text"?"Votre petit mot":'Un petit mot <span class="optional">(facultatif)</span>';
  $("message_text").placeholder=type==="text"?"Écrivez ce que vous aimeriez leur dire…":"Quelques mots pour accompagner votre souvenir…";
+ const messageField=$('guest-message-field'),extras=$('guest-extras');
+ (type==='text'?$('guest-text-content'):$('guest-extras-body')).prepend(messageField);extras.open=false;
+ $('guest-extras-label').textContent=type==='text'?'Signer votre message':'Ajouter un petit mot ou signer';$('guest-limits').hidden=type==='text';
  const capture=$("capture-memory");capture.dataset.mediaMode=type==="image"?"photo":type;
  capture.textContent=type==="image"?"Prendre une photo":type==="audio"?"M’enregistrer":"Me filmer";
  $("media-file").accept=type==="image"?"image/jpeg,image/png,image/webp,image/heic,image/heif":type==="audio"?"audio/webm,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg":"video/mp4,video/quicktime,video/webm";
@@ -495,22 +498,18 @@ async function acceptGuestFile(file,type,duration,interruption){
  finally{if(version===guestSelectionVersion)$("guest-message").querySelector('[type="submit"]').disabled=false}
 }
 let deliveryTouched=false;
-function suggestedDelivery(state){
- if(state?.suggested_delivery_date)return state.suggested_delivery_date;
- if(Number.isInteger(state?.suggested_delivery_months))return addMonthsClamped(state.wedding_date,state.suggested_delivery_months);
- return null;
-}
 function chooseDelivery(choice){
  const now=choice==="now";$("deliver-now").checked=now;$("delivery-date-wrap").hidden=choice!=="custom";$("delivery_date").required=!now;
+ $("delivery-options").hidden=choice!=="custom";$("delivery-summary").setAttribute("aria-expanded",String(choice==="custom"));
  document.querySelectorAll("[data-delivery]").forEach(b=>{const active=b.dataset.delivery===choice;b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active))});
  if(now)$("delivery_date").value="";
- else if(choice==="suggested")$("delivery_date").value=suggestedDelivery(guestState);
  else if(choice!=="custom")$("delivery_date").value=addMonthsClamped(parisDay(),Number(choice));
  else{$("delivery_date").focus()}
  updateDeliveryHelp();guestTransaction=null;
 }
 function updateDeliveryHelp(){
  $("delivery-help").textContent=$("deliver-now").checked?"Votre souvenir sera accessible dès son envoi.":$("delivery_date").value?"Il restera secret jusqu’au "+fdate($("delivery_date").value)+".":"Choisissez une date. Votre souvenir restera secret jusqu’à ce jour.";
+ $('delivery-value').textContent=$('deliver-now').checked?'Maintenant':$('delivery_date').value?fdate($('delivery_date').value):'Choisir une date';
 }
 function initGuestControls(){
  document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy)chooseGuestType(b.dataset.memoryType)}));
@@ -524,6 +523,7 @@ function initGuestControls(){
   $("stop-"+kind).addEventListener("click",stopRecorder);
  }
  document.querySelectorAll("[data-delivery]").forEach(b=>b.addEventListener("click",()=>{deliveryTouched=true;chooseDelivery(b.dataset.delivery)}));
+ $('delivery-summary').addEventListener('click',()=>{const options=$('delivery-options');options.hidden=!options.hidden;$('delivery-summary').setAttribute('aria-expanded',String(!options.hidden))});
  $("delivery_date").addEventListener("change",()=>{deliveryTouched=true;guestTransaction=null;updateDeliveryHelp()});
  $("delivery_date").min=parisDay();
  window.addEventListener("beforeunload",e=>{if(guestBusy||selectedMedia||$("message_text")?.value.trim()){e.preventDefault();e.returnValue=""}});
@@ -547,10 +547,7 @@ function renderGuestState(state){
  if(!allowed.includes(guestType)||state.state==="full")chooseGuestType("text");
  const max=parisDay(new Date(new Date(state.delivery_before).getTime()-1000));$("delivery_date").max=max;
  document.querySelectorAll("[data-delivery]").forEach(b=>{if(/^\d+$/.test(b.dataset.delivery))b.hidden=addMonthsClamped(parisDay(),Number(b.dataset.delivery))>max});
- const suggestion=suggestedDelivery(state),button=document.querySelector('[data-delivery="suggested"]');
- const valid=suggestion&&suggestion>=parisDay()&&suggestion<=max;button.hidden=!valid;
- if(valid)button.textContent="Date suggérée : "+fdate(suggestion);
- if(!deliveryTouched)chooseDelivery(valid?"suggested":"now");
+ if(!deliveryTouched)chooseDelivery("now");
 }
 function uploadGuestFile(file,transaction){
  if(transaction.uploaded)return Promise.resolve();
@@ -584,7 +581,7 @@ async function initCapsule(){
  if(!$("capsule-title"))return;
  const token=qs.get("t")||qs.get("token");
  if(!configured||!token){$("guest-state").textContent="Lien de capsule invalide.";return}
- initGuestControls();chooseGuestType("image");
+ initGuestControls();chooseGuestType("text");
  let refreshing=false,refreshVersion=0;
  async function refreshGuestState(){
   if(refreshing)return;refreshing=true;const version=++refreshVersion;
@@ -605,7 +602,7 @@ async function initCapsule(){
  $("guest-retry").addEventListener("click",refreshGuestState);
  await refreshGuestState();
  $("another-memory").addEventListener("click",async()=>{
-  $("guest-success").hidden=true;chooseGuestType("image");deliveryTouched=false;chooseDelivery("now");show($("status"),"");
+  $("guest-success").hidden=true;chooseGuestType("text");deliveryTouched=false;chooseDelivery("now");show($("status"),"");
   await refreshGuestState();
   $("guest-state").scrollIntoView({behavior:"smooth",block:"start"});
  });
@@ -1206,11 +1203,11 @@ function ownerShell(c,url,count){
 <div class="owner-overview" id="owner-overview"></div>
 <nav class="owner-tabs" role="tablist" aria-label="Votre capsule">
  <button id="owner-tab-configuration" type="button" role="tab" aria-controls="owner-panel-configuration" data-owner-tab-link="configuration"><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span>Carte</span></button>
- <button id="owner-tab-accueil" type="button" role="tab" aria-controls="owner-panel-accueil" data-owner-tab-link="accueil"><i class="fa-regular fa-comment" aria-hidden="true"></i><span>Accueil</span></button>
  <button id="owner-tab-messages" type="button" role="tab" aria-controls="owner-panel-messages" data-owner-tab-link="messages"><i class="fa-regular fa-images" aria-hidden="true"></i><span>Souvenirs</span> <span id="owner-unread-badge" class="owner-unread-badge" hidden></span></button>
  <button id="owner-tab-settings" type="button" role="tab" aria-controls="owner-panel-settings" data-owner-tab-link="settings"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Paramètres</span></button>
 </nav>
 <div class="owner-panel" data-owner-panel="configuration">
+<div class="owner-card-and-intro">
 <section class="qr-designer-panel">
  <div class="qr-designer-head">
   <div>
@@ -1334,10 +1331,9 @@ function ownerShell(c,url,count){
  </div>
 </section>
 
-</div>
-<div class="owner-panel" data-owner-panel="accueil" hidden>
+<details id="organizer-welcome" class="organizer-welcome">
+ <summary><span><strong>Accueil des invités</strong><small>Un message avant de déposer un souvenir · facultatif</small></span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary>
 <section class="qr-designer-panel intro-video-panel">
- <div class="intro-video-head"><div><h2>Accueillez vos invités</h2><p>Un message à découvrir avant de déposer un souvenir.</p></div><span class="intro-video-limit">Facultatif</span></div>
  <div class="intro-video-body intro-editor-grid">
   <div class="intro-editor-fields">
    <div class="field"><label for="intro-kind">Votre message d’accueil</label><select id="intro-kind"><option value="none">Sans message d’accueil</option><option value="text">Un texte</option><option value="video">Une vidéo</option><option value="image">Une image</option></select><small class="field-help">Facultatif · modifiable à tout moment.</small></div>
@@ -1349,7 +1345,8 @@ function ownerShell(c,url,count){
   <div class="intro-preview-card"><div id="intro-live-preview" hidden></div><div id="intro-preview-wrap"></div></div>
  </div>
 </section>
-
+</details>
+</div>
 </div>
 
 <div class="owner-panel" data-owner-panel="messages" hidden>
@@ -1460,7 +1457,7 @@ function compactOwnerEditors(){
  guideButton.addEventListener("click",()=>open("Conseils d’utilisation",[printGuide],guideButton));
  dialog.querySelector(".studio-close").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",restore);
  dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
- const mobile=matchMedia("(max-width:760px)");mobile.addEventListener("change",()=>{if(dialog.open)dialog.close()});
+ const mobile=matchMedia("(max-width:760px)"),welcome=$("organizer-welcome");welcome.open=!mobile.matches;welcome.addEventListener("toggle",()=>window.dispatchEvent(new Event("studio-layout")));mobile.addEventListener("change",()=>{if(dialog.open)dialog.close();welcome.open=!mobile.matches});
  
  // Use the space left by the actual header and controls, including short phones.
  let fitFrame;
@@ -1471,7 +1468,8 @@ function compactOwnerEditors(){
   const viewport=window.visualViewport, height=viewport&&Math.abs(viewport.scale-1)<.05?viewport.height:innerHeight;
   const r=stage.getBoundingClientRect(), below=sticky.getBoundingClientRect().bottom-r.bottom;
   const activation=document.querySelector('.activation-panel'), extra=activation&&!activation.hidden?activation.getBoundingClientRect().height+20:0;
-  const value=Math.floor(Math.max(210,height-r.top-below-nav.getBoundingClientRect().height-44-extra));
+  const introExtra=welcome.getBoundingClientRect().height+18;
+  const value=Math.floor(Math.max(180,height-r.top-window.scrollY-below-nav.getBoundingClientRect().height-44-extra-introExtra));
   if(image.style.getPropertyValue('--studio-card-height')!==value+'px')image.style.setProperty('--studio-card-height',value+'px');
  })};
  const observer=new ResizeObserver(fit);observer.observe($('dashboard-content'));observer.observe(document.querySelector('.suite-topbar'));observer.observe(document.querySelector('.dashboard-head'));
@@ -1484,13 +1482,14 @@ function setupOwnerTabs(c,manifest){
  if(!links.length||!panels.length)return;
 
  const activate=async(name,updateHash=true)=>{
-  const target=["configuration","accueil","messages","settings"].includes(name)?name:"configuration";
+  const target=["configuration","messages","settings"].includes(name)?name:"configuration";
   links.forEach(link=>{
    const active=link.dataset.ownerTabLink===target;
    link.classList.toggle("is-active",active);
    link.setAttribute("aria-selected",String(active));link.tabIndex=active?0:-1;
   });
   panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
+  if(name==="accueil")$("organizer-welcome").open=true;
   const activation=document.querySelector(".activation-panel");if(activation)activation.hidden=target==="settings"||(c.status==="active"&&!capsuleExpired(c));
   if(updateHash&&matchMedia("(max-width:760px)").matches)window.scrollTo({top:0,behavior:"instant"});
   if(updateHash&&location.hash!=="#"+target)history.replaceState(null,"","#"+target);
