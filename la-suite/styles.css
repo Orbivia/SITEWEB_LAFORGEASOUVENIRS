@@ -3342,3 +3342,15 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 .guest-compact[data-welcome-style] [data-welcome-title]{font-family:var(--welcome-font);font-weight:var(--welcome-weight)}
 
 .welcome-style-grid button[aria-pressed=true]::before{content:'';position:absolute;right:10px;top:7px;width:5px;height:9px;border:solid white;border-width:0 2px 2px 0;transform:rotate(45deg);z-index:1}
+
+.print-download-dialog{width:min(520px,calc(100% - 24px));max-height:calc(var(--workspace-viewport-height,100dvh) - 24px)}
+.print-format-choices{display:grid;gap:10px;margin-bottom:16px}
+.print-format-choices button{display:flex;align-items:center;gap:14px;min-width:0;min-height:76px;padding:14px;border:1px solid #e7ded3;border-radius:14px;background:#fff;text-align:left;cursor:pointer;color:#43372d}
+.print-format-choices button:hover{background:#faf5ec;border-color:#b69a69}
+.print-format-choices button:focus-visible{outline:3px solid #c7a052;outline-offset:2px}
+.print-format-choices button>i:first-child{font-size:24px;color:#8b2730;flex:none}
+.print-format-choices button>i:last-child{font-size:10px;margin-left:auto;flex:none}
+.print-format-choices button span{min-width:0}
+.print-format-choices strong{display:block;font:600 .85rem/1.4 Inter,Arial,sans-serif}
+.print-format-choices small{display:block;font:.7rem/1.5 Inter,Arial,sans-serif;color:#756b61;margin-top:3px}
+.print-format-choices button:disabled{opacity:.6;cursor:wait}

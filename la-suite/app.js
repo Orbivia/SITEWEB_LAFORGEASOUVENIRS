@@ -1198,12 +1198,30 @@ async function downloadPrintCard(c,url){
  try{
   const page=await buildA4PrintCanvas(c,url);
   const filename="la-suite-"+slugify(c.couple_name)+"-A4.png";
-  if(window.LaSuiteAndroid?.saveCard){window.LaSuiteAndroid.saveCard(page.toDataURL("image/png"),filename);return;}
+  if(window.LaSuiteAndroid?.saveCard){window.LaSuiteAndroid.saveCard(page.toDataURL("image/png"),filename);return true;}
   const a=document.createElement("a");
   a.download=filename;
   a.href=page.toDataURL("image/png");
-  a.click()
- }catch(e){show($("qr-status"),e?.message||"Impossible de préparer le fichier.",false)}
+  a.click();return true;
+ }catch(e){show($("qr-status"),e?.message||"Impossible de préparer le fichier.",false);return false;}
+}
+function setupPrintDownload(c,url){
+ const dialog=document.createElement('dialog');dialog.id='print-download-dialog';dialog.className='guest-dialog print-download-dialog';dialog.setAttribute('aria-labelledby','print-download-title');
+ dialog.innerHTML='<div class="guest-dialog-head"><h2 id="print-download-title">Télécharger la fiche</h2><button class="guest-dialog-close" type="button" aria-label="Fermer les formats de téléchargement">×</button></div><div class="guest-dialog-body"><div class="print-format-choices"><button type="button" data-print-format="10x15"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i><span><strong>Carte 10 × 15 cm</strong><small>PDF à taille réelle · la fiche seule</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button><button type="button" data-print-format="A4"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i><span><strong>Feuille A4</strong><small>PDF · carte 10 × 15 cm et repères de découpe</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button><button type="button" data-print-format="png"><i class="fa-regular fa-image" aria-hidden="true"></i><span><strong>Image haute définition</strong><small>PNG · version A4</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></div><p class="microcopy">Pour garder les dimensions exactes, imprimez le PDF à 100 % ou en « Taille réelle ».</p><p id="print-download-status" class="status" role="status" aria-live="polite"></p></div>';
+ $('dashboard-content').append(dialog);const buttons=[...dialog.querySelectorAll('[data-print-format]')];
+ dialog.querySelector('.guest-dialog-close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{if($('download-print-card')?.isConnected)$('download-print-card').focus()});
+ $('download-print-card').onclick=()=>{if(ownerSessionEnded)return;show($('print-download-status'),'');dialog.showModal()};
+ buttons.forEach(button=>button.onclick=async()=>{
+  buttons.forEach(b=>b.disabled=true);show($('print-download-status'),'Préparation de votre fiche…');
+  try{
+   if(ownerSessionEnded)return;
+   Object.assign(c,collectQrCustomization(c));applyQrPreview(url,c);
+   if(button.dataset.printFormat==='png'){if(await downloadPrintCard(c,url)){if(!ownerSessionEnded)dialog.close();}else show($('print-download-status'),$('qr-status').textContent||'Impossible de préparer le fichier.',false);return;}
+   const card=await buildPrintCardCanvas(c,url),format=button.dataset.printFormat;
+   const pdf=await SuitePrintPdf.create(card,format);if(ownerSessionEnded)return;
+   const href=URL.createObjectURL(pdf),a=document.createElement('a');a.href=href;a.download='la-suite-'+slugify(c.couple_name)+'-'+format+'.pdf';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),60000);dialog.close();
+  }catch(error){show($('print-download-status'),error?.message||'Impossible de préparer le fichier. Réessayez.',false)}finally{buttons.forEach(b=>b.disabled=false)}
+ });
 }
 async function printPrintCard(c,url){
  if(window.LaSuiteAndroid?.printCard){try{const page=await buildA4PrintCanvas(c,url);window.LaSuiteAndroid.printCard(page.toDataURL("image/png"));}catch(e){show($("qr-status"),e?.message||"Impossible de lancer l’impression.",false)}return;}
@@ -1362,7 +1380,7 @@ function ownerShell(c,url,count){
     <div class="qr-preview-actions">
      <button class="btn secondary" id="share-link" type="button"><img class="customization-inline-icon" src="assets/customization/lien.webp" alt="" width="24" height="24">Partager</button>
      <a class="btn secondary" id="open-guest-link" href="${esc(url)}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Voir la page invité</a>
-     <button class="btn secondary" id="download-print-card" type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>Télécharger A4</button>
+     <button class="btn secondary" id="download-print-card" type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>Télécharger</button>
      <button class="btn primary" id="print-print-card" type="button"><i class="fa-solid fa-print" aria-hidden="true"></i>Imprimer</button>
     </div>
     <details class="qr-print-guide">
@@ -1644,6 +1662,7 @@ function setupQrTextCounters(){
  })
 }
 
+function capsuleAccessLastDay(usage){return usage?.retention_years>3&&usage.delivery_before===usage.expires_at?new Date(new Date(usage.expires_at).getTime()-1000).toISOString():usage?.expires_at}
 function capsuleExpired(c){return c?.usage?.state==='expired'||Boolean(c?.usage?.expires_at&&new Date(c.usage.expires_at).getTime()<=Date.now())}
 const autoOpenedMemories=new Set();
 function nextCountdown(c,manifest,onReady){
@@ -1785,7 +1804,7 @@ async function renderOrganizerLifecycle(c){
  const ratio=Math.min(100,Math.round(data.used_bytes/data.quota_bytes*100)),warning=ratio>=95?"Il reste très peu de place pour les fichiers. Les petits mots restent possibles.":ratio>=80?"Votre capsule approche de sa limite de stockage.":"";
  panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><span class="owner-storage">'+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</span><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress>'+(warning?'<p>'+esc(warning)+'</p>':'');
  let dates=root.querySelector(".owner-dates");if(!dates){dates=document.createElement("details");dates.className="owner-dates";panel.after(dates);}
- dates.innerHTML='<summary>Dates de votre capsule</summary><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(data.expires_at))+'.</p>';
+ dates.innerHTML='<summary>Dates de votre capsule</summary><p>'+esc(data.legacy?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts : "+fParis(data.opens_at)+" et "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(capsuleAccessLastDay(data)))+'.</p>';
 
 }
 
@@ -1823,7 +1842,7 @@ async function initDashboard(){
  if(!$("dashboard-content"))return;
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href=qs.get("view")==="service"?"auth.html?next=admin":"auth.html";
- sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;$('organizer-guest-preview')?.close();$('welcome-editor')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
+ sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;$('organizer-guest-preview')?.close();$('welcome-editor')?.close();$('print-download-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
  const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
  const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,welcome_config,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
@@ -1843,7 +1862,7 @@ async function initDashboard(){
  await renderOrganizerLifecycle(c);
  const freeLaunch=access.free_launch===true;
  const stage=document.createElement("section");stage.className="activation-panel";
- stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>Les trois ans d’accès sont terminés. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Activer ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p>${freeLaunch?'<p>Votre capsule reste gratuite pendant ses 3 ans d’accès, avec tous les formats et 5 Go.</p>':'<p data-activation-price></p><p>Paiement unique, sans abonnement. Les dépôts seront ouverts le jour de votre événement et le lendemain. Accès pendant 3 ans à compter de l’événement.</p>'}<button id="activate-capsule" class="btn primary" type="button">${freeLaunch?"Activer gratuitement":"Continuer vers le paiement"}</button><p id="activation-status" class="status" role="status"></p></dialog>`;
+ stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>La période d’accès est terminée. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Activer ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p>${freeLaunch?'<p>Votre capsule reste gratuite pendant ses 3 ans d’accès, avec tous les formats et 5 Go.</p>':'<p data-activation-price></p><p>Paiement unique, sans abonnement. Les dépôts seront ouverts le jour de votre événement et le lendemain. Accès pendant 3 ans à compter de l’événement.</p>'}<button id="activate-capsule" class="btn primary" type="button">${freeLaunch?"Activer gratuitement":"Continuer vers le paiement"}</button><p id="activation-status" class="status" role="status"></p></dialog>`;
  $("dashboard-content").append(stage);if(c.status==="active"&&!capsuleExpired(c))stage.hidden=true;
  if(c.status!=="active"||capsuleExpired(c)){
   ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title=capsuleExpired(c)?"La période de conservation est terminée":"Activez votre capsule pour partager votre carte"});
@@ -1917,11 +1936,7 @@ async function initDashboard(){
   try{await qrSaveQueue;if(organizerState.qr&&!await saveQrCustomization(c,url.href,true))return;if(!organizerState.qr)dialog.close();}finally{button.disabled=false;}
  });
  $("share-link")?.addEventListener("click",()=>shareGuestLink(url.href));
- $("download-print-card")?.addEventListener("click",()=>{
-   Object.assign(c,collectQrCustomization(c));
-   applyQrPreview(url.href,c);
-   downloadPrintCard(c,url.href);
- });
+ setupPrintDownload(c,url.href);
  $("print-print-card")?.addEventListener("click",()=>{
    Object.assign(c,collectQrCustomization(c));
    applyQrPreview(url.href,c);
