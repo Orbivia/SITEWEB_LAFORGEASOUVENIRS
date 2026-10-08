@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20261008-popup1">
+<link rel="stylesheet" href="styles.css?v=20261008-design1">
 </head>
 <body class="suite-shell-page guest-compact">
 <header class="forge-style-header">
@@ -28,7 +28,9 @@
 <button type="button" id="guest-welcome-open" class="guest-info-link guest-welcome-link" aria-haspopup="dialog" hidden>Le message des organisateurs <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
 <dialog id="guest-concept-dialog" class="guest-dialog" aria-labelledby="guest-concept-title">
  <div class="guest-dialog-head"><h2 id="guest-concept-title">Une capsule de souvenirs</h2><button type="button" class="guest-dialog-close" aria-label="Fermer l’explication">×</button></div>
- <div class="guest-dialog-body"><p>Un petit mot, une photo, votre voix ou une vidéo : laissez une trace de ce moment aux organisateurs.</p><p>Vous choisissez quand ils pourront découvrir votre souvenir. Pour garder la surprise, sélectionnez une date future : son contenu restera secret jusqu’à ce jour.</p><p>Vous pouvez signer votre souvenir avec votre prénom, si vous le souhaitez.</p></div>
+ <div class="guest-dialog-body"><p>Un petit mot, une photo, votre voix ou une vidéo : laissez une trace de ce moment aux organisateurs.</p><p>Vous choisissez quand ils pourront découvrir votre souvenir. Pour garder la surprise, sélectionnez une date future : son contenu restera secret jusqu’à ce jour.</p><p>Vous pouvez signer votre souvenir avec votre prénom, si vous le souhaitez.</p>
+ <p class="microcopy" id="guest-limits">Jusqu’à 20 fichiers et 200 Mo par invité.</p>
+</div>
 </dialog>
 <dialog id="guest-welcome-dialog" class="guest-dialog" aria-labelledby="guest-welcome-title">
  <div class="guest-dialog-head"><h2 id="guest-welcome-title">Le message des organisateurs</h2><button type="button" class="guest-dialog-close" aria-label="Fermer le message">×</button></div>
@@ -47,8 +49,8 @@
   <button type="button" class="memory-type" data-memory-type="video" aria-pressed="false"><i class="fa-solid fa-video" aria-hidden="true"></i><span>Vidéo</span></button>
  </div>
  <div class="media-choices" id="capture-choices">
-  <button type="button" class="media-choice active" data-media-mode="upload">Choisir un fichier</button>
-  <button type="button" class="media-choice" data-media-mode="photo" id="capture-memory">Prendre une photo</button>
+  <button type="button" class="media-choice active" data-media-mode="upload"><span class="media-action-icon"><i class="fa-regular fa-images" aria-hidden="true"></i></span><span class="media-action-label">Choisir une photo</span><small id="import-memory-help">Depuis votre galerie</small></button>
+  <button type="button" class="media-choice" data-media-mode="photo" id="capture-memory"><span class="media-action-icon"><i class="fa-solid fa-camera" aria-hidden="true"></i></span><span class="media-action-label">Prendre une photo</span><small id="capture-memory-help">Sur le moment</small></button>
  </div>
  <p id="file-help" class="microcopy">Photo · 10 Mo maximum.</p>
  <div id="upload-panel" class="media-panel active"><input id="media-file" type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" hidden></div>
@@ -93,12 +95,13 @@
 
  <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre petit mot</label><textarea id="message_text" maxlength="4000" rows="4" placeholder="Écrivez ce que vous aimeriez leur dire…"></textarea></div></div>
  <details id="guest-extras" class="guest-extras" hidden><summary>Ajouter un petit mot <span class="optional">Facultatif</span></summary><div id="guest-extras-body"></div></details>
- <div class="field guest-signature"><label for="guest_name">Votre prénom <span class="optional">(facultatif)</span></label><input id="guest_name" maxlength="80" autocomplete="given-name" placeholder="Pour signer votre souvenir"></div>
+ <div class="guest-personalization">
+ <div class="field guest-signature"><label for="guest_name"><i class="fa-regular fa-user" aria-hidden="true"></i> Votre prénom</label><input id="guest_name" maxlength="80" autocomplete="given-name" placeholder="Facultatif" aria-label="Votre prénom (facultatif)"></div>
  <div class="delivery-box">
-  <button type="button" id="delivery-summary" class="delivery-summary" aria-haspopup="dialog" aria-controls="delivery-dialog"><i class="fa-regular fa-calendar" aria-hidden="true"></i><span><small>Quand le découvrir ?</small><strong id="delivery-value">Maintenant</strong></span><span class="delivery-edit">Modifier</span></button>
+  <button type="button" id="delivery-summary" class="delivery-summary" aria-label="Modifier la date de découverte" aria-describedby="delivery-value" aria-haspopup="dialog" aria-controls="delivery-dialog"><span class="delivery-caption"><i class="fa-regular fa-calendar" aria-hidden="true"></i><small>Découverte</small><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span><strong id="delivery-value">Maintenant</strong></button>
  </div>
- <p class="microcopy" id="guest-limits">Jusqu’à 20 fichiers et 200 Mo par invité.</p>
- <button class="btn primary submit-memory" type="submit">Envoyer mon souvenir</button>
+ </div>
+ <button class="btn primary submit-memory" type="submit"><span>Envoyer mon souvenir</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
  <progress id="upload-progress" max="100" value="0" hidden aria-label="Progression de l’envoi"></progress>
  <div id="status" class="status" role="status" aria-live="polite"></div>
 </form>
@@ -137,7 +140,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="app.js?v=20261008-popup1"></script>
+<script src="app.js?v=20261008-design1"></script>
 </body></html>
 
 

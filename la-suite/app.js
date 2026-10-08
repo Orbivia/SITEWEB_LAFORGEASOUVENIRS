@@ -444,14 +444,18 @@ function chooseGuestType(type){
  if(!guestBusy)$("guest-message").querySelector('[type="submit"]').disabled=false;show($("status"),"");
  document.querySelectorAll("[data-memory-type]").forEach(b=>{const selected=b.dataset.memoryType===type;b.classList.toggle("active",selected);b.setAttribute("aria-pressed",String(selected))});
  $("capture-choices").hidden=type==="text";$("file-help").hidden=type==="text";
- document.querySelector('[data-media-mode="upload"]').textContent=type==="image"?"Choisir une photo":type==="audio"?"Choisir un audio":"Choisir une vidéo";$("message_text").required=type==="text";
+ const importButton=document.querySelector('[data-media-mode="upload"]');
+ importButton.querySelector('.media-action-label').textContent=type==="image"?"Choisir une photo":type==="audio"?"Choisir un audio":"Choisir une vidéo";
+ importButton.querySelector('i').className=type==="image"?'fa-regular fa-images':type==="audio"?'fa-solid fa-music':'fa-regular fa-file-video';
+ $('import-memory-help').textContent=type==='image'?'Depuis votre galerie':'Depuis vos fichiers';$("message_text").required=type==="text";
  $("message-label").innerHTML=type==="text"?"Votre petit mot":'Un petit mot <span class="optional">(facultatif)</span>';
  $("message_text").placeholder=type==="text"?"Écrivez ce que vous aimeriez leur dire…":"Quelques mots pour accompagner votre souvenir…";
  const messageField=$('guest-message-field'),extras=$('guest-extras');
  (type==='text'?$('guest-text-content'):$('guest-extras-body')).prepend(messageField);extras.open=false;
  extras.hidden=type==='text';$('guest-limits').hidden=type==='text';
  const capture=$("capture-memory");capture.dataset.mediaMode=type==="image"?"photo":type;
- capture.textContent=type==="image"?"Prendre une photo":type==="audio"?"M’enregistrer":"Me filmer";
+ capture.querySelector('.media-action-label').textContent=type==="image"?"Prendre une photo":type==="audio"?"M’enregistrer":"Me filmer";
+ capture.querySelector('i').className=type==='image'?'fa-solid fa-camera':type==='audio'?'fa-solid fa-microphone':'fa-solid fa-video';
  $("media-file").accept=type==="image"?"image/jpeg,image/png,image/webp,image/heic,image/heif":type==="audio"?"audio/webm,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg":"video/mp4,video/quicktime,video/webm";
  $("media-file").value="";$("photo-file").value="";
  $("file-help").textContent=type==="image"?"Photo · 10 Mo maximum.":type==="audio"?"Audio · 3 minutes et 20 Mo maximum.":"Vidéo · 1 minute et 50 Mo maximum.";
@@ -635,7 +639,7 @@ async function initCapsule(){
   if(!guestTransaction||guestTransaction.key!==key)guestTransaction={key,requestId:crypto.randomUUID(),delivery:instant?new Date().toISOString():date};
   const transaction=guestTransaction,button=e.target.querySelector('[type="submit"]');
   const fields=[...e.target.querySelectorAll("input,textarea,button")],disabled=fields.map(f=>f.disabled);
-  guestBusy=true;fields.forEach(f=>f.disabled=true);button.textContent="Envoi en cours…";$("upload-progress").value=0;
+  guestBusy=true;fields.forEach(f=>f.disabled=true);button.querySelector("span").textContent="Envoi en cours…";$("upload-progress").value=0;
   try{
    show(status,"Préparation de l’envoi…");
    if(guestType==="text"){
@@ -651,8 +655,8 @@ async function initCapsule(){
    }
    $("guest-success-date").textContent=instant?"Merci pour votre souvenir !":"Il restera secret jusqu’au "+fdate(date)+".";
    e.target.reset();resetPreview();guestTransaction=null;$("guest-message").hidden=true;$("guest-success").hidden=false;$("guest-success").focus();$("guest-success").scrollIntoView({behavior:"smooth",block:"center"});
-  }catch(error){show(status,error.message,false);button.textContent="Réessayer l’envoi"}
-  finally{guestBusy=false;fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;if(!$("guest-success").hidden)button.textContent="Envoyer mon souvenir"}
+  }catch(error){show(status,error.message,false);button.querySelector("span").textContent="Réessayer l’envoi"}
+  finally{guestBusy=false;fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;if(!$("guest-success").hidden)button.querySelector("span").textContent="Envoyer mon souvenir"}
  });
 }
 
