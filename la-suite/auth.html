@@ -36,13 +36,13 @@
       <p id="auth-description">Retrouvez vos capsules avec votre e-mail et votre mot de passe.</p>
     </div>
 
-    <form class="organizer-login-form" id="auth-form" action="#" onsubmit="return false;">
+    <form class="organizer-login-form" id="auth-form" action="#" autocomplete="on" novalidate onsubmit="return false;">
       <div class="field" id="email-field">
         <label for="email">Adresse e-mail</label>
-        <input id="email" name="email" type="email" autocomplete="email" required placeholder="vous@exemple.fr">
+        <input id="email" name="email" type="email" autocomplete="username" inputmode="email" autocapitalize="none" spellcheck="false" required placeholder="vous@exemple.fr">
       </div>
-      <div class="field" id="password-field"><label for="password">Mot de passe</label><input id="password" type="password" autocomplete="current-password" required><small>À la création : 10 caractères minimum.</small></div>
-      <div class="field" id="password-confirm-field" hidden><label for="password-confirm">Confirmer le mot de passe</label><input id="password-confirm" type="password" autocomplete="new-password"></div>
+      <div class="field" id="password-field"><label for="password">Mot de passe</label><input id="password" name="password" type="password" autocomplete="current-password" required><small>À la création : 10 caractères minimum.</small></div>
+      <div class="field" id="password-confirm-field" hidden><label for="password-confirm">Confirmer le mot de passe</label><input id="password-confirm" name="password_confirmation" type="password" autocomplete="new-password"></div>
       <button class="btn primary organizer-login-submit" type="submit">Me connecter</button>
       <div id="status" class="status" role="status" aria-live="polite"></div>
     </form>
@@ -64,7 +64,7 @@
 <script src="suite-shell.js?v=20261007-review15"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
 <script src="supabase-config.js"></script>
-<script src="app.js?v=20261008-admin5"></script>
+<script src="app.js?v=20261008-signup1"></script>
 </body></html>
 
 

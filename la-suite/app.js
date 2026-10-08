@@ -147,6 +147,22 @@ async function signedInDestination(){
  const {data,error}=await sb.rpc('admin_status');if(error)throw Error('Vérification du compte impossible. Réessayez.');
  return data===true?'admin.html':authDestination();
 }
+function frenchAuthError(error){
+ const code=error?.code||"",msg=String(error?.message||"");
+ if(code==="invalid_credentials"||/Invalid login/i.test(msg))return "E-mail ou mot de passe incorrect.";
+ if(code==="email_not_confirmed"||/Email not confirmed/i.test(msg))return "Confirmez votre adresse avec le lien reçu par e-mail.";
+ if(code==="email_address_invalid"||/invalid.*email|email.*invalid|unable to validate email/i.test(msg))return "Saisissez une adresse e-mail valide.";
+ if(["email_exists","user_already_exists"].includes(code)||/already registered|already.*exists/i.test(msg))return "Un compte existe déjà avec cette adresse. Connectez-vous ou utilisez « Mot de passe oublié ».";
+ if(code==="weak_password"||/weak password|password.*(least|short|characters)/i.test(msg))return "Choisissez un mot de passe plus sûr, avec au moins 10 caractères.";
+ if(code==="same_password")return "Choisissez un mot de passe différent de votre mot de passe actuel.";
+ if(code.startsWith("over_")||error?.status===429||/rate limit|too many|security purposes/i.test(msg))return "Trop de tentatives. Patientez quelques minutes avant de réessayer.";
+ if(["otp_expired","session_not_found","flow_state_expired"].includes(code)||/session missing|expired|invalid.*token/i.test(msg))return "Ce lien a expiré. Demandez un nouveau lien depuis « Mot de passe oublié ».";
+ if(["signup_disabled","email_provider_disabled"].includes(code))return "La création de compte est momentanément indisponible.";
+ if(code==="email_address_not_authorized"||/error sending|unable to send/i.test(msg))return "L’envoi de l’e-mail est momentanément indisponible. Réessayez plus tard.";
+ if(/fetch|network|timeout/i.test(msg))return "Connexion au service impossible. Vérifiez votre connexion et réessayez.";
+ if(msg==="Les mots de passe ne correspondent pas."||msg==="Vérification du compte impossible. Réessayez.")return msg;
+ return "Une erreur est survenue. Réessayez dans quelques instants.";
+}
 async function initAuth(){
  const form=$("auth-form");if(!form)return;
  const status=$("status"),submit=form.querySelector('[type="submit"]'),adminAccess=qs.get("next")==="admin";
@@ -157,8 +173,11 @@ async function initAuth(){
   document.querySelector(".organizer-access-help").textContent="Utilisez votre compte habituel. Si vous avez oublié votre mot de passe, choisissez « Mot de passe oublié ».";
  }
  if(!configured)return show(status,"Le service de connexion est indisponible. Rechargez la page.",false);
- let mode=["signup","recovery","reset"].includes(qs.get("mode"))?qs.get("mode"):"login";
+ let mode=["signup","recovery","reset"].includes(qs.get("mode"))?qs.get("mode"):"login",pendingConfirmation=false,confirmationEmail="";
  function render(){
+  pendingConfirmation=false;
+  submit.hidden=false;
+  form.querySelectorAll("input").forEach(input=>input.removeAttribute("aria-invalid"));
   const recovery=mode==="recovery",reset=mode==="reset";
   $("auth-title").textContent=({login:"Bienvenue dans votre espace",signup:"Créez votre compte",reset:"Retrouver votre accès",recovery:"Choisissez votre mot de passe"})[mode];
   if(adminAccess&&mode==="login")$("auth-title").textContent="Connexion à l’administration";
@@ -180,7 +199,7 @@ async function initAuth(){
  sb.auth.onAuthStateChange(event=>{if(event==="PASSWORD_RECOVERY"){mode="recovery";render()}});
  $("resend-confirmation").addEventListener("click",async()=>{
   const button=$("resend-confirmation");button.disabled=true;
-  try{const{error}=await sb.auth.resend({type:"signup",email:$("email").value.trim(),options:{emailRedirectTo:new URL(authDestination(),location.href).href}});if(error)throw error;show(status,"Un nouveau lien de confirmation a été demandé. Vérifiez votre boîte mail et les indésirables.")}catch(e){show(status,"Envoi impossible. Patientez quelques minutes avant de réessayer.",false)}finally{button.disabled=false}
+  try{const{error}=await sb.auth.resend({type:"signup",email:confirmationEmail||$("email").value.trim(),options:{emailRedirectTo:new URL(authDestination(),location.href).href}});if(error)throw error;show(status,"Un nouveau lien de confirmation a été demandé. Vérifiez votre boîte mail et les indésirables.")}catch(e){show(status,frenchAuthError(e),false)}finally{button.disabled=false}
  });
  document.querySelectorAll('[data-auth-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.authMode;render()}));
  if(qs.get("next")==="create")try{const d=JSON.parse(localStorage.getItem("la_suite_create_draft")||"null");if(d?.email)$("email").value=d.email}catch(e){}
@@ -189,7 +208,13 @@ async function initAuth(){
  const initial=await user();
  if(initial&&!["recovery","reset"].includes(mode)){try{location.href=await signedInDestination()}catch(e){show(status,e.message,false)}return;}
  form.addEventListener("submit",async e=>{
-  e.preventDefault();submit.disabled=true;
+  e.preventDefault();if(pendingConfirmation||submit.disabled)return;
+  form.querySelectorAll("input").forEach(input=>input.removeAttribute("aria-invalid"));
+  const invalid=(id,message)=>{const input=$(id);input.setAttribute("aria-invalid","true");input.focus();show(status,message,false)};
+  if(mode!=="recovery"&&(!$("email").value.trim()||$("email").validity.typeMismatch))return invalid("email","Saisissez une adresse e-mail valide.");
+  if(mode!=="reset"&&!$("password").value)return invalid("password","Saisissez votre mot de passe.");
+  if(["signup","recovery"].includes(mode)&&$("password").value.length<10)return invalid("password","Le mot de passe doit contenir au moins 10 caractères.");
+  submit.disabled=true;
   const email=$("email").value.trim(),password=$("password").value;
   try{
    if((mode==="signup"||mode==="recovery")&&password!==$("password-confirm").value)throw new Error("Les mots de passe ne correspondent pas.");
@@ -208,15 +233,23 @@ async function initAuth(){
    if(mode==="signup"){
     result=await sb.auth.signUp({email,password,options:{emailRedirectTo:new URL(authDestination(),location.href).href}});
     if(result.error)throw result.error;
-    if(!result.data.session){$("resend-confirmation").hidden=false;$("password").value="";$("password-confirm").value="";return show(status,"Consultez votre boîte mail pour confirmer votre adresse, puis connectez-vous."+(qs.get('next')==='create'?" Votre préparation est conservée 24 h dans ce navigateur.":"")+" Si vous avez déjà un compte, utilisez « J’ai déjà un compte ».")}
+    if(!result.data.session){
+     pendingConfirmation=true;confirmationEmail=email;
+     ["email-field","password-field","password-confirm-field","auth-options"].forEach(id=>$(id).hidden=true);
+     form.querySelectorAll("input").forEach(input=>input.disabled=true);
+     submit.hidden=true;$("resend-confirmation").hidden=false;
+     $("password").value="";$("password-confirm").value="";
+     $("auth-title").textContent="Vérifiez votre boîte mail";
+     $("auth-description").textContent="Un lien de confirmation a été demandé pour "+email+".";
+     return show(status,"Ouvrez l’e-mail La Suite et cliquez sur le lien pour confirmer votre adresse. Pensez à vérifier les indésirables."+(qs.get('next')==='create'?" Votre préparation est conservée 24 h dans ce navigateur.":""));
+    }
    }else{
     result=await sb.auth.signInWithPassword({email,password});if(result.error)throw result.error;
    }
    location.href=await signedInDestination();
   }catch(err){
-   const msg=String(err?.message||"");
-   show(status,/Invalid login/i.test(msg)?"E-mail ou mot de passe incorrect.":/Email not confirmed/i.test(msg)?"Confirmez votre adresse avec le lien reçu par e-mail.":/rate limit|too many/i.test(msg)?"Trop de tentatives. Patientez quelques minutes avant de réessayer.":/session missing|expired|invalid.*token/i.test(msg)?"Ce lien a expiré. Demandez un nouveau lien depuis « Mot de passe oublié ».":msg||"Connexion impossible. Réessayez.",false);
-  }finally{submit.disabled=false}
+   show(status,frenchAuthError(err),false);
+  }finally{submit.disabled=pendingConfirmation}
  });
 }
 
