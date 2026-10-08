@@ -1,1 +1,24 @@
-<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Mon espace — La Suite</title></head><body><p>Ouverture de votre espace… <a href="dashboard.html?view=service">Continuer</a></p><script src="admin-redirect.js?v=20261007-workspace1"></script></body></html>
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Administration — La Suite</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"><link rel="stylesheet" href="styles.css?v=20261008-admin3"><link rel="stylesheet" href="admin.css?v=20261008-admin3"></head>
+<body class="admin-console"><header class="admin-console-header"><a class="admin-console-brand" href="admin.html"><img src="assets/la-suite-logo.webp" alt="La Suite"><span>Administration</span></a><button id="admin-logout" class="btn secondary" type="button" hidden>Déconnexion</button></header><main class="admin-console-main"><section id="admin-access" class="admin-card"><div class="eyebrow">Administration privée</div><h1>Administration</h1><p id="access-message" role="status">Vérification de votre accès…</p><div id="admin-auth" class="admin-actions" hidden><a class="btn primary" href="auth.html?next=admin">Me connecter</a><a id="admin-signup" class="btn secondary" href="auth.html?mode=signup&amp;next=admin" hidden>Créer mon compte administrateur</a></div></section>
+<div id="admin-content" hidden>
+ <div class="admin-console-heading"><div><div class="eyebrow">Gestion du service</div><h1>Administration</h1></div><span id="admin-email"></span></div>
+ <div id="admin-stats" class="admin-stats"></div>
+ <nav class="admin-console-tabs" aria-label="Sections de l’administration">
+  <button type="button" data-admin-view="clients" aria-controls="panel-clients" aria-selected="true">Clients</button>
+  <button type="button" data-admin-view="capsules" aria-controls="panel-capsules" aria-selected="false">Capsules</button>
+  <button type="button" data-admin-view="backups" aria-controls="panel-backups" aria-selected="false">Sauvegardes</button>
+  <button type="button" data-admin-view="service" aria-controls="panel-service" aria-selected="false">Service</button>
+ </nav>
+ <p id="admin-status" class="status" role="status" aria-live="polite"></p>
+ <section id="panel-clients" class="admin-console-panel"><h2>Clients</h2><label class="admin-search" for="admin-client-search">Rechercher un compte<input id="admin-client-search" type="search" placeholder="Adresse e-mail" autocomplete="off"></label><div id="client-cards" class="admin-list"></div></section>
+ <section id="panel-capsules" class="admin-console-panel" hidden><div class="admin-section-heading"><h2 id="admin-capsules-heading">Toutes les capsules</h2><button id="admin-clear-client" class="btn secondary" type="button" hidden>Tous les clients</button></div><label class="admin-search" for="admin-capsule-search">Rechercher une capsule<input id="admin-capsule-search" type="search" placeholder="Nom ou adresse e-mail" autocomplete="off"></label><div id="capsule-cards" class="admin-list"></div></section>
+ <section id="panel-backups" class="admin-console-panel" hidden><h2>Sauvegardes</h2><div class="admin-card"><p>Une sauvegarde automatique chaque nuit, conservée 7 jours. Les archives téléchargées sont chiffrées.</p><div class="admin-actions"><button id="backup-all" class="btn primary" type="button">Sauvegarder toutes les capsules</button><button id="import-backup" class="btn secondary" type="button">Restaurer une archive</button><input id="archive-input" type="file" accept=".lasuite" hidden></div><p class="hint">La restauration ajoute les éléments manquants sans écraser les nouveaux souvenirs. Elle nécessite les comptes organisateurs d’origine.</p></div><div id="backup-cards" class="admin-list"></div></section>
+ <section id="panel-service" class="admin-console-panel workspace-service-tools" hidden><h2>Paiements et notifications</h2><div id="offer-services"><p>Chargement des services…</p></div></section>
+</div>
+<dialog id="capsule-dialog" class="admin-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div id="capsule-detail"></div></dialog>
+<dialog id="confirm-dialog" class="admin-dialog"><h2 id="confirm-title"></h2><p id="confirm-text"></p><div class="admin-actions"><button id="confirm-yes" class="btn primary" type="button">Confirmer</button><button id="confirm-no" class="btn secondary" type="button">Annuler</button></div></dialog>
+
+
+</main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script><script src="supabase-config.js"></script><script src="backup-archive.js?v=20261008-admin3"></script><script src="admin.js?v=20261008-admin3"></script></body></html>

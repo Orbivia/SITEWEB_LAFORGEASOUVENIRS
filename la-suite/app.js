@@ -141,7 +141,12 @@ async function updateOwnedCapsule(c,payload){
  if(error?.code==='PGRST116'||!error&&(!data?.id||data.id!==c.id)||ownerSessionEnded)throw Error('La capsule n’est plus accessible. Reconnectez-vous avant de réessayer.');
  if(error)throw error;
 }
-function authDestination(){if(qs.get("next")==="admin")return "dashboard.html?view=service";return qs.get("next")==="create"?"create.html?resume=1":"dashboard.html"}
+function authDestination(){if(qs.get("next")==="admin")return "admin.html";return qs.get("next")==="create"?"create.html?resume=1":"dashboard.html"}
+async function signedInDestination(){
+ if(["admin","create"].includes(qs.get("next")))return authDestination();
+ const {data,error}=await sb.rpc('admin_status');if(error)throw Error('Vérification du compte impossible. Réessayez.');
+ return data===true?'admin.html':authDestination();
+}
 async function initAuth(){
  const form=$("auth-form");if(!form)return;
  const status=$("status"),submit=form.querySelector('[type="submit"]'),adminAccess=qs.get("next")==="admin";
@@ -182,7 +187,7 @@ async function initAuth(){
  const authError=new URLSearchParams(location.hash.slice(1)).get("error_description");
  if(authError)show(status,"Ce lien n’est plus valide. Demandez un nouveau lien avec « Mot de passe oublié ».",false);
  const initial=await user();
- if(initial&&!["recovery","reset"].includes(mode))return location.href=authDestination();
+ if(initial&&!["recovery","reset"].includes(mode)){try{location.href=await signedInDestination()}catch(e){show(status,e.message,false)}return;}
  form.addEventListener("submit",async e=>{
   e.preventDefault();submit.disabled=true;
   const email=$("email").value.trim(),password=$("password").value;
@@ -198,7 +203,7 @@ async function initAuth(){
    }
    if(mode==="recovery"){
     result=await sb.auth.updateUser({password});if(result.error)throw result.error;
-    location.href=authDestination();return;
+    location.href=await signedInDestination();return;
    }
    if(mode==="signup"){
     result=await sb.auth.signUp({email,password,options:{emailRedirectTo:new URL(authDestination(),location.href).href}});
@@ -207,7 +212,7 @@ async function initAuth(){
    }else{
     result=await sb.auth.signInWithPassword({email,password});if(result.error)throw result.error;
    }
-   location.href=authDestination();
+   location.href=await signedInDestination();
   }catch(err){
    const msg=String(err?.message||"");
    show(status,/Invalid login/i.test(msg)?"E-mail ou mot de passe incorrect.":/Email not confirmed/i.test(msg)?"Confirmez votre adresse avec le lien reçu par e-mail.":/rate limit|too many/i.test(msg)?"Trop de tentatives. Patientez quelques minutes avant de réessayer.":/session missing|expired|invalid.*token/i.test(msg)?"Ce lien a expiré. Demandez un nouveau lien depuis « Mot de passe oublié ».":msg||"Connexion impossible. Réessayez.",false);
@@ -784,7 +789,7 @@ const DEFAULT_CARD_TITLE="Notre capsule temporelle";
 const DEFAULT_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard.";
 const OLD_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard, à la date que vous choisissez.";
 const OLD_CARD_EXPLANATIONS=["une photo ou un texte","une photo, un audio ou un texte","une photo, un audio, une vidéo ou un texte"].map(formats=>"Flashez ce QR code et déposez-y "+formats+". Choisissez la manière la plus naturelle de partager un souvenir avec nous.");
-function capsulePlan(c){return ['free_beta','legacy'].includes(c.activation_source)?'premium':c.plan}
+function capsulePlan(c){return c.admin_plan_override||(['free_beta','legacy'].includes(c.activation_source)?'premium':c.plan)}
 function defaultCardExplanation(plan){
  const formats={photo:"une photo ou un texte",audio:"une photo, un audio ou un texte",premium:"une photo, un audio, une vidéo ou un texte"};
  return "Scannez ce QR code pour déposer "+(formats[plan]||formats.premium)+".";
@@ -1731,7 +1736,7 @@ function updateEventDateControls(c){
 }
 function setupCapsuleSettings(c){
  const panel=document.createElement('div');panel.className='capsule-settings';
- panel.innerHTML=`<div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain.</small></div><div class="field"><label for="capsule-plan">Formule</label><input id="capsule-plan" type="hidden" value="${esc(capsulePlan(c))}"><span id="capsule-plan-name">${esc(PLAN_NAMES[capsulePlan(c)])}</span><small class="field-help">${['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'Formule choisie à la création.':'Formule choisie à la création.'}</small></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les rappels par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div></div>`;
+ panel.innerHTML=`<div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain.</small></div><div class="field"><label for="capsule-plan">Formule</label><input id="capsule-plan" type="hidden" value="${esc(capsulePlan(c))}"><span id="capsule-plan-name">${esc(PLAN_NAMES[capsulePlan(c)])}</span><small class="field-help">${!c.admin_plan_override&&['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':c.status==='active'?'Formule choisie à la création.':'Formule choisie à la création.'}</small></div><div class="field" id="notification-preference" hidden><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les rappels par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div></div>`;
  const settings=document.createElement("section");settings.id="capsule-settings-panel";settings.className="owner-panel studio-settings-panel";settings.dataset.ownerPanel="settings";settings.hidden=true;
  settings.innerHTML='<h2>Paramètres de la capsule</h2><p id="settings-save-error" class="status" role="alert" hidden></p><button id="settings-save-retry" class="btn secondary" type="button" hidden>Réessayer</button>';
  settings.append(panel);
@@ -1849,15 +1854,20 @@ async function initDashboard(){
  if(!$("dashboard-content"))return;
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href=qs.get("view")==="service"?"auth.html?next=admin":"auth.html";
+ if(qs.get('view')==='service')return location.replace('admin.html'+location.hash);
+ const {data:adminMember,error:adminError}=await sb.rpc('admin_status');
+ if(adminError)return $('dashboard-content').innerHTML='<p class="status show err">Vérification du compte impossible. Rechargez la page.</p>';
+ if(adminMember===true&&qs.get('mode')!=='organizer')return location.replace('admin.html'+location.hash);
+
  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;ownerDownloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));$('organizer-guest-preview')?.close();$('welcome-editor')?.close();$('print-download-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
  const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
- const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,welcome_config,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
+ const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,admin_plan_override,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,welcome_config,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(ownerSessionEnded)return;
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
  let access;
  try{access=await capsuleAccess()}catch(error){return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>'}
  if(ownerSessionEnded)return;
- if(!qs.get("slug")&&caps.length){let last;try{last=localStorage.getItem('la_suite_last_'+u.id)}catch{}const chosen=caps.find(c=>c.slug===last)||caps[0];location.replace("dashboard.html?slug="+encodeURIComponent(chosen.slug)+(qs.get("view")==="service"?"&view=service":"")+location.hash);return;}
+ if(!qs.get("slug")&&caps.length){let last;try{last=localStorage.getItem('la_suite_last_'+u.id)}catch{}const chosen=caps.find(c=>c.slug===last)||caps[0];location.replace("dashboard.html?slug="+encodeURIComponent(chosen.slug)+(qs.get("mode")==="organizer"?"&mode=organizer":"")+location.hash);return;}
  const c=caps.find(x=>x.slug===qs.get("slug"));
  await window.SuiteWorkspace.setup({sb,user:u,caps,access,selected:c,canLeave:()=>!organizerDirty()&&!organizerState.saving,logout});
  if(ownerSessionEnded)return;
@@ -1989,5 +1999,6 @@ async function initDashboard(){
 initAuth();initCreate();initCapsule();initDashboard();
 window.addEventListener("beforeunload",stopStream);
 })();
+
 
 

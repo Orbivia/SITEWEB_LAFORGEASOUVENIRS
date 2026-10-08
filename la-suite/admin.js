@@ -5,10 +5,10 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
  const date=v=>v?new Date(v.length===10?v+'T12:00:00':v).toLocaleDateString('fr-FR'):'—';const bytes=v=>Number(v)>=1e9?(Number(v)/1e9).toFixed(1)+' Go':Math.round(Number(v)/1e6)+' Mo';
  const states={draft:'En préparation',scheduled:'Prête à partager',open:'Dépôts ouverts',closed:'Dépôts terminés',full:'Stockage rempli',expired:'Conservation terminée',suspended:'Dépôts en pause',missing_date:'Date à compléter'};
  const backupStates={queued:'En attente',running:'Sauvegarde en cours',ready:'Sauvegarde prête',failed:'À réessayer',restoring:'Restauration en cours',restored:'Restaurée',importing:'Import en cours'};
- let clientFilter=null,exportsByCapsule=new Map();
+ let clientFilter=null,exportsByCapsule=new Map(),view='clients';
  let data={capsules:[],clients:[],backups:[]},busy=false,authorized=false,timer=null;
  function status(text,error=false){if($('capsule-dialog').open&&$('detail-export-status'))$('detail-export-status').textContent=text;$('admin-status').textContent=text;$('admin-status').className='status show '+(error?'err':'ok');}
- function setBusy(value){busy=value;onBusy(value);document.querySelectorAll('#admin-content button:not([data-tab]),#capsule-dialog button:not(.dialog-close),#workspace-administration .workspace-service-tools button').forEach(b=>b.disabled=value);}
+ function setBusy(value){busy=value;onBusy(value);document.querySelectorAll('#admin-content button:not([data-tab]),#capsule-dialog button:not(.dialog-close),#quota-form input,#quota-form select').forEach(b=>b.disabled=value);}
  window.addEventListener('hashchange',()=>{if(/^[a-f0-9]{64}$/.test(new URLSearchParams(location.hash.slice(1)).get('invite')||''))location.reload();});
  const inviteKey='la_suite_admin_invite';const hash=new URLSearchParams(location.hash.slice(1));let invite=null;if(/^[a-f0-9]{64}$/.test(hash.get('invite')||'')){invite={token:hash.get('invite'),at:Date.now()};try{localStorage.setItem(inviteKey,JSON.stringify(invite));history.replaceState(null,'',location.pathname)}catch{}}
  try{invite=invite||JSON.parse(localStorage.getItem(inviteKey)||'null');if(invite&&Date.now()-invite.at>48*3600000){localStorage.removeItem(inviteKey);invite=null;}}catch{}
@@ -16,7 +16,7 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
  const sb=client||window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
  let sessionOwner=null;
  const downloadSession=new AbortController();
- function clearPrivateView(){authorized=false;downloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));onBusy(false);clearTimeout(timer);data={capsules:[],clients:[],backups:[]};['capsule-cards','client-cards','backup-cards','admin-stats','capsule-detail'].forEach(id=>$(id).replaceChildren());$('admin-content').hidden=true;$('admin-access').hidden=false;$('access-message').textContent='Votre session est terminée. Reconnectez-vous.';$('admin-auth').hidden=false;$('admin-signup').hidden=true;if($('capsule-dialog').open)$('capsule-dialog').close();if($('confirm-dialog').open)$('confirm-dialog').dispatchEvent(new Event('cancel',{cancelable:true}));if(embedded)onDenied();}
+ function clearPrivateView(){authorized=false;downloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));onBusy(false);clearTimeout(timer);data={capsules:[],clients:[],backups:[]};['capsule-cards','client-cards','backup-cards','admin-stats','capsule-detail','admin-email','offer-services'].forEach(id=>$(id)?.replaceChildren());$('admin-content').hidden=true;$('admin-access').hidden=false;$('access-message').textContent='Votre session est terminée. Reconnectez-vous.';$('admin-auth').hidden=false;$('admin-signup').hidden=true;if($('capsule-dialog').open)$('capsule-dialog').close();if($('confirm-dialog').open)$('confirm-dialog').dispatchEvent(new Event('cancel',{cancelable:true}));if(embedded)onDenied();}
  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||sessionOwner&&session?.user?.id&&session.user.id!==sessionOwner)clearPrivateView()});
  async function api(action,payload={}){if(downloadSession.signal.aborted)throw downloadSession.signal.reason;const {data,error}=await sb.functions.invoke('suite-admin',{body:{action,...payload}});if(downloadSession.signal.aborted)throw downloadSession.signal.reason;if(error){if([401,403].includes(error.context?.status))clearPrivateView();let message=error.message;try{message=(await error.context.json()).error||message;}catch{}throw Error(message);}if(data?.error)throw Error(data.error);return data;}
  async function confirmAction(title,text){$('confirm-title').textContent=title;$('confirm-text').textContent=text;$('confirm-dialog').showModal();return new Promise(resolve=>{function done(value){$('confirm-dialog').close();$('confirm-yes').onclick=null;$('confirm-no').onclick=null;$('confirm-dialog').oncancel=null;resolve(value);}$('confirm-yes').onclick=()=>done(true);$('confirm-no').onclick=()=>done(false);$('confirm-dialog').oncancel=()=>done(false);});}
@@ -24,19 +24,34 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
  function attention(c){return ['full','suspended','missing_date'].includes(c.usage.state)||c.usage.used_bytes>=c.usage.quota_bytes*.8;}
  function email(id){return data.clients.find(x=>x.id===id)?.email||'Compte indisponible';}
  function render(){
-  $('admin-stats').innerHTML=[['Capsules',data.capsules.length],['Clients',data.clients.length],['À vérifier',data.capsules.filter(attention).length],['Fichiers clients',bytes(data.capsules.reduce((n,c)=>n+Number(c.usage.used_bytes),0))]].map(([name,value])=>`<div class="admin-stat"><strong>${esc(value)}</strong><span>${name}</span></div>`).join('');
-  renderCapsules();updateExportState();$('client-cards').innerHTML=data.clients.map(c=>`<article class="admin-card admin-client"><div><strong>${esc(c.email||'Sans adresse')}</strong><p>${c.confirmed?'Adresse confirmée':'Adresse à confirmer'} · Inscrit le ${date(c.created_at)}</p></div><button class="btn secondary" data-client="${c.id}">${data.capsules.filter(x=>x.owner_id===c.id).length} capsule(s)</button></article>`).join('')||'<p class="admin-empty">Aucun client pour le moment.</p>';
+  $('admin-stats').innerHTML=[['Capsules',data.capsules.length],['Clients',data.clients.filter(c=>!c.is_admin).length],['À vérifier',data.capsules.filter(attention).length],['Fichiers clients',bytes(data.capsules.reduce((n,c)=>n+Number(c.usage.used_bytes),0))]].map(([name,value])=>`<div class="admin-stat"><strong>${esc(value)}</strong><span>${name}</span></div>`).join('');
+  renderCapsules();updateExportState();renderClients();
   $('backup-cards').innerHTML=data.backups.map(b=>`<article class="admin-card admin-backup"><div><strong>${esc(b.label)}</strong><p>${date(b.created_at)} · ${b.automatic?'Automatique':'Manuelle'} · ${esc(backupStates[b.state])}${['running','restoring'].includes(b.state)?' · '+(b.state==='restoring'?b.restore_cursor:b.cursor)+' / '+b.total+' fichiers':''}</p>${b.error?'<p class="admin-error">'+esc(b.error)+'</p>':''}</div><div class="admin-actions">${['ready','restored'].includes(b.state)?`<button class="btn secondary" data-export="${b.id}">Télécharger</button><button class="btn secondary" data-restore="${b.id}">Restaurer</button>`:b.state==='failed'?`<button class="btn secondary" data-retry="${b.id}">Réessayer</button>`:''}</div></article>`).join('')||'<p class="admin-empty">La première sauvegarde automatique aura lieu cette nuit. Vous pouvez la lancer maintenant.</p>';
   $('backup-all').disabled=busy||!data.capsules.length;
  }
- function renderCapsules(){const caps=data.capsules.filter(c=>!clientFilter||c.owner_id===clientFilter);$('capsule-cards').innerHTML=caps.map(c=>{const own=ownedCaps.find(own=>own.id===c.id),state=c.usage.state,tag=own?'a':'button';return `<${tag} class="admin-card admin-capsule workspace-capsule-summary" ${own?`href="dashboard.html?slug=${encodeURIComponent(own.slug)}"`:`type="button" data-capsule-open="${c.id}" aria-label="Ouvrir ${esc(c.name)}"`}><div class="admin-capsule-head"><div><h2>${esc(c.name)}</h2><p>${date(c.date)}</p><span class="workspace-state" data-state="${esc(state)}">${esc(states[state]||'Indisponible')}</span><p class="workspace-discovery">${state==='expired'?'Conservation terminée':`${Number(c.available_messages||0)} à découvrir · ${Number(c.locked_messages||0)} programmé${Number(c.locked_messages||0)>1?'s':''}`}</p></div>${own?'<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>':''}</div></${tag}>`}).join('')||'<p class="admin-empty">Aucune capsule pour le moment.</p>';}
+ function renderClients(){
+  const term=$('admin-client-search').value.trim().toLocaleLowerCase('fr');
+  const clients=data.clients.filter(c=>(c.email||'').toLocaleLowerCase('fr').includes(term));
+  $('client-cards').innerHTML=clients.map(c=>`<article class="admin-card admin-client"><div><strong>${esc(c.email||'Sans adresse')}</strong>${c.is_admin?'<span class="admin-role">Administrateur</span>':''}<p>${c.confirmed?'Adresse confirmée':'Adresse à confirmer'} · Inscrit le ${date(c.created_at)}</p></div><button type="button" class="btn secondary" data-client="${c.id}">${data.capsules.filter(x=>x.owner_id===c.id).length} capsule(s)</button></article>`).join('')||'<p class="admin-empty">Aucun compte à afficher.</p>';
+ }
+ function selectView(next){
+  if(!authorized||busy||!['clients','capsules','backups','service'].includes(next))return;
+  view=next;document.querySelectorAll('[data-admin-view]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.adminView===view)));
+  for(const key of ['clients','capsules','backups','service'])$('panel-'+key).hidden=key!==view;
+ }
+ function renderCapsules(){
+  const term=$('admin-capsule-search').value.trim().toLocaleLowerCase('fr');
+  const caps=data.capsules.filter(c=>(!clientFilter||c.owner_id===clientFilter)&&((c.name||'')+' '+email(c.owner_id)).toLocaleLowerCase('fr').includes(term));
+  $('admin-clear-client').hidden=!clientFilter;$('admin-capsules-heading').textContent=clientFilter?'Capsules de '+email(clientFilter):'Toutes les capsules';
+  $('capsule-cards').innerHTML=caps.map(c=>`<button type="button" class="admin-card admin-capsule" data-capsule-open="${c.id}" aria-label="Configurer ${esc(c.name)}"><div class="admin-capsule-head"><div><h2>${esc(c.name)}</h2><p>${esc(email(c.owner_id))} · ${date(c.date)}</p><span class="workspace-state" data-state="${esc(c.usage.state)}">${esc(states[c.usage.state]||'Indisponible')}</span><p>${({photo:'Essentiel',audio:'Plus',premium:'Premium'})[c.usage.effective_plan||c.plan]} · ${bytes(c.usage.used_bytes)} / ${bytes(c.usage.quota_bytes)} · ${Number(c.messages||0)} souvenir(s)</p></div><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></div></button>`).join('')||'<p class="admin-empty">Aucune capsule à afficher.</p>';
+ }
  async function refreshServices(){
   try{const service=await api('services');$('offer-services').innerHTML=[['notifications','Notifications par e-mail',service.notifications_enabled,'Un récapitulatif des souvenirs ouverts par jour et deux rappels avant expiration.'],['payments','Achats de capsules',service.payments_enabled,'Paiement unique pour activer une nouvelle capsule. Les capsules déjà activées gratuitement conservent leurs droits.']].map(([key,label,enabled,note])=>'<p><strong>'+label+' : '+(enabled?'activés':service.configured[key]?'prêts à activer':'à configurer')+'</strong><br>'+note+'</p>'+(service.configured[key]?'<button type="button" class="btn secondary" data-service="'+key+'" data-enabled="'+enabled+'">'+(enabled?'Désactiver':'Activer')+'</button>':'')).join('')+'<p class="hint">'+Number(service.failed_notifications||0)+' notification(s) à vérifier · '+Number(service.refunds_to_check||0)+' remboursement(s) à vérifier.</p><p><a href="https://github.com/Orbivia/LA_SUITE_WEB/blob/main/SERVICE-SETUP.md" target="_blank" rel="noopener">Guide de configuration</a></p>';
    $('offer-services').querySelectorAll('[data-service]').forEach(b=>b.onclick=()=>run(async()=>{const payload={[b.dataset.service+'_enabled']:b.dataset.enabled!=='true'};await api('configure_services',payload);await refreshServices();status('Réglage enregistré.');}));
   }catch(e){$('offer-services').textContent='Les services sont momentanément indisponibles. Actualisez la page.';}
  }
  function scheduleRefresh(){
-  clearTimeout(timer);if(!authorized)return;timer=setTimeout(async()=>{if(!authorized)return;if(busy||!isActive()||document.visibilityState!=='visible'){scheduleRefresh();return}try{await refresh()}catch(e){status('Actualisation momentanément indisponible. Une nouvelle tentative suivra.',true);scheduleRefresh()}},15000);
+  clearTimeout(timer);if(!authorized)return;timer=setTimeout(async()=>{if(!authorized)return;if(busy||$('capsule-dialog').open||!isActive()||document.visibilityState!=='visible'){scheduleRefresh();return}try{await refresh()}catch(e){status('Actualisation momentanément indisponible. Une nouvelle tentative suivra.',true);scheduleRefresh()}},15000);
  }
  async function refresh(){if(!authorized)return;data=await api('overview');if(!authorized)return;render();await refreshServices();if(busy)setBusy(true);scheduleRefresh();}
 
@@ -47,28 +62,38 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
   const c=data.capsules.find(x=>x.id===id);if(!c)return;
   const u=c.usage,quota=(c.quota_override||u.quota_bytes)/1e9;
   const expiry=u.access_until||parisDate(u.expires_at,true),open=parisDate(u.opens_at),close=parisDate(u.closes_at,true),delivery=parisDate(u.delivery_before,true);
-  const expected=Object.fromEntries(['opens_at','closes_at','delivery_before','expires_at','quota_bytes'].map(k=>[k,u[k]]));
-  $('capsule-detail').innerHTML=`<div class="eyebrow">Paramètres de la capsule</div><h2>${esc(c.name)}</h2><p>${esc(email(c.owner_id))} · ${date(c.date)}</p><dl class="admin-detail"><div><dt>Souvenirs reçus</dt><dd>${c.messages}</dd></div><div><dt>Stockage</dt><dd>${bytes(u.used_bytes)} / ${bytes(u.quota_bytes)}</dd></div><div><dt>Activation</dt><dd>${c.activation==='payment'?'Payante':c.activation?'Gratuite':'À activer'} · ${({photo:'Essentiel',audio:'Plus',premium:'Premium'})[c.plan]||'Premium'}</dd></div><div><dt>Conservation jusqu’au</dt><dd>${date(expiry)}</dd></div></dl>
-   <details class="admin-quota" ${configure?'open':''}><summary>Dates et stockage</summary>
+  const expected={date:c.date,plan:c.plan,admin_plan_override:c.admin_plan_override??null,...Object.fromEntries(['opens_at','closes_at','delivery_before','expires_at','quota_bytes'].map(k=>[k,u[k]]))};
+  $('capsule-detail').innerHTML=`<div class="eyebrow">Paramètres de la capsule</div><h2>${esc(c.name)}</h2><p>${esc(email(c.owner_id))} · ${date(c.date)}</p><dl class="admin-detail"><div><dt>Souvenirs reçus</dt><dd>${c.messages}</dd></div><div><dt>Stockage</dt><dd>${bytes(u.used_bytes)} / ${bytes(u.quota_bytes)}</dd></div><div><dt>Activation</dt><dd>${c.activation==='payment'?'Payante':c.activation?'Gratuite':'À activer'} · ${({photo:'Essentiel',audio:'Plus',premium:'Premium'})[u.effective_plan||c.plan]||'Premium'}</dd></div><div><dt>Conservation jusqu’au</dt><dd>${date(expiry)}</dd></div></dl>
+   <section class="admin-quota">
     <form id="quota-form">
      <p class="hint">Dates incluses, à l’heure de Paris. Les dates choisies pour les souvenirs déjà reçus sont conservées.</p>
+     <fieldset><legend>Événement et formule</legend><div class="admin-rules-grid">
+      <div class="field"><label for="admin-event-date">Date de l’événement</label><input id="admin-event-date" type="date" required value="${esc(c.date)}"></div>
+      <div class="field"><label for="admin-plan">Formule</label><select id="admin-plan"><option value="photo">Essentiel · photos et textes</option><option value="audio">Plus · photos, textes et audios</option><option value="premium">Premium · tous les formats</option></select></div>
+     </div><small>Les souvenirs reçus sont conservés. La formule s’applique aux prochains dépôts.</small></fieldset>
      <fieldset><legend>Période de dépôt</legend><div class="admin-rules-grid">
       <div class="field"><label for="admin-opens-on">Ouverture des dépôts</label><input id="admin-opens-on" type="date" required value="${esc(open)}"></div>
       <div class="field"><label for="admin-closes-on">Dernier jour de dépôt</label><input id="admin-closes-on" type="date" required value="${esc(close)}"></div>
      </div><div class="admin-date-presets" aria-label="Durée des dépôts"><button type="button" data-deposit-preset="2">J et J+1</button><button type="button" data-deposit-preset="month">1 mois</button><button type="button" data-deposit-preset="3months">3 mois</button></div></fieldset>
-     <fieldset><legend>Découverte et conservation</legend><div class="admin-rules-grid">
+     <fieldset><legend>Durée de la capsule</legend><div class="field"><label for="admin-duration-years">Durée depuis l’événement</label><select id="admin-duration-years"><option value="custom">Dates personnalisées</option><option value="1">1 an</option><option value="3">3 ans</option><option value="5">5 ans</option><option value="10">10 ans</option></select><small>Choisir une durée renseigne la conservation et la dernière découverte possible.</small></div><div class="admin-rules-grid">
       <div class="field"><label for="admin-delivery-until">Dernière date de découverte possible</label><input id="admin-delivery-until" type="date" required value="${esc(delivery)}"><small>Limite proposée aux invités pour leurs prochains souvenirs.</small></div>
       <div class="field"><label for="admin-access-until">Dernier jour de conservation</label><input id="admin-access-until" type="date" required min="${parisDate(new Date().toISOString())}" value="${esc(expiry)}"><small>Les souvenirs restent consultables jusqu’à cette date incluse.</small></div>
      </div></fieldset>
      <fieldset><legend>Stockage</legend><div class="field"><label for="quota">Capacité totale (Go)</label><input id="quota" type="number" min="${Math.max(.1,Math.ceil(Number(u.used_bytes)/1e8)/10)}" max="50" step="0.1" required value="${quota}"><small>De 0,1 à 50 Go, au moins l’espace déjà utilisé.</small></div></fieldset>
      <p id="admin-rules-status" class="status" role="status" aria-live="polite"></p><button class="btn primary" type="submit">Enregistrer les réglages</button>
     </form>
-   </details>
+   </section>
    <p class="hint">Les contenus et les souvenirs programmés restent dans l’espace du client.</p><div class="admin-actions"><button id="detail-backup" class="btn primary">Préparer l’export de cette capsule</button><button id="detail-download" class="btn secondary" hidden>Télécharger l’archive</button><p id="detail-export-status" class="hint" role="status"></p><button id="detail-suspend" class="btn secondary">${c.suspended?'Reprendre les dépôts':'Mettre les dépôts en pause'}</button></div>`;
   $('detail-backup').onclick=()=>run(async()=>{const job=await api('backup',{id});if(!job?.id)throw Error('L’export n’a pas pu être préparé.');exportsByCapsule.set(id,job.id);await api('tick');});
   $('detail-download').onclick=()=>run(()=>exportArchive(exportsByCapsule.get(id)));
   $('capsule-dialog').dataset.exportCapsule=id;updateExportState();
   $('detail-suspend').onclick=async()=>{if(!await confirmAction(c.suspended?'Reprendre les dépôts ?':'Mettre les dépôts en pause ?',c.suspended?'Les dates et les limites de cette capsule s’appliqueront.':'Les invités ne pourront plus déposer de souvenir. Les souvenirs existants sont conservés.'))return;await run(async()=>{await api('manage',{id,suspended:!c.suspended});$('capsule-dialog').close();window.dispatchEvent(new CustomEvent('suite-capsule-rules-changed',{detail:id}));status(c.suspended?'Les dépôts ont repris.':'Les dépôts sont en pause.');});};
+  const planInput=$('admin-plan');planInput.value=u.effective_plan||c.plan;
+  const defaults={photo:1,audio:2,premium:5};let previousPlan=planInput.value;
+  planInput.onchange=()=>{if(Number($('quota').value)===defaults[previousPlan])$('quota').value=defaults[planInput.value];previousPlan=planInput.value;};
+  $('admin-duration-years').onchange=()=>{const years=$('admin-duration-years').value,day=$('admin-event-date').value;if(years==='custom'||!day)return;const end=monthAfter(day,Number(years)*12);$('admin-access-until').value=end;$('admin-delivery-until').value=end;};
+  $('admin-access-until').oninput=()=>{$('admin-duration-years').value='custom';};
+  $('admin-event-date').onchange=()=>{if(u.custom_rules)return;const day=$('admin-event-date').value;if(!day)return;$('admin-opens-on').value=day;const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);$('admin-closes-on').value=d.toISOString().slice(0,10);$('admin-delivery-until').value=monthAfter(day,30);const end=new Date(monthAfter(day,36)+'T12:00:00Z');end.setUTCDate(end.getUTCDate()-1);$('admin-access-until').value=end.toISOString().slice(0,10);$('admin-duration-years').value='3';};
   $('quota-form').querySelectorAll('[data-deposit-preset]').forEach(b=>b.onclick=()=>{
    const day=$('admin-opens-on').value;if(!day)return;
    if(b.dataset.depositPreset==='2'){const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);$('admin-closes-on').value=d.toISOString().slice(0,10);}
@@ -82,12 +107,12 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
    if(rules.opens_on>rules.closes_on||rules.closes_on>rules.delivery_until||rules.delivery_until>rules.access_until){report('Respectez l’ordre : ouverture, fin des dépôts, dernière découverte, fin de conservation.',true);return;}
    setBusy(true);report('Enregistrement…');
    try{
-    await api('manage',{id,quota:Math.round(Number($('quota').value)*1e9),rules,expected});
-    if(!authorized)return;await refresh();if(!authorized)return;$('capsule-dialog').close();window.dispatchEvent(new CustomEvent('suite-capsule-rules-changed',{detail:id}));status('Dates et stockage de la capsule mis à jour.');
+    await api('manage',{id,event_date:$('admin-event-date').value,plan:planInput.value,quota:Math.round(Number($('quota').value)*1e9),rules,expected});
+    if(!authorized)return;await refresh();if(!authorized)return;$('capsule-dialog').close();window.dispatchEvent(new CustomEvent('suite-capsule-rules-changed',{detail:id}));status('Réglages de la capsule enregistrés.');
    }catch(e){if(authorized)report(e.message||'Enregistrement impossible. Réessayez.',true);}
    finally{setBusy(false);}
   };
-  $('capsule-dialog').showModal();if(configure)$('admin-opens-on').focus();
+  if(!$('capsule-dialog').open)$('capsule-dialog').showModal();$('admin-event-date').focus();
  }
  function updateExportState(){const id=$('capsule-dialog').dataset.exportCapsule,jobId=exportsByCapsule.get(id);if(!$('detail-download')||!jobId)return;const job=data.backups.find(b=>b.id===jobId),ready=job&&['ready','restored'].includes(job.state);$('detail-download').hidden=!ready;$('detail-backup').hidden=!!job&&job.state!=='failed';$('detail-export-status').textContent=ready?'Archive prête à télécharger.':job?.state==='failed'?'Export impossible. Vous pouvez réessayer.':'Préparation de l’archive en cours…';}
  async function exportArchive(id){
@@ -106,15 +131,19 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
  if($('refresh'))$('refresh').onclick=()=>run(async()=>{clientFilter=null;status('Liste actualisée.');});
  $('backup-all').onclick=()=>run(async()=>{await api('backup');status('Sauvegarde lancée. Elle continue en arrière-plan.');await api('tick');});
  $('import-backup').onclick=()=>{$('archive-input').value='';$('archive-input').click();};$('archive-input').onchange=async()=>{if($('archive-input').files[0])try{await importArchive($('archive-input').files[0]);}catch(e){status(e.message,true);}};
- const handleAdminClick=async e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.capsuleOpen)detail(b.dataset.capsuleOpen);if(b.dataset.client){clientFilter=b.dataset.client;$('workspace-administration')?.close();$('panel-clients').parentElement.open=false;renderCapsules();$('workspace-capsules')?.showModal();}if(b.dataset.export)run(()=>exportArchive(b.dataset.export));if(b.dataset.restore){if(await confirmAction('Restaurer les éléments manquants ?','Les nouveaux souvenirs et les réglages actuels seront conservés. Les dates de dévoilement de la sauvegarde restent respectées.'))run(async()=>{await api('restore',{id:b.dataset.restore});status('Restauration lancée.');await api('tick');});}if(b.dataset.retry)run(async()=>{await api('retry',{id:b.dataset.retry});status('Opération relancée.');await api('tick');});};
- $('admin-content').onclick=handleAdminClick;document.querySelector('.workspace-service-tools').onclick=handleAdminClick;
- if($('admin-logout'))$('admin-logout').onclick=async()=>{if(busy){status('Patientez jusqu’à la fin de l’opération.',true);return;}clearTimeout(timer);await sb.auth.signOut();location.href='admin.html';};
- try{const {data:user,error}=await sb.auth.getUser();if(error||!user.user){$('access-message').textContent=invite?'Connectez-vous ou créez votre compte pour activer votre accès administrateur.':'Connectez-vous avec votre compte administrateur.';$('admin-auth').hidden=false;$('admin-signup').hidden=!invite;return;}
+ const handleAdminClick=async e=>{const b=e.target.closest('button');if(!b||b.disabled)return;if(b.dataset.capsuleOpen)detail(b.dataset.capsuleOpen);if(b.dataset.client){clientFilter=b.dataset.client;$('admin-capsule-search').value='';renderCapsules();selectView('capsules');}if(b.dataset.export)run(()=>exportArchive(b.dataset.export));if(b.dataset.restore){if(await confirmAction('Restaurer les éléments manquants ?','Les nouveaux souvenirs et les réglages actuels seront conservés. Les dates de dévoilement de la sauvegarde restent respectées.'))run(async()=>{await api('restore',{id:b.dataset.restore});status('Restauration lancée.');await api('tick');});}if(b.dataset.retry)run(async()=>{await api('retry',{id:b.dataset.retry});status('Opération relancée.');await api('tick');});};
+ $('admin-content').onclick=handleAdminClick;
+ document.querySelectorAll('[data-admin-view]').forEach(b=>b.onclick=()=>{if(b.dataset.adminView==='capsules'){clientFilter=null;renderCapsules();}selectView(b.dataset.adminView);});
+ $('admin-clear-client').onclick=()=>{clientFilter=null;renderCapsules();};
+ $('admin-client-search').oninput=renderClients;$('admin-capsule-search').oninput=renderCapsules;
+ if($('admin-logout'))$('admin-logout').onclick=async()=>{if(busy){status('Patientez jusqu’à la fin de l’opération.',true);return;}clearPrivateView();await sb.auth.signOut();location.href='auth.html?next=admin';};
+ try{const {data:user,error}=await sb.auth.getUser();if(error||!user.user){$('access-message').textContent=invite?'Connectez-vous ou créez votre compte pour activer votre accès administrateur.':'Connectez-vous avec votre compte administrateur.';$('admin-auth').hidden=false;$('admin-signup').hidden=!invite;if(!invite)location.replace('auth.html?next=admin');return;}
   const {data:member,error:memberError}=await sb.rpc('admin_status');if(memberError)throw memberError;if(member!==true){if(embedded){clearPrivateView();return;}if(!invite){$('access-message').textContent='Ce compte ne dispose pas d’un accès administrateur.';if($('admin-logout'))$('admin-logout').hidden=false;return;}const {error}=await sb.rpc('admin_claim',{p_token:invite.token});if(error)throw error;}
-  try{localStorage.removeItem(inviteKey)}catch{}sessionOwner=user.user.id;authorized=true;if($('admin-logout'))$('admin-logout').hidden=false;$('admin-access').hidden=true;$('admin-content').hidden=false;await refresh();
+  if(downloadSession.signal.aborted)return;try{localStorage.removeItem(inviteKey)}catch{}sessionOwner=user.user.id;authorized=true;$('admin-email').textContent=user.user.email||'';if($('admin-logout'))$('admin-logout').hidden=false;$('admin-access').hidden=true;$('admin-content').hidden=false;await refresh();selectView('clients');const capsuleId=new URLSearchParams(location.search).get('capsule');if(capsuleId){selectView('capsules');detail(capsuleId);}
  }catch(e){$('access-message').textContent=e.message||'Vérification impossible. Rechargez la page.';status(e.message,true);}
  return {async configureCapsule(id){if(!authorized||busy)throw Error('Veuillez réessayer dans quelques instants.');await refresh();if(!authorized)return;detail(id,true);},exportCapsule(id){if(!authorized||busy)throw Error('Veuillez réessayer dans quelques instants.');if(!data.capsules.some(c=>c.id===id))throw Error('Capsule introuvable.');detail(id);$('detail-backup').click();}};
 };
 if(document.getElementById('admin-access'))window.initSuiteAdmin();
+
 
 
