@@ -1366,28 +1366,28 @@ function ownerShell(c,url,count){
       </button>
       <div class="qr-font-menu" role="listbox" hidden>
        <button type="button" role="option" data-qr-font="elegant" class="${o.font==="elegant"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-elegant">${esc(o.title)}</span><small>Élégante</small>
+        <span class="qr-font-sample qr-font-sample-elegant">La Suite</span><small>Élégante</small>
        </button>
        <button type="button" role="option" data-qr-font="classic" class="${o.font==="classic"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-classic">${esc(o.title)}</span><small>Classique</small>
+        <span class="qr-font-sample qr-font-sample-classic">La Suite</span><small>Classique</small>
        </button>
        <button type="button" role="option" data-qr-font="modern" class="${o.font==="modern"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-modern">${esc(o.title)}</span><small>Moderne</small>
+        <span class="qr-font-sample qr-font-sample-modern">La Suite</span><small>Moderne</small>
        </button>
        <button type="button" role="option" data-qr-font="romantic" class="${o.font==="romantic"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-romantic">${esc(o.title)}</span><small>Manuscrite</small>
+        <span class="qr-font-sample qr-font-sample-romantic">La Suite</span><small>Manuscrite</small>
        </button>
        <button type="button" role="option" data-qr-font="editorial" class="${o.font==="editorial"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-editorial">${esc(o.title)}</span><small>Éditoriale</small>
+        <span class="qr-font-sample qr-font-sample-editorial">La Suite</span><small>Éditoriale</small>
        </button>
        <button type="button" role="option" data-qr-font="refined" class="${o.font==="refined"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-refined">${esc(o.title)}</span><small>Raffinée</small>
+        <span class="qr-font-sample qr-font-sample-refined">La Suite</span><small>Raffinée</small>
        </button>
        <button type="button" role="option" data-qr-font="contemporary" class="${o.font==="contemporary"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-contemporary">${esc(o.title)}</span><small>Contemporaine</small>
+        <span class="qr-font-sample qr-font-sample-contemporary">La Suite</span><small>Contemporaine</small>
        </button>
        <button type="button" role="option" data-qr-font="signature" class="${o.font==="signature"?"is-selected":""}">
-        <span class="qr-font-sample qr-font-sample-signature">${esc(o.title)}</span><small>Signature</small>
+        <span class="qr-font-sample qr-font-sample-signature">La Suite</span><small>Signature</small>
        </button>
       </div>
      </div>
@@ -1448,7 +1448,8 @@ function ownerShell(c,url,count){
  </div>
 </section>
 
-<details id="organizer-welcome" class="organizer-welcome">
+<p class="atelier-customization-note"><i class="fa-solid fa-check" aria-hidden="true"></i> Votre carte QR et la page d’accueil restent personnalisables après activation.</p>
+<details open id="organizer-welcome" class="organizer-welcome">
  <summary><span><strong>Accueil des invités</strong><small>Un message avant de déposer un souvenir · facultatif</small></span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary>
 <section class="qr-designer-panel intro-video-panel">
  <div class="intro-video-body intro-editor-grid">
@@ -1478,6 +1479,7 @@ function ownerShell(c,url,count){
   <div class="section-title-row">
    <p id="memory-count">${memoryCountLabel(count)}</p>
   </div>
+  <div class="memory-filters" role="group" aria-label="Filtrer les souvenirs"><button type="button" data-memory-filter="all" aria-pressed="true">Tous</button><button type="button" data-memory-filter="available" aria-pressed="false">Disponibles</button><button type="button" data-memory-filter="locked" aria-pressed="false">À découvrir</button></div>
   <div class="memory-tools"><button id="refresh-memories" class="btn secondary" type="button">Actualiser</button><button id="export-memories" class="btn primary" type="button" disabled>Télécharger les souvenirs ouverts</button></div><p id="export-status" class="status" role="status"></p><p id="memory-status" class="status" role="status"></p><div id="memory-list" class="memory-list"></div>
  </section>
 </div>`
@@ -1523,7 +1525,7 @@ function compactOwnerEditors(){
  const titles=["Textes","Ambiance","Typographie","Couleurs","Monogramme"];
  const sections=[...controls.children].map((group,index)=>{
   const heading=group.querySelector(".customization-heading"),details=document.createElement("details"),summary=document.createElement("summary");
-  details.className="customization-section";details.dataset.studioSection=String(index);summary.className="customization-heading";
+  details.open=true;details.className="customization-section";details.dataset.studioSection=String(index);summary.className="customization-heading";
   summary.append(heading.querySelector("img"));const title=document.createElement("span");title.textContent=titles[index];summary.append(title);heading.remove();
   const body=document.createElement("div");body.className="customization-section-body";body.append(...group.childNodes);details.append(summary,body);group.replaceWith(details);return details;
  });
@@ -1574,7 +1576,7 @@ function compactOwnerEditors(){
  guideButton.addEventListener("click",()=>open("Conseils d’utilisation",[printGuide],guideButton));
  dialog.querySelector(".studio-close").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",restore);
  dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
- const mobile=matchMedia("(max-width:760px)"),welcome=$("organizer-welcome");welcome.open=!mobile.matches;welcome.addEventListener("toggle",()=>window.dispatchEvent(new Event("studio-layout")));mobile.addEventListener("change",()=>{if(dialog.open)dialog.close();welcome.open=!mobile.matches});
+ const mobile=matchMedia("(max-width:760px)"),welcome=$("organizer-welcome");welcome.open=true;welcome.querySelector("summary").addEventListener("click",e=>e.preventDefault());welcome.addEventListener("toggle",()=>window.dispatchEvent(new Event("studio-layout")));mobile.addEventListener("change",()=>{if(dialog.open)dialog.close();welcome.open=true});
  
  // Use the space left by the actual header and controls, including short phones.
  let fitFrame;
@@ -1728,6 +1730,16 @@ function nextCountdown(c,manifest,onReady){
  };tick();countdownTimer=setInterval(tick,Math.min(60000,Math.max(1000,new Date(next.delivery_at)-Date.now())));
 }
 
+let memoryFilter="all";
+function applyMemoryFilter(){
+ const cards=[...document.querySelectorAll('#memory-list .memory-row')];
+ for(const card of cards)card.hidden=memoryFilter!=="all"&&!card.classList.contains(memoryFilter);
+ for(const button of document.querySelectorAll('[data-memory-filter]'))button.setAttribute('aria-pressed',String(button.dataset.memoryFilter===memoryFilter));
+ let empty=$('memory-filter-empty');
+ if(!empty){empty=document.createElement('p');empty.id='memory-filter-empty';empty.className='notice';$('memory-list').after(empty)}
+ empty.textContent=memoryFilter==='available'?'Aucun souvenir disponible pour le moment.':'Aucun souvenir dans cette sélection.';
+ empty.hidden=!cards.length||cards.some(card=>!card.hidden);
+}
 let memoryMediaObserver=null;
 const pendingMediaUrls=new WeakMap();
 async function renderManifest(c,manifest){
@@ -1759,9 +1771,11 @@ async function renderManifest(c,manifest){
    download.addEventListener('click',async()=>{if(ownerSessionEnded)return;download.disabled=true;try{const{data,error}=await sb.storage.from('capsule-media').createSignedUrl(row.media_path,300,{download:true});if(ownerSessionEnded)return;if(error||!data?.signedUrl)throw error||new Error('Lien indisponible');const link=document.createElement('a');link.href=data.signedUrl;link.download='';document.body.append(link);link.click();link.remove();status.textContent=''}catch(e){status.textContent='Téléchargement impossible. Réessayez.'}finally{download.disabled=false}});
    actions.append(refresh,download);content.append(media,status);loadMedia=renew;
   }else if(available&&!row){content.textContent='Ce souvenir n’a pas pu être chargé. Actualisez la liste.'}
+  if(!available){const placeholder=document.createElement('p');placeholder.className='memory-locked-preview';placeholder.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i><span>La surprise vous attend</span>';content.append(placeholder)}
   list.append(article);
   if(loadMedia){if(memoryMediaObserver){pendingMediaUrls.set(article,loadMedia);memoryMediaObserver.observe(article)}else loadMedia();}
  }
+ applyMemoryFilter();
 }
 function tomorrowParis(){const d=new Date(parisDay()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
 function openCapsuleSettings(){
@@ -1921,6 +1935,7 @@ async function initDashboard(){
  let manifest=[];
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
  compactOwnerEditors();
+ document.querySelectorAll("[data-memory-filter]").forEach(button=>button.addEventListener("click",()=>{memoryFilter=button.dataset.memoryFilter;applyMemoryFilter()}));
  await renderOrganizerLifecycle(c);
  if(ownerSessionEnded)return;
  const freeLaunch=access.free_launch===true;

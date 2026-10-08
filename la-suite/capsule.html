@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Serif+Display&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@500;600;700&family=Parisienne&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20261008-rules1">
+<link rel="stylesheet" href="styles.css?v=20261008-atelier1">
 </head>
 <body class="suite-shell-page guest-compact">
 <header class="forge-style-header">
@@ -32,12 +32,15 @@
  <p class="microcopy" id="guest-limits">Jusqu’à 20 fichiers et 200 Mo par invité.</p>
 </div>
 </dialog>
-<dialog id="guest-welcome-dialog" class="guest-dialog" aria-labelledby="guest-welcome-title">
- <div class="guest-dialog-head"><h2 id="guest-welcome-title" data-welcome-title>Un mot de vos hôtes</h2><button type="button" class="guest-dialog-close" aria-label="Fermer le message">×</button></div>
+<dialog id="guest-welcome-dialog" class="guest-dialog" aria-labelledby="guest-welcome-dialog-title">
+ <div class="guest-dialog-head"><h2 id="guest-welcome-dialog-title">Accueil</h2><button type="button" class="guest-dialog-close" aria-label="Fermer le message">×</button></div>
+
+</dialog>
+
 <section id="intro-section" class="intro-card" hidden>
+ <h2 id="guest-welcome-title" data-welcome-title>Un mot de vos hôtes</h2>
   <p id="capsule-welcome" class="lead intro-text-preview" hidden></p><video id="organizer-intro" controls playsinline preload="metadata" hidden></video><img id="organizer-intro-image" alt="Le message d’accueil de vos hôtes" hidden>
 </section>
-</dialog>
 
 <p id="guest-state" class="guest-state" role="status" aria-live="polite">Chargement de la capsule…</p>
 <button id="guest-retry" class="btn secondary" type="button" hidden>Réessayer</button>
@@ -141,8 +144,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="welcome-ui.js?v=20261008-rules1"></script>
-<script src="app.js?v=20261008-admin5"></script>
+<script src="welcome-ui.js?v=20261008-atelier1"></script>
+<script src="app.js?v=20261008-atelier1"></script>
 </body></html>
 
 
