@@ -449,7 +449,7 @@ function chooseGuestType(type){
  $("message_text").placeholder=type==="text"?"Écrivez ce que vous aimeriez leur dire…":"Quelques mots pour accompagner votre souvenir…";
  const messageField=$('guest-message-field'),extras=$('guest-extras');
  (type==='text'?$('guest-text-content'):$('guest-extras-body')).prepend(messageField);extras.open=false;
- $('guest-extras-label').textContent=type==='text'?'Signer votre message':'Ajouter un petit mot ou signer';$('guest-limits').hidden=type==='text';
+ extras.hidden=type==='text';$('guest-limits').hidden=type==='text';
  const capture=$("capture-memory");capture.dataset.mediaMode=type==="image"?"photo":type;
  capture.textContent=type==="image"?"Prendre une photo":type==="audio"?"M’enregistrer":"Me filmer";
  $("media-file").accept=type==="image"?"image/jpeg,image/png,image/webp,image/heic,image/heif":type==="audio"?"audio/webm,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg":"video/mp4,video/quicktime,video/webm";
@@ -500,15 +500,17 @@ async function acceptGuestFile(file,type,duration,interruption){
 let deliveryTouched=false;
 function chooseDelivery(choice){
  const now=choice==="now";$("deliver-now").checked=now;$("delivery-date-wrap").hidden=choice!=="custom";$("delivery_date").required=!now;
- $("delivery-options").hidden=choice!=="custom";$("delivery-summary").setAttribute("aria-expanded",String(choice==="custom"));
+ $("delivery-done").hidden=choice!=="custom";
  document.querySelectorAll("[data-delivery]").forEach(b=>{const active=b.dataset.delivery===choice;b.classList.toggle("active",active);b.setAttribute("aria-pressed",String(active))});
  if(now)$("delivery_date").value="";
  else if(choice!=="custom")$("delivery_date").value=addMonthsClamped(parisDay(),Number(choice));
  else{$("delivery_date").focus()}
  updateDeliveryHelp();guestTransaction=null;
+ if(choice!=="custom"&&$('delivery-dialog').open)$('delivery-dialog').close();
 }
 function updateDeliveryHelp(){
- $("delivery-help").textContent=$("deliver-now").checked?"Votre souvenir sera accessible dès son envoi.":$("delivery_date").value?"Il restera secret jusqu’au "+fdate($("delivery_date").value)+".":"Choisissez une date. Votre souvenir restera secret jusqu’à ce jour.";
+ $("delivery-help").hidden=$("deliver-now").checked;
+ $("delivery-help").textContent=$("deliver-now").checked?"":$("delivery_date").value?"Il restera secret jusqu’au "+fdate($("delivery_date").value)+".":"Choisissez une date. Votre souvenir restera secret jusqu’à ce jour.";
  $('delivery-value').textContent=$('deliver-now').checked?'Maintenant':$('delivery_date').value?fdate($('delivery_date').value):'Choisir une date';
 }
 function initGuestControls(){
@@ -523,7 +525,22 @@ function initGuestControls(){
   $("stop-"+kind).addEventListener("click",stopRecorder);
  }
  document.querySelectorAll("[data-delivery]").forEach(b=>b.addEventListener("click",()=>{deliveryTouched=true;chooseDelivery(b.dataset.delivery)}));
- $('delivery-summary').addEventListener('click',()=>{const options=$('delivery-options');options.hidden=!options.hidden;$('delivery-summary').setAttribute('aria-expanded',String(!options.hidden))});
+ let previousDelivery;
+ for(const id of ['guest-concept-dialog','guest-welcome-dialog','delivery-dialog']){
+  const dialog=$(id);
+  dialog.querySelector('.guest-dialog-close').addEventListener('click',()=>dialog.close());
+  dialog.addEventListener('click',e=>{if(e.target!==dialog)return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()});
+  dialog.addEventListener('close',()=>{
+   if(id==='guest-welcome-dialog')$('organizer-intro').pause();
+   if(id==='delivery-dialog'&&!$('deliver-now').checked&&!$('delivery_date').validity.valid&&previousDelivery){
+    chooseDelivery(previousDelivery.choice);$('delivery_date').value=previousDelivery.date;updateDeliveryHelp();
+   }
+  });
+ }
+ $('guest-concept-open').addEventListener('click',()=>$('guest-concept-dialog').showModal());
+ $('guest-welcome-open').addEventListener('click',()=>$('guest-welcome-dialog').showModal());
+ $('delivery-summary').addEventListener('click',()=>{if(guestBusy)return;previousDelivery={choice:document.querySelector('[data-delivery].active')?.dataset.delivery||'now',date:$('delivery_date').value};$('delivery-dialog').showModal()});
+ $('delivery-done').addEventListener('click',()=>{if($('delivery_date').reportValidity())$('delivery-dialog').close()});
  $("delivery_date").addEventListener("change",()=>{deliveryTouched=true;guestTransaction=null;updateDeliveryHelp()});
  $("delivery_date").min=parisDay();
  window.addEventListener("beforeunload",e=>{if(guestBusy||selectedMedia||$("message_text")?.value.trim()){e.preventDefault();e.returnValue=""}});
@@ -538,7 +555,7 @@ function renderGuestState(state){
  expired:"La période de conservation de cette capsule est terminée.",
  missing_date:"Cette capsule n’est pas encore prête à recevoir des souvenirs.",
  full:"La capsule est pleine pour les fichiers. Vous pouvez toujours laisser un petit mot.",
- open:state.legacy?"Vous pouvez laisser un souvenir dans cette capsule.":"Les dépôts sont ouverts jusqu’au "+fParis(new Date(new Date(state.closes_at).getTime()-1000).toISOString())+" à 23 h 59, heure de Paris."
+ open:state.legacy?"Vous pouvez laisser un souvenir dans cette capsule.":"Dépôts jusqu’au "+fParis(new Date(new Date(state.closes_at).getTime()-1000).toISOString())+" à 23 h 59 (Paris)."
  };
  el.textContent=messages[state.state]||"Cette capsule n’est pas disponible.";el.dataset.state=state.state;
  $("guest-message").hidden=!["open","full"].includes(state.state);
@@ -591,10 +608,11 @@ async function initCapsule(){
    guestState=await guestInvoke({action:"get_status",guest_token:token});
    $("capsule-title").textContent=guestState.couple_name;$("capsule-welcome").textContent=guestState.welcome_message||"";
    $("capsule-welcome").hidden=!guestState.welcome_message;$("intro-section").hidden=!guestState.welcome_message;
+   $('guest-welcome-open').hidden=!guestState.welcome_message;
    $("organizer-intro").hidden=true;$("organizer-intro-image").hidden=true;
    renderGuestState(guestState);
    if(guestState.has_intro&&!["expired","suspended"].includes(guestState.state))guestInvoke({action:"get_intro",guest_token:token}).then(r=>{
-    if(version===refreshVersion&&r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false}
+    if(version===refreshVersion&&r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false;$('guest-welcome-open').hidden=false}
    }).catch(()=>{});
   }catch(error){$("guest-state").textContent=error.message;$("guest-retry").hidden=false}
   finally{refreshing=false}
@@ -631,7 +649,7 @@ async function initCapsule(){
      await guestInvoke({action:"finalize_media",guest_token:token,message_id:transaction.reserved.message_id,path:transaction.reserved.path});
     }
    }
-   $("guest-success-date").textContent=instant?"Les organisateurs peuvent déjà le découvrir.":"Il restera secret jusqu’au "+fdate(date)+".";
+   $("guest-success-date").textContent=instant?"Merci pour votre souvenir !":"Il restera secret jusqu’au "+fdate(date)+".";
    e.target.reset();resetPreview();guestTransaction=null;$("guest-message").hidden=true;$("guest-success").hidden=false;$("guest-success").focus();$("guest-success").scrollIntoView({behavior:"smooth",block:"center"});
   }catch(error){show(status,error.message,false);button.textContent="Réessayer l’envoi"}
   finally{guestBusy=false;fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;if(!$("guest-success").hidden)button.textContent="Envoyer mon souvenir"}
