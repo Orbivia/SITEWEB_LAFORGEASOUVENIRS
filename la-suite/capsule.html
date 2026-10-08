@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20261008-design1">
+<link rel="stylesheet" href="styles.css?v=20261008-reveal1">
 </head>
 <body class="suite-shell-page guest-compact">
 <header class="forge-style-header">
@@ -42,6 +42,12 @@
 <p id="guest-state" class="guest-state" role="status" aria-live="polite">Chargement de la capsule…</p>
 <button id="guest-retry" class="btn secondary" type="button" hidden>Réessayer</button>
 <form class="form-shell guest-form" id="guest-message" hidden>
+ <div class="guest-personalization guest-date-first">
+ <div class="delivery-box">
+  <button type="button" id="delivery-summary" class="delivery-summary" aria-label="Modifier la date de découverte" aria-describedby="delivery-value" aria-haspopup="dialog" aria-controls="delivery-dialog"><span class="delivery-caption"><i class="fa-regular fa-calendar" aria-hidden="true"></i><small>Quand l’ouvrir ?</small><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span><strong id="delivery-value">Maintenant</strong></button>
+ </div>
+ <div class="field guest-signature"><label for="guest_name"><i class="fa-regular fa-user" aria-hidden="true"></i> Votre prénom</label><input id="guest_name" maxlength="80" autocomplete="given-name" placeholder="Facultatif" aria-label="Votre prénom (facultatif)"></div>
+ </div>
  <div class="memory-type-choices" role="group" aria-label="Type de souvenir">
   <button type="button" class="memory-type active" data-memory-type="text" aria-pressed="true"><i class="fa-regular fa-comment" aria-hidden="true"></i><span>Petit mot</span></button>
   <button type="button" class="memory-type" data-memory-type="image" aria-pressed="false"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>Photo</span></button>
@@ -95,19 +101,14 @@
 
  <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre petit mot</label><textarea id="message_text" maxlength="4000" rows="4" placeholder="Écrivez ce que vous aimeriez leur dire…"></textarea></div></div>
  <details id="guest-extras" class="guest-extras" hidden><summary>Ajouter un petit mot <span class="optional">Facultatif</span></summary><div id="guest-extras-body"></div></details>
- <div class="guest-personalization">
- <div class="field guest-signature"><label for="guest_name"><i class="fa-regular fa-user" aria-hidden="true"></i> Votre prénom</label><input id="guest_name" maxlength="80" autocomplete="given-name" placeholder="Facultatif" aria-label="Votre prénom (facultatif)"></div>
- <div class="delivery-box">
-  <button type="button" id="delivery-summary" class="delivery-summary" aria-label="Modifier la date de découverte" aria-describedby="delivery-value" aria-haspopup="dialog" aria-controls="delivery-dialog"><span class="delivery-caption"><i class="fa-regular fa-calendar" aria-hidden="true"></i><small>Découverte</small><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span><strong id="delivery-value">Maintenant</strong></button>
- </div>
- </div>
  <button class="btn primary submit-memory" type="submit"><span>Envoyer mon souvenir</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
  <progress id="upload-progress" max="100" value="0" hidden aria-label="Progression de l’envoi"></progress>
  <div id="status" class="status" role="status" aria-live="polite"></div>
 </form>
  <dialog id="delivery-dialog" class="guest-dialog" aria-labelledby="delivery-dialog-title">
- <div class="guest-dialog-head"><h2 id="delivery-dialog-title">Quand le découvrir ?</h2><button type="button" class="guest-dialog-close" aria-label="Fermer le choix de date">×</button></div>
+ <div class="guest-dialog-head"><h2 id="delivery-dialog-title">Choisissez le moment de la surprise</h2><button type="button" class="guest-dialog-close" aria-label="Fermer le choix de date">×</button></div>
  <div id="delivery-options" class="guest-dialog-body">
+  <p>Pour un anniversaire, dans quelques mois… Une date future garde votre souvenir secret jusqu’au jour choisi.</p>
   <div class="delivery-choices" role="group" aria-label="Date de dévoilement">
    <button type="button" data-delivery="now" class="active" aria-pressed="true">Maintenant</button>
    <button type="button" data-delivery="1" aria-pressed="false">Dans 1 mois</button>
@@ -140,7 +141,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="app.js?v=20261008-design1"></script>
+<script src="app.js?v=20261008-reveal1"></script>
 </body></html>
 
 

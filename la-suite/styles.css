@@ -3113,6 +3113,24 @@ html:has(body.studio-ready){scroll-padding-bottom:90px}
  .guest-compact .guest-form .delivery-box{margin:0}
 }
 
+/* The reveal date leads the guest form; organizer preview remains a simulation. */
+.guest-date-first{margin-top:0}
+.guest-date-first .delivery-summary{background:#fbf0df;border-color:#cda869;box-shadow:inset 3px 0 #b88945}
+.guest-date-first .delivery-caption{color:#71552e}
+.guest-date-first .delivery-summary strong{color:#8b2730;font-size:1rem}
+.guest-date-first .delivery-summary:hover{background:#f7e8d1;border-color:#ad7b36}
+.guest-date-first .guest-signature{background:#fff}
+.organizer-guest-preview{width:min(600px,calc(100% - 24px));height:min(900px,calc(100dvh - 24px));max-height:calc(100dvh - 24px);padding:0;border:1px solid #e8dfd5;border-radius:20px;background:#faf8f4;color:var(--ink);box-shadow:0 20px 70px #0003;overflow:hidden}
+.organizer-guest-preview:not([open]){display:none!important}
+.organizer-guest-preview[open]{display:flex;flex-direction:column}
+.organizer-guest-preview::backdrop{background:#211d1d66;backdrop-filter:blur(3px)}
+.guest-preview-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid #e8dfd5;background:#fff;flex-shrink:0}
+.guest-preview-heading h2{margin:0;font:600 1.1rem/1.3 Inter,Arial,sans-serif}
+.guest-preview-heading p{margin:4px 0 0;font-size:.72rem;color:var(--muted);line-height:1.4}
+.organizer-guest-preview iframe{display:block;min-height:0;flex:1;width:100%;border:0;background:#faf8f4}
+#guest-preview-loading{margin:16px;font-size:.85rem;line-height:1.5}
+@media(max-width:360px){.guest-preview-heading{padding:8px 12px}.guest-preview-heading h2{font-size:1rem}.guest-preview-heading p{font-size:.65rem}}
+
 /* The card and guest greeting belong to one organizer page. */
 .studio-ready .owner-tabs{grid-template-columns:repeat(3,minmax(0,1fr))}
 .owner-card-and-intro{display:grid;gap:20px;min-width:0}

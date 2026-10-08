@@ -1,5 +1,7 @@
 (function(){
 const qs=new URLSearchParams(location.search);
+const guestIsPreview=qs.get('preview')==='1'&&Boolean(document.getElementById('capsule-title'));
+let guestPreviewState=null;
 const cfg=window.LA_SUITE_CONFIG||{};
 const configured=Boolean(cfg.SUPABASE_URL&&cfg.SUPABASE_ANON_KEY&&window.supabase);
 const sb=configured?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null;
@@ -421,6 +423,12 @@ function guestIdentity(){
  return id;
 }
 async function guestInvoke(body){
+ if(guestIsPreview){
+  if(!guestPreviewState)throw Error('Ouvrez cet aperçu depuis votre espace organisateur.');
+  if(body.action==='get_status')return {...guestPreviewState};
+  if(body.action==='get_intro')return {signed_url:guestPreviewState.preview_intro_url,media_type:guestPreviewState.preview_intro_type};
+  throw Error('Mode aperçu : aucun souvenir ne peut être envoyé.');
+ }
  if(["init_media","submit_text"].includes(body.action))body={...body,guest_id:guestIdentity()};
  const r=await sb.functions.invoke("guest-upload",{body});
  if(r.error||r.data?.error){
@@ -547,7 +555,8 @@ function initGuestControls(){
  $('delivery-done').addEventListener('click',()=>{if($('delivery_date').reportValidity())$('delivery-dialog').close()});
  $("delivery_date").addEventListener("change",()=>{deliveryTouched=true;guestTransaction=null;updateDeliveryHelp()});
  $("delivery_date").min=parisDay();
- window.addEventListener("beforeunload",e=>{if(guestBusy||selectedMedia||$("message_text")?.value.trim()){e.preventDefault();e.returnValue=""}});
+ window.addEventListener("beforeunload",e=>{if(!guestIsPreview&&(guestBusy||selectedMedia||$("message_text")?.value.trim())){e.preventDefault();e.returnValue=""}});
+ if(guestIsPreview)document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.querySelector('dialog[open]'))window.parent.postMessage({type:'la-suite-guest-preview-close'},location.origin)});
  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")interruptCapture("L’enregistrement a été arrêté lorsque vous avez quitté la page. Vérifiez l’aperçu avant l’envoi.")});
  window.addEventListener("pagehide",()=>{recorderGeneration++;recorderPreparing=false;stopRecorder();stopStream()});
 }
@@ -601,7 +610,18 @@ function uploadGuestFile(file,transaction){
 async function initCapsule(){
  if(!$("capsule-title"))return;
  const token=qs.get("t")||qs.get("token");
- if(!configured||!token){$("guest-state").textContent="Lien de capsule invalide.";return}
+ if(guestIsPreview){
+  if(window.parent===window){$('guest-state').textContent='Ouvrez cet aperçu depuis votre espace organisateur.';return}
+  $('guest-state').textContent='Préparation de l’aperçu…';
+  try{await new Promise((resolve,reject)=>{
+   const timeout=setTimeout(()=>{window.removeEventListener('message',receive);reject(Error('L’aperçu n’a pas chargé. Fermez-le puis réessayez.'))},10000);
+   function receive(e){
+    if(e.origin!==location.origin||e.source!==window.parent||e.data?.type!=='la-suite-guest-preview'||!e.data.capsule)return;
+    clearTimeout(timeout);window.removeEventListener('message',receive);guestPreviewState={...e.data.capsule,state:'open',legacy:true};resolve();
+   }
+   window.addEventListener('message',receive);window.parent.postMessage({type:'la-suite-guest-preview-ready'},location.origin);
+  })}catch(error){$('guest-state').textContent=error.message;return}
+ }else if(!configured||!token){$("guest-state").textContent="Lien de capsule invalide.";return}
  initGuestControls();chooseGuestType("text");
  let refreshing=false,refreshVersion=0;
  async function refreshGuestState(){
@@ -615,6 +635,7 @@ async function initCapsule(){
    $('guest-welcome-open').hidden=!guestState.welcome_message;
    $("organizer-intro").hidden=true;$("organizer-intro-image").hidden=true;
    renderGuestState(guestState);
+   if(guestIsPreview)$('guest-state').textContent='Mode aperçu · Aucun souvenir ne sera envoyé.';
    if(guestState.has_intro&&!["expired","suspended"].includes(guestState.state))guestInvoke({action:"get_intro",guest_token:token}).then(r=>{
     if(version===refreshVersion&&r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false;$('guest-welcome-open').hidden=false}
    }).catch(()=>{});
@@ -635,6 +656,11 @@ async function initCapsule(){
   if(guestType!=="text"&&!selectedMedia)return showCapture("Ajoutez votre souvenir, ou choisissez « Petit mot ».",false);
   if(guestType==="text"&&!text)return show(status,"Écrivez votre petit mot.",false);
   if(!instant&&(!date||date<$("delivery_date").min||date>$("delivery_date").max))return show(status,"Choisissez une date entre aujourd’hui et le "+fdate($("delivery_date").max)+".",false);
+  if(guestIsPreview){
+   $('guest-success').querySelector('h2').textContent='Aperçu de la confirmation';
+   $('guest-success-date').textContent='Simulation : aucun souvenir n’a été enregistré.'+(instant?'':' Découverte choisie : '+fdate(date)+'.');
+   e.target.reset();resetPreview();$('guest-message').hidden=true;$('guest-success').hidden=false;$('guest-success').focus();return;
+  }
   const key=JSON.stringify([name,text,instant,date,selectedMedia?.url]);
   if(!guestTransaction||guestTransaction.key!==key)guestTransaction={key,requestId:crypto.randomUUID(),delivery:instant?new Date().toISOString():date};
   const transaction=guestTransaction,button=e.target.querySelector('[type="submit"]');
@@ -1447,7 +1473,7 @@ function compactOwnerEditors(){
  cardActions.append(shareButton,actions);
  const printGuide=document.querySelector(".qr-print-guide");printGuide.hidden=true;
  const guideButton=document.createElement("button");guideButton.type="button";guideButton.id="studio-guide";guideButton.className="studio-guide-button";guideButton.setAttribute("aria-haspopup","dialog");guideButton.innerHTML='<i class="fa-regular fa-circle-question" aria-hidden="true"></i>Conseils d’utilisation';const utilities=document.createElement('div');utilities.className='studio-card-utilities';cardActions.append(utilities);utilities.append(guideButton);
- const guestLink=$("open-guest-link");guestLink.className="studio-guest-link";guestLink.innerHTML='Page invité <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>';utilities.append(guestLink);
+ const guestLink=$("open-guest-link");guestLink.className="studio-guest-link";guestLink.innerHTML='Aperçu invité <i class="fa-regular fa-eye" aria-hidden="true"></i>';utilities.append(guestLink);
  let moved=[],trigger=null,editorCleanup=()=>{};
  const restore=()=>{editorCleanup();editorCleanup=()=>{};delete dialog.dataset.editorMode;moved.forEach(({node,slot,open,hidden})=>{slot.replaceWith(node);node.hidden=hidden;if(node.tagName==="DETAILS")node.open=open});moved=[];if(trigger?.isConnected)trigger.focus();trigger=null};
  const open=(title,nodes,button,mode="standard")=>{
@@ -1762,11 +1788,41 @@ async function renderOrganizerLifecycle(c){
 
 }
 
+function setupOrganizerGuestPreview(c,saveAll){
+ const link=$('open-guest-link');if(!link)return;
+ link.removeAttribute('target');link.setAttribute('role','button');link.setAttribute('aria-haspopup','dialog');link.setAttribute('aria-controls','organizer-guest-preview');link.title='Prévisualiser le parcours invité avant l’événement';
+ const dialog=document.createElement('dialog');dialog.id='organizer-guest-preview';dialog.className='organizer-guest-preview';dialog.setAttribute('aria-labelledby','organizer-guest-preview-title');
+ dialog.innerHTML='<div class="guest-preview-heading"><div><h2 id="organizer-guest-preview-title">Aperçu côté invité</h2><p>Simulation · disponible avant l’événement</p></div><button type="button" class="guest-dialog-close" aria-label="Fermer l’aperçu invité">×</button></div><p id="guest-preview-loading" role="status">Préparation de votre aperçu…</p><iframe title="Aperçu de la page de dépôt" allow="camera; microphone"></iframe>';
+ $('dashboard-content').append(dialog);
+ const frame=dialog.querySelector('iframe'),loading=dialog.querySelector('[role=status]');let generation=0,receive=null;
+ const close=()=>dialog.close();dialog.querySelector('button').onclick=close;
+ dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)close()}});
+ dialog.addEventListener('close',()=>{generation++;if(receive)window.removeEventListener('message',receive);receive=null;frame.removeAttribute('src');frame.hidden=true;link.focus()});
+ link.addEventListener('keydown',e=>{if(e.key===' '){e.preventDefault();link.click()}});
+ link.addEventListener('click',async e=>{
+  e.preventDefault();if(dialog.open||ownerSessionEnded)return;
+  const version=++generation;loading.hidden=false;loading.textContent='Préparation de votre aperçu…';frame.hidden=true;dialog.showModal();
+  try{
+   if(!await saveAll()){if(version===generation&&dialog.open)dialog.close();return}
+   let introUrl=null;
+   if(c.intro_path){const {data,error}=await sb.storage.from('capsule-media').createSignedUrl(c.intro_path,300);if(error||!data?.signedUrl)throw Error('Le message d’accueil n’a pas chargé. Fermez l’aperçu puis réessayez.');introUrl=data.signedUrl}
+   if(version!==generation||!dialog.open||ownerSessionEnded)return;
+   const snapshot={couple_name:c.couple_name,wedding_date:c.wedding_date,welcome_message:c.welcome_message,effective_plan:capsulePlan(c),delivery_before:c.usage?.delivery_before||addMonthsClamped(c.wedding_date||parisDay(),30)+'T23:59:59Z',has_intro:Boolean(introUrl),preview_intro_url:introUrl,preview_intro_type:introKind(c)};
+   receive=event=>{
+    if(event.origin!==location.origin||event.source!==frame.contentWindow||version!==generation||!dialog.open)return;
+    if(event.data?.type==='la-suite-guest-preview-close'){close();return}
+    if(event.data?.type!=='la-suite-guest-preview-ready')return;
+    frame.contentWindow.postMessage({type:'la-suite-guest-preview',capsule:snapshot},location.origin);loading.hidden=true;
+   };
+   window.addEventListener('message',receive);frame.hidden=false;frame.src=new URL('capsule.html?preview=1',location.href).href;
+  }catch(error){if(version===generation&&dialog.open)loading.textContent=error.message}
+ });
+}
 async function initDashboard(){
  if(!$("dashboard-content"))return;
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href=qs.get("view")==="service"?"auth.html?next=admin":"auth.html";
- sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
+ sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;$('organizer-guest-preview')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
  const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
  const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
@@ -1790,7 +1846,7 @@ async function initDashboard(){
  $("dashboard-content").append(stage);if(c.status==="active"&&!capsuleExpired(c))stage.hidden=true;
  if(c.status!=="active"||capsuleExpired(c)){
   ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title=capsuleExpired(c)?"La période de conservation est terminée":"Activez votre capsule pour partager votre carte"});
-  const guestLink=$("open-guest-link");if(guestLink)guestLink.hidden=true;
+  const guestLink=$("open-guest-link");if(guestLink)guestLink.hidden=capsuleExpired(c);
  }
  if(c.status!=="active"&&!capsuleExpired(c)){
   $("review-activation").addEventListener("click",async()=>{if(await saveAll()){ $("activation-dialog").querySelector('[data-activation-summary]').textContent=c.couple_name+" · "+fdate(c.wedding_date)+" · "+PLAN_NAMES[capsulePlan(c)];if(!freeLaunch){$("activation-dialog").querySelector("[data-activation-price]").textContent=PLAN_NAMES[c.plan]+" · "+money(PLAN_PRICES[c.plan])+" · "+({photo:"1 Go · photos et textes",audio:"2 Go · photos, textes et audios",premium:"5 Go · tous les formats"})[c.plan];$("activate-capsule").textContent="Payer "+money(PLAN_PRICES[c.plan])+" et activer";}$("activation-dialog").showModal()}});
@@ -1833,6 +1889,7 @@ async function initDashboard(){
   return saveAllPending;
  }
  $("save-organizer").addEventListener('click',saveAll);
+ setupOrganizerGuestPreview(c,saveAll);
 
  const updateDesigner=()=>{
    markDirty("qr");
