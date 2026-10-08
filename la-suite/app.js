@@ -1416,6 +1416,11 @@ function compactOwnerEditors(){
  const dialog=document.createElement("dialog");dialog.id="studio-editor";dialog.className="studio-sheet";dialog.setAttribute("aria-labelledby","studio-editor-title");
  dialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-editor-title"></h2><button class="studio-close" type="button" aria-label="Fermer les réglages">×</button></div><div class="studio-sheet-body"></div><div class="studio-sheet-footer"><span id="studio-save-state" role="status" aria-live="polite" hidden></span><button id="studio-done" class="btn primary" type="button">Terminé</button></div>';
  $("dashboard-content").append(dialog);
+ const previewDialog=document.createElement('dialog');previewDialog.id='studio-preview-dialog';previewDialog.className='studio-card-preview-dialog';previewDialog.setAttribute('aria-labelledby','studio-preview-title');
+ previewDialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-preview-title">Aperçu de votre carte</h2><button class="studio-close" type="button" aria-label="Fermer l’aperçu">×</button></div><div class="studio-card-preview-stage"><img alt="Votre carte personnalisée en grand"></div>';
+ $("dashboard-content").append(previewDialog);
+ previewDialog.querySelector('.studio-close').onclick=()=>previewDialog.close();
+ previewDialog.addEventListener('click',e=>{if(e.target===previewDialog){const r=previewDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)previewDialog.close()}});
  const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<h2>Votre carte</h2><button type="button" data-studio-tool="style" aria-haspopup="dialog"><img src="assets/customization/decoration.webp" alt="">Personnaliser</button>';
  const actions=document.querySelector(".qr-preview-actions");document.querySelector(".qr-preview-stage").before(tools);
  const cardActions=document.createElement("div");cardActions.className="studio-card-actions";actions.before(cardActions);
@@ -1437,19 +1442,17 @@ function compactOwnerEditors(){
    ['Style','Textes','Police et couleurs'].forEach((name,i)=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.setAttribute('role','tab');b.dataset.customTab=String(i);b.onclick=()=>activate(i);tabs.append(b)});
    tabs.onkeydown=e=>{const index=[...tabs.children].indexOf(document.activeElement);if(index<0||!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const next=(index+(e.key==='ArrowRight'?1:2))%3;activate(next);tabs.children[next].focus()};
    const body=dialog.querySelector('.studio-sheet-body'),config=document.createElement('div'),scroll=document.createElement('div');config.className='studio-config';scroll.className='studio-config-scroll';scroll.append(...nodes);config.append(tabs,scroll);
-   const preview=document.createElement('button');preview.type='button';preview.className='studio-preview-button';preview.setAttribute('aria-expanded','false');preview.innerHTML='<img id="studio-card-preview" alt="Aperçu de votre carte"><span>Agrandir l’aperçu</span>';body.append(preview,config);
-   const artwork=$('qr-artwork-preview'),syncPreview=()=>{const img=$('studio-card-preview');if(img&&artwork.src)img.src=artwork.src};artwork.addEventListener('load',syncPreview);syncPreview();
-   preview.onclick=()=>{const expanded=dialog.dataset.previewExpanded!=='true';dialog.dataset.previewExpanded=String(expanded);preview.setAttribute('aria-expanded',String(expanded));preview.querySelector('span').textContent=expanded?'Revenir aux réglages':'Agrandir l’aperçu';};
+   const preview=document.createElement('button');preview.type='button';preview.className='studio-preview-button';preview.setAttribute('aria-expanded','false');preview.setAttribute('aria-haspopup','dialog');preview.setAttribute('aria-controls',previewDialog.id);preview.innerHTML='<img id="studio-card-preview" alt="Aperçu de votre carte"><span>Agrandir l’aperçu</span>';body.append(preview,config);
+   const artwork=$('qr-artwork-preview'),syncPreview=()=>{const img=$('studio-card-preview');if(img&&artwork.src)img.src=artwork.src;if(previewDialog.open&&artwork.src)previewDialog.querySelector('img').src=artwork.src};artwork.addEventListener('load',syncPreview);syncPreview();
+   preview.onclick=()=>{previewDialog.querySelector('img').src=artwork.src;previewDialog.showModal();preview.setAttribute('aria-expanded','true')};
+   const closePreview=()=>{preview.setAttribute('aria-expanded','false');if(dialog.open&&preview.isConnected)preview.focus()};previewDialog.addEventListener('close',closePreview);
    const setTab=activate;tabs.querySelectorAll('button').forEach((b,i)=>b.onclick=()=>{setTab(i);scroll.scrollTop=0});activate(0);
-   const choices=[...sections[1].querySelectorAll('[data-qr-style]')],pages=document.createElement('div');pages.className='studio-theme-pages';
-   const previous=document.createElement('button'),next=document.createElement('button'),count=document.createElement('span');previous.type=next.type='button';previous.textContent='Précédent';next.textContent='Suivant';count.setAttribute('aria-live','polite');pages.append(previous,count,next);sections[1].querySelector('.customization-section-body').append(pages);
-   let page=Math.floor(Math.max(0,choices.findIndex(b=>b.classList.contains('is-selected')))/6);const renderPage=()=>{choices.forEach((b,i)=>b.hidden=Math.floor(i/6)!==page);count.textContent=(page+1)+' / '+Math.ceil(choices.length/6);previous.disabled=page===0;next.disabled=page>=Math.ceil(choices.length/6)-1};previous.onclick=()=>{page--;renderPage()};next.onclick=()=>{page++;renderPage()};renderPage();
    const fontSelect=document.createElement('select');fontSelect.id='studio-font-select';fontSelect.setAttribute('aria-label','Typographie');
    sections[2].querySelectorAll('[data-qr-font]').forEach(b=>{const option=document.createElement('option');option.value=b.dataset.qrFont;option.textContent=b.querySelector('small').textContent;option.selected=option.value===$('qr-font').value;fontSelect.append(option)});
    const sample=document.createElement('p');sample.className='studio-font-example qr-font-sample-'+$('qr-font').value;sample.textContent=$('print-title').value||DEFAULT_CARD_TITLE;
    fontSelect.onchange=()=>{sections[2].querySelector('[data-qr-font="'+fontSelect.value+'"]').click();sample.className='studio-font-example qr-font-sample-'+fontSelect.value};
    sections[2].querySelector('.customization-section-body').append(fontSelect,sample);
-   editorCleanup=()=>{artwork.removeEventListener('load',syncPreview);preview.remove();config.remove();tabs.remove();pages.remove();fontSelect.remove();sample.remove();choices.forEach(b=>b.hidden=false);delete dialog.dataset.customTab;delete dialog.dataset.previewExpanded;};
+   editorCleanup=()=>{if(previewDialog.open)previewDialog.close();previewDialog.removeEventListener('close',closePreview);artwork.removeEventListener('load',syncPreview);preview.remove();config.remove();tabs.remove();fontSelect.remove();sample.remove();delete dialog.dataset.customTab;};
   }
   dialog.showModal();
  };
