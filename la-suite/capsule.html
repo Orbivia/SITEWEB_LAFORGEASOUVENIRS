@@ -6,7 +6,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
-<link rel="stylesheet" href="styles.css?v=20261008-reveal1">
+<link rel="stylesheet" href="styles.css?v=20261008-welcome1">
 </head>
 <body class="suite-shell-page guest-compact">
 <header class="forge-style-header">
@@ -25,7 +25,7 @@
  </div>
  <button type="button" id="guest-concept-open" class="guest-info-link" aria-haspopup="dialog"><i class="fa-regular fa-circle-question" aria-hidden="true"></i><span>Le concept</span></button>
 </section>
-<button type="button" id="guest-welcome-open" class="guest-info-link guest-welcome-link" aria-haspopup="dialog" hidden>Le message des organisateurs <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+<button type="button" id="guest-welcome-open" class="guest-info-link guest-welcome-link" aria-haspopup="dialog" hidden>Le message de vos hôtes <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
 <dialog id="guest-concept-dialog" class="guest-dialog" aria-labelledby="guest-concept-title">
  <div class="guest-dialog-head"><h2 id="guest-concept-title">Une capsule de souvenirs</h2><button type="button" class="guest-dialog-close" aria-label="Fermer l’explication">×</button></div>
  <div class="guest-dialog-body"><p>Un petit mot, une photo, votre voix ou une vidéo : laissez une trace de ce moment aux organisateurs.</p><p>Vous choisissez quand ils pourront découvrir votre souvenir. Pour garder la surprise, sélectionnez une date future : son contenu restera secret jusqu’à ce jour.</p><p>Vous pouvez signer votre souvenir avec votre prénom, si vous le souhaitez.</p>
@@ -33,7 +33,7 @@
 </div>
 </dialog>
 <dialog id="guest-welcome-dialog" class="guest-dialog" aria-labelledby="guest-welcome-title">
- <div class="guest-dialog-head"><h2 id="guest-welcome-title">Le message des organisateurs</h2><button type="button" class="guest-dialog-close" aria-label="Fermer le message">×</button></div>
+ <div class="guest-dialog-head"><h2 id="guest-welcome-title" data-welcome-title>Un mot de vos hôtes</h2><button type="button" class="guest-dialog-close" aria-label="Fermer le message">×</button></div>
 <section id="intro-section" class="intro-card" hidden>
   <p id="capsule-welcome" class="lead intro-text-preview" hidden></p><video id="organizer-intro" controls playsinline preload="metadata" hidden></video><img id="organizer-intro-image" alt="Le message d’accueil de vos hôtes" hidden>
 </section>
@@ -42,11 +42,10 @@
 <p id="guest-state" class="guest-state" role="status" aria-live="polite">Chargement de la capsule…</p>
 <button id="guest-retry" class="btn secondary" type="button" hidden>Réessayer</button>
 <form class="form-shell guest-form" id="guest-message" hidden>
- <div class="guest-personalization guest-date-first">
+ <div class="guest-personalization guest-date-first guest-date-feature">
  <div class="delivery-box">
-  <button type="button" id="delivery-summary" class="delivery-summary" aria-label="Modifier la date de découverte" aria-describedby="delivery-value" aria-haspopup="dialog" aria-controls="delivery-dialog"><span class="delivery-caption"><i class="fa-regular fa-calendar" aria-hidden="true"></i><small>Quand l’ouvrir ?</small><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span><strong id="delivery-value">Maintenant</strong></button>
+  <button type="button" id="delivery-summary" class="delivery-summary" aria-label="Modifier la date de découverte" aria-describedby="delivery-value" aria-haspopup="dialog" aria-controls="delivery-dialog"><span class="delivery-caption"><i class="fa-regular fa-calendar" aria-hidden="true"></i><small>Quand l’ouvrir ?</small></span><span class="delivery-invitation">Choisissez le moment de la surprise</span><strong id="delivery-value">Maintenant</strong><span class="delivery-edit">Modifier <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span></button>
  </div>
- <div class="field guest-signature"><label for="guest_name"><i class="fa-regular fa-user" aria-hidden="true"></i> Votre prénom</label><input id="guest_name" maxlength="80" autocomplete="given-name" placeholder="Facultatif" aria-label="Votre prénom (facultatif)"></div>
  </div>
  <div class="memory-type-choices" role="group" aria-label="Type de souvenir">
   <button type="button" class="memory-type active" data-memory-type="text" aria-pressed="true"><i class="fa-regular fa-comment" aria-hidden="true"></i><span>Petit mot</span></button>
@@ -101,6 +100,7 @@
 
  <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre petit mot</label><textarea id="message_text" maxlength="4000" rows="4" placeholder="Écrivez ce que vous aimeriez leur dire…"></textarea></div></div>
  <details id="guest-extras" class="guest-extras" hidden><summary>Ajouter un petit mot <span class="optional">Facultatif</span></summary><div id="guest-extras-body"></div></details>
+ <div class="field guest-signature"><label for="guest_name"><i class="fa-regular fa-user" aria-hidden="true"></i> Votre prénom <span class="optional">(facultatif)</span></label><input id="guest_name" maxlength="80" autocomplete="given-name" placeholder="Pour signer votre souvenir"></div>
  <button class="btn primary submit-memory" type="submit"><span>Envoyer mon souvenir</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
  <progress id="upload-progress" max="100" value="0" hidden aria-label="Progression de l’envoi"></progress>
  <div id="status" class="status" role="status" aria-live="polite"></div>
@@ -141,7 +141,8 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
-<script src="app.js?v=20261008-reveal1"></script>
+<script src="welcome-ui.js?v=20261008-welcome1"></script>
+<script src="app.js?v=20261008-welcome1"></script>
 </body></html>
 
 

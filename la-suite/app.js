@@ -6,10 +6,10 @@ const cfg=window.LA_SUITE_CONFIG||{};
 const configured=Boolean(cfg.SUPABASE_URL&&cfg.SUPABASE_ANON_KEY&&window.supabase);
 const sb=configured?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null;
 let selectedMedia=null,activeStream=null,recorder=null;
-const organizerState={qr:false,intro:false,settings:false,saving:0,error:false};
+const organizerState={qr:false,intro:false,welcome:false,settings:false,saving:0,error:false};
 let qrSaveQueue=Promise.resolve(),introSavePending=null,introPreviewUrl=null,countdownTimer=null;
 function memoryCountLabel(value){const n=Number(value)||0;return n+" souvenir"+(n>1?"s":"")+" reçu"+(n>1?"s":"")}
-function organizerDirty(){return organizerState.qr||organizerState.intro||organizerState.settings}
+function organizerDirty(){return organizerState.qr||organizerState.intro||organizerState.welcome||organizerState.settings}
 function saveIndicator(){
  const el=$("organizer-save-state");if(!el)return;
  el.textContent=organizerState.saving?"Enregistrement…":organizerState.error?"Enregistrement incomplet. Réessayez.":organizerDirty()?"Modifications non enregistrées":"Tout est enregistré";
@@ -630,6 +630,7 @@ async function initCapsule(){
   $("guest-message").hidden=true;$("guest-retry").hidden=true;$("guest-state").textContent="Chargement de la capsule…";
   try{
    guestState=await guestInvoke({action:"get_status",guest_token:token});
+   window.SuiteWelcome.apply(guestState.welcome_config);
    $("capsule-title").textContent=guestState.couple_name;$("capsule-welcome").textContent=guestState.welcome_message||"";
    $("capsule-welcome").hidden=!guestState.welcome_message;$("intro-section").hidden=!guestState.welcome_message;
    $('guest-welcome-open').hidden=!guestState.welcome_message;
@@ -1807,7 +1808,7 @@ function setupOrganizerGuestPreview(c,saveAll){
    let introUrl=null;
    if(c.intro_path){const {data,error}=await sb.storage.from('capsule-media').createSignedUrl(c.intro_path,300);if(error||!data?.signedUrl)throw Error('Le message d’accueil n’a pas chargé. Fermez l’aperçu puis réessayez.');introUrl=data.signedUrl}
    if(version!==generation||!dialog.open||ownerSessionEnded)return;
-   const snapshot={couple_name:c.couple_name,wedding_date:c.wedding_date,welcome_message:c.welcome_message,effective_plan:capsulePlan(c),delivery_before:c.usage?.delivery_before||addMonthsClamped(c.wedding_date||parisDay(),30)+'T23:59:59Z',has_intro:Boolean(introUrl),preview_intro_url:introUrl,preview_intro_type:introKind(c)};
+   const snapshot={couple_name:c.couple_name,wedding_date:c.wedding_date,welcome_message:c.welcome_message,welcome_config:c.welcome_config,effective_plan:capsulePlan(c),delivery_before:c.usage?.delivery_before||addMonthsClamped(c.wedding_date||parisDay(),30)+'T23:59:59Z',has_intro:Boolean(introUrl),preview_intro_url:introUrl,preview_intro_type:introKind(c)};
    receive=event=>{
     if(event.origin!==location.origin||event.source!==frame.contentWindow||version!==generation||!dialog.open)return;
     if(event.data?.type==='la-suite-guest-preview-close'){close();return}
@@ -1822,9 +1823,9 @@ async function initDashboard(){
  if(!$("dashboard-content"))return;
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href=qs.get("view")==="service"?"auth.html?next=admin":"auth.html";
- sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;$('organizer-guest-preview')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
- const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
- const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
+ sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;$('organizer-guest-preview')?.close();$('welcome-editor')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
+ const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
+ const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,welcome_config,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
  let access;
  try{access=await capsuleAccess()}catch(error){return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>'}
@@ -1832,7 +1833,7 @@ async function initDashboard(){
  const c=caps.find(x=>x.slug===qs.get("slug"));
  await window.SuiteWorkspace.setup({sb,user:u,caps,access,selected:c,canLeave:()=>!organizerDirty()&&!organizerState.saving,logout});
  if(!caps.length){$("dashboard-title").textContent="Mon espace";$("dashboard-content").innerHTML='<section class="workspace-empty"><h2>Votre première capsule</h2><p>Créez votre capsule, personnalisez votre carte et partagez-la avec vos invités.</p>'+ (access.can_create?'<a class="btn primary" href="create.html">Créer une capsule</a>':'<p>'+esc(access.reason||"Création momentanément indisponible.")+'</p>')+'</section>';return;}
- if(!c)return $("dashboard-content").innerHTML='<div class="notice">Capsule introuvable. Utilisez le sélecteur pour ouvrir une autre capsule.</div>';
+ if(!c)return $("dashboard-content").innerHTML='<div class="notice">Capsule introuvable. Ouvrez « Mon compte », puis « Mes capsules » pour en choisir une autre.</div>';
  try{localStorage.setItem('la_suite_last_'+u.id,c.slug)}catch{}
  $("dashboard-title").textContent=c.couple_name;
  const url=new URL("capsule.html",location.href);url.search="?t="+encodeURIComponent(c.guest_token);
@@ -1873,7 +1874,7 @@ async function initDashboard(){
  setupOwnerTabs(c,manifest||[]);
  applyQrPreview(url.href,c);
  const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-show-initials"];
- let qrSaveTimer=null,autoSaveTimer=null,saveAllPending=null;
+ let qrSaveTimer=null,autoSaveTimer=null,saveAllPending=null,welcomeDesigner=null;
  function saveAll(){
   if(ownerSessionEnded||!$("save-organizer"))return Promise.resolve(false);
   if(saveAllPending)return saveAllPending;
@@ -1882,6 +1883,7 @@ async function initDashboard(){
    if(!await saveCapsuleSettings(c))return false;
    if(introSavePending&&!await introSavePending)return false;
    if(organizerState.intro&&!await uploadIntro(c))return false;
+   if(organizerState.welcome&&welcomeDesigner){const config=welcomeDesigner.collect();await updateOwnedCapsule(c,{welcome_config:config});c.welcome_config=config;if(JSON.stringify(config)===JSON.stringify(welcomeDesigner.collect()))organizerState.welcome=false;}
    if(organizerState.qr&&!await saveQrCustomization(c,url.href,true))return false;
    organizerState.error=false;if(organizerDirty()){show($("organizer-save-error"),"Des modifications ont été faites pendant la sauvegarde. Enregistrez-les avant de continuer.",false);return false}show($("organizer-save-error"),'');return true;
   }catch(e){organizerState.error=true;show($("organizer-save-error"),'Enregistrement impossible : '+e.message,false);return false}
@@ -1926,6 +1928,7 @@ async function initDashboard(){
    printPrintCard(c,url.href);
  });
  setupIntro(c);saveIndicator();
+ welcomeDesigner=window.SuiteWelcome.setup({capsule:c,markDirty,scheduleSave:scheduleAutoSave,saveAll});
  function scheduleAutoSave(){
   clearTimeout(autoSaveTimer);
   autoSaveTimer=setTimeout(async()=>{

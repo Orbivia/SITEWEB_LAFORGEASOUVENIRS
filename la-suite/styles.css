@@ -3159,3 +3159,128 @@ html:has(body.studio-ready){scroll-padding-bottom:90px}
 .guest-compact .memory-type-choices:has([data-memory-type=video][hidden]){grid-template-columns:repeat(3,minmax(0,1fr))}
 .guest-compact .memory-type-choices:has([data-memory-type=audio][hidden]){grid-template-columns:repeat(2,minmax(0,1fr))}
 .guest-compact .memory-type-choices:has([data-memory-type=image][hidden]){grid-template-columns:minmax(0,1fr)}
+
+/* Capsule correspondence: date first, a plain envelope, directly accessible signature. */
+.guest-compact{--guest-accent:#8b2730}
+.guest-compact .guest-date-feature{display:block;margin:0 0 10px}
+.guest-compact .guest-date-feature .delivery-summary{position:relative;isolation:isolate;display:block;overflow:hidden;width:100%;min-height:112px;padding:16px 14px;text-align:left;border:1px solid #e1c79c;border-radius:16px;background:linear-gradient(115deg,#fffaf0,#f4e1c7);box-shadow:0 3px 12px #986a2520}
+.guest-compact .guest-date-feature .delivery-caption{display:flex;align-items:center;gap:7px;position:relative;z-index:1;color:#72542f;font-size:.8rem}
+.guest-compact .guest-date-feature .delivery-caption small{font-size:.8rem}
+.delivery-invitation{display:block;position:relative;z-index:1;font-size:.64rem;line-height:1.4;margin:5px 0 8px;color:#72542f;max-width:65%}
+.guest-compact .guest-date-feature .delivery-summary strong{display:block;position:relative;z-index:1;font:600 1.6rem/1.1 'Cormorant Garamond',Georgia,serif;color:var(--guest-accent);max-width:65%}
+.delivery-edit{position:absolute;right:12px;bottom:12px;z-index:1;display:flex;align-items:center;gap:8px;min-height:28px;padding:5px 9px;border:1px solid #d5b58e;border-radius:50px;font:.65rem/1.3 Inter,Arial,sans-serif;background:#fffaf1;color:#72542f}
+.delivery-edit i{font-size:8px}
+.guest-date-art{position:absolute;pointer-events:none;right:0;top:0;width:135px;height:90px;opacity:.85;z-index:0}
+.guest-date-art svg{display:block;width:100%;height:100%}
+.guest-envelope-ornament{position:absolute;left:50%;top:58%;color:var(--guest-accent);font:18px Georgia,serif;line-height:1}
+.guest-compact[data-welcome-style=capsule]{background:radial-gradient(ellipse at 40% 0,#f9e9df77,transparent 75%),#fbf8f2}
+.guest-compact[data-welcome-style=capsule] .guest-form{background:#fffaf4;border-color:#eaded1;box-shadow:0 8px 24px #8664420b}
+.guest-compact[data-welcome-style=capsule] #guest-message-field{padding:9px;border:5px solid transparent;border-radius:14px;background:linear-gradient(#fffaf1,#fffaf1) padding-box,repeating-linear-gradient(130deg,#d49d88 0 9px,#fff9f0 9px 20px,#d9bc91 20px 29px,#fff9f0 29px 40px) border-box}
+.guest-compact[data-welcome-style=capsule] #message_text{background:#fffdf8;border-color:#e9decb;border-radius:10px}
+.guest-compact[data-welcome-style=editorial]{background:#f8f5ef}
+.guest-compact[data-welcome-style=editorial] .guest-form{background:#fffdf8;box-shadow:none;border-color:#d8ccbb}
+.guest-compact[data-welcome-style=editorial] .guest-date-feature .delivery-summary{background:#fcf7ee;box-shadow:none}
+.guest-compact[data-welcome-style=editorial] .guest-date-art{display:none}
+.guest-compact[data-welcome-style=minimal]{background:#fff}
+.guest-compact[data-welcome-style=minimal] .guest-form{box-shadow:none;border-color:#eee8e2;background:#fff}
+.guest-compact[data-welcome-style=minimal] .guest-date-feature .delivery-summary{background:var(--guest-accent);border-color:var(--guest-accent);box-shadow:none}
+.guest-compact[data-welcome-style=minimal] .delivery-caption,.guest-compact[data-welcome-style=minimal] .delivery-invitation,.guest-compact[data-welcome-style=minimal] .delivery-summary strong{color:#fff}
+.guest-compact[data-welcome-style=minimal] .guest-date-art{display:none}
+.guest-compact[data-welcome-font=classic] .capsule-hero h1,.guest-compact[data-welcome-font=classic] .delivery-summary strong,.guest-compact[data-welcome-font=classic] .welcome-mini-name{font-family:Georgia,serif}
+.guest-compact[data-welcome-font=modern] .capsule-hero h1,.guest-compact[data-welcome-font=modern] .delivery-summary strong,.guest-compact[data-welcome-font=modern] .welcome-mini-name{font-family:Inter,Arial,sans-serif;font-weight:600;letter-spacing:-.03em}
+.guest-compact[data-welcome-style] .capsule-hero h1{color:var(--guest-accent)}
+.guest-compact[data-welcome-style] .submit-memory{background:var(--guest-accent);border-color:var(--guest-accent)}
+.guest-compact[data-welcome-style] .memory-type.active{color:var(--guest-accent);background:#fff3ee}
+.guest-compact .field.guest-signature{padding:0;margin:10px 0 12px;border:0;background:transparent}
+.guest-compact .guest-signature input{background:#fffdf9;border:1px solid #e3d8cc;border-radius:12px;min-height:44px;padding:8px 11px;font-size:16px}
+.guest-compact .guest-signature label{gap:5px}
+.workspace-state{display:inline-block;border-radius:50px;padding:4px 9px;background:#f3eee5;color:#6a5432;font:600 .72rem/1.4 Inter,Arial,sans-serif;margin-top:4px}
+.workspace-state[data-state=open]{color:#425a3c;background:#edf3e9}
+.workspace-state[data-state=expired],.workspace-state[data-state=suspended]{color:#8b2730;background:#fcf0ed}
+.workspace-discovery{display:block;color:#675d51;font-size:.75rem;line-height:1.5;margin:7px 0 0}
+.dashboard-head>div{min-width:0;max-width:100%}
+#dashboard-title{overflow-wrap:anywhere;min-width:0}
+.workspace-capsule-summary{color:var(--ink);text-decoration:none;width:100%;text-align:left;font:inherit}
+button.workspace-capsule-summary{cursor:pointer}
+a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
+.welcome-summary{padding:0 0 16px;font-size:.8rem;line-height:1.6;color:var(--muted)}
+.welcome-summary p{margin:0 0 12px}
+.welcome-summary button{width:100%;gap:8px}
+.welcome-editor[open]{display:flex;flex-direction:column;max-height:min(900px,calc(var(--workspace-viewport-height,100dvh) - 12px))}
+.welcome-editor .studio-sheet-head{flex:none;position:static}
+.welcome-editor .studio-sheet-footer{display:flex;flex:none;justify-content:center;border-top:1px solid var(--line);padding:12px 20px;background:white}
+.welcome-editor .studio-sheet-footer button{min-width:160px}
+.welcome-editor .studio-sheet-body{padding:16px;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+.welcome-editor .studio-card-tabs{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:4px;padding:4px;border-radius:14px;background:#f3efe7;margin:16px 0}
+.welcome-editor .studio-card-tabs button{min-height:44px;border:0;background:transparent;border-radius:10px;padding:6px;font:.8rem/1.3 Inter,Arial,sans-serif;color:#6d645a;cursor:pointer}
+.welcome-editor .studio-card-tabs [aria-selected=true]{background:#fff;color:#8b2730}
+.welcome-editor .field-label{display:block;font-size:.9rem;font-weight:600;margin:0 0 12px}
+.welcome-editor .intro-video-panel{padding:0;border:0;background:transparent;box-shadow:none;margin:0}
+.welcome-editor .intro-editor-grid{display:block}
+.welcome-editor .intro-preview-card{padding:16px 0;margin-top:16px;border-top:1px solid var(--line)}
+.welcome-style-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.welcome-style-grid button{min-width:0;padding:0 0 10px;border:1px solid #e6ded2;border-radius:14px;background:#fff;text-align:center;cursor:pointer;overflow:hidden;color:#453a31}
+.welcome-style-grid [aria-pressed=true]{border-color:#a9864d;box-shadow:0 0 0 2px #a9864d inset;background:#fbf4e6}
+.welcome-style-grid strong{display:block;font:600 .8rem/1.4 Inter,Arial,sans-serif;margin:10px 4px 5px}
+.welcome-style-grid small{display:block;font:.65rem/1.4 Inter,Arial,sans-serif;margin:0 6px}
+.welcome-style-sample{display:flex;align-items:center;justify-content:center;flex-direction:column;min-height:110px;font:38px/1 Georgia,serif;color:#8b2730}
+.welcome-style-sample svg{width:95%;max-height:100px}
+.welcome-style-sample>span{font:10px/1.4 Inter,Arial,sans-serif;margin-top:14px}
+.welcome-style-capsule{background:linear-gradient(145deg,#fff8ea,#f1dbc4)}
+.welcome-style-editorial{background:#f7f2e7}
+.welcome-style-minimal{background:#8b2730;color:white}
+.welcome-colors{display:flex;gap:12px;flex-wrap:wrap}
+.welcome-colors button{width:44px;height:44px;background:var(--swatch);border:3px solid white;border-radius:50%;box-shadow:0 0 0 1px #d3c9bb;cursor:pointer}
+.welcome-colors [aria-pressed=true]{box-shadow:0 0 0 3px var(--swatch)}
+.welcome-expand-preview{display:flex;align-items:center;gap:18px;width:100%;padding:10px 16px;border:1px solid #e8ded1;border-radius:16px;background:#faf5ee;cursor:pointer;text-align:left;color:#685745}
+.welcome-expand-preview>span:last-child{font-size:.8rem;text-decoration:underline;text-underline-offset:4px}
+.welcome-mini-preview{display:block;flex-shrink:0;width:130px;padding:10px;border:1px solid #e6d9c9;border-radius:10px;overflow:hidden}
+.welcome-mini-preview .capsule-hero{display:block;margin:0 0 8px}
+.welcome-mini-preview .guest-capsule-label{font-size:7px}
+.welcome-mini-name{display:block;font:600 16px/1.2 'Cormorant Garamond',Georgia,serif;overflow-wrap:anywhere}
+.welcome-mini-preview .delivery-summary{position:relative;display:block;overflow:hidden;min-height:62px;padding:6px;border-radius:8px;background:#fae9d1;border:1px solid #d3b580}
+.welcome-mini-preview .delivery-caption{display:block;font-size:7px}
+.welcome-mini-preview .delivery-summary strong{position:relative;z-index:1;display:block;font-size:14px;margin-top:12px;color:var(--guest-accent)}
+.welcome-mini-preview .guest-date-art{width:70px;height:50px;opacity:.65}
+.welcome-mini-preview .guest-envelope-ornament{font-size:9px}
+.guest-compact:has(#guest-message:not([hidden])) .forge-style-footer{display:none}
+@media(max-width:360px){.welcome-style-grid{gap:6px}.welcome-style-grid strong{font-size:.7rem}.welcome-style-sample{min-height:90px}.guest-compact .guest-date-feature .delivery-summary{min-height:102px;padding:12px}.guest-date-art{width:118px}.delivery-invitation{font-size:.6rem}}
+@media(max-height:760px) and (max-width:760px){
+ .guest-compact .capsule-hero{margin-bottom:6px}.guest-compact .guest-state{margin:6px 0 8px}
+ .guest-compact .guest-date-feature .delivery-summary{min-height:98px;padding:10px 12px}
+ .delivery-invitation{margin:3px 0 6px;font-size:.6rem}
+ .guest-compact .guest-date-feature .delivery-summary strong{font-size:1.45rem}
+ .guest-compact .field.guest-signature{margin:8px 0}
+ .guest-compact[data-welcome-style=capsule] #guest-message-field{padding:6px;border-width:4px;margin-top:6px;margin-bottom:6px}
+ .guest-compact #message_text{height:76px;padding:10px}
+ .guest-compact .media-choice{min-height:80px;padding:8px 4px}
+ .guest-compact .memory-type-choices{margin-bottom:8px}
+ .guest-compact .guest-form{padding:10px}
+}
+@media(max-height:650px) and (max-width:760px){
+ .guest-compact .capsule-hero h1{font-size:1.4rem}
+ .guest-compact .guest-welcome-link{min-height:24px;padding:0;font-size:.65rem;margin:0 0 4px}
+ .guest-compact .guest-state{margin:4px 0 6px}
+ .guest-compact .guest-form{padding:7px}
+ .guest-compact .guest-date-feature{margin-bottom:6px}
+ .guest-compact .guest-date-feature .delivery-summary{min-height:80px;padding:8px 10px}
+ .guest-compact .guest-date-feature .delivery-summary strong{font-size:1.3rem}
+ .guest-compact .guest-date-feature .delivery-caption small{font-size:.7rem}
+ .delivery-invitation{margin:3px 0 4px;font-size:.55rem}
+ .guest-date-art{width:110px;height:76px}
+ .delivery-edit{bottom:7px;right:8px;min-height:26px;font-size:.6rem}
+ .guest-compact .memory-type{min-height:40px;padding:4px 2px;gap:3px}
+ .guest-compact .memory-type i{font-size:16px}
+ .guest-compact .memory-type-choices{margin-bottom:6px}
+ .guest-compact .media-choice{min-height:64px;padding:4px;gap:3px}
+ .guest-compact .media-choice .media-action-icon{width:24px;height:24px;font-size:14px;border-radius:7px}
+ .guest-compact .media-choice small{font-size:.6rem}
+ .guest-compact .guest-form #file-help{margin:2px 0}
+ .guest-compact .guest-date-feature{margin-bottom:4px}
+ .guest-compact .guest-form .field.guest-signature{margin:4px 0}
+ .guest-compact #message_text{height:58px;min-height:58px;padding:8px}
+ .guest-compact[data-welcome-style=capsule] #guest-message-field{padding:4px;margin:4px 0}
+ .guest-compact .field.guest-signature{margin:6px 0}
+ .guest-compact .field label{margin-bottom:3px}
+ .guest-compact .submit-memory{min-height:44px;padding:8px}
+}
