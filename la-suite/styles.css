@@ -3453,3 +3453,5 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 @media(min-width:1100px){.studio-ready .customization-section[data-studio-section="1"],.studio-ready .customization-section[data-studio-section="2"]{grid-column:1/-1}}
 
 #intro-section>h2{font-size:1.4rem;margin:0 0 12px}
+
+.studio-ready .owner-panel[data-owner-panel=messages]{max-width:none;width:100%}
