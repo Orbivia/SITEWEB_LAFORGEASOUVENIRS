@@ -134,6 +134,7 @@ async function openCheckout(c){
  location.href=target.href;
 }
 let ownerSessionEnded=false;
+const ownerDownloadSession=new AbortController();
 async function updateOwnedCapsule(c,payload){
  if(ownerSessionEnded)throw Error('Reconnectez-vous pour enregistrer votre capsule.');
  const {data,error}=await sb.from('capsules').update(payload).eq('id',c.id).select('id').single();
@@ -1197,6 +1198,7 @@ async function buildA4PrintCanvas(c,url){
 async function downloadPrintCard(c,url){
  try{
   const page=await buildA4PrintCanvas(c,url);
+  if(ownerSessionEnded)return false;
   const filename="la-suite-"+slugify(c.couple_name)+"-A4.png";
   if(window.LaSuiteAndroid?.saveCard){window.LaSuiteAndroid.saveCard(page.toDataURL("image/png"),filename);return true;}
   const a=document.createElement("a");
@@ -1224,19 +1226,20 @@ function setupPrintDownload(c,url){
  });
 }
 async function printPrintCard(c,url){
- if(window.LaSuiteAndroid?.printCard){try{const page=await buildA4PrintCanvas(c,url);window.LaSuiteAndroid.printCard(page.toDataURL("image/png"));}catch(e){show($("qr-status"),e?.message||"Impossible de lancer l’impression.",false)}return;}
+ if(window.LaSuiteAndroid?.printCard){try{const page=await buildA4PrintCanvas(c,url);if(ownerSessionEnded)return;window.LaSuiteAndroid.printCard(page.toDataURL("image/png"));}catch(e){show($("qr-status"),e?.message||"Impossible de lancer l’impression.",false)}return;}
  const win=window.open("","_blank");
  if(!win)return show($("qr-status"),"Autorisez les fenêtres pop-up pour lancer l’impression.",false);
  try{
   win.document.write('<!doctype html><html><head><title>Préparation de l’impression…</title></head><body></body></html>');
   win.document.close();
   const page=await buildA4PrintCanvas(c,url);
+  if(ownerSessionEnded){win.close();return;}
   const data=page.toDataURL("image/png");
   win.document.open();
   win.document.write('<!doctype html><html><head><title>Imprimer La Suite</title><style>@page{size:A4 portrait;margin:0}html,body{margin:0;padding:0;background:#fff}img{display:block;width:210mm;height:297mm;object-fit:contain}</style></head><body><img src="'+data+'" alt="Carte La Suite A4"></body></html>');
   win.document.close();
   const img=win.document.querySelector("img");
-  img.onload=()=>{win.focus();win.print()}
+  img.onload=()=>{if(ownerSessionEnded){win.close();return;}win.focus();win.print()}
  }catch(e){
   try{win.close()}catch(_){}
   show($("qr-status"),e?.message||"Impossible de lancer l’impression.",false)
@@ -1684,6 +1687,7 @@ async function renderManifest(c,manifest){
  const list=$("memory-list");
  if(!manifest.length){memoryMediaObserver?.disconnect();list.innerHTML='<div class="notice">Aucun souvenir reçu pour le moment.</div>';return}
  const{data:rows,error}=await sb.from("messages").select("id,guest_name,message_text,media_type,media_path,delivery_at,created_at").eq("capsule_id",c.id);
+ if(ownerSessionEnded)return;
  if(error)throw error;
  const map=new Map((rows||[]).map(x=>[x.id,x]));list.replaceChildren();memoryMediaObserver?.disconnect();
  memoryMediaObserver=window.IntersectionObserver?new IntersectionObserver(entries=>{
@@ -1701,11 +1705,11 @@ async function renderManifest(c,manifest){
    const status=document.createElement('p');status.className='hint';status.setAttribute('role','status');
    const refresh=document.createElement('button');refresh.type='button';refresh.className='mini-link';refresh.textContent='Recharger le média';
    let signedAt=0;
-   const renew=async()=>{refresh.disabled=true;try{const{data,error}=await sb.storage.from('capsule-media').createSignedUrl(row.media_path,300);if(error||!data?.signedUrl)throw error||new Error('Lien indisponible');signedAt=Date.now();media.src=data.signedUrl;status.textContent='';return true}catch(e){status.textContent='Média indisponible. Réessayez avec « Recharger le média ».';return false}finally{refresh.disabled=false}};
+   const renew=async()=>{if(ownerSessionEnded||!article.isConnected)return false;refresh.disabled=true;try{const{data,error}=await sb.storage.from('capsule-media').createSignedUrl(row.media_path,300);if(ownerSessionEnded||!article.isConnected)return false;if(error||!data?.signedUrl)throw error||new Error('Lien indisponible');signedAt=Date.now();media.src=data.signedUrl;status.textContent='';return true}catch(e){status.textContent='Média indisponible. Réessayez avec « Recharger le média ».';return false}finally{refresh.disabled=false}};
    refresh.addEventListener('click',renew);media.addEventListener('error',()=>{status.textContent='La lecture a échoué ou le lien a expiré. Rechargez le média.'});
    if(row.media_type!=='image')media.addEventListener('play',async()=>{if(Date.now()-signedAt>240000){media.pause();if(await renew())media.play().catch(()=>{})}});
    const download=document.createElement('button');download.type='button';download.className='mini-link';download.textContent='Télécharger';
-   download.addEventListener('click',async()=>{download.disabled=true;try{const{data,error}=await sb.storage.from('capsule-media').createSignedUrl(row.media_path,300,{download:true});if(error||!data?.signedUrl)throw error||new Error('Lien indisponible');const link=document.createElement('a');link.href=data.signedUrl;link.download='';document.body.append(link);link.click();link.remove();status.textContent=''}catch(e){status.textContent='Téléchargement impossible. Réessayez.'}finally{download.disabled=false}});
+   download.addEventListener('click',async()=>{if(ownerSessionEnded)return;download.disabled=true;try{const{data,error}=await sb.storage.from('capsule-media').createSignedUrl(row.media_path,300,{download:true});if(ownerSessionEnded)return;if(error||!data?.signedUrl)throw error||new Error('Lien indisponible');const link=document.createElement('a');link.href=data.signedUrl;link.download='';document.body.append(link);link.click();link.remove();status.textContent=''}catch(e){status.textContent='Téléchargement impossible. Réessayez.'}finally{download.disabled=false}});
    actions.append(refresh,download);content.append(media,status);loadMedia=renew;
   }else if(available&&!row){content.textContent='Ce souvenir n’a pas pu être chargé. Actualisez la liste.'}
   list.append(article);
@@ -1782,7 +1786,7 @@ async function exportOpenedMemories(c){
   }
   if(ownerSessionEnded)throw Error("Votre session est terminée. Reconnectez-vous.");
   if(capsuleExpired(c))throw Error("La période de conservation est terminée.");
-  await SouvenirZip.write(entries,writable,(i,total)=>show($("export-status"),'Téléchargement : '+i+' / '+total+' fichiers…'));show($("export-status"),'Vos souvenirs ouverts ont été téléchargés.');
+  await SouvenirZip.write(entries,writable,(i,total)=>show($("export-status"),'Téléchargement : '+i+' / '+total+' fichiers…'),{signal:ownerDownloadSession.signal});if(!ownerSessionEnded)show($("export-status"),'Vos souvenirs ouverts ont été téléchargés.');
  }catch(e){await writable?.abort?.();if(e.name!=='AbortError')show($("export-status"),e.message||'Téléchargement interrompu. Réessayez.',false)}
  finally{exportingMemories=false;button.disabled=capsuleExpired(c)||ownerSessionEnded}
 }
@@ -1797,6 +1801,7 @@ async function setupOfferServices(c){
 
 async function renderOrganizerLifecycle(c){
  const {data,error}=await sb.rpc("owner_capsule_usage",{p_capsule_id:c.id});
+ if(ownerSessionEnded)return;
  const root=document.querySelector('[data-owner-panel="messages"]');
  let panel=root.querySelector(".capsule-lifecycle");if(!panel){panel=document.createElement("section");panel.className="capsule-lifecycle";root.prepend(panel);}
  if(error||!data){c.usage=null;updateEventDateControls(c);panel.textContent="Les dates et le stockage sont momentanément indisponibles.";document.querySelector('[data-owner-panel="messages"]').prepend(panel);return}
@@ -1844,15 +1849,18 @@ async function initDashboard(){
  if(!$("dashboard-content"))return;
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href=qs.get("view")==="service"?"auth.html?next=admin":"auth.html";
- sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;$('organizer-guest-preview')?.close();$('welcome-editor')?.close();$('print-download-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
+ sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;ownerDownloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));$('organizer-guest-preview')?.close();$('welcome-editor')?.close();$('print-download-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
  const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
  const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,welcome_config,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
+ if(ownerSessionEnded)return;
  if(error)return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>';
  let access;
  try{access=await capsuleAccess()}catch(error){return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>'}
+ if(ownerSessionEnded)return;
  if(!qs.get("slug")&&caps.length){let last;try{last=localStorage.getItem('la_suite_last_'+u.id)}catch{}const chosen=caps.find(c=>c.slug===last)||caps[0];location.replace("dashboard.html?slug="+encodeURIComponent(chosen.slug)+(qs.get("view")==="service"?"&view=service":"")+location.hash);return;}
  const c=caps.find(x=>x.slug===qs.get("slug"));
  await window.SuiteWorkspace.setup({sb,user:u,caps,access,selected:c,canLeave:()=>!organizerDirty()&&!organizerState.saving,logout});
+ if(ownerSessionEnded)return;
  if(!caps.length){$("dashboard-title").textContent="Mon espace";$("dashboard-content").innerHTML='<section class="workspace-empty"><h2>Votre première capsule</h2><p>Créez votre capsule, personnalisez votre carte et partagez-la avec vos invités.</p>'+ (access.can_create?'<a class="btn primary" href="create.html">Créer une capsule</a>':'<p>'+esc(access.reason||"Création momentanément indisponible.")+'</p>')+'</section>';return;}
  if(!c)return $("dashboard-content").innerHTML='<div class="notice">Capsule introuvable. Ouvrez « Mon compte », puis « Mes capsules » pour en choisir une autre.</div>';
  try{localStorage.setItem('la_suite_last_'+u.id,c.slug)}catch{}
@@ -1862,6 +1870,7 @@ async function initDashboard(){
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
  compactOwnerEditors();
  await renderOrganizerLifecycle(c);
+ if(ownerSessionEnded)return;
  const freeLaunch=access.free_launch===true;
  const stage=document.createElement("section");stage.className="activation-panel";
  stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>La période d’accès est terminée. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Activer ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p>${freeLaunch?'<p>Votre capsule reste gratuite pendant ses 3 ans d’accès, avec tous les formats et 5 Go.</p>':'<p data-activation-price></p><p>Paiement unique, sans abonnement. Les dépôts seront ouverts le jour de votre événement et le lendemain. Accès pendant 3 ans à compter de l’événement.</p>'}<button id="activate-capsule" class="btn primary" type="button">${freeLaunch?"Activer gratuitement":"Continuer vers le paiement"}</button><p id="activation-status" class="status" role="status"></p></dialog>`;
@@ -1964,7 +1973,7 @@ async function initDashboard(){
  async function refreshMemories(){
   if(refreshInProgress||ownerSessionEnded)return;refreshInProgress=true;
   const button=$("refresh-memories");button.disabled=true;show($("memory-status"),'Chargement des souvenirs…');
-  try{await renderOrganizerLifecycle(c);const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
+  try{await renderOrganizerLifecycle(c);if(ownerSessionEnded)return;const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(ownerSessionEnded)return;if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);if(ownerSessionEnded)return;$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  window.addEventListener('suite-capsule-rules-changed',async e=>{if(e.detail===c.id){const expired=capsuleExpired(c);await refreshMemories();if(expired&&!capsuleExpired(c))location.reload()}});

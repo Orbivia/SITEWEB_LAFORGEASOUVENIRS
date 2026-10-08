@@ -3,6 +3,22 @@
  const encoder=new TextEncoder(),decoder=new TextDecoder(),magic=encoder.encode('LASUITE1');
  function header(name,size){const text=encoder.encode(name);if(text.length>300||!Number.isSafeInteger(size)||size<28||size>60000000)throw Error('Entrée de sauvegarde invalide.');const h=new Uint8Array(12+text.length),v=new DataView(h.buffer);v.setUint32(0,text.length);v.setBigUint64(4,BigInt(size));h.set(text,12);return h;}
  async function entries(file){if(file.size<12||decoder.decode(await file.slice(0,8).arrayBuffer())!=='LASUITE1')throw Error('Choisissez une archive La Suite (.lasuite).');let offset=8,result=[],names=new Set();while(offset<file.size){if(offset+4>file.size)throw Error('Archive incomplète.');const n=new DataView(await file.slice(offset,offset+4).arrayBuffer()).getUint32(0);offset+=4;if(n===0){if(offset!==file.size)throw Error('Archive invalide.');return result;}if(n>300||offset+8+n>file.size)throw Error('Archive invalide.');const size=Number(new DataView(await file.slice(offset,offset+8).arrayBuffer()).getBigUint64(0));offset+=8;const name=decoder.decode(await file.slice(offset,offset+n).arrayBuffer());offset+=n;if(size<28||size>60000000||offset+size>file.size||names.has(name)||!/^([a-f0-9-]{36}\/manifest|assets\/[a-f0-9]{64})$/.test(name))throw Error('Archive invalide.');names.add(name);result.push({name,blob:file.slice(offset,offset+size)});offset+=size;}throw Error('Archive incomplète.');}
- async function write(getPage,writable,progress){await writable.write(magic);let index=0,total=1;while(index<total){const page=await getPage(index);total=page.total;for(const e of page.entries){const response=await fetch(e.url);if(!response.ok)throw Error('Téléchargement interrompu. Réessayez.');const blob=await response.blob();await writable.write(header(e.name,blob.size));await writable.write(blob);progress(++index,total);}}await writable.write(new Uint8Array(4));await writable.close();}
+ async function write(getPage,writable,progress=()=>{},{signal}={}){
+  const check=()=>{if(signal?.aborted)throw signal.reason||new DOMException('Téléchargement interrompu.','AbortError');};
+  const emit=async part=>{check();await writable.write(part);check();};
+  await emit(magic);let index=0,total=null;const names=new Set();
+  while(total===null||index<total){
+   check();const page=await getPage(index);check();
+   if(!page||!Number.isSafeInteger(page.total)||page.total<1||total!==null&&page.total!==total||!Array.isArray(page.entries)||!page.entries.length||index+page.entries.length>page.total)throw Error('Archive incomplète. Préparez un nouvel export.');
+   total=page.total;
+   for(const e of page.entries){
+    if(typeof e.name!=='string'||!/^([a-f0-9-]{36}\/manifest|assets\/[a-f0-9]{64})$/.test(e.name)||names.has(e.name)||index===0&&!e.name.endsWith('/manifest'))throw Error('Archive invalide. Préparez un nouvel export.');
+    names.add(e.name);check();const response=await fetch(e.url,{signal});check();if(!response.ok)throw Error('Téléchargement interrompu. Réessayez.');const blob=await response.blob();check();
+    await emit(header(e.name,blob.size));await emit(blob);progress(++index,total);
+   }
+  }
+  await emit(new Uint8Array(4));check();await writable.close();
+ }
  root.SuiteArchive={header,entries,write,magic};if(typeof module!=='undefined')module.exports=root.SuiteArchive;
 })(typeof window==='undefined'?globalThis:window);
+
