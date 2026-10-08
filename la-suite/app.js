@@ -173,13 +173,14 @@ async function initAuth(){
   document.querySelector(".organizer-access-help").textContent="Utilisez votre compte habituel. Si vous avez oublié votre mot de passe, choisissez « Mot de passe oublié ».";
  }
  if(!configured)return show(status,"Le service de connexion est indisponible. Rechargez la page.",false);
- let mode=["signup","recovery","reset"].includes(qs.get("mode"))?qs.get("mode"):"login",pendingConfirmation=false,confirmationEmail="";
+ let mode=["signup","recovery","reset"].includes(qs.get("mode"))?qs.get("mode"):qs.get("next")==="create"&&!qs.has("mode")?"choice":"login",pendingConfirmation=false,confirmationEmail="";
  function render(){
   pendingConfirmation=false;
   submit.hidden=false;
   form.querySelectorAll("input").forEach(input=>input.removeAttribute("aria-invalid"));
-  const recovery=mode==="recovery",reset=mode==="reset";
-  $("auth-title").textContent=({login:"Bienvenue dans votre espace",signup:"Créez votre compte",reset:"Retrouver votre accès",recovery:"Choisissez votre mot de passe"})[mode];
+  const recovery=mode==="recovery",reset=mode==="reset",choice=mode==="choice";
+  form.hidden=choice;$("auth-choice").hidden=!choice;
+  $("auth-title").textContent=({choice:"Retrouvez votre préparation",login:"Bienvenue dans votre espace",signup:"Créez votre compte",reset:"Retrouver votre accès",recovery:"Choisissez votre mot de passe"})[mode];
   if(adminAccess&&mode==="login")$("auth-title").textContent="Connexion à l’administration";
   $("auth-description").textContent=reset?"Recevez un lien pour définir ou réinitialiser votre mot de passe.":recovery?"Utilisez au moins 10 caractères pour sécuriser votre espace.":adminAccess?"Connectez-vous pour accéder à votre administration.":qs.get("next")==="create"?"Votre préparation est conservée. Connectez-vous ou créez votre compte pour continuer.":"Retrouvez vos capsules et vos souvenirs.";
   $("email-field").hidden=recovery;$("email").required=!recovery;$("email").disabled=recovery;
@@ -191,24 +192,31 @@ async function initAuth(){
   $("password-confirm-field").hidden=!(recovery||mode==="signup");$("password-confirm").required=recovery||mode==="signup";$("password-confirm").disabled=!(recovery||mode==="signup");
   document.querySelector(".organizer-access-help").hidden=!reset;
   submit.textContent=({login:"Me connecter",signup:"Créer mon compte",reset:"Recevoir le lien",recovery:"Enregistrer mon mot de passe"})[mode];
-  $("auth-options").hidden=false;
+  $("auth-options").hidden=choice;
   $("resend-confirmation").hidden=true;
   status.textContent="";status.className="status";
  }
  render();
- sb.auth.onAuthStateChange(event=>{if(event==="PASSWORD_RECOVERY"){mode="recovery";render()}});
+ sb.auth.onAuthStateChange((event,session)=>{
+  if(event==="PASSWORD_RECOVERY"){mode="recovery";render()}
+  else if(event==="SIGNED_IN"&&session?.user&&(pendingConfirmation||mode==="choice")){
+   queueMicrotask(async()=>{try{location.href=await signedInDestination()}catch(error){form.hidden=false;show(status,frenchAuthError(error),false)}});
+  }
+ });
  $("resend-confirmation").addEventListener("click",async()=>{
   const button=$("resend-confirmation");button.disabled=true;
   try{const{error}=await sb.auth.resend({type:"signup",email:confirmationEmail||$("email").value.trim(),options:{emailRedirectTo:new URL(authDestination(),location.href).href}});if(error)throw error;show(status,"Un nouveau lien de confirmation a été demandé. Vérifiez votre boîte mail et les indésirables.")}catch(e){show(status,frenchAuthError(e),false)}finally{button.disabled=false}
  });
- document.querySelectorAll('[data-auth-mode]').forEach(b=>b.addEventListener('click',()=>{mode=b.dataset.authMode;render()}));
+ function chooseMode(next){if(submit.disabled||pendingConfirmation)return;mode=next;$("password").value="";$("password-confirm").value="";render();}
+ document.querySelectorAll('[data-auth-mode]').forEach(b=>b.addEventListener('click',()=>chooseMode(b.dataset.authMode)));
+ document.querySelectorAll('[data-auth-choice]').forEach(b=>b.addEventListener('click',()=>chooseMode(b.dataset.authChoice)));
  if(qs.get("next")==="create")try{const d=JSON.parse(localStorage.getItem("la_suite_create_draft")||"null");if(d?.email)$("email").value=d.email}catch(e){}
  const authError=new URLSearchParams(location.hash.slice(1)).get("error_description");
- if(authError)show(status,"Ce lien n’est plus valide. Demandez un nouveau lien avec « Mot de passe oublié ».",false);
+ if(authError){if(mode==="choice"){mode="login";render()}show(status,"Ce lien n’est plus valide. Demandez un nouveau lien avec « Mot de passe oublié ».",false);}
  const initial=await user();
  if(initial&&!["recovery","reset"].includes(mode)){try{location.href=await signedInDestination()}catch(e){show(status,e.message,false)}return;}
  form.addEventListener("submit",async e=>{
-  e.preventDefault();if(pendingConfirmation||submit.disabled)return;
+  e.preventDefault();if(pendingConfirmation||mode==="choice"||submit.disabled)return;
   form.querySelectorAll("input").forEach(input=>input.removeAttribute("aria-invalid"));
   const invalid=(id,message)=>{const input=$(id);input.setAttribute("aria-invalid","true");input.focus();show(status,message,false)};
   if(mode!=="recovery"&&(!$("email").value.trim()||$("email").validity.typeMismatch))return invalid("email","Saisissez une adresse e-mail valide.");
@@ -241,7 +249,7 @@ async function initAuth(){
      $("password").value="";$("password-confirm").value="";
      $("auth-title").textContent="Vérifiez votre boîte mail";
      $("auth-description").textContent="Un lien de confirmation a été demandé pour "+email+".";
-     return show(status,"Ouvrez l’e-mail La Suite et cliquez sur le lien pour confirmer votre adresse. Pensez à vérifier les indésirables."+(qs.get('next')==='create'?" Votre préparation est conservée 24 h dans ce navigateur.":""));
+     return show(status,"Ouvrez l’e-mail La Suite et cliquez sur le lien pour confirmer votre adresse et accéder directement à votre espace. Pensez à vérifier les indésirables."+(qs.get('next')==='create'?" Votre capsule préparée sera reprise automatiquement dans ce navigateur pendant 24 h.":""));
     }
    }else{
     result=await sb.auth.signInWithPassword({email,password});if(result.error)throw result.error;
@@ -422,14 +430,14 @@ async function initCreate(){
   };
   const err=validateDraft(d);if(err)return show(status,err,false);
 
-  if(!storeDraft(d)&&!currentUser){show(status,"Votre navigateur empêche de conserver la préparation. Connectez-vous ou créez votre compte, puis revenez remplir ce formulaire.",false);let link=status.querySelector('a');if(!link){link=document.createElement('a');link.href='auth.html?mode=signup&next=create';link.textContent='Créer mon compte ou me connecter';status.append(document.createElement('br'),link)}return}
+  if(!storeDraft(d)&&!currentUser){show(status,"Votre navigateur empêche de conserver la préparation. Connectez-vous ou créez votre compte, puis revenez remplir ce formulaire.",false);let link=status.querySelector('a');if(!link){link=document.createElement('a');link.href='auth.html?next=create';link.textContent='Créer mon compte ou me connecter';status.append(document.createElement('br'),link)}return}
   if(submit)submit.disabled=true;
 
   try{
    const u=await user();
 
    if(u)return await createCapsule(d,u);
-   location.href="auth.html?mode=signup&next=create";
+   location.href="auth.html?next=create";
   }catch(err){
    if(submit)submit.disabled=false;
    const msg=String(err?.message||"");
