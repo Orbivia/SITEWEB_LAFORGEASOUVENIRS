@@ -39,12 +39,54 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
  }
  async function refresh(){if(!authorized)return;data=await api('overview');if(!authorized)return;render();await refreshServices();if(busy)setBusy(true);scheduleRefresh();}
 
- function detail(id){const c=data.capsules.find(x=>x.id===id);if(!c)return;const quota=(c.quota_override||c.usage.quota_bytes)/1e9;$('capsule-detail').innerHTML=`<div class="eyebrow">Paramètres de la capsule</div><h2>${esc(c.name)}</h2><p>${esc(email(c.owner_id))} · ${date(c.date)}</p><dl class="admin-detail"><div><dt>Souvenirs reçus</dt><dd>${c.messages}</dd></div><div><dt>Stockage</dt><dd>${bytes(c.usage.used_bytes)} / ${bytes(c.usage.quota_bytes)}</dd></div><div><dt>Activation</dt><dd>${c.activation==='payment'?'Payante':c.activation?'Gratuite':'À activer'} · ${({photo:'Essentiel',audio:'Plus',premium:'Premium'})[c.plan]||'Premium'}</dd></div><div><dt>Conservation jusqu’au</dt><dd>${date(c.usage.retention_years>3&&c.usage.delivery_before===c.usage.expires_at?new Date(new Date(c.usage.expires_at).getTime()-1000).toISOString():c.usage.expires_at)}</dd></div></dl><p class="hint">Les contenus et les souvenirs programmés restent dans l’espace du client.</p><div class="admin-actions"><button id="detail-backup" class="btn primary">Préparer l’export de cette capsule</button><button id="detail-download" class="btn secondary" hidden>Télécharger l’archive</button><p id="detail-export-status" class="hint" role="status"></p><button id="detail-suspend" class="btn secondary">${c.suspended?'Reprendre les dépôts':'Mettre les dépôts en pause'}</button></div><details class="admin-quota"><summary>Ajuster le stockage</summary><form id="quota-form"><label for="quota">Capacité totale (Go)</label><input id="quota" type="number" min="0.1" max="50" step="0.1" required value="${quota}"><button class="btn secondary" type="submit">Enregistrer</button></form></details>`;
+
+ function parisDate(value,last=false){if(!value)return '';const day=new Date(new Date(value).getTime()-(last?1000:0));return new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit'}).format(day);}
+ function monthAfter(value,months){const d=new Date(value+'T12:00:00Z'),day=d.getUTCDate();d.setUTCDate(1);d.setUTCMonth(d.getUTCMonth()+months);const last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,last));return d.toISOString().slice(0,10);}
+ function detail(id,configure=false){
+  const c=data.capsules.find(x=>x.id===id);if(!c)return;
+  const u=c.usage,quota=(c.quota_override||u.quota_bytes)/1e9;
+  const expiry=u.access_until||parisDate(u.expires_at,true),open=parisDate(u.opens_at),close=parisDate(u.closes_at,true),delivery=parisDate(u.delivery_before,true);
+  const expected=Object.fromEntries(['opens_at','closes_at','delivery_before','expires_at','quota_bytes'].map(k=>[k,u[k]]));
+  $('capsule-detail').innerHTML=`<div class="eyebrow">Paramètres de la capsule</div><h2>${esc(c.name)}</h2><p>${esc(email(c.owner_id))} · ${date(c.date)}</p><dl class="admin-detail"><div><dt>Souvenirs reçus</dt><dd>${c.messages}</dd></div><div><dt>Stockage</dt><dd>${bytes(u.used_bytes)} / ${bytes(u.quota_bytes)}</dd></div><div><dt>Activation</dt><dd>${c.activation==='payment'?'Payante':c.activation?'Gratuite':'À activer'} · ${({photo:'Essentiel',audio:'Plus',premium:'Premium'})[c.plan]||'Premium'}</dd></div><div><dt>Conservation jusqu’au</dt><dd>${date(expiry)}</dd></div></dl>
+   <details class="admin-quota" ${configure?'open':''}><summary>Dates et stockage</summary>
+    <form id="quota-form">
+     <p class="hint">Dates incluses, à l’heure de Paris. Les dates choisies pour les souvenirs déjà reçus sont conservées.</p>
+     <fieldset><legend>Période de dépôt</legend><div class="admin-rules-grid">
+      <div class="field"><label for="admin-opens-on">Ouverture des dépôts</label><input id="admin-opens-on" type="date" required value="${esc(open)}"></div>
+      <div class="field"><label for="admin-closes-on">Dernier jour de dépôt</label><input id="admin-closes-on" type="date" required value="${esc(close)}"></div>
+     </div><div class="admin-date-presets" aria-label="Durée des dépôts"><button type="button" data-deposit-preset="2">J et J+1</button><button type="button" data-deposit-preset="month">1 mois</button><button type="button" data-deposit-preset="3months">3 mois</button></div></fieldset>
+     <fieldset><legend>Découverte et conservation</legend><div class="admin-rules-grid">
+      <div class="field"><label for="admin-delivery-until">Dernière date de découverte possible</label><input id="admin-delivery-until" type="date" required value="${esc(delivery)}"><small>Limite proposée aux invités pour leurs prochains souvenirs.</small></div>
+      <div class="field"><label for="admin-access-until">Dernier jour de conservation</label><input id="admin-access-until" type="date" required min="${parisDate(new Date().toISOString())}" value="${esc(expiry)}"><small>Les souvenirs restent consultables jusqu’à cette date incluse.</small></div>
+     </div></fieldset>
+     <fieldset><legend>Stockage</legend><div class="field"><label for="quota">Capacité totale (Go)</label><input id="quota" type="number" min="${Math.max(.1,Math.ceil(Number(u.used_bytes)/1e8)/10)}" max="50" step="0.1" required value="${quota}"><small>De 0,1 à 50 Go, au moins l’espace déjà utilisé.</small></div></fieldset>
+     <p id="admin-rules-status" class="status" role="status" aria-live="polite"></p><button class="btn primary" type="submit">Enregistrer les réglages</button>
+    </form>
+   </details>
+   <p class="hint">Les contenus et les souvenirs programmés restent dans l’espace du client.</p><div class="admin-actions"><button id="detail-backup" class="btn primary">Préparer l’export de cette capsule</button><button id="detail-download" class="btn secondary" hidden>Télécharger l’archive</button><p id="detail-export-status" class="hint" role="status"></p><button id="detail-suspend" class="btn secondary">${c.suspended?'Reprendre les dépôts':'Mettre les dépôts en pause'}</button></div>`;
   $('detail-backup').onclick=()=>run(async()=>{const job=await api('backup',{id});if(!job?.id)throw Error('L’export n’a pas pu être préparé.');exportsByCapsule.set(id,job.id);await api('tick');});
   $('detail-download').onclick=()=>run(()=>exportArchive(exportsByCapsule.get(id)));
   $('capsule-dialog').dataset.exportCapsule=id;updateExportState();
-  $('detail-suspend').onclick=async()=>{if(!await confirmAction(c.suspended?'Reprendre les dépôts ?':'Mettre les dépôts en pause ?',c.suspended?'La période et les limites habituelles s’appliqueront.':'Les invités ne pourront plus déposer de souvenir. Les souvenirs existants sont conservés.'))return;await run(async()=>{await api('manage',{id,suspended:!c.suspended,quota:c.quota_override});$('capsule-dialog').close();status(c.suspended?'Les dépôts ont repris.':'Les dépôts sont en pause.');});};
-  $('quota-form').onsubmit=e=>{e.preventDefault();run(async()=>{await api('manage',{id,suspended:c.suspended,quota:Math.round(Number($('quota').value)*1e9)});$('capsule-dialog').close();status('Stockage mis à jour.');});};$('capsule-dialog').showModal();
+  $('detail-suspend').onclick=async()=>{if(!await confirmAction(c.suspended?'Reprendre les dépôts ?':'Mettre les dépôts en pause ?',c.suspended?'Les dates et les limites de cette capsule s’appliqueront.':'Les invités ne pourront plus déposer de souvenir. Les souvenirs existants sont conservés.'))return;await run(async()=>{await api('manage',{id,suspended:!c.suspended});$('capsule-dialog').close();window.dispatchEvent(new CustomEvent('suite-capsule-rules-changed',{detail:id}));status(c.suspended?'Les dépôts ont repris.':'Les dépôts sont en pause.');});};
+  $('quota-form').querySelectorAll('[data-deposit-preset]').forEach(b=>b.onclick=()=>{
+   const day=$('admin-opens-on').value;if(!day)return;
+   if(b.dataset.depositPreset==='2'){const d=new Date(day+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);$('admin-closes-on').value=d.toISOString().slice(0,10);}
+   else $('admin-closes-on').value=monthAfter(day,b.dataset.depositPreset==='month'?1:3);
+   $('admin-closes-on').focus();
+  });
+  $('quota-form').onsubmit=async e=>{
+   e.preventDefault();if(busy||!authorized||!e.target.reportValidity())return;
+   const rules={opens_on:$('admin-opens-on').value,closes_on:$('admin-closes-on').value,delivery_until:$('admin-delivery-until').value,access_until:$('admin-access-until').value};
+   const report=(text,error=false)=>{const el=$('admin-rules-status');if(!el)return;el.textContent=text;el.className='status show '+(error?'err':'ok');};
+   if(rules.opens_on>rules.closes_on||rules.closes_on>rules.delivery_until||rules.delivery_until>rules.access_until){report('Respectez l’ordre : ouverture, fin des dépôts, dernière découverte, fin de conservation.',true);return;}
+   setBusy(true);report('Enregistrement…');
+   try{
+    await api('manage',{id,quota:Math.round(Number($('quota').value)*1e9),rules,expected});
+    if(!authorized)return;await refresh();if(!authorized)return;$('capsule-dialog').close();window.dispatchEvent(new CustomEvent('suite-capsule-rules-changed',{detail:id}));status('Dates et stockage de la capsule mis à jour.');
+   }catch(e){if(authorized)report(e.message||'Enregistrement impossible. Réessayez.',true);}
+   finally{setBusy(false);}
+  };
+  $('capsule-dialog').showModal();if(configure)$('admin-opens-on').focus();
  }
  function updateExportState(){const id=$('capsule-dialog').dataset.exportCapsule,jobId=exportsByCapsule.get(id);if(!$('detail-download')||!jobId)return;const job=data.backups.find(b=>b.id===jobId),ready=job&&['ready','restored'].includes(job.state);$('detail-download').hidden=!ready;$('detail-backup').hidden=!!job&&job.state!=='failed';$('detail-export-status').textContent=ready?'Archive prête à télécharger.':job?.state==='failed'?'Export impossible. Vous pouvez réessayer.':'Préparation de l’archive en cours…';}
  async function exportArchive(id){
@@ -70,7 +112,7 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
   const {data:member,error:memberError}=await sb.rpc('admin_status');if(memberError)throw memberError;if(member!==true){if(embedded){clearPrivateView();return;}if(!invite){$('access-message').textContent='Ce compte ne dispose pas d’un accès administrateur.';if($('admin-logout'))$('admin-logout').hidden=false;return;}const {error}=await sb.rpc('admin_claim',{p_token:invite.token});if(error)throw error;}
   try{localStorage.removeItem(inviteKey)}catch{}sessionOwner=user.user.id;authorized=true;if($('admin-logout'))$('admin-logout').hidden=false;$('admin-access').hidden=true;$('admin-content').hidden=false;await refresh();
  }catch(e){$('access-message').textContent=e.message||'Vérification impossible. Rechargez la page.';status(e.message,true);}
- return {exportCapsule(id){if(!authorized||busy)throw Error('Veuillez réessayer dans quelques instants.');if(!data.capsules.some(c=>c.id===id))throw Error('Capsule introuvable.');detail(id);$('detail-backup').click();}};
+ return {async configureCapsule(id){if(!authorized||busy)throw Error('Veuillez réessayer dans quelques instants.');await refresh();if(!authorized)return;detail(id,true);},exportCapsule(id){if(!authorized||busy)throw Error('Veuillez réessayer dans quelques instants.');if(!data.capsules.some(c=>c.id===id))throw Error('Capsule introuvable.');detail(id);$('detail-backup').click();}};
 };
 if(document.getElementById('admin-access'))window.initSuiteAdmin();
 

@@ -3354,3 +3354,18 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 .print-format-choices strong{display:block;font:600 .85rem/1.4 Inter,Arial,sans-serif}
 .print-format-choices small{display:block;font:.7rem/1.5 Inter,Arial,sans-serif;color:#756b61;margin-top:3px}
 .print-format-choices button:disabled{opacity:.6;cursor:wait}
+.admin-dialog{max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain}
+.admin-dialog>form[method=dialog]{position:sticky;top:-22px;z-index:2;display:flex;justify-content:flex-end;margin:0;padding:0 0 8px;background:#fffdf9}
+.admin-dialog>form[method=dialog] .dialog-close{float:none;min-width:44px;min-height:44px}
+.admin-quota fieldset{min-width:0;margin:0;padding:16px 0;border:0;border-bottom:1px solid #e7dfd2}
+.admin-quota legend{font-size:15px;font-weight:650;padding:0}
+.admin-rules-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.admin-quota .field{display:grid;gap:8px;min-width:0}
+.admin-quota input{width:100%;box-sizing:border-box;min-height:44px;font-size:16px}
+.admin-quota label{font-size:14px;font-weight:600}
+.admin-quota small{color:#706457;font-size:13px;line-height:1.5}
+.admin-date-presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.admin-date-presets button{padding:10px 14px;min-height:44px;border:1px solid #d9cfc1;border-radius:10px;background:#fff;font:inherit;font-size:14px;cursor:pointer}
+.admin-date-presets button:hover,.admin-date-presets button:focus-visible{border-color:#9e7e42;background:#f7f1e5}
+#configure-capsule-admin{margin-bottom:14px}
+@media(max-width:600px){.admin-rules-grid{grid-template-columns:1fr}.admin-dialog{padding:22px;width:calc(100% - 28px)}.admin-quota .btn[type=submit]{width:100%}}

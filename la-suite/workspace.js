@@ -11,6 +11,7 @@
  window.SuiteWorkspace={async setup({sb,user,caps,access,selected,canLeave,logout}){
   let ended=false,accountBusy=false,serviceBusy=false,member=false,adminLoaded=false,adminLoading=null,adminController=null;
   window.SuiteWorkspace.canExportCapsule=()=>member&&!ended;window.SuiteWorkspace.exportCapsule=async id=>{if(!member||ended)throw Error('Accès administrateur requis.');if(!canLeave())throw Error('Patientez jusqu’à la fin de la sauvegarde des modifications.');await loadAdmin();if(!adminController)throw Error('Le service est momentanément indisponible.');adminController.exportCapsule(id);};
+  window.SuiteWorkspace.configureCapsule=async id=>{if(!member||ended)throw Error('Accès administrateur requis.');if(!canLeave())throw Error('Patientez jusqu’à la fin de la sauvegarde des modifications.');await loadAdmin();if(!adminController)throw Error('Le service est momentanément indisponible.');await adminController.configureCapsule(id);};
   document.body.classList.add('workspace-ready');
   // Reserve the device inset once; Android browser chrome must not resize the tabs.
   const insetProbe=document.createElement('div');insetProbe.className='workspace-safe-area-probe';document.body.append(insetProbe);
