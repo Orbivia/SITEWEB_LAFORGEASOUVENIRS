@@ -143,7 +143,7 @@ async function updateOwnedCapsule(c,payload){
 }
 function authDestination(){if(qs.get("next")==="admin")return "admin.html";return qs.get("next")==="create"?"create.html?resume=1":"dashboard.html"}
 async function signedInDestination(){
- if(["admin","create"].includes(qs.get("next")))return authDestination();
+ if(qs.get("next")==="admin")return authDestination();
  const {data,error}=await sb.rpc('admin_status');if(error)throw Error('Vérification du compte impossible. Réessayez.');
  return data===true?'admin.html':authDestination();
 }
@@ -318,6 +318,7 @@ async function initCreate(){
   const err=validateDraft(d);if(err)return show(status,err,false);
   if(!u)return false;
   const access=await capsuleAccess();
+  if(access.admin_only){location.replace('admin.html');return true;}
   if(!access.can_create){
    if(access.existing_slug){clearDraft();location.href="dashboard.html?slug="+encodeURIComponent(access.existing_slug);return true}
    if(submit)submit.disabled=false;show(status,access.reason,false);return false;
@@ -350,7 +351,7 @@ async function initCreate(){
 
  const currentUser=await user();
  if(currentUser){
-  try{const access=await capsuleAccess();if(!access.can_create){
+  try{const access=await capsuleAccess();if(access.admin_only){location.replace('admin.html');return;}if(!access.can_create){
    clearDraft();
    if(access.existing_slug){location.href="dashboard.html?slug="+encodeURIComponent(access.existing_slug);return}
    show(status,access.reason,false);submit.disabled=true;return;
@@ -1857,7 +1858,7 @@ async function initDashboard(){
  if(qs.get('view')==='service')return location.replace('admin.html'+location.hash);
  const {data:adminMember,error:adminError}=await sb.rpc('admin_status');
  if(adminError)return $('dashboard-content').innerHTML='<p class="status show err">Vérification du compte impossible. Rechargez la page.</p>';
- if(adminMember===true&&qs.get('mode')!=='organizer')return location.replace('admin.html'+location.hash);
+ if(adminMember===true)return location.replace('admin.html'+location.hash);
 
  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;ownerDownloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));$('organizer-guest-preview')?.close();$('welcome-editor')?.close();$('print-download-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
  const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
@@ -1867,7 +1868,7 @@ async function initDashboard(){
  let access;
  try{access=await capsuleAccess()}catch(error){return $("dashboard-content").innerHTML='<div class="status show err">'+esc(error.message)+'</div>'}
  if(ownerSessionEnded)return;
- if(!qs.get("slug")&&caps.length){let last;try{last=localStorage.getItem('la_suite_last_'+u.id)}catch{}const chosen=caps.find(c=>c.slug===last)||caps[0];location.replace("dashboard.html?slug="+encodeURIComponent(chosen.slug)+(qs.get("mode")==="organizer"?"&mode=organizer":"")+location.hash);return;}
+ if(!qs.get("slug")&&caps.length){let last;try{last=localStorage.getItem('la_suite_last_'+u.id)}catch{}const chosen=caps.find(c=>c.slug===last)||caps[0];location.replace("dashboard.html?slug="+encodeURIComponent(chosen.slug)+location.hash);return;}
  const c=caps.find(x=>x.slug===qs.get("slug"));
  await window.SuiteWorkspace.setup({sb,user:u,caps,access,selected:c,canLeave:()=>!organizerDirty()&&!organizerState.saving,logout});
  if(ownerSessionEnded)return;
