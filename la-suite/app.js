@@ -268,7 +268,8 @@ async function initCreate(){
  const pad=n=>String(n).padStart(2,"0");
  const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
  const tomorrow=new Date(parisDay()+'T12:00:00Z');tomorrow.setUTCDate(tomorrow.getUTCDate()+1);
- const minDate=tomorrow.toISOString().slice(0,10);
+ const minDate=tomorrow.toISOString().slice(0,10),maxDate=latestEventDate();
+ $("wedding-date-help").textContent="Événement à prévoir dans les deux prochaines années, jusqu’au "+fdate(maxDate)+" inclus.";
  const clearDraft=()=>{try{localStorage.removeItem(draftKey)}catch{}};
  const storeDraft=d=>{try{localStorage.setItem(draftKey,JSON.stringify(d));return true}catch{return false}};
 
@@ -290,7 +291,7 @@ async function initCreate(){
  }
 
  if(dateInput){
-  dateInput.min=minDate;
+  dateInput.min=minDate;dateInput.max=maxDate;
   dateInput.lang="fr-FR";
   dateInput.addEventListener("change",()=>{if(dateDisplay)dateDisplay.value=frFromIso(dateInput.value)})
  }
@@ -325,6 +326,7 @@ async function initCreate(){
   if(!/^\S+@\S+\.\S+$/.test(d.email))return"Adresse e-mail invalide.";
   if(!d?.wedding)return"Saisissez une date valide au format JJ/MM/AAAA.";
   if(d.wedding<minDate)return"Choisissez une date d'événement future.";
+  if(d.wedding>maxDate)return"Choisissez une date au plus tard le "+frFromIso(maxDate)+" (deux ans maximum).";
   return"";
  }
  const validationFields=[[$("couple"),$("couple-error")],[dateDisplay,$("wedding-date-error")],[emailInput,$("email-error")]];
@@ -334,7 +336,7 @@ async function initCreate(){
   if(input===dateDisplay){
    if(!value)return "Choisissez la date de votre événement.";
    const date=parseFrDate(value);
-   return !date?"Saisissez une date valide au format JJ/MM/AAAA.":date<minDate?"Choisissez une date à partir de demain.":"";
+   return !date?"Saisissez une date valide au format JJ/MM/AAAA.":date<minDate?"Choisissez une date à partir de demain.":date>maxDate?"Choisissez une date au plus tard le "+frFromIso(maxDate)+" (deux ans maximum).":"";
   }
   return !value?"Indiquez votre adresse e-mail.":input.validity.typeMismatch||!/^\S+@\S+\.\S+$/.test(value)?"Saisissez une adresse e-mail valide.":"";
  }
@@ -1777,6 +1779,9 @@ async function renderManifest(c,manifest){
  }
  applyMemoryFilter();
 }
+function latestEventDate(today=parisDay()){
+ const d=new Date(today+'T12:00:00Z'),day=d.getUTCDate();d.setUTCDate(1);d.setUTCFullYear(d.getUTCFullYear()+2);const last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,last));return d.toISOString().slice(0,10);
+}
 function tomorrowParis(){const d=new Date(parisDay()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
 function openCapsuleSettings(){
  $("owner-tab-settings")?.click();
@@ -1787,6 +1792,7 @@ function updateEventDateControls(c){
  const editable=c.usage?.event_date_editable===true;
  input.disabled=Boolean(c.pendingPayment)||c.usage?.event_date_lock_reason==='custom_period'||modernActive&&!editable;
  if(c.status==='draft'||modernActive)input.min=tomorrowParis();
+ input.max=latestEventDate();
  const reasons={custom_period:"Cette capsule possède un calendrier personnalisé. Contactez-nous pour modifier la date de l’événement.",started:"La date est verrouillée depuis le début de l’événement. Contactez-nous pour une correction.",memories:"Un souvenir ou un dépôt en cours existe. Contactez-nous pour une correction de date.",suspended:"Cette capsule est en pause. Contactez-nous pour une correction.",pending_payment:"Un paiement est en cours. La date reste fixée jusqu’à son expiration."};
  input.parentElement.querySelector(".field-help").textContent=c.pendingPayment?reasons.pending_payment:c.usage?.event_date_lock_reason==='custom_period'?reasons.custom_period:modernActive?(editable?"Modifiable jusqu’à la veille de l’événement, tant qu’aucun souvenir n’a été déposé. Aucun nouveau paiement.":reasons[c.usage?.event_date_lock_reason]||"La modification de date est momentanément indisponible. Actualisez pour réessayer."):"Dépôts le jour J et le lendemain.";
 }
@@ -1809,6 +1815,7 @@ async function saveCapsuleSettings(c){
  if(!name||name.length>50||!/^\d{4}-\d{2}-\d{2}$/.test(date)){show($("organizer-save-error"),'Renseignez un nom et une date valides.',false);openCapsuleSettings();return false}
  const dateChanged=date!==c.wedding_date;
  if((c.status==='draft'||dateChanged&&c.status==='active'&&c.guest_rules_version===1)&&date<tomorrowParis()){show($("organizer-save-error"),'Choisissez une date d’événement à partir de demain.',false);openCapsuleSettings();return false}
+ if(dateChanged&&date>latestEventDate()){show($("organizer-save-error"),'Choisissez une date au plus tard le '+fdate(latestEventDate())+' (deux ans maximum).',false);openCapsuleSettings();return false}
  if(dateChanged&&c.status==='active'&&c.guest_rules_version===1&&!confirm("Déplacer l’événement du "+fdate(c.wedding_date)+" au "+fdate(date)+" ?\nLes dépôts seront ouverts à la nouvelle date et le lendemain. Les trois ans de conservation seront recalculés. Votre paiement et votre QR code sont conservés.")){date=c.wedding_date;$("capsule-date").value=date}
  const notify=$("capsule-notify").checked;
  const payload={couple_name:name,wedding_date:date,notify_by_email:notify};

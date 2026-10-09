@@ -35,7 +35,7 @@
     <p>Préparez votre capsule et votre carte QR, puis activez-la avec un paiement unique. Sans abonnement.</p>
   </section>
 
-  <form class="form-shell create-form" id="create-capsule" action="#" onsubmit="return false;">
+  <form class="form-shell create-form" id="create-capsule" action="#" novalidate onsubmit="return false;">
     <div class="field">
       <label for="couple">Nom de la capsule</label>
       <input id="couple" name="couple" required maxlength="50" placeholder="Justine & Pierre" aria-describedby="couple-error">
@@ -45,12 +45,13 @@
     <div class="field">
       <label for="wedding_date_display">Date de l'événement</label>
       <div class="date-fr-wrap">
-        <input id="wedding_date_display" class="date-fr-display" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date de l'événement au format jour mois année" aria-describedby="wedding-date-error" required>
+        <input id="wedding_date_display" class="date-fr-display" type="text" inputmode="numeric" autocomplete="off" maxlength="10" placeholder="JJ/MM/AAAA" aria-label="Date de l'événement au format jour mois année" aria-describedby="wedding-date-help wedding-date-error" required>
         <button class="date-fr-button" id="wedding_date_button" type="button" aria-label="Ouvrir le calendrier">
           <i class="fa-regular fa-calendar"></i>
         </button>
         <input id="wedding_date" name="wedding_date" class="date-fr-native" type="date" lang="fr-FR" tabindex="-1" aria-hidden="true">
       </div>
+      <small id="wedding-date-help" class="field-help">Événement à prévoir dans les deux prochaines années.</small>
       <small id="wedding-date-error" class="field-error" hidden></small>
     </div>
 
@@ -82,7 +83,7 @@
 <script src="suite-shell.js?v=20261007-review15"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
 <script src="supabase-config.js?v=20260927-1"></script>
-<script src="app.js?v=20261009-cleanup1"></script>
+<script src="app.js?v=20261009-event2years1"></script>
 </body>
 </html>
 
