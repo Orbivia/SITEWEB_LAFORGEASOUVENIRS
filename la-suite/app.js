@@ -1199,11 +1199,11 @@ async function buildPrintCardCanvas(c,url){
  if(artwork){const image=await loadCanvasImage(artwork);const scale=Math.max(W/image.naturalWidth,H/image.naturalHeight),iw=image.naturalWidth*scale,ih=image.naturalHeight*scale;ctx.drawImage(image,(W-iw)*window.SuiteDesign.position(config.cardX)/100,(H-ih)*window.SuiteDesign.position(config.cardY)/100,iw,ih);}else{drawQrBackdrop(ctx,o,W,H);drawQrDecor(ctx,o,W,H);}
  const dark=qrThemes[o.style].dark,paper=dark?qrThemes[o.style].background:'#fffdf8';
  // The decorative bitmap is restricted to the border; all content has an opaque backing.
- ctx.fillStyle=paper;ctx.beginPath();ctx.roundRect(120,140,W-240,1450,28);ctx.fill();
+ ctx.save();ctx.shadowColor=paper;ctx.shadowBlur=32;ctx.fillStyle=paper;ctx.beginPath();ctx.roundRect(120,140,W-240,1450,28);ctx.fill();ctx.restore();
  ctx.fillStyle=dark?'#fffaf1':'#201c1a';
  const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?120:o.font==='contemporary'?96:o.font==='refined'?98:112;
  drawPrintTextBox(ctx,o.title,{x:180,y:190,width:W-360,height:195,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3});
- ctx.font='400 36px Inter,Arial,sans-serif';ctx.fillText(fdate(c.wedding_date),W/2,435);
+ ctx.font='400 36px Inter,Arial,sans-serif';ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
  drawQrDivider(ctx,o,W/2,490);
  const qsize=570,qx=Math.round((W-qsize)/2),qy=550;
  const background=document.createElement("canvas");background.width=W;background.height=H;
@@ -1279,7 +1279,9 @@ function setupPrintDownload(c,url){
  dialog.innerHTML='<div class="guest-dialog-head"><h2 id="print-download-title">Télécharger la fiche</h2><button class="guest-dialog-close" type="button" aria-label="Fermer les formats de téléchargement">×</button></div><div class="guest-dialog-body"><div class="print-format-choices"><button type="button" data-print-format="10x15"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i><span><strong>Carte 10 × 15 cm</strong><small>PDF à taille réelle · la fiche seule</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button><button type="button" data-print-format="A4"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i><span><strong>Feuille A4</strong><small>PDF · carte 10 × 15 cm et repères de découpe</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button><button type="button" data-print-format="png"><i class="fa-regular fa-image" aria-hidden="true"></i><span><strong>Image haute définition</strong><small>PNG · version A4</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></div><button type="button" class="btn secondary" data-print-format="qr"><i class="fa-solid fa-qrcode" aria-hidden="true"></i>QR code seul · PNG</button><p class="microcopy">Pour garder les dimensions exactes, imprimez le PDF à 100 % ou en « Taille réelle ».</p><p id="print-download-status" class="status" role="status" aria-live="polite"></p></div>';
  $('dashboard-content').append(dialog);const buttons=[...dialog.querySelectorAll('[data-print-format]')];
  dialog.querySelector('.guest-dialog-close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{if($('download-print-card')?.isConnected)$('download-print-card').focus()});
- $('download-print-card').onclick=()=>{if(ownerSessionEnded)return;show($('print-download-status'),'');dialog.showModal()};
+ $('download-print-card').onclick=()=>{if(ownerSessionEnded)return;show($('print-download-status'),'');dialog.style.removeProperty('left');dialog.style.removeProperty('top');if(matchMedia('(min-width:761px)').matches){dialog.show();const rect=$('download-print-card').getBoundingClientRect(),menu=dialog.getBoundingClientRect();dialog.style.left=Math.max(12,Math.min(rect.left,innerWidth-menu.width-12))+'px';dialog.style.top=Math.max(12,Math.min(rect.bottom+6,innerHeight-menu.height-12))+'px';}else dialog.showModal()};
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&dialog.open){event.preventDefault();dialog.close()}});
+ document.addEventListener('click',event=>{if(dialog.open&&!dialog.matches(':modal')&&!dialog.contains(event.target)&&!$('download-print-card').contains(event.target))dialog.close()});
  buttons.forEach(button=>button.onclick=async()=>{
   buttons.forEach(b=>b.disabled=true);show($('print-download-status'),'Préparation de votre fiche…');
   try{
@@ -1924,6 +1926,7 @@ async function initDashboard(){
   clearTimeout(qrSaveTimer);clearTimeout(autoSaveTimer);organizerState.saving++;saveIndicator();$("save-organizer").disabled=true;
   saveAllPending=(async()=>{try{
    if(!await saveCapsuleSettings(c))return false;
+   applyQrPreview(url.href,{...c,...collectQrCustomization(c)});
    if(introSavePending&&!await introSavePending)return false;
    if(organizerState.intro&&!await uploadIntro(c))return false;
    if(organizerState.welcome&&welcomeDesigner){const config=welcomeDesigner.collect();await updateOwnedCapsule(c,{welcome_config:config});c.welcome_config=config;if(JSON.stringify(config)===JSON.stringify(welcomeDesigner.collect()))organizerState.welcome=false;}
@@ -1965,6 +1968,8 @@ async function initDashboard(){
  });
  setupIntro(c);saveIndicator();
  welcomeDesigner=window.SuiteWelcome.setup({capsule:c,markDirty,scheduleSave:scheduleAutoSave,saveAll});
+ window.SuiteOrganizerLayout?.mount(c);
+ $('capsule-date').addEventListener('input',()=>{if($('capsule-date').validity.valid)applyQrPreview(url.href,{...c,...collectQrCustomization(c),wedding_date:$('capsule-date').value})});
  function scheduleAutoSave(){
   clearTimeout(autoSaveTimer);
   autoSaveTimer=setTimeout(async()=>{
