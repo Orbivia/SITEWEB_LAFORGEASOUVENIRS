@@ -378,6 +378,8 @@ async function initCreate(){
    slug:slugify(d.couple)+"-"+rid(),
    couple_name:d.couple,
    wedding_date:d.wedding,
+   qr_style:"fleurs",qr_font:"elegant",qr_color:"#95677e",
+   welcome_config:{style:"fleurs",font:"elegant",color:"#95677e"},
    welcome_message:null,
    unlock_date:null
   }).select("id,slug,guest_token").single();
@@ -695,6 +697,10 @@ async function initCapsule(){
  }
  $("guest-retry").addEventListener("click",refreshGuestState);
  await refreshGuestState();
+ if(guestIsPreview)window.addEventListener('message',event=>{
+  if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='la-suite-guest-preview'||!event.data.capsule)return;
+  guestPreviewState={...event.data.capsule,state:'open',legacy:true};refreshGuestState();
+ });
  $("another-memory").addEventListener("click",async()=>{
   $("guest-success").hidden=true;chooseGuestType("text");deliveryTouched=false;chooseDelivery("now");show($("status"),"");
   await refreshGuestState();
@@ -784,8 +790,8 @@ async function performIntroSave(c){
     introFinalized=true;
    }
   }
-  const payload={intro_path:path,welcome_message:kind==="text"?text:null};
-  if(!introFinalized){await updateOwnedCapsule(c,payload);}
+  const payload={intro_path:path,welcome_message:kind==="none"?null:text||null};
+  await updateOwnedCapsule(c,payload);
   Object.assign(c,payload);$("intro-file").value="";organizerState.intro=false;organizerState.error=false;await renderIntroPreview(c);renderIntroDraft(c);
   show(s,"");
   return true;
@@ -816,7 +822,7 @@ function renderIntroDraft(c){
 function setupIntro(c){
  const kind=$("intro-kind"),file=$("intro-file");kind.value=introKind(c);
  function update(){
-  $("intro-text-field").hidden=kind.value!=="text";
+  $("intro-text-field").hidden=kind.value==="none";
   $("intro-media-field").hidden=kind.value!=="image"&&kind.value!=="video";
   file.accept=kind.value==="image"?"image/jpeg,image/png,image/webp":"video/mp4,video/quicktime,video/webm";
   $("intro-file-label").textContent=kind.value==="image"?"Votre image":"Votre vidéo";
@@ -883,7 +889,8 @@ function collectQrCustomization(c){
   qr_style:$("qr-style")?.value||"romantic",
   qr_size:QR_LARGE_SIZE,
   qr_show_initials:Boolean($("qr-show-initials")?.checked),
-  qr_show_brand:true
+  qr_show_brand:true,
+  welcome_config:window.SuiteWelcome.collectShared?.()||{...window.SuiteWelcome.options(c.welcome_config||{}),...window.SuiteDesign.fields(c),style:window.SuiteDesign.styles.some(s=>s.id===$("qr-style")?.value)||$("qr-style")?.value==="custom"?$("qr-style").value:(c.welcome_config?.style||"capsule"),font:$("qr-font")?.value||"elegant",color:$("qr-color")?.value||"#8b2730"}
  }
 }
 // The same artwork is used for the preview and the print export.
@@ -907,6 +914,7 @@ const qrThemes={
  retro:{name:"Rétro",detail:"Pêche · bordeaux",background:"#fff0e3",font:"editorial",accent:"#8d4751",badge:"oval"},
  confetti:{name:"Confettis",detail:"Crème · touches de couleur",background:"#fffdf4",font:"contemporary",accent:"#55677c",badge:"plain"}
 };
+Object.assign(qrThemes,Object.fromEntries((window.SuiteDesign?.styles||[]).map(s=>[s.id,s])),{custom:{name:"Mon design",background:"#ffffff",font:"elegant",accent:"#8b2730",badge:"plain"}});
 const QR_LARGE_SIZE=245;
 
 function qrInk(color){
@@ -924,7 +932,8 @@ function makeQrCanvas(url,o){
  const code=new QRCode(holder,{text:url,width:512,height:512,colorDark:qrInk(o.color),colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.H});
  const model=code._oQRCode,n=model.getModuleCount(),cell=12,quiet=4;
  const canvas=document.createElement("canvas");canvas.width=canvas.height=(n+quiet*2)*cell;
- const ctx=canvas.getContext("2d"); // Light modules and the four-module quiet zone remain transparent.
+ const ctx=canvas.getContext("2d");
+ ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.fillStyle=qrInk(o.color);
  for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(model.isDark(y,x))ctx.fillRect((x+quiet)*cell,(y+quiet)*cell,cell,cell);
  qrCanvasCache={key,canvas};return canvas;
@@ -932,9 +941,9 @@ function makeQrCanvas(url,o){
 function drawQrMonogram(ctx,o,cx,cy,size,background){
  const d=size*.18,r=d/2,theme=qrThemes[o.style];
  ctx.save();
- // Reveal the exact artwork beneath the code, including gradients: no white badge.
+ // Keep the monogram readable even on dark or imported artwork.
  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
- ctx.drawImage(background,cx-r,cy-r,d,d,cx-r,cy-r,d,d);
+ ctx.fillStyle="#ffffff";ctx.fillRect(cx-r,cy-r,d,d);
  ctx.restore();ctx.save();ctx.translate(cx,cy);
  ctx.strokeStyle=qrInk(o.color);ctx.lineWidth=Math.max(.8,size*.0013);ctx.globalAlpha=.45;
  const badge=theme.badge;
@@ -1168,17 +1177,20 @@ async function buildPrintCardCanvas(c,url){
  if(document.fonts?.load)try{await Promise.all([document.fonts.load(qrFontWeight(o.font)+' 72px "'+qrFontFamily(o.font)+'"'),document.fonts.load('600 32px "Cormorant Garamond"'),document.fonts.load('400 25px Inter'),document.fonts.load('700 32px Inter')])}catch(e){}
  const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
  const W=1181,H=1772;canvas.width=W;canvas.height=H;
- drawQrBackdrop(ctx,o,W,H);
- drawQrDecor(ctx,o,W,H);
+ const config=c.welcome_config||{},artwork=window.SuiteDesign.artwork(o.style,{...config,background:window.SuiteDesign.background(c)});
+ if(artwork){const image=await loadCanvasImage(artwork);const scale=Math.max(W/image.naturalWidth,H/image.naturalHeight),iw=image.naturalWidth*scale,ih=image.naturalHeight*scale;ctx.drawImage(image,(W-iw)*window.SuiteDesign.position(config.cardX)/100,(H-ih)*window.SuiteDesign.position(config.cardY)/100,iw,ih);}else{drawQrBackdrop(ctx,o,W,H);drawQrDecor(ctx,o,W,H);}
+ const dark=qrThemes[o.style].dark;
+ if(o.style==="custom"){ctx.fillStyle="rgba(255,255,255,.92)";ctx.fillRect(125,140,W-250,H-330);}
  ctx.textAlign="center";ctx.textBaseline="alphabetic";
  const ff=qrFontFamily(o.font);
  let titleSize=["romantic","signature"].includes(o.font)?120:o.font==="contemporary"?96:o.font==="refined"?98:112;
- ctx.fillStyle="#201c1a";
+ ctx.fillStyle=dark?"#fffaf1":"#201c1a";
  const titleWidth=o.style==="arch"?660:880;
  titleSize=fitPrintFont(ctx,o.title,titleWidth,3,titleSize,'"'+ff+'", serif',qrFontWeight(o.font));
  const titleLines=wrapCanvasLines(ctx,o.title,titleWidth,3),titleLineHeight=titleSize*1.12;
  const titleY=310-(titleLines.length-1)*titleLineHeight/2;
  drawWrappedCenteredText(ctx,o.title,W/2,titleY,titleWidth,titleLineHeight,3);
+ ctx.font='400 36px Inter,Arial,sans-serif';ctx.fillText(fdate(c.wedding_date),W/2,420);
  drawQrDivider(ctx,o,W/2,475);
  const qsize=570,qx=Math.round((W-qsize)/2),qy=550;
  const background=document.createElement("canvas");background.width=W;background.height=H;
@@ -1200,9 +1212,9 @@ async function buildPrintCardCanvas(c,url){
   if(textY+n*noteSize*1.2+20+(e-1)*explanationSize*1.2<=1545)break;
   noteSize--;explanationSize--;
  }
- ctx.fillStyle="#262220";ctx.font="600 "+noteSize+"px Inter, Arial, sans-serif";
+ ctx.fillStyle=dark?"#fffaf1":"#262220";ctx.font="600 "+noteSize+"px Inter, Arial, sans-serif";
  textY=drawWrappedCenteredText(ctx,o.note,W/2,textY,textWidth,noteSize*1.2,10)+20;
- ctx.fillStyle="#554e49";ctx.font="400 "+explanationSize+"px Inter, Arial, sans-serif";
+ ctx.fillStyle=dark?"#eee2cc":"#554e49";ctx.font="400 "+explanationSize+"px Inter, Arial, sans-serif";
  drawWrappedCenteredText(ctx,o.explanation,W/2,textY,textWidth,explanationSize*1.2,12);
 
 
@@ -1258,7 +1270,7 @@ async function downloadPrintCard(c,url){
 }
 function setupPrintDownload(c,url){
  const dialog=document.createElement('dialog');dialog.id='print-download-dialog';dialog.className='guest-dialog print-download-dialog';dialog.setAttribute('aria-labelledby','print-download-title');
- dialog.innerHTML='<div class="guest-dialog-head"><h2 id="print-download-title">Télécharger la fiche</h2><button class="guest-dialog-close" type="button" aria-label="Fermer les formats de téléchargement">×</button></div><div class="guest-dialog-body"><div class="print-format-choices"><button type="button" data-print-format="10x15"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i><span><strong>Carte 10 × 15 cm</strong><small>PDF à taille réelle · la fiche seule</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button><button type="button" data-print-format="A4"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i><span><strong>Feuille A4</strong><small>PDF · carte 10 × 15 cm et repères de découpe</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button><button type="button" data-print-format="png"><i class="fa-regular fa-image" aria-hidden="true"></i><span><strong>Image haute définition</strong><small>PNG · version A4</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></div><p class="microcopy">Pour garder les dimensions exactes, imprimez le PDF à 100 % ou en « Taille réelle ».</p><p id="print-download-status" class="status" role="status" aria-live="polite"></p></div>';
+ dialog.innerHTML='<div class="guest-dialog-head"><h2 id="print-download-title">Télécharger la fiche</h2><button class="guest-dialog-close" type="button" aria-label="Fermer les formats de téléchargement">×</button></div><div class="guest-dialog-body"><div class="print-format-choices"><button type="button" data-print-format="10x15"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i><span><strong>Carte 10 × 15 cm</strong><small>PDF à taille réelle · la fiche seule</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button><button type="button" data-print-format="A4"><i class="fa-regular fa-file-pdf" aria-hidden="true"></i><span><strong>Feuille A4</strong><small>PDF · carte 10 × 15 cm et repères de découpe</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button><button type="button" data-print-format="png"><i class="fa-regular fa-image" aria-hidden="true"></i><span><strong>Image haute définition</strong><small>PNG · version A4</small></span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button></div><button type="button" class="btn secondary" data-print-format="qr"><i class="fa-solid fa-qrcode" aria-hidden="true"></i>QR code seul · PNG</button><p class="microcopy">Pour garder les dimensions exactes, imprimez le PDF à 100 % ou en « Taille réelle ».</p><p id="print-download-status" class="status" role="status" aria-live="polite"></p></div>';
  $('dashboard-content').append(dialog);const buttons=[...dialog.querySelectorAll('[data-print-format]')];
  dialog.querySelector('.guest-dialog-close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{if($('download-print-card')?.isConnected)$('download-print-card').focus()});
  $('download-print-card').onclick=()=>{if(ownerSessionEnded)return;show($('print-download-status'),'');dialog.showModal()};
@@ -1267,6 +1279,7 @@ function setupPrintDownload(c,url){
   try{
    if(ownerSessionEnded)return;
    Object.assign(c,collectQrCustomization(c));applyQrPreview(url,c);
+   if(button.dataset.printFormat==='qr'){const canvas=makeQrCanvas(url,{...qrOptions(c),showInitials:false});const blob=await new Promise(resolve=>canvas.toBlob(resolve,'image/png'));if(!blob||ownerSessionEnded)return;const href=URL.createObjectURL(blob),a=document.createElement('a');a.href=href;a.download='la-suite-qr-'+slugify(c.couple_name)+'.png';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(href),60000);dialog.close();return;}
    if(button.dataset.printFormat==='png'){if(await downloadPrintCard(c,url)){if(!ownerSessionEnded)dialog.close();}else show($('print-download-status'),$('qr-status').textContent||'Impossible de préparer le fichier.',false);return;}
    const card=await buildPrintCardCanvas(c,url),format=button.dataset.printFormat;
    const pdf=await SuitePrintPdf.create(card,format);if(ownerSessionEnded)return;
@@ -1321,7 +1334,7 @@ function ownerShell(c,url,count){
  return `
 <div class="owner-overview" id="owner-overview"></div>
 <nav class="owner-tabs" role="tablist" aria-label="Votre capsule">
- <button id="owner-tab-configuration" type="button" role="tab" aria-controls="owner-panel-configuration" data-owner-tab-link="configuration"><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span>Carte</span></button>
+ <button id="owner-tab-configuration" type="button" role="tab" aria-controls="owner-panel-configuration" data-owner-tab-link="configuration"><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span>Personnalisation</span></button>
  <button id="owner-tab-messages" type="button" role="tab" aria-controls="owner-panel-messages" data-owner-tab-link="messages"><i class="fa-regular fa-images" aria-hidden="true"></i><span>Souvenirs</span> <span id="owner-unread-badge" class="owner-unread-badge" hidden></span></button>
  <button id="owner-tab-settings" type="button" role="tab" aria-controls="owner-panel-settings" data-owner-tab-link="settings"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Paramètres</span></button>
 </nav>
@@ -1346,14 +1359,14 @@ function ownerShell(c,url,count){
 
    <div class="qr-control-group qr-personalization-group">
     <div class="qr-control-title">
-     <div>${customizationHeading("structure","Personnalisation")}<p>Chaque ambiance associe un fond, des ornements et une typographie. Ajustez ensuite les détails.</p></div>
+     <div>${customizationHeading("structure","Personnalisation")}<p>Le même design, la même typographie et la même couleur habillent votre fiche QR et l’accueil des invités.</p></div>
     </div>
 
     <div class="field qr-choice-field customization-card">
-     ${customizationHeading("decoration","Ambiance de la carte")}
+     ${customizationHeading("decoration","Design partagé")}
      <input id="qr-style" type="hidden" value="${esc(o.style)}">
      <div class="qr-style-choices qr-theme-gallery" role="group" aria-label="18 ambiances de carte">
-      ${Object.entries(qrThemes).map(([key,theme])=>`<button class="qr-style-choice ${o.style===key?"is-selected":""}" data-qr-style="${key}" type="button" aria-pressed="${o.style===key}"><img class="qr-theme-thumbnail" src="assets/themes/${key}.webp?v=20260928-integrated1" alt="" width="180" height="270" loading="lazy"><span class="qr-theme-name">${theme.name}</span></button>`).join("")}
+      
      </div>
     </div>
 
@@ -1450,7 +1463,7 @@ function ownerShell(c,url,count){
  </div>
 </section>
 
-<p class="atelier-customization-note"><i class="fa-solid fa-check" aria-hidden="true"></i> Votre carte QR et la page d’accueil restent personnalisables après activation.</p>
+
 <details open id="organizer-welcome" class="organizer-welcome">
  <summary><span><strong>Accueil des invités</strong><small>Un message avant de déposer un souvenir · facultatif</small></span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i></summary>
 <section class="qr-designer-panel intro-video-panel">
@@ -1519,82 +1532,9 @@ async function markOwnerMessagesSeen(c,manifest){
  }catch{/* Keep the badge until the server confirms the update. */}
 }
 
-function compactOwnerEditors(){
- document.body.classList.add("studio-ready");
- document.body.append(document.querySelector(".owner-tabs"));
- const controls=document.querySelector(".qr-designer-controls"),personalization=controls.querySelector(".qr-personalization-group");
- personalization.querySelector(".qr-control-title").remove();personalization.replaceWith(...personalization.children);
- const titles=["Textes","Ambiance","Typographie","Couleurs","Monogramme"];
- const sections=[...controls.children].map((group,index)=>{
-  const heading=group.querySelector(".customization-heading"),details=document.createElement("details"),summary=document.createElement("summary");
-  details.open=true;details.className="customization-section";details.dataset.studioSection=String(index);summary.className="customization-heading";
-  summary.append(heading.querySelector("img"));const title=document.createElement("span");title.textContent=titles[index];summary.append(title);heading.remove();
-  const body=document.createElement("div");body.className="customization-section-body";body.append(...group.childNodes);details.append(summary,body);group.replaceWith(details);return details;
- });
- const dialog=document.createElement("dialog");dialog.id="studio-editor";dialog.className="studio-sheet";dialog.setAttribute("aria-labelledby","studio-editor-title");
- dialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-editor-title"></h2><button class="studio-close" type="button" aria-label="Fermer les réglages">×</button></div><div class="studio-sheet-body"></div><div class="studio-sheet-footer"><span id="studio-save-state" role="status" aria-live="polite" hidden></span><button id="studio-done" class="btn primary" type="button">Terminé</button></div>';
- $("dashboard-content").append(dialog);
- const previewDialog=document.createElement('dialog');previewDialog.id='studio-preview-dialog';previewDialog.className='studio-card-preview-dialog';previewDialog.setAttribute('aria-labelledby','studio-preview-title');
- previewDialog.innerHTML='<div class="studio-sheet-head"><h2 id="studio-preview-title">Aperçu de votre carte</h2><button class="studio-close" type="button" aria-label="Fermer l’aperçu">×</button></div><div class="studio-card-preview-stage"><img alt="Votre carte personnalisée en grand"></div>';
- $("dashboard-content").append(previewDialog);
- previewDialog.querySelector('.studio-close').onclick=()=>previewDialog.close();
- previewDialog.addEventListener('click',e=>{if(e.target===previewDialog){const r=previewDialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)previewDialog.close()}});
- const tools=document.createElement("div");tools.className="studio-tools";tools.innerHTML='<h2>Votre carte</h2><button type="button" data-studio-tool="style" aria-haspopup="dialog"><img src="assets/customization/decoration.webp" alt="">Personnaliser</button>';
- const actions=document.querySelector(".qr-preview-actions");document.querySelector(".qr-preview-stage").before(tools);
- const cardActions=document.createElement("div");cardActions.className="studio-card-actions";actions.before(cardActions);
- const shareButton=$("share-link");
- cardActions.append(shareButton,actions);
- const printGuide=document.querySelector(".qr-print-guide");printGuide.hidden=true;
- const guideButton=document.createElement("button");guideButton.type="button";guideButton.id="studio-guide";guideButton.className="studio-guide-button";guideButton.setAttribute("aria-haspopup","dialog");guideButton.innerHTML='<i class="fa-regular fa-circle-question" aria-hidden="true"></i>Conseils d’utilisation';const utilities=document.createElement('div');utilities.className='studio-card-utilities';cardActions.append(utilities);utilities.append(guideButton);
- const guestLink=$("open-guest-link");guestLink.className="studio-guest-link";guestLink.innerHTML='Aperçu invité <i class="fa-regular fa-eye" aria-hidden="true"></i>';utilities.append(guestLink);
- let moved=[],trigger=null,editorCleanup=()=>{};
- const restore=()=>{editorCleanup();editorCleanup=()=>{};delete dialog.dataset.editorMode;moved.forEach(({node,slot,open,hidden})=>{slot.replaceWith(node);node.hidden=hidden;if(node.tagName==="DETAILS")node.open=open});moved=[];if(trigger?.isConnected)trigger.focus();trigger=null};
- const open=(title,nodes,button,mode="standard")=>{
-  if(dialog.open)return;
-  trigger=button;dialog.dataset.editorMode=mode;$("studio-editor-title").textContent=title;
-  nodes.forEach(node=>{const slot=document.createElement("span");slot.hidden=true;node.before(slot);moved.push({node,slot,open:node.open,hidden:node.hidden});if(node.tagName==="DETAILS")node.open=true;node.hidden=false;dialog.querySelector(".studio-sheet-body").append(node)});
-  if(mode==='customize'){
-   const tabs=document.createElement('nav');tabs.className='studio-config-tabs';tabs.setAttribute('role','tablist');tabs.setAttribute('aria-label','Personnaliser la carte');
-   const groups=[[sections[1]],[sections[0]],[sections[2],sections[3],sections[4]]];
-   const activate=index=>{nodes.forEach(n=>n.hidden=!groups[index].includes(n));[...tabs.children].forEach((b,i)=>{b.setAttribute('aria-selected',String(i===index));b.tabIndex=i===index?0:-1});dialog.dataset.customTab=String(index)};
-   ['Style','Textes','Police et couleurs'].forEach((name,i)=>{const b=document.createElement('button');b.type='button';b.textContent=name;b.setAttribute('role','tab');b.dataset.customTab=String(i);b.onclick=()=>activate(i);tabs.append(b)});
-   tabs.onkeydown=e=>{const index=[...tabs.children].indexOf(document.activeElement);if(index<0||!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const next=(index+(e.key==='ArrowRight'?1:2))%3;activate(next);tabs.children[next].focus()};
-   const body=dialog.querySelector('.studio-sheet-body'),config=document.createElement('div'),scroll=document.createElement('div');config.className='studio-config';scroll.className='studio-config-scroll';scroll.append(...nodes);config.append(tabs,scroll);
-   const preview=document.createElement('button');preview.type='button';preview.className='studio-preview-button';preview.setAttribute('aria-expanded','false');preview.setAttribute('aria-haspopup','dialog');preview.setAttribute('aria-controls',previewDialog.id);preview.innerHTML='<img id="studio-card-preview" alt="Aperçu de votre carte"><span>Agrandir l’aperçu</span>';body.append(preview,config);
-   const artwork=$('qr-artwork-preview'),syncPreview=()=>{const img=$('studio-card-preview');if(img&&artwork.src)img.src=artwork.src;if(previewDialog.open&&artwork.src)previewDialog.querySelector('img').src=artwork.src};artwork.addEventListener('load',syncPreview);syncPreview();
-   preview.onclick=()=>{previewDialog.querySelector('img').src=artwork.src;previewDialog.showModal();preview.setAttribute('aria-expanded','true')};
-   const closePreview=()=>{preview.setAttribute('aria-expanded','false');if(dialog.open&&preview.isConnected)preview.focus()};previewDialog.addEventListener('close',closePreview);
-   const setTab=activate;tabs.querySelectorAll('button').forEach((b,i)=>b.onclick=()=>{setTab(i);scroll.scrollTop=0});activate(0);
-   const fontSelect=document.createElement('select');fontSelect.id='studio-font-select';fontSelect.setAttribute('aria-label','Typographie');
-   sections[2].querySelectorAll('[data-qr-font]').forEach(b=>{const option=document.createElement('option');option.value=b.dataset.qrFont;option.textContent=b.querySelector('small').textContent;option.selected=option.value===$('qr-font').value;fontSelect.append(option)});
-   const sample=document.createElement('p');sample.className='studio-font-example qr-font-sample-'+$('qr-font').value;sample.textContent=$('print-title').value||DEFAULT_CARD_TITLE;
-   fontSelect.onchange=()=>{sections[2].querySelector('[data-qr-font="'+fontSelect.value+'"]').click();sample.className='studio-font-example qr-font-sample-'+fontSelect.value};
-   sections[2].querySelector('.customization-section-body').append(fontSelect,sample);
-   editorCleanup=()=>{if(previewDialog.open)previewDialog.close();previewDialog.removeEventListener('close',closePreview);artwork.removeEventListener('load',syncPreview);preview.remove();config.remove();tabs.remove();fontSelect.remove();sample.remove();delete dialog.dataset.customTab;};
-  }
-  dialog.showModal();
- };
- tools.querySelector('[data-studio-tool]').addEventListener('click',e=>open('Personnaliser la carte',sections,e.currentTarget,'customize'));
- guideButton.addEventListener("click",()=>open("Conseils d’utilisation",[printGuide],guideButton));
- dialog.querySelector(".studio-close").addEventListener("click",()=>dialog.close());dialog.addEventListener("close",restore);
- dialog.addEventListener("click",e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()}});
- const mobile=matchMedia("(max-width:760px)"),welcome=$("organizer-welcome");welcome.open=true;welcome.querySelector("summary").addEventListener("click",e=>e.preventDefault());welcome.addEventListener("toggle",()=>window.dispatchEvent(new Event("studio-layout")));mobile.addEventListener("change",()=>{if(dialog.open)dialog.close();welcome.open=true});
- 
- // Use the space left by the actual header and controls, including short phones.
- let fitFrame;
- const fit=()=>{cancelAnimationFrame(fitFrame);fitFrame=requestAnimationFrame(()=>{
-  if(!mobile.matches||!document.body.classList.contains('studio-card-active'))return;
-  const stage=document.querySelector('.qr-preview-stage'),image=$('qr-artwork-preview'),sticky=stage?.parentElement,nav=document.querySelector('.owner-tabs');
-  if(!stage||!image||!nav)return;
-  const viewport=window.visualViewport, height=viewport&&Math.abs(viewport.scale-1)<.05?viewport.height:innerHeight;
-  const r=stage.getBoundingClientRect(), below=sticky.getBoundingClientRect().bottom-r.bottom;
-  const activation=document.querySelector('.activation-panel'), extra=activation&&!activation.hidden?activation.getBoundingClientRect().height+20:0;
-  const introExtra=welcome.getBoundingClientRect().height+18;
-  const value=Math.floor(Math.max(180,height-r.top-window.scrollY-below-nav.getBoundingClientRect().height-44-extra-introExtra));
-  if(image.style.getPropertyValue('--studio-card-height')!==value+'px')image.style.setProperty('--studio-card-height',value+'px');
- })};
- const observer=new ResizeObserver(fit);observer.observe($('dashboard-content'));observer.observe(document.querySelector('.suite-topbar'));observer.observe(document.querySelector('.dashboard-head'));
- window.addEventListener('resize',fit);window.visualViewport?.addEventListener('resize',fit);window.addEventListener('studio-layout',fit);$('qr-artwork-preview').addEventListener('load',fit);fit();
+function compactOwnerEditors(c){
+ window.SuiteDesign.storage=sb;
+ window.SuiteDesign.mount(c);
 }
 
 function setupOwnerTabs(c,manifest){
@@ -1656,20 +1596,20 @@ function setupQrCustomizerUi(){
  };
  fontTrigger?.addEventListener("click",()=>{
   const open=fontMenu?.hidden!==false;
-  if(fontMenu)fontMenu.hidden=!open;
+  if(fontMenu)fontMenu.hidden=false;
   fontTrigger.setAttribute("aria-expanded",String(open))
  });
  fontPicker?.querySelectorAll("[data-qr-font]").forEach(btn=>btn.addEventListener("click",()=>{
   if(!fontInput)return;
   fontInput.value=btn.dataset.qrFont||"elegant";
-  if(fontMenu)fontMenu.hidden=fontPicker.closest("#studio-editor")?.dataset.editorMode!=="style";
+  if(fontMenu)fontMenu.hidden=false;
   fontTrigger?.setAttribute("aria-expanded","false");
   syncFont();
   dispatch(fontInput)
  }));
  document.addEventListener("click",e=>{
   if(!fontPicker||fontPicker.contains(e.target))return;
-  if(fontMenu)fontMenu.hidden=fontPicker.closest("#studio-editor")?.dataset.editorMode!=="style";
+  if(fontMenu)fontMenu.hidden=false;
   fontTrigger?.setAttribute("aria-expanded","false")
  });
  syncFont();
@@ -1682,8 +1622,8 @@ function setupQrCustomizerUi(){
   if(!styleInput)return;
   styleInput.value=btn.dataset.qrStyle||"romantic";
   const theme=qrThemes[styleInput.value];
-  if(fontInput)fontInput.value=theme.font;
-  if(colorInput)colorInput.value=theme.accent;
+  if(fontInput&&styleInput.value!=="custom")fontInput.value=theme.font;
+  if(colorInput&&styleInput.value!=="custom")colorInput.value=theme.accent;
   syncFont();syncColor();
   syncStyle();
   dispatch(styleInput)
@@ -1934,14 +1874,14 @@ async function initDashboard(){
  const url=new URL("capsule.html",location.href);url.search="?t="+encodeURIComponent(c.guest_token);
  let manifest=[];
  $("dashboard-content").innerHTML=ownerShell(c,url.href,(manifest||[]).length);
- compactOwnerEditors();
+ compactOwnerEditors(c);
  document.querySelectorAll("[data-memory-filter]").forEach(button=>button.addEventListener("click",()=>{memoryFilter=button.dataset.memoryFilter;applyMemoryFilter()}));
  await renderOrganizerLifecycle(c);
  if(ownerSessionEnded)return;
  const freeLaunch=access.free_launch===true;
  const stage=document.createElement("section");stage.className="activation-panel";
- stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>La période d’accès est terminée. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><button class="btn primary" id="review-activation" type="button">Activer ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p>${freeLaunch?'<p>Votre capsule reste gratuite pendant ses 3 ans d’accès, avec tous les formats et 5 Go.</p>':'<p data-activation-price></p><p>Paiement unique, sans abonnement. Les dépôts seront ouverts le jour de votre événement et le lendemain. Accès pendant 3 ans à compter de l’événement.</p>'}<button id="activate-capsule" class="btn primary" type="button">${freeLaunch?"Activer gratuitement":"Continuer vers le paiement"}</button><p id="activation-status" class="status" role="status"></p></dialog>`;
- $("dashboard-content").append(stage);if(c.status==="active"&&!capsuleExpired(c))stage.hidden=true;
+ stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>La période d’accès est terminée. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><p class="atelier-customization-note">Votre carte QR et la page d’accueil restent personnalisables après activation.</p><button class="btn primary" id="review-activation" type="button">Valider ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p>${freeLaunch?'<p>Votre capsule reste gratuite pendant ses 3 ans d’accès, avec tous les formats et 5 Go.</p>':'<p data-activation-price></p><p>Paiement unique, sans abonnement. Les dépôts seront ouverts le jour de votre événement et le lendemain. Accès pendant 3 ans à compter de l’événement.</p>'}<p class="atelier-customization-note">Votre carte QR et la page d’accueil restent personnalisables après activation.</p><button id="activate-capsule" class="btn primary" type="button">${freeLaunch?"Activer gratuitement":"Continuer vers le paiement"}</button><p id="activation-status" class="status" role="status"></p></dialog>`;
+ document.querySelector(".qr-designer-controls").insertBefore(stage,document.querySelector(".design-mobile-footer"));if(c.status==="active"&&!capsuleExpired(c))stage.hidden=true;
  if(c.status!=="active"||capsuleExpired(c)){
   ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title=capsuleExpired(c)?"La période de conservation est terminée":"Activez votre capsule pour partager votre carte"});
   const guestLink=$("open-guest-link");if(guestLink)guestLink.hidden=capsuleExpired(c);
@@ -1992,6 +1932,7 @@ async function initDashboard(){
 
  const updateDesigner=()=>{
    markDirty("qr");
+   welcomeDesigner?.syncShared();
    const sample=document.querySelector('.studio-font-example');if(sample)sample.textContent=$('print-title').value||DEFAULT_CARD_TITLE;
    const select=$('studio-font-select');if(select){select.value=$('qr-font').value;if(sample)sample.className='studio-font-example qr-font-sample-'+select.value;}
    applyQrPreview(url.href,{...c,...collectQrCustomization(c)});
@@ -2009,10 +1950,6 @@ async function initDashboard(){
   const field=$(id),toggle=$(id+'-visible');field.hidden=!toggle.checked;
   toggle.addEventListener('change',()=>{if(!toggle.checked){field.dataset.previousText=field.value;field.value='';}else field.value=field.dataset.previousText||fallback;field.hidden=!toggle.checked;field.dispatchEvent(new Event('input',{bubbles:true}));});
  }
- $('studio-done').addEventListener('click',async()=>{
-  const button=$('studio-done'),dialog=$('studio-editor');button.disabled=true;clearTimeout(qrSaveTimer);
-  try{await qrSaveQueue;if(organizerState.qr&&!await saveQrCustomization(c,url.href,true))return;if(!organizerState.qr)dialog.close();}finally{button.disabled=false;}
- });
  $("share-link")?.addEventListener("click",()=>shareGuestLink(url.href));
  setupPrintDownload(c,url.href);
  $("print-print-card")?.addEventListener("click",()=>{

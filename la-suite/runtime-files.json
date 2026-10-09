@@ -1,0 +1,20 @@
+[
+  "index.html",
+  "auth.html",
+  "create.html",
+  "dashboard.html",
+  "capsule.html",
+  "admin.html",
+  "app.js",
+  "workspace.js",
+  "admin.js",
+  "backup-archive.js",
+  "souvenir-zip.js",
+  "suite-shell.js",
+  "card-pdf.js",
+  "welcome-ui.js",
+  "capsule-design.js",
+  "admin.css",
+  "styles.css",
+  "supabase-config.js"
+]
