@@ -6,8 +6,8 @@
   if(!controls||document.body.classList.contains('organizer-layout-ready'))return;
   document.body.classList.add('organizer-layout-ready');
   const header=document.querySelector('.suite-topbar'),tabs=document.querySelector('.owner-tabs');
-  const brand=header.querySelector('.suite-brand img');brand.src='assets/la-forge-logo.webp';brand.alt='La Forge à Souvenirs';
-  const wordmark=document.createElement('span');wordmark.className='organizer-wordmark';wordmark.textContent='La Suite';header.insertBefore(wordmark,header.children[1]);header.insertBefore(tabs,wordmark.nextSibling);
+  const brand=header.querySelector('.suite-brand img');brand.src='assets/la-suite-logo.webp?v=20260927-hq';brand.alt='La Suite — Capsule temporelle';
+  header.insertBefore(tabs,header.children[1]);
   const selector=document.querySelector('.workspace-selector');
   if(!selector){const choose=document.createElement('button');choose.type='button';choose.className='organizer-capsule-selector';choose.innerHTML='Mes capsules <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';choose.setAttribute('aria-haspopup','dialog');choose.setAttribute('aria-controls','workspace-capsules');choose.onclick=()=>$('workspace-open-capsules').click();header.insertBefore(choose,header.querySelector('.workspace-account-button'));}
   if(selector){selector.classList.add('organizer-capsule-selector');const label=document.createElement('span');label.textContent='Mes capsules';selector.prepend(label);header.insertBefore(selector,header.querySelector('.workspace-account-button'));}
