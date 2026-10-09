@@ -3529,3 +3529,17 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 
 .collection-ready .studio-text-toggle{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;margin-left:auto}.collection-ready .studio-text-toggle input[type=checkbox]{width:16px!important;min-width:16px!important;height:16px!important;flex:none;margin:0}
 .guest-compact[data-welcome-style=gatsby] .capsule-hero,.guest-compact[data-welcome-style=nuit-etoilee] .capsule-hero,.guest-compact[data-welcome-style=custom] .capsule-hero{padding:6px 10px}
+
+/* Keep every guest text surface opaque over preset and imported illustrations. */
+.guest-compact[data-welcome-artwork=true] .capsule-hero,.guest-compact[data-welcome-artwork=true] #intro-section,.guest-compact[data-welcome-artwork=true] .guest-state{background:#fffdf8;border-radius:12px;color:#514536}
+.guest-compact[data-welcome-artwork=true] .capsule-hero{padding:6px 10px;box-sizing:border-box;gap:12px}
+.guest-compact[data-welcome-artwork=true] .capsule-hero>div{min-width:0}
+.guest-compact[data-welcome-artwork=true] .capsule-hero h1,.guest-compact[data-welcome-artwork=true] #intro-section{overflow-wrap:anywhere}
+.guest-compact[data-welcome-artwork=true] .guest-form{background-color:#fffdf8}
+.guest-compact[data-welcome-artwork=true] .guest-state{padding:0 8px}
+/* Reserve a separate column for the date illustration, even for long labels. */
+.guest-compact[data-welcome-illustration]:not([data-welcome-illustration=none]) .delivery-caption,
+.guest-compact[data-welcome-illustration]:not([data-welcome-illustration=none]) .delivery-invitation,
+.guest-compact[data-welcome-illustration]:not([data-welcome-illustration=none]) .delivery-summary strong{max-width:calc(100% - 110px);overflow-wrap:anywhere}
+.guest-compact .guest-date-art{width:90px;height:76px;right:8px;top:4px}
+.guest-compact[data-welcome-artwork=true] .guest-form{background-image:none}

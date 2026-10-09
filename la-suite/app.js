@@ -1171,6 +1171,24 @@ function fitPrintFont(ctx,text,width,lines,size,family,weight){
  }
  return size;
 }
+// Fit actual glyph bounds, including script flourishes, inside a reserved text rectangle.
+function drawPrintTextBox(ctx,text,box,{size,family,weight,maxLines=12}){
+ if(!String(text||'').trim())return box.y;
+ ctx.textAlign='center';ctx.textBaseline='alphabetic';
+ let lines,metrics,lineHeight,ascent,descent,height;
+ for(;size>=16;size--){
+  ctx.font=weight+' '+size+'px '+family;
+  lines=wrapCanvasLines(ctx,text,box.width,100);metrics=lines.map(line=>ctx.measureText(line));
+  ascent=Math.max(...metrics.map(m=>m.actualBoundingBoxAscent||size));
+  descent=Math.max(0,...metrics.map(m=>m.actualBoundingBoxDescent||0));
+  lineHeight=Math.max(size*1.2,ascent+descent+8);height=ascent+descent+(lines.length-1)*lineHeight;
+  if(lines.length<=maxLines&&height<=box.height&&metrics.every(m=>m.width<=box.width&&m.actualBoundingBoxLeft<=box.width/2&&m.actualBoundingBoxRight<=box.width/2))break;
+ }
+ ctx.textAlign='center';ctx.textBaseline='alphabetic';
+ const y=box.y+(box.center?(box.height-height)/2:0)+ascent;
+ lines.forEach((line,i)=>ctx.fillText(line,box.x+box.width/2,y+i*lineHeight));
+ return y+(lines.length-1)*lineHeight+descent;
+}
 async function buildPrintCardCanvas(c,url){
  const o=qrOptions(c);
  const qr=makeQrCanvas(url,o);
@@ -1179,19 +1197,14 @@ async function buildPrintCardCanvas(c,url){
  const W=1181,H=1772;canvas.width=W;canvas.height=H;
  const config=c.welcome_config||{},artwork=window.SuiteDesign.artwork(o.style,{...config,background:window.SuiteDesign.background(c)});
  if(artwork){const image=await loadCanvasImage(artwork);const scale=Math.max(W/image.naturalWidth,H/image.naturalHeight),iw=image.naturalWidth*scale,ih=image.naturalHeight*scale;ctx.drawImage(image,(W-iw)*window.SuiteDesign.position(config.cardX)/100,(H-ih)*window.SuiteDesign.position(config.cardY)/100,iw,ih);}else{drawQrBackdrop(ctx,o,W,H);drawQrDecor(ctx,o,W,H);}
- const dark=qrThemes[o.style].dark;
- if(o.style==="custom"){ctx.fillStyle="rgba(255,255,255,.92)";ctx.fillRect(125,140,W-250,H-330);}
- ctx.textAlign="center";ctx.textBaseline="alphabetic";
- const ff=qrFontFamily(o.font);
- let titleSize=["romantic","signature"].includes(o.font)?120:o.font==="contemporary"?96:o.font==="refined"?98:112;
- ctx.fillStyle=dark?"#fffaf1":"#201c1a";
- const titleWidth=o.style==="arch"?660:880;
- titleSize=fitPrintFont(ctx,o.title,titleWidth,3,titleSize,'"'+ff+'", serif',qrFontWeight(o.font));
- const titleLines=wrapCanvasLines(ctx,o.title,titleWidth,3),titleLineHeight=titleSize*1.12;
- const titleY=310-(titleLines.length-1)*titleLineHeight/2;
- drawWrappedCenteredText(ctx,o.title,W/2,titleY,titleWidth,titleLineHeight,3);
- ctx.font='400 36px Inter,Arial,sans-serif';ctx.fillText(fdate(c.wedding_date),W/2,420);
- drawQrDivider(ctx,o,W/2,475);
+ const dark=qrThemes[o.style].dark,paper=dark?qrThemes[o.style].background:'#fffdf8';
+ // The decorative bitmap is restricted to the border; all content has an opaque backing.
+ ctx.fillStyle=paper;ctx.beginPath();ctx.roundRect(120,140,W-240,1450,28);ctx.fill();
+ ctx.fillStyle=dark?'#fffaf1':'#201c1a';
+ const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?120:o.font==='contemporary'?96:o.font==='refined'?98:112;
+ drawPrintTextBox(ctx,o.title,{x:180,y:190,width:W-360,height:195,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3});
+ ctx.font='400 36px Inter,Arial,sans-serif';ctx.fillText(fdate(c.wedding_date),W/2,435);
+ drawQrDivider(ctx,o,W/2,490);
  const qsize=570,qx=Math.round((W-qsize)/2),qy=550;
  const background=document.createElement("canvas");background.width=W;background.height=H;
  background.getContext("2d").drawImage(canvas,0,0);
@@ -1201,29 +1214,22 @@ async function buildPrintCardCanvas(c,url){
 
  if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize,background);
 
- let textY=qy+qsize+74;
- const textWidth=890;
- let noteSize=fitPrintFont(ctx,o.note,textWidth,3,48,"Inter, Arial, sans-serif","600");
- let explanationSize=fitPrintFont(ctx,o.explanation,textWidth,5,40,"Inter, Arial, sans-serif","400");
- // Fit both paragraphs above the logo, including maximum-length custom text.
- const textLines=(text,size,weight)=>{ctx.font=weight+" "+size+"px Inter, Arial, sans-serif";return wrapCanvasLines(ctx,text,textWidth,100).length};
- while(noteSize>24&&explanationSize>24){
-  const n=textLines(o.note,noteSize,"600"),e=textLines(o.explanation,explanationSize,"400");
-  if(textY+n*noteSize*1.2+20+(e-1)*explanationSize*1.2<=1545)break;
-  noteSize--;explanationSize--;
- }
- ctx.fillStyle=dark?"#fffaf1":"#262220";ctx.font="600 "+noteSize+"px Inter, Arial, sans-serif";
- textY=drawWrappedCenteredText(ctx,o.note,W/2,textY,textWidth,noteSize*1.2,10)+20;
- ctx.fillStyle=dark?"#eee2cc":"#554e49";ctx.font="400 "+explanationSize+"px Inter, Arial, sans-serif";
- drawWrappedCenteredText(ctx,o.explanation,W/2,textY,textWidth,explanationSize*1.2,12);
+ const textBox={x:180,y:1180,width:W-360,height:150};
+ ctx.fillStyle=dark?'#fffaf1':'#262220';
+ const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:48,family:'Inter, Arial, sans-serif',weight:'600',maxLines:6});
+ const explanationY=noteBottom+(o.note?26:0);
+ ctx.fillStyle=dark?'#eee2cc':'#554e49';
+ drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:1540-explanationY},{size:40,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12});
 
 
  try{
   const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20260927-hq");
   const maxW=210,maxH=94,scale=Math.min(maxW/logo.naturalWidth,maxH/logo.naturalHeight);
   const lw=Math.round(logo.naturalWidth*scale),lh=Math.round(logo.naturalHeight*scale);
+  ctx.fillStyle="#fffdf8";ctx.beginPath();ctx.roundRect(W-150-lw-16,H-181,lw+32,lh+32,10);ctx.fill();
   ctx.drawImage(logo,W-150-lw,H-165,lw,lh)
  }catch(e){
+  ctx.fillStyle="#fffdf8";ctx.fillRect(W-350,H-153,216,66);
   ctx.textAlign="right";ctx.fillStyle="#211d1d";
   ctx.font='700 34px "Cormorant Garamond", Georgia, serif';
   ctx.fillText("La Suite",W-150,H-105)

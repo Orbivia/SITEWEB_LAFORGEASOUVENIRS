@@ -55,7 +55,7 @@
  }
  function ink(color){const v=color.slice(1).match(/../g).map(n=>{const s=parseInt(n,16)/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4});return v[0]*.2126+v[1]*.7152+v[2]*.0722>.179?'#211F1C':'#FFFFFF'}
  function apply(value,root=document.body){
-  const o=options(value),t=themes[o.style];Object.assign(root.dataset,{welcomeStyle:o.style,welcomeFont:o.font,welcomeOrnament:o.ornament,welcomeTexture:o.texture,welcomeCorners:o.corners,welcomeIllustration:o.illustration});
+  const o=options(value),t=themes[o.style];Object.assign(root.dataset,{welcomeArtwork:String(Boolean(window.SuiteDesign.artwork(o.style,o))),welcomeStyle:o.style,welcomeFont:o.font,welcomeOrnament:o.ornament,welcomeTexture:o.texture,welcomeCorners:o.corners,welcomeIllustration:o.illustration});
   const vars={'guest-accent':o.color,'welcome-contrast':ink(o.color),'welcome-readable':ink(o.color)==='#FFFFFF'?o.color:'#514536','welcome-bg':t.bg,'welcome-paper':t.paper,'welcome-date':t.date,'welcome-pattern':patterns[t.pattern],'welcome-pattern-size':['stars','confetti'].includes(t.pattern)?'39px 41px':'auto','welcome-font':fonts[o.font][1],'welcome-weight':['romantic','signature','editorial'].includes(o.font)?'400':'600','welcome-radius':{rounded:'18px',soft:'8px',square:'2px'}[o.corners]};
   const artwork=window.SuiteDesign.artwork(o.style,o);if(artwork){vars['welcome-pattern']='url("'+artwork+'")';vars['welcome-pattern-size']='cover';}
   root.style.backgroundPosition=o.welcomeX+'% '+o.welcomeY+'%';
