@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "previewSize": 256,
+  "styles": [
+    {
+      "id": "gatsby",
+      "label": "Gatsby",
+      "preview": "assets/themes/previews/gatsby.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "nuit-etoilee",
+      "label": "Nuit étoilée",
+      "preview": "assets/themes/previews/nuit-etoilee.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "botanique",
+      "label": "Botanique",
+      "preview": "assets/themes/previews/botanique.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "fleurs",
+      "label": "Fleurs",
+      "preview": "assets/themes/previews/fleurs.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "geometrique",
+      "label": "Géométrique",
+      "preview": "assets/themes/previews/geometrique.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "or",
+      "label": "Or",
+      "preview": "assets/themes/previews/or.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "aquarelle",
+      "label": "Aquarelle",
+      "preview": "assets/themes/previews/aquarelle.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "cadeau",
+      "label": "Cadeau",
+      "preview": "assets/themes/previews/cadeau.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "fond-blanc",
+      "label": "Fond blanc",
+      "preview": "assets/themes/previews/fond-blanc.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "terrazzo",
+      "label": "Terrazzo",
+      "preview": "assets/themes/previews/terrazzo.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "retro",
+      "label": "Rétro",
+      "preview": "assets/themes/previews/retro.webp",
+      "kind": "preset"
+    },
+    {
+      "id": "importer",
+      "label": "Importer mon design",
+      "preview": "assets/themes/previews/importer.webp",
+      "kind": "upload"
+    }
+  ]
+}
