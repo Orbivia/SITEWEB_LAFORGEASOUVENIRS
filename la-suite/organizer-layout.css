@@ -31,7 +31,7 @@
 .organizer-layout-ready .customization-card h3,.organizer-layout-ready .customization-card h4{font:600 19px 'Cormorant Garamond',serif;color:var(--organizer-burgundy);margin:0 0 7px}
 .organizer-layout-ready .qr-theme-gallery{gap:8px 10px}
 .organizer-layout-ready .qr-theme-gallery .qr-style-choice{border:1px solid #e4dbd0;border-radius:8px;background:transparent;padding:0;overflow:hidden;box-shadow:none}
-.organizer-layout-ready .qr-theme-thumbnail{height:clamp(48px,7vh,76px);aspect-ratio:auto;object-fit:cover;object-position:center}
+.organizer-layout-ready .qr-theme-thumbnail{height:clamp(48px,7vh,76px);aspect-ratio:auto;object-fit:cover;object-position:top center}
 .organizer-layout-ready .qr-theme-gallery .qr-theme-name{min-height:24px;background:transparent;font-size:11px;padding:4px 2px;line-height:1.25}
 .organizer-layout-ready .qr-theme-gallery .is-selected{border-color:var(--organizer-burgundy);box-shadow:0 0 0 1px var(--organizer-burgundy)}
 .organizer-layout-ready .qr-font-menu button{min-height:58px;padding:4px!important;gap:0!important;border-radius:7px;background:transparent}
@@ -167,3 +167,38 @@
 }
 @media(min-width:761px) and (max-height:850px){.organizer-layout-ready main.dashboard-page{padding-bottom:0!important}.organizer-layout-ready .activation-panel{gap:4px}.organizer-layout-ready .atelier-customization-note{padding:6px 8px}}
 @media(min-width:761px){.organizer-layout-ready .owner-tabs button span{font:600 17px 'Cormorant Garamond',serif!important}}
+
+/* Card proportions and locale-independent date field. */
+.organizer-layout-ready .qr-theme-thumbnail{object-position:top center}
+.organizer-layout-ready #design-import .qr-theme-thumbnail{object-position:center}
+.organizer-layout-ready .organizer-compact-fields #print-title{font:400 13px Inter,sans-serif;padding:8px 10px;min-height:36px}
+.organizer-layout-ready .field:has(#capsule-date){position:relative}
+.organizer-layout-ready #capsule-date{position:absolute!important;right:0;top:24px;width:34px!important;min-width:0!important;height:34px!important;min-height:0!important;padding:0!important;opacity:0;z-index:2;cursor:pointer}
+.organizer-layout-ready #organizer-event-date{padding-right:38px}
+.organizer-layout-ready .organizer-date-picker{position:absolute;right:8px;top:26px;width:24px;height:28px;min-height:0;padding:0;border:0;background:transparent;color:#74675d;cursor:pointer}
+.organizer-layout-ready #organizer-event-date[aria-invalid=true]{border-color:#9b2336}
+.organizer-layout-ready .qr-print-guide summary{font:500 11px/1.4 Inter,sans-serif}
+.organizer-layout-ready .qr-print-guide{margin:6px 0 0!important;padding:0!important}
+.organizer-layout-ready .qr-preview-stage{margin:0!important;padding:4px 0!important}
+.organizer-layout-ready .organizer-guest-preview-link{margin-top:4px}
+.organizer-layout-ready .qr-designer-preview{padding:10px 16px}
+.organizer-layout-ready .design-preview-tabs{margin-bottom:6px}
+@media(min-width:761px){
+ .organizer-layout-ready .qr-designer-preview{margin-top:78px}
+ .organizer-layout-ready .design-preview-tabs button{min-height:34px;padding:6px 12px}
+ .organizer-layout-ready #qr-artwork-preview{height:clamp(410px,calc(100dvh - 350px),740px)!important}
+ .organizer-layout-ready .qr-designer-head h2{font-size:clamp(30px,2.5vw,40px)}
+ .organizer-layout-ready .qr-preview-actions{margin-top:8px}
+ .organizer-layout-ready .qr-preview-actions .btn{min-height:38px;padding:8px 6px}
+ .organizer-layout-ready #design-welcome-preview{height:clamp(410px,calc(100dvh - 350px),740px)}
+}
+@media(min-width:761px) and (max-height:850px){
+ .organizer-layout-ready .suite-topbar,.organizer-layout-ready .owner-tabs button{min-height:54px!important}
+ .organizer-layout-ready main.dashboard-page{padding-top:10px!important}
+ .organizer-layout-ready .qr-designer-preview{margin-top:66px}
+ .organizer-layout-ready .qr-designer-head h2{font-size:32px;line-height:1.1}
+ .organizer-layout-ready .qr-designer-head p{font-size:12px;margin-top:4px}
+ .organizer-layout-ready #qr-artwork-preview{height:max(350px,calc(100dvh - 305px))!important}
+ .organizer-layout-ready #design-welcome-preview{height:max(350px,calc(100dvh - 305px))}
+}
+@media(max-width:760px){.organizer-layout-ready .organizer-date-picker{top:27px}.organizer-layout-ready #qr-artwork-preview{height:auto!important}.organizer-layout-ready .qr-designer-preview{padding:10px}}

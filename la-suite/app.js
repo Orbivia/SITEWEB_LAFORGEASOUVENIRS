@@ -856,7 +856,7 @@ function qrOptions(c){
  return {
   initials:(c.qr_initials||defaultInitials(c.couple_name)).slice(0,4),
   color:c.qr_color||"#b78b38",
-  title:cardDefault(c.print_title,"Laissez-nous un souvenir",DEFAULT_CARD_TITLE).slice(0,42),
+  title:cardDefault(c.print_title,"Laissez-nous un souvenir",c.couple_name||DEFAULT_CARD_TITLE).slice(0,42),
   note:cardDefault(c.print_note===OLD_CARD_NOTE?null:c.print_note,"Scannez ce code pour nous laisser un souvenir.",DEFAULT_CARD_NOTE,true).slice(0,120),
   explanation:cardDefault(OLD_CARD_EXPLANATIONS.includes(c.print_explanation)?null:c.print_explanation,"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.",defaultCardExplanation(capsulePlan(c)),true).slice(0,240),
   font:["elegant","classic","modern","romantic","editorial","refined","contemporary","signature"].includes(c.qr_font)?c.qr_font:"elegant",
@@ -882,7 +882,7 @@ function collectQrCustomization(c){
  return {
   qr_initials:($("qr-initials-input")?.value||defaultInitials(c.couple_name)).trim().slice(0,4),
   qr_color:$("qr-color")?.value||"#b78b38",
-  print_title:($("print-title")?.value||DEFAULT_CARD_TITLE).trim().slice(0,42),
+  print_title:($("print-title")?.value||c.couple_name||DEFAULT_CARD_TITLE).trim().slice(0,42),
   print_note:($("print-note")?.value??DEFAULT_CARD_NOTE).trim().slice(0,120),
   print_explanation:($("print-explanation")?.value??defaultCardExplanation(capsulePlan(c))).trim().slice(0,240),
   qr_font:$("qr-font")?.value||"elegant",
@@ -1197,15 +1197,16 @@ async function buildPrintCardCanvas(c,url){
  const W=1181,H=1772;canvas.width=W;canvas.height=H;
  const config=c.welcome_config||{},artwork=window.SuiteDesign.artwork(o.style,{...config,background:window.SuiteDesign.background(c)});
  if(artwork){const image=await loadCanvasImage(artwork);const scale=Math.max(W/image.naturalWidth,H/image.naturalHeight),iw=image.naturalWidth*scale,ih=image.naturalHeight*scale;ctx.drawImage(image,(W-iw)*window.SuiteDesign.position(config.cardX)/100,(H-ih)*window.SuiteDesign.position(config.cardY)/100,iw,ih);}else{drawQrBackdrop(ctx,o,W,H);drawQrDecor(ctx,o,W,H);}
- const dark=qrThemes[o.style].dark,paper=dark?qrThemes[o.style].background:'#fffdf8';
- // The decorative bitmap is restricted to the border; all content has an opaque backing.
- ctx.save();ctx.shadowColor=paper;ctx.shadowBlur=32;ctx.fillStyle=paper;ctx.beginPath();ctx.roundRect(120,140,W-240,1450,28);ctx.fill();ctx.restore();
+ const dark=qrThemes[o.style].dark;let paper=dark?qrThemes[o.style].background:'#fffdf8';
+ if(artwork&&o.style!=='custom'&&!dark){const pixel=ctx.getImageData(W/2|0,H/2|0,1,1).data;paper='rgb('+pixel[0]+','+pixel[1]+','+pixel[2]+')';}
+ // Opaque safe center blends into the paper; artwork remains outside the text bounds.
+ ctx.save();ctx.shadowColor=paper;ctx.shadowBlur=110;ctx.fillStyle=paper;ctx.fillRect(145,160,W-290,1430);ctx.restore();
  ctx.fillStyle=dark?'#fffaf1':'#201c1a';
- const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?120:o.font==='contemporary'?96:o.font==='refined'?98:112;
+ const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?150:o.font==='contemporary'?120:o.font==='refined'?122:140;
  drawPrintTextBox(ctx,o.title,{x:180,y:190,width:W-360,height:195,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3});
- ctx.font='400 36px Inter,Arial,sans-serif';ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
+ ctx.font='400 44px Inter,Arial,sans-serif';ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
  drawQrDivider(ctx,o,W/2,490);
- const qsize=570,qx=Math.round((W-qsize)/2),qy=550;
+ const qsize=660,qx=Math.round((W-qsize)/2),qy=510;
  const background=document.createElement("canvas");background.width=W;background.height=H;
  background.getContext("2d").drawImage(canvas,0,0);
  ctx.imageSmoothingEnabled=false;
@@ -1214,12 +1215,12 @@ async function buildPrintCardCanvas(c,url){
 
  if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize,background);
 
- const textBox={x:180,y:1180,width:W-360,height:150};
+ const textBox={x:180,y:1220,width:W-360,height:150};
  ctx.fillStyle=dark?'#fffaf1':'#262220';
- const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:48,family:'Inter, Arial, sans-serif',weight:'600',maxLines:6});
+ const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'Inter, Arial, sans-serif',weight:'600',maxLines:6});
  const explanationY=noteBottom+(o.note?26:0);
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
- drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:1540-explanationY},{size:40,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12});
+ drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:1540-explanationY},{size:44,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12});
 
 
  try{
@@ -1772,6 +1773,7 @@ async function saveCapsuleSettings(c){
  Object.assign(c,payload);$("dashboard-title").textContent=name;$("plan-explanation-help").textContent="Texte proposé pour la formule "+PLAN_NAMES[capsulePlan(c)]+".";
  if($("print-explanation").value===oldDefault){$("print-explanation").value=defaultCardExplanation(capsulePlan(c));organizerState.qr=true}
  await renderOrganizerLifecycle(c);
+ window.SuiteOrganizerLayout?.syncDate?.();
  organizerState.settings=($("capsule-name").value.trim()!==name||$("capsule-date").value!==date||$("capsule-plan").value!==plan||$("capsule-notify").checked!==notify);return true;
 }
 
