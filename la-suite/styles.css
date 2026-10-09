@@ -2714,7 +2714,7 @@ footer{border-top:1px solid var(--line);padding:28px 0;color:var(--muted);font-s
 .studio-ready .qr-preview-actions{grid-template-columns:1fr}
 @media(max-width:760px){.workspace-sheet .admin-capsule-head button[data-capsule] span{display:none}.workspace-sheet .admin-capsule-head button[data-capsule]{width:40px}.workspace-sheet .admin-capsule-head .admin-actions{gap:6px}}
 
-#owner-panel-settings #export-whole-capsule{width:100%;margin-top:12px}#owner-panel-settings #export-whole-capsule[hidden],#owner-panel-settings small[hidden]{display:none}
+#owner-panel-settings small[hidden]{display:none}
 
 /* Shared compact editor treatment; a style choice is always directly available. */
 #studio-editor .customization-section{border:0;background:transparent;margin:0}
@@ -2809,7 +2809,7 @@ input,select,textarea{border-radius:9px!important}
 #studio-editor .qr-check-switch{margin-top:8px}
 #studio-editor .qr-print-guide-grid>div{background:transparent;padding:4px 0;border:0}
 #owner-panel-settings .settings-grid{gap:12px}
-#owner-panel-settings #export-whole-capsule{margin-top:10px;min-height:42px;padding:10px}
+
 #owner-panel-settings #capsule-export-error:empty{display:none}
 @media(min-width:761px){
  .studio-ready .qr-artwork-preview{max-height:max(180px,calc(100dvh - 370px))}
@@ -2913,7 +2913,7 @@ input,select,textarea{border-radius:9px!important}
 .studio-settings-panel .field label{font-size:.85rem;margin-bottom:8px}
 .studio-settings-panel .field input:not([type=checkbox]):not([type=hidden]){width:100%;min-height:44px}
 .studio-settings-panel #capsule-plan-name{display:block;font-weight:600}
-.studio-settings-panel #export-whole-capsule{margin-top:24px;width:100%;min-height:44px}
+
 .studio-settings-panel #capsule-export-error:empty{display:none}
 @media(max-width:760px){.studio-ready .owner-tabs{gap:4px;padding-left:8px;padding-right:8px}.studio-ready .owner-tabs [role=tab]{font-size:.68rem;padding:6px 2px}.studio-ready .studio-tools{margin:0 0 10px}}
 @media(min-width:761px){.studio-ready .owner-tabs{width:520px}.studio-ready .qr-artwork-preview{max-height:max(180px,calc(100dvh - 460px))}}
@@ -3367,7 +3367,7 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 .admin-date-presets{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
 .admin-date-presets button{padding:10px 14px;min-height:44px;border:1px solid #d9cfc1;border-radius:10px;background:#fff;font:inherit;font-size:14px;cursor:pointer}
 .admin-date-presets button:hover,.admin-date-presets button:focus-visible{border-color:#9e7e42;background:#f7f1e5}
-#configure-capsule-admin{margin-bottom:14px}
+
 @media(max-width:600px){.admin-rules-grid{grid-template-columns:1fr}.admin-dialog{padding:22px;width:calc(100% - 28px)}.admin-quota .btn[type=submit]{width:100%}}
 
 

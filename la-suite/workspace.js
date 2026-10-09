@@ -10,8 +10,6 @@
  }
  window.SuiteWorkspace={async setup({sb,user,caps,access,selected,canLeave,logout}){
   let ended=false,accountBusy=false;
-  window.SuiteWorkspace.canExportCapsule=()=>false;
-  window.SuiteWorkspace.exportCapsule=window.SuiteWorkspace.configureCapsule=id=>{location.href='admin.html?capsule='+encodeURIComponent(id);};
   document.body.classList.add('workspace-ready');
   // Reserve the device inset once; Android browser chrome must not resize the tabs.
   const insetProbe=document.createElement('div');insetProbe.className='workspace-safe-area-probe';document.body.append(insetProbe);

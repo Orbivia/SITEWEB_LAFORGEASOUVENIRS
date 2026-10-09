@@ -1,5 +1,5 @@
 'use strict';
-window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActive=()=>true,onBusy=()=>{},onDenied=()=>{}}={}){
+async function initSuiteAdmin(){
  const $=id=>document.getElementById(id),cfg=window.LA_SUITE_CONFIG||{};
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const date=v=>v?new Date(v.length===10?v+'T12:00:00':v).toLocaleDateString('fr-FR'):'—';const bytes=v=>Number(v)>=1e9?(Number(v)/1e9).toFixed(1)+' Go':Math.round(Number(v)/1e6)+' Mo';
@@ -8,15 +8,15 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
  let view='overview',rowDrafts=new Map(),sortDirection=1,sortKey='name',emailFilter='',stateFilter='all',planFilter='all',creationOwner=null,creationPending=false;
  let data={capsules:[],clients:[],backups:[]},busy=false,authorized=false,timer=null;
  function status(text,error=false){$('admin-status').textContent=text;$('admin-status').className=text?'status show '+(error?'err':'ok'):'status';}
- function setBusy(value){busy=value;onBusy(value);document.querySelectorAll('#admin-content button:not([data-tab]),#admin-content input,#admin-content select').forEach(b=>b.disabled=value||b.dataset.locked==='true');}
+ function setBusy(value){busy=value;document.querySelectorAll('#admin-content button:not([data-tab]),#admin-content input,#admin-content select').forEach(b=>b.disabled=value||b.dataset.locked==='true');}
  window.addEventListener('hashchange',()=>{if(/^[a-f0-9]{64}$/.test(new URLSearchParams(location.hash.slice(1)).get('invite')||''))location.reload();});
  const inviteKey='la_suite_admin_invite';const hash=new URLSearchParams(location.hash.slice(1));let invite=null;if(/^[a-f0-9]{64}$/.test(hash.get('invite')||'')){invite={token:hash.get('invite'),at:Date.now()};try{localStorage.setItem(inviteKey,JSON.stringify(invite));history.replaceState(null,'',location.pathname)}catch{}}
  try{invite=invite||JSON.parse(localStorage.getItem(inviteKey)||'null');if(invite&&Date.now()-invite.at>48*3600000){localStorage.removeItem(inviteKey);invite=null;}}catch{}
  if(!cfg.SUPABASE_URL||!cfg.SUPABASE_ANON_KEY||!window.supabase){$('access-message').textContent='Service indisponible. Rechargez la page.';return;}
- const sb=client||window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
+ const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
  let sessionOwner=null,currentEmail='';
  const downloadSession=new AbortController();
- function clearPrivateView(){authorized=false;if($('admin-create-dialog').open)$('admin-create-dialog').close();creationOwner=null;$('admin-create-form').reset();$('admin-create-email').textContent='';$('admin-create-error').textContent='';rowDrafts.clear();$('admin-email-form').reset();$('admin-password-form').reset();downloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));onBusy(false);clearTimeout(timer);data={capsules:[],clients:[],backups:[]};['capsule-cards','backup-cards','admin-stats','admin-account-email','offer-services','admin-sales-totals','admin-sales-chart'].forEach(id=>$(id)?.replaceChildren());$('admin-content').hidden=true;$('admin-access').hidden=false;$('access-message').textContent='Votre session est terminée. Reconnectez-vous.';$('admin-auth').hidden=false;$('admin-signup').hidden=true;if($('confirm-dialog').open)$('confirm-dialog').dispatchEvent(new Event('cancel',{cancelable:true}));if(embedded)onDenied();}
+ function clearPrivateView(){authorized=false;if($('admin-create-dialog').open)$('admin-create-dialog').close();creationOwner=null;$('admin-create-form').reset();$('admin-create-email').textContent='';$('admin-create-error').textContent='';rowDrafts.clear();$('admin-email-form').reset();$('admin-password-form').reset();downloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));clearTimeout(timer);data={capsules:[],clients:[],backups:[]};['capsule-cards','backup-cards','admin-stats','admin-account-email','offer-services','admin-sales-totals','admin-sales-chart'].forEach(id=>$(id)?.replaceChildren());$('admin-content').hidden=true;$('admin-access').hidden=false;$('access-message').textContent='Votre session est terminée. Reconnectez-vous.';$('admin-auth').hidden=false;$('admin-signup').hidden=true;if($('confirm-dialog').open)$('confirm-dialog').dispatchEvent(new Event('cancel',{cancelable:true}));}
  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||sessionOwner&&session?.user?.id&&session.user.id!==sessionOwner)clearPrivateView();else if(event==='USER_UPDATED'&&session?.user?.email){currentEmail=session.user.email;$('admin-account-email').textContent=currentEmail;}});
  async function api(action,payload={}){if(downloadSession.signal.aborted)throw downloadSession.signal.reason;const {data,error}=await sb.functions.invoke('suite-admin',{body:{action,...payload}});if(downloadSession.signal.aborted)throw downloadSession.signal.reason;if(error){if([401,403].includes(error.context?.status))clearPrivateView();let message=error.message;try{message=(await error.context.json()).error||message;}catch{}throw Error(message);}if(data?.error)throw Error(data.error);return data;}
  async function confirmAction(title,text){$('confirm-title').textContent=title;$('confirm-text').textContent=text;$('confirm-dialog').showModal();return new Promise(resolve=>{function done(value){$('confirm-dialog').close();$('confirm-yes').onclick=null;$('confirm-no').onclick=null;$('confirm-dialog').oncancel=null;resolve(value);}$('confirm-yes').onclick=()=>done(true);$('confirm-no').onclick=()=>done(false);$('confirm-dialog').oncancel=()=>done(false);});}
@@ -69,7 +69,7 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
  }
  async function refreshServices(){try{const service=await api('services');$('offer-services').innerHTML=`<label class="admin-payment-toggle"><input id="admin-payments-toggle" type="checkbox" ${service.payments_enabled?'checked':''} ${service.configured.payments?'':'disabled data-locked="true"'}> Activer les achats de capsules</label>${service.configured.payments?'':'<p class="hint">Le service de paiement reste à configurer.</p>'}`;$('admin-payments-toggle').onchange=()=>run(async()=>{await api('configure_services',{payments_enabled:$('admin-payments-toggle').checked});});}catch{$('offer-services').textContent='Service de paiement momentanément indisponible.';}}
  function scheduleRefresh(){
-  clearTimeout(timer);if(!authorized)return;timer=setTimeout(async()=>{if(!authorized)return;if(busy||document.activeElement?.matches('#capsule-cards input,#capsule-cards select')||!isActive()||document.visibilityState!=='visible'){scheduleRefresh();return}try{await refresh()}catch(e){status('Actualisation momentanément indisponible. Une nouvelle tentative suivra.',true);scheduleRefresh()}},15000);
+  clearTimeout(timer);if(!authorized)return;timer=setTimeout(async()=>{if(!authorized)return;if(busy||document.activeElement?.matches('#capsule-cards input,#capsule-cards select')||document.visibilityState!=='visible'){scheduleRefresh();return}try{await refresh()}catch(e){status('Actualisation momentanément indisponible. Une nouvelle tentative suivra.',true);scheduleRefresh()}},15000);
  }
  async function refresh(){if(!authorized)return;data=await api('overview');if(!authorized)return;render();await refreshServices();if(busy)setBusy(true);scheduleRefresh();}
 
@@ -96,7 +96,6 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
    await api('import_finish',{id:job.id});status('Restauration lancée. Elle continue même si vous fermez la page.');await api('tick');
   });
  }
- if($('refresh'))$('refresh').onclick=()=>run(async()=>{status('Liste actualisée.');});
  $('backup-all').onclick=()=>run(async()=>{await api('backup');status('Sauvegarde lancée. Elle continue en arrière-plan.');await api('tick');});
  $('archive-input').onchange=async()=>{if($('archive-input').files[0])try{await importArchive($('archive-input').files[0]);}catch(e){status(e.message,true);}};
  const handleAdminClick=async e=>{const b=e.target.closest('button');if(!b||b.disabled||busy)return;
@@ -147,12 +146,12 @@ window.initSuiteAdmin=async function({client,embedded=false,ownedCaps=[],isActiv
  $('admin-sales-period').onchange=renderSales;
  if($('admin-logout'))$('admin-logout').onclick=async()=>{if(busy){status('Patientez jusqu’à la fin de l’opération.',true);return;}clearPrivateView();await sb.auth.signOut();location.href='auth.html?next=admin';};
  try{const {data:user,error}=await sb.auth.getUser();if(error||!user.user){$('access-message').textContent=invite?'Connectez-vous ou créez votre compte pour activer votre accès administrateur.':'Connectez-vous avec votre compte administrateur.';$('admin-auth').hidden=false;$('admin-signup').hidden=!invite;if(!invite)location.replace('auth.html?next=admin');return;}
-  const {data:member,error:memberError}=await sb.rpc('admin_status');if(memberError)throw memberError;if(member!==true){if(embedded){clearPrivateView();return;}if(!invite){$('access-message').textContent='Ce compte ne dispose pas d’un accès administrateur.';if($('admin-logout'))$('admin-logout').hidden=false;return;}const {error}=await sb.rpc('admin_claim',{p_token:invite.token});if(error)throw error;}
+  const {data:member,error:memberError}=await sb.rpc('admin_status');if(memberError)throw memberError;if(member!==true){if(!invite){$('access-message').textContent='Ce compte ne dispose pas d’un accès administrateur.';if($('admin-logout'))$('admin-logout').hidden=false;return;}const {error}=await sb.rpc('admin_claim',{p_token:invite.token});if(error)throw error;}
   if(downloadSession.signal.aborted)return;try{localStorage.removeItem(inviteKey)}catch{}sessionOwner=user.user.id;currentEmail=user.user.email||'';authorized=true;$('admin-account-email').textContent=currentEmail;if($('admin-logout'))$('admin-logout').hidden=false;$('admin-access').hidden=true;$('admin-content').hidden=false;await refresh();selectView('overview');const capsuleId=new URLSearchParams(location.search).get('capsule');if(capsuleId){selectView('capsules');[...document.querySelectorAll('[data-capsule-row]')].find(r=>r.dataset.capsuleRow===capsuleId)?.scrollIntoView();}
  }catch(e){$('access-message').textContent=e.message||'Vérification impossible. Rechargez la page.';status(e.message,true);}
- return {async configureCapsule(id){if(!authorized||busy)throw Error('Veuillez réessayer dans quelques instants.');await refresh();if(!authorized)return;selectView('capsules');[...document.querySelectorAll('[data-capsule-row]')].find(r=>r.dataset.capsuleRow===id)?.scrollIntoView();},exportCapsule(id){if(!authorized||busy)throw Error('Veuillez réessayer dans quelques instants.');if(!data.capsules.some(c=>c.id===id))throw Error('Capsule introuvable.');return downloadCapsule(id);}};
+
 };
-if(document.getElementById('admin-access'))window.initSuiteAdmin();
+if(document.getElementById('admin-access'))initSuiteAdmin();
 
 
 
