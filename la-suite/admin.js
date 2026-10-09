@@ -24,7 +24,7 @@ async function initSuiteAdmin(){
  function attention(c){if(c.noCapsule)return false;return ['full','suspended','missing_date'].includes(c.usage.state)||c.usage.used_bytes>=c.usage.quota_bytes*.8;}
  function email(id){return data.clients.find(x=>x.id===id)?.email||'Compte indisponible';}
  function render(){
-  $('admin-stats').innerHTML=[['Capsules',data.capsules.length],['Clients',data.clients.filter(c=>!c.is_admin).length],['Capsules à surveiller',data.capsules.filter(attention).length],['Mo utilisés',(data.capsules.reduce((n,c)=>n+Number(c.usage.used_bytes),0)/1e6).toLocaleString('fr-FR',{maximumFractionDigits:1})]].map(([name,value])=>`<div class="admin-stat"><strong>${esc(value)}</strong><span>${name}</span>${name==='Capsules à surveiller'?'<small>Stockage ≥ 80 %, dépôts en pause ou date manquante.</small><button type="button" class="admin-text-button" data-attention="true">Voir les capsules</button>':''}</div>`).join('');
+  $('admin-stats').innerHTML=[['Capsules',data.capsules.length],['Clients',data.clients.filter(c=>!c.is_admin).length],['Mo utilisés',(data.capsules.reduce((n,c)=>n+Number(c.usage.used_bytes),0)/1e6).toLocaleString('fr-FR',{maximumFractionDigits:1})]].map(([name,value])=>`<div class="admin-stat"><strong>${esc(value)}</strong><span>${name}</span></div>`).join('');
   renderCapsules();renderSales();renderBackups();
 
  }
@@ -101,7 +101,6 @@ async function initSuiteAdmin(){
  const handleAdminClick=async e=>{const b=e.target.closest('button');if(!b||b.disabled||busy)return;
   if(b.id==='import-backup'){$('archive-input').value='';$('archive-input').click();}
   if(b.dataset.createForAccount)openAccountCreation(b.dataset.createForAccount);
-  if(b.dataset.attention){stateFilter='attention';renderCapsules();selectView('capsules');}
   if(b.dataset.sort){if(sortKey===b.dataset.sort)sortDirection*=-1;else{sortKey=b.dataset.sort;sortDirection=1;}renderCapsules();}
   if(b.dataset.capsuleDownload)try{await downloadCapsule(b.dataset.capsuleDownload)}catch(error){if(error.name!=='AbortError')status(error.message,true)}
   if(b.dataset.capsuleDelete){const c=data.capsules.find(x=>x.id===b.dataset.capsuleDelete);if(c&&await confirmAction('Supprimer cette capsule ?',c.name+' : les souvenirs et la capsule seront supprimés. Le compte client et les achats restent conservés. Les archives déjà téléchargées restent restaurables dans Paramètres.'))await run(async()=>{await api('delete_capsule',{id:c.id,expected_name:c.name});rowDrafts.delete(c.id);status('');});}
