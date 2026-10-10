@@ -134,7 +134,7 @@
   const retry=document.createElement('button');retry.type='button';retry.className='visual-retry';retry.textContent='Réessayer';retry.hidden=true;retry.onclick=()=>context.saveAll();studio.append(retry);
   for(const source of [$('organizer-save-state'),$('organizer-save-error')])if(source)new MutationObserver(syncSaveState).observe(source,{childList:true,subtree:true,attributes:true,attributeFilter:['data-state']});syncSaveState();
   queueMicrotask(()=>{
-   const panel=document.querySelector('.qr-designer-panel');panel.prepend(studio);document.body.classList.add('visual-primary-ready');
+   const panel=document.querySelector('.qr-designer-panel');panel.prepend(studio);document.body.classList.add('visual-primary-ready');window.SuiteDesign.retireLegacyPreview?.();
    studio.querySelector('.visual-intro-host').append(document.querySelector('.intro-video-panel'));$('intro-kind').closest('.field').hidden=true;
    const none=document.createElement('button');none.type='button';none.textContent='Sans accueil';none.onclick=()=>{$('intro-kind').value='none';dispatch('intro-kind');render()};studio.querySelector('.visual-intro-actions').append(none);
    const crop=$('design-crop');studio.querySelector('.visual-background-host').append(crop);previewResize.observe(crop);const uploadStatus=$('design-upload-status');studio.querySelector('.visual-background-host').append(uploadStatus);

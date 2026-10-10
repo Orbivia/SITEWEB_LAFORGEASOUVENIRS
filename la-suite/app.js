@@ -1576,7 +1576,7 @@ async function markOwnerMessagesSeen(c,manifest){
 }
 
 function compactOwnerEditors(c){
- window.SuiteDesign.storage=sb;
+ window.SuiteDesign.storage=sb.storage;
  window.SuiteDesign.mount(c);
 }
 

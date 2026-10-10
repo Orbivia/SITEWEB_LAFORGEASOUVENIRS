@@ -52,14 +52,14 @@
   let selected='card',ready=false,loadVersion=0,previewError=false;
   const signedIntro=introUrlCache(window.SuiteDesign.storage);
   const refresh=async()=>{
-   const revision=++loadVersion;if(!ready||!guest.isConnected)return;
+   const revision=++loadVersion;if(!ready||!guest.isConnected||document.body.classList.contains('visual-primary-ready'))return;
    try{
     const path=c.intro_path,introUrl=await signedIntro(path);
-    if(revision!==loadVersion||!guest.isConnected||path!==c.intro_path)return;
+    if(revision!==loadVersion||!guest.isConnected||document.body.classList.contains('visual-primary-ready')||path!==c.intro_path)return;
     if(previewError){const status=$('design-upload-status');if(status)status.textContent='';previewError=false;}
     const config=window.SuiteWelcome.collectShared?.()||c.welcome_config;
     guest.contentWindow.postMessage({type:'la-suite-guest-preview',capsule:{couple_name:$('capsule-name')?.value||c.couple_name,wedding_date:$('capsule-date')?.value||c.wedding_date,welcome_message:$('intro-text')?.value??c.welcome_message,welcome_config:config,effective_plan:effectivePlan(c),delivery_before:c.usage?.delivery_before||new Date(Date.now()+900*86400000).toISOString(),has_intro:Boolean(introUrl),preview_intro_url:introUrl,preview_intro_type:/\.(jpg|jpeg|png|webp)$/i.test(path||'')?'image':'video'}},location.origin);
-   }catch{if(revision===loadVersion&&guest.isConnected){const status=$('design-upload-status');if(status)status.textContent='L’aperçu de l’accueil n’a pas chargé. Réessayez.';previewError=true;}}
+   }catch{if(revision===loadVersion&&guest.isConnected&&!document.body.classList.contains('visual-primary-ready')){const status=$('design-upload-status');if(status)status.textContent='L’aperçu de l’accueil n’a pas chargé. Réessayez.';previewError=true;}}
   };
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&selected==='welcome')refresh();});
   window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===guest.contentWindow&&event.data?.type==='la-suite-guest-preview-ready'){ready=true;refresh();}});
@@ -71,6 +71,7 @@
   custom.querySelectorAll('[data-design-crop]').forEach(input=>{input.value=crops(c)[input.dataset.designCrop];input.oninput=()=>{c._designCrop={...crops(c),[input.dataset.designCrop]:Number(input.value)};$('qr-style').dispatchEvent(new Event('change',{bubbles:true}));};});
   matchMedia('(max-width:760px)').addEventListener('change',event=>{const stage=document.querySelector('.activation-panel');if(!stage)return;if(event.matches)view(panel.dataset.designView);else controls.append(stage);window.SuiteOrganizerLayout?.placeActivation?.();});
   const sync=()=>{const style=$('qr-style').value;$('design-crop').hidden=style!=='custom';$('design-import').setAttribute('aria-pressed',String(style==='custom'));};$('qr-style').addEventListener('change',sync);sync();
+  window.SuiteDesign.retireLegacyPreview=()=>{loadVersion++;ready=false;guest.remove();if(previewError){const status=$('design-upload-status');if(status)status.textContent='';previewError=false;}};
   return {refresh};
  }
  window.SuiteDesign={styles,colors,position,validBackground,background,fields,artwork,effectivePlan,thumbnail,mount,storage:null};
