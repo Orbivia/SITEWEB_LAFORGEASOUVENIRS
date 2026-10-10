@@ -452,3 +452,18 @@
  .organizer-layout-ready .design-preview-tabs button{min-height:44px}
 }
 @media(max-width:760px){.organizer-layout-ready .qr-designer-head{flex-direction:row;text-align:left}.organizer-layout-ready .qr-designer-head>div{min-width:0;flex:1}}
+
+/* Activation review: readable text and a bounded dialog on smartphones. */
+@media(max-width:760px){
+ .organizer-layout-ready #activation-dialog{position:fixed;width:calc(100% - 32px);max-width:440px;max-height:calc(100dvh - 32px);margin:auto;padding:24px 20px 20px;border-radius:18px;overflow-y:auto;overscroll-behavior:contain}
+ .organizer-layout-ready #activation-dialog .dialog-close{position:absolute;top:8px;right:8px;float:none;width:44px;height:44px;padding:0;color:#302920}
+ .organizer-layout-ready #activation-dialog .eyebrow{padding-right:32px;font-size:10px;line-height:1.5;letter-spacing:.12em}
+ .organizer-layout-ready #activation-dialog h2{margin:14px 0 18px;font:600 24px/1.25 Inter,sans-serif}
+ .organizer-layout-ready #activation-dialog p{margin:0 0 14px;font-size:14px;line-height:1.55;white-space:normal;overflow-wrap:anywhere}
+ .organizer-layout-ready #activation-dialog [data-activation-summary]{font-weight:600}
+ .organizer-layout-ready #activation-dialog [data-activation-price]{padding-top:14px;border-top:1px solid #e4dbd0}
+ .organizer-layout-ready #activation-dialog .atelier-customization-note{padding:10px 12px;font-size:12px;line-height:1.5;margin:16px 0}
+ .organizer-layout-ready #activation-dialog #activate-capsule{min-height:48px;font:600 14px/1.4 Inter,sans-serif}
+ .organizer-layout-ready #activation-dialog .status{margin:12px 0 0;font-size:12px}
+ .organizer-layout-ready #activation-dialog .status:empty{display:none}
+}
