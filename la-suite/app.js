@@ -1221,7 +1221,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const qr=makeQrCanvas(url,o);
  if(document.fonts?.load)try{await Promise.all([document.fonts.load(qrFontWeight(o.font)+' 72px "'+qrFontFamily(o.font)+'"'),document.fonts.load('600 32px "Cormorant Garamond"'),document.fonts.load('400 25px Inter'),document.fonts.load('700 32px Inter')])}catch(e){}
  const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
- const W=1181,H=1772;canvas.width=W;canvas.height=H;
+ const W=1181,H=1772,contentInset=200,frameMargin=84;canvas.width=W;canvas.height=H;
  const issues=[];canvas.cardTextIssues=issues;
  const config=c.welcome_config||{},artwork=window.SuiteDesign.artwork(o.style,{...config,background:window.SuiteDesign.background(c)});
  if(artwork){const image=await loadCanvasImage(artwork);const scale=Math.max(W/image.naturalWidth,H/image.naturalHeight),iw=image.naturalWidth*scale,ih=image.naturalHeight*scale;ctx.drawImage(image,(W-iw)*window.SuiteDesign.position(config.cardX)/100,(H-ih)*window.SuiteDesign.position(config.cardY)/100,iw,ih);}else{drawQrBackdrop(ctx,{...o,color:qrThemes[o.style].accent},W,H);drawQrDecor(ctx,{...o,color:qrThemes[o.style].accent},W,H);}
@@ -1229,7 +1229,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const dark=qrThemes[o.style].dark;
  const accent=qrAccent(o.color,dark);ctx.fillStyle=accent;
  const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?150:o.font==='contemporary'?120:o.font==='refined'?122:140;
- drawPrintTextBox(ctx,o.title,{x:180,y:190,width:W-360,height:195,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3,minSize:56,onOverflow:()=>issues.push('print-title')});
+ drawPrintTextBox(ctx,o.title,{x:contentInset,y:210,width:W-contentInset*2,height:175,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3,minSize:56,onOverflow:()=>issues.push('print-title')});
  ctx.fillStyle=dark?'#fffaf1':'#201c1a';ctx.font='400 44px Inter,Arial,sans-serif';if(c.welcome_config?.cardShowDate!==false)ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
  drawQrDivider(ctx,{...o,color:accent},W/2,490);
  const qsize=660,qx=Math.round((W-qsize)/2),qy=510;
@@ -1242,20 +1242,21 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
 
  if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize,background);
 
- const mobileLogo=matchMedia("(max-width:760px)").matches,logoTop=H-(mobileLogo?(o.style==="gatsby"?240:180):150);
- const explanationBottom=mobileLogo&&o.style==="gatsby"?logoTop-30:1540;
- const textBox={x:180,y:1220,width:W-360,height:150};
+ // Leave about 7 mm of clear space inside a 10 × 15 cm frame; artwork stays full bleed.
+ const mobileLogo=matchMedia("(max-width:760px)").matches,logoMaxH=mobileLogo?144:104,logoTop=Math.min(H-(mobileLogo?(o.style==="gatsby"?240:180):150),H-frameMargin-logoMaxH);
+ const explanationBottom=Math.min(1540,logoTop-32);
+ const textBox={x:contentInset,y:1220,width:W-contentInset*2,height:150};
  ctx.fillStyle=accent;
  const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'Inter, Arial, sans-serif',weight:'600',maxLines:6,minSize:38,onOverflow:()=>issues.push('print-note')});
  const explanationY=noteBottom+(o.note?26:0);
- canvas.cardTextBoxes={'print-title':{x:180,y:190,width:W-360,height:195},date:{x:180,y:397,width:W-360,height:60},'print-note':{...textBox,height:Math.max(55,noteBottom-textBox.y)},'print-explanation':{...textBox,y:explanationY,height:Math.max(55,explanationBottom-explanationY)}};
+ canvas.cardTextBoxes={'print-title':{x:contentInset,y:210,width:W-contentInset*2,height:175},date:{x:contentInset,y:397,width:W-contentInset*2,height:60},'print-note':{...textBox,height:Math.max(55,noteBottom-textBox.y)},'print-explanation':{...textBox,y:explanationY,height:Math.max(55,explanationBottom-explanationY)}};
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
  drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:explanationBottom-explanationY},{size:44,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
 
 
  if(o.showBrand)try{
   const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20261010-forge-type");
-  const maxW=mobileLogo?360:260,maxH=mobileLogo?144:104,scale=Math.min(maxW/logo.naturalWidth,maxH/logo.naturalHeight);
+  const maxW=mobileLogo?360:260,maxH=logoMaxH,scale=Math.min(maxW/logo.naturalWidth,maxH/logo.naturalHeight);
   const lw=Math.round(logo.naturalWidth*scale),lh=Math.round(logo.naturalHeight*scale);
   // Keep the original alpha, with a light monochrome mark on dark designs.
   const mark=document.createElement('canvas');mark.width=lw;mark.height=lh;
