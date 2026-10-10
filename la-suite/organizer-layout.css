@@ -329,3 +329,24 @@
  .organizer-layout-ready .design-mobile-footer{position:static;background:transparent;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));margin-top:12px}
 }
 
+
+/* Clearer helper text and a single primary action in the mobile editor. */
+.organizer-layout-ready .organizer-color-status,
+.organizer-layout-ready .organizer-export-availability,
+.organizer-layout-ready .organizer-compact-fields .field-help,
+.organizer-layout-ready .atelier-customization-note,
+.organizer-layout-ready .qr-designer-preview .atelier-customization-note{font-size:13px;line-height:1.5;color:#5e534b}
+.organizer-layout-ready .qr-print-guide summary,
+.organizer-layout-ready .organizer-guest-preview-link{font-size:13px;color:#5e534b}
+.organizer-layout-ready .qr-designer-preview .activation-panel{margin-top:8px;gap:6px}
+@media(min-width:761px){
+ .organizer-layout-ready #qr-artwork-preview{height:clamp(350px,calc(100dvh - 390px),760px)!important}
+ .organizer-layout-ready #design-welcome-preview{height:clamp(350px,calc(100dvh - 390px),760px)}
+ .organizer-layout-ready .qr-preview-actions{margin-top:6px}
+}
+@media(max-width:760px){
+ .organizer-layout-ready .organizer-extra-options{margin:8px 0 0;padding:6px 0}
+ .organizer-layout-ready .qr-designer-controls>.activation-panel{margin:8px 0 0;gap:8px}
+ .organizer-layout-ready .design-mobile-footer{margin-top:4px;padding-top:0}
+ .organizer-layout-ready .design-mobile-footer .btn{background:#fffdf9;color:var(--organizer-burgundy);border:1px solid #d8c6c6;box-shadow:none}
+}

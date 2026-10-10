@@ -17,7 +17,7 @@
   new ResizeObserver(()=>document.body.style.setProperty('--organizer-title-height',Math.ceil(head.getBoundingClientRect().height+12)+'px')).observe(head);
   document.querySelector('.qr-control-title').hidden=true;
   const design=document.querySelector('.qr-theme-gallery').closest('.customization-card');
-  const designHeading=design.querySelector('h3,h4,strong');if(designHeading)designHeading.textContent='Design commun';
+  const designHeading=design.querySelector('h3,h4,strong');if(designHeading)designHeading.textContent='Style de la capsule';
   document.querySelectorAll('.qr-font-menu .qr-font-sample').forEach(e=>e.textContent='Votre événement');
   const colorGroup=document.querySelector('.qr-color-palette').closest('.customization-card');colorGroup.querySelector('h3,h4').textContent='Couleur du QR';
   const colorStatus=document.createElement('p');colorStatus.className='organizer-color-status';colorStatus.setAttribute('aria-live','polite');colorGroup.append(colorStatus);

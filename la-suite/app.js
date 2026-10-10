@@ -1470,7 +1470,7 @@ function ownerShell(c,url,count){
 
     <div class="qr-preview-actions">
      <button class="btn secondary" id="share-link" type="button"><img class="customization-inline-icon" src="assets/customization/lien.webp" alt="" width="24" height="24">Partager</button>
-     <a class="btn secondary" id="open-guest-link" href="${esc(url)}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Voir la page invité</a>
+     <a class="btn secondary" id="open-guest-link" href="${esc(url)}" target="_blank" rel="noopener"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>Voir la page invités</a>
      <button class="btn secondary" id="download-print-card" type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>Télécharger</button>
      <button class="btn primary" id="print-print-card" type="button"><i class="fa-solid fa-print" aria-hidden="true"></i>Imprimer</button>
     </div>
