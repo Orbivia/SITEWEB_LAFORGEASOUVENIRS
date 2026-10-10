@@ -402,3 +402,11 @@
 
 .visual-primary .visual-media{overflow:visible}
 .visual-primary .visual-media img,.visual-primary .visual-media video{border-radius:10px}
+
+/* One persistent edit affordance for every welcome format. */
+.visual-primary .visual-welcome-content{position:relative;flex:none;min-height:48px;padding:12px 12px 0 0}
+.visual-primary .visual-welcome-content>.visual-intro-pencil{position:absolute;top:0;right:0;z-index:5;display:grid;place-items:center;width:40px;height:40px;min-height:40px;padding:9px;box-sizing:border-box;border:1px solid #b9c8be;border-radius:50%;background:#fffefa;color:#244c37;box-shadow:0 2px 6px #0003;cursor:pointer}
+.visual-primary .visual-welcome-content>.visual-intro-pencil svg{display:block;width:22px;height:22px}
+.visual-primary .visual-welcome-content>.visual-intro-pencil:focus-visible{outline:3px solid #365748;outline-offset:3px}
+.visual-primary .visual-welcome-content>.visual-message{padding-right:24px}
+.visual-primary .visual-welcome-content>.visual-welcome-edit{margin-top:0;margin-bottom:0}
