@@ -40,9 +40,6 @@
 .visual-primary .visual-themes{gap:6px}
 .visual-primary .visual-themes button{padding:4px;font-size:9px;min-width:0}
 .visual-primary .visual-themes img{height:47px;object-fit:cover}
-.visual-primary .visual-theme-pages{display:flex;justify-content:center;gap:10px;margin-top:7px}
-.visual-theme-pages button{border:0;background:none;color:#ced5cc;padding:3px 6px;font-size:14px;min-height:28px}
-.visual-theme-pages [aria-pressed=true]{color:#365748}
 .visual-primary .visual-font-samples{gap:6px}
 .visual-primary .visual-font-samples button{min-height:55px;padding:6px 4px}
 .visual-primary .visual-font-samples span{font-size:17px}
@@ -75,3 +72,12 @@
 .visual-primary .visual-font-samples span{font-size:14px}
 .visual-primary .visual-drawer{max-height:calc(100% - 130px);top:48%;transform:translateY(-35%)}
 }
+
+/* All themes fit in one compact panel, without pagination. */
+.visual-primary .visual-themes{grid-template-columns:repeat(4,minmax(0,1fr));gap:5px}
+.visual-primary .visual-themes button,.visual-primary .visual-themes .visual-import{padding:3px;gap:3px;font-size:9px;line-height:11px;min-height:0}
+.visual-primary .visual-themes span{min-height:22px;display:flex;align-items:center;justify-content:center;overflow-wrap:anywhere}
+.visual-primary .visual-themes img{height:28px}
+.visual-primary[data-tool=theme] .visual-drawer{transform:translateY(-50%)}
+@media(min-width:761px){.visual-primary .visual-themes img{height:40px}}
+@media(max-height:650px){.visual-primary .visual-themes{gap:4px}.visual-primary .visual-themes img{height:24px}.visual-primary .visual-font-samples button{min-height:40px}.visual-primary .visual-font-samples span{font-size:13px}.visual-primary .visual-drawer section{padding-top:5px;padding-bottom:8px}}
