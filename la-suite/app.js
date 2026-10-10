@@ -854,7 +854,7 @@ function defaultInitials(name){
 function clamp(n,min,max){return Math.max(min,Math.min(max,n))}
 function qrOptions(c){
  return {
-  initials:(c.qr_initials||defaultInitials(c.couple_name)).slice(0,4),
+  initials:(matchMedia("(max-width:760px)").matches?(c.qr_initials??defaultInitials(c.couple_name)):(c.qr_initials||defaultInitials(c.couple_name))).slice(0,4),
   color:c.qr_color||"#b78b38",
   title:cardDefault(c.print_title,"Laissez-nous un souvenir",c.couple_name||DEFAULT_CARD_TITLE).slice(0,42),
   note:cardDefault(c.print_note===OLD_CARD_NOTE?null:c.print_note,"Scannez ce code pour nous laisser un souvenir.",DEFAULT_CARD_NOTE,true).slice(0,120),
@@ -862,7 +862,7 @@ function qrOptions(c){
   font:["elegant","classic","modern","romantic","editorial","refined","contemporary","signature"].includes(c.qr_font)?c.qr_font:"elegant",
   style:Object.hasOwn(qrThemes,c.qr_style)?c.qr_style:"romantic",
   size:QR_LARGE_SIZE,
-  showInitials:c.qr_show_initials!==false
+  showInitials:matchMedia("(max-width:760px)").matches?Boolean((c.qr_initials??defaultInitials(c.couple_name)).trim()):c.qr_show_initials!==false
  }
 }
 function qrFontFamily(key){
@@ -880,7 +880,7 @@ function qrFontWeight(key){
 }
 function collectQrCustomization(c){
  return {
-  qr_initials:($("qr-initials-input")?.value||defaultInitials(c.couple_name)).trim().slice(0,4),
+  qr_initials:(matchMedia("(max-width:760px)").matches?($("qr-initials-input")?.value??defaultInitials(c.couple_name)):($("qr-initials-input")?.value||defaultInitials(c.couple_name))).trim().slice(0,4),
   qr_color:$("qr-color")?.value||"#b78b38",
   print_title:($("print-title")?.value||c.couple_name||DEFAULT_CARD_TITLE).trim().slice(0,42),
   print_note:($("print-note")?.value??DEFAULT_CARD_NOTE).trim().slice(0,120),
@@ -888,7 +888,7 @@ function collectQrCustomization(c){
   qr_font:$("qr-font")?.value||"elegant",
   qr_style:$("qr-style")?.value||"romantic",
   qr_size:QR_LARGE_SIZE,
-  qr_show_initials:Boolean($("qr-show-initials")?.checked),
+  qr_show_initials:matchMedia("(max-width:760px)").matches?Boolean($("qr-initials-input")?.value.trim()):Boolean($("qr-show-initials")?.checked),
   qr_show_brand:true,
   welcome_config:window.SuiteWelcome.collectShared?.()||{...window.SuiteWelcome.options(c.welcome_config||{}),...window.SuiteDesign.fields(c),style:window.SuiteDesign.styles.some(s=>s.id===$("qr-style")?.value)||$("qr-style")?.value==="custom"?$("qr-style").value:(c.welcome_config?.style||"capsule"),font:$("qr-font")?.value||"elegant",color:$("qr-color")?.value||"#8b2730"}
  }
@@ -1790,9 +1790,10 @@ async function saveCapsuleSettings(c){
  if(dateChanged&&c.status==='active'&&c.guest_rules_version===1&&!confirm("Déplacer l’événement du "+fdate(c.wedding_date)+" au "+fdate(date)+" ?\nLes dépôts seront ouverts à la nouvelle date et le lendemain. Les trois ans de conservation seront recalculés. Votre paiement et votre QR code sont conservés.")){date=c.wedding_date;$("capsule-date").value=date}
  const notify=$("capsule-notify").checked;
  const payload={couple_name:name,wedding_date:date,notify_by_email:notify};
+ if(c.status==='draft'&&plan!==c.plan){if(!Object.hasOwn(PLAN_PRICES,plan)||c.pendingPayment)throw new Error("La formule ne peut pas être modifiée pendant un paiement en cours.");payload.plan=plan;}
  const oldDefault=defaultCardExplanation(capsulePlan(c));
  try{await updateOwnedCapsule(c,payload)}catch(error){await renderOrganizerLifecycle(c);if($("capsule-date").disabled)$("capsule-date").value=c.wedding_date;throw error}
- Object.assign(c,payload);$("dashboard-title").textContent=name;$("plan-explanation-help").textContent="Texte proposé pour la formule "+PLAN_NAMES[capsulePlan(c)]+".";
+ Object.assign(c,payload);$("capsule-plan-name").textContent=PLAN_NAMES[capsulePlan(c)];$("dashboard-title").textContent=name;$("plan-explanation-help").textContent="Texte proposé pour la formule "+PLAN_NAMES[capsulePlan(c)]+".";
  if($("print-explanation").value===oldDefault){$("print-explanation").value=defaultCardExplanation(capsulePlan(c));organizerState.qr=true}
  await renderOrganizerLifecycle(c);
  window.SuiteOrganizerLayout?.syncDate?.();
@@ -1912,14 +1913,16 @@ async function initDashboard(){
  if(ownerSessionEnded)return;
  const freeLaunch=access.free_launch===true;
  const stage=document.createElement("section");stage.className="activation-panel";
- stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>La période d’accès est terminée. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div class="activation-intro"><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><p class="atelier-customization-note">Votre carte QR et la page d’accueil restent personnalisables après activation.</p><button class="btn primary" id="review-activation" type="button">Valider ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p>${freeLaunch?'<p>Votre capsule reste gratuite pendant ses 3 ans d’accès, avec tous les formats et 5 Go.</p>':'<p data-activation-price></p><p>Paiement unique, sans abonnement. Les dépôts seront ouverts le jour de votre événement et le lendemain. Accès pendant 3 ans à compter de l’événement.</p>'}<p class="atelier-customization-note">Votre carte QR et la page d’accueil restent personnalisables après activation.</p><button id="activate-capsule" class="btn primary" type="button">${freeLaunch?"Activer gratuitement":"Continuer vers le paiement"}</button><p id="activation-status" class="status" role="status"></p></dialog>`;
+ stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>La période d’accès est terminée. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div class="activation-intro"><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><p class="atelier-customization-note">Votre carte QR et la page d’accueil restent personnalisables après activation.</p><button class="btn primary" id="review-activation" type="button">Valider ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Tout est prêt ?</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong> · ${esc(fdate(c.wedding_date))} · ${esc(PLAN_NAMES[capsulePlan(c)]||"Premium")}</p>${freeLaunch?'<p>Votre capsule reste gratuite pendant ses 3 ans d’accès, avec tous les formats et 5 Go.</p>':'<p data-activation-price></p><div class="activation-plan-choice"><label for="activation-plan">Votre formule</label><select id="activation-plan"><option value="photo">Essentiel — 9,90 € · 1 Go · photos et textes</option><option value="audio">Plus — 14,90 € · 2 Go · photos, textes et audio</option><option value="premium">Premium — 24,90 € · 5 Go · tous les formats</option></select></div><p>Paiement unique, sans abonnement. Les dépôts seront ouverts le jour de votre événement et le lendemain. Accès pendant 3 ans à compter de l’événement.</p>'}<p class="atelier-customization-note">Votre carte QR et la page d’accueil restent personnalisables après activation.</p><button id="activate-capsule" class="btn primary" type="button">${freeLaunch?"Activer gratuitement":"Continuer vers le paiement"}</button><p id="activation-status" class="status" role="status"></p></dialog>`;
  document.querySelector(".qr-designer-controls").insertBefore(stage,document.querySelector(".design-mobile-footer"));if(c.status==="active"&&!capsuleExpired(c))stage.hidden=true;
  if(c.status!=="active"||capsuleExpired(c)){
   ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title=capsuleExpired(c)?"La période de conservation est terminée":"Activez votre capsule pour partager votre carte"});
   const guestLink=$("open-guest-link");if(guestLink)guestLink.hidden=capsuleExpired(c);
  }
  if(c.status!=="active"&&!capsuleExpired(c)){
-  $("review-activation").addEventListener("click",async()=>{if(await saveAll()){ $("activation-dialog").querySelector('[data-activation-summary]').textContent=c.couple_name+" · "+fdate(c.wedding_date)+" · "+PLAN_NAMES[capsulePlan(c)];if(!freeLaunch){$("activation-dialog").querySelector("[data-activation-price]").textContent=PLAN_NAMES[c.plan]+" · "+money(PLAN_PRICES[c.plan])+" · "+({photo:"1 Go · photos et textes",audio:"2 Go · photos, textes et audios",premium:"5 Go · tous les formats"})[c.plan];$("activate-capsule").textContent="Payer "+money(PLAN_PRICES[c.plan])+" et activer";}$("activation-dialog").showModal()}});
+  const refreshActivationOffer=plan=>{if(freeLaunch)return;$("activation-dialog").querySelector("[data-activation-summary]").textContent=c.couple_name+" · "+fdate(c.wedding_date)+" · "+PLAN_NAMES[plan];$("activation-dialog").querySelector("[data-activation-price]").textContent=PLAN_NAMES[plan]+" · "+money(PLAN_PRICES[plan])+" · "+({photo:"1 Go · photos et textes",audio:"2 Go · photos, textes et audios",premium:"5 Go · tous les formats"})[plan];$("activate-capsule").textContent="Payer "+money(PLAN_PRICES[plan])+" et activer";};
+  if(!freeLaunch)$("activation-plan").addEventListener('change',()=>{if(c.pendingPayment){$("activation-plan").value=c.plan;return;}$("capsule-plan").value=$("activation-plan").value;$("capsule-plan").dispatchEvent(new Event('input',{bubbles:true}));refreshActivationOffer($("activation-plan").value);});
+  $("review-activation").addEventListener("click",async()=>{if(await saveAll()){if(!freeLaunch){$("activation-plan").value=c.plan;$("activation-plan").disabled=Boolean(c.pendingPayment);} $("activation-dialog").querySelector('[data-activation-summary]').textContent=c.couple_name+" · "+fdate(c.wedding_date)+" · "+PLAN_NAMES[capsulePlan(c)];if(!freeLaunch){$("activation-dialog").querySelector("[data-activation-price]").textContent=PLAN_NAMES[c.plan]+" · "+money(PLAN_PRICES[c.plan])+" · "+({photo:"1 Go · photos et textes",audio:"2 Go · photos, textes et audios",premium:"5 Go · tous les formats"})[c.plan];$("activate-capsule").textContent="Payer "+money(PLAN_PRICES[c.plan])+" et activer";}$("activation-dialog").showModal()}});
   $("activate-capsule").addEventListener("click",async()=>{
    const button=$("activate-capsule");button.disabled=true;
    try{
@@ -1980,7 +1983,7 @@ async function initDashboard(){
  setupQrCustomizerUi();
  setupQrTextCounters();
  for(const [id,fallback] of [['print-note',DEFAULT_CARD_NOTE],['print-explanation',defaultCardExplanation(capsulePlan(c))]]){
-  const field=$(id),toggle=$(id+'-visible');field.hidden=!toggle.checked;
+  const field=$(id),toggle=$(id+'-visible');field.hidden=matchMedia("(max-width:760px)").matches?false:!toggle.checked;
   toggle.addEventListener('change',()=>{if(!toggle.checked){field.dataset.previousText=field.value;field.value='';}else field.value=field.dataset.previousText||fallback;field.hidden=!toggle.checked;field.dispatchEvent(new Event('input',{bubbles:true}));});
  }
  $("share-link")?.addEventListener("click",()=>shareGuestLink(url.href));
