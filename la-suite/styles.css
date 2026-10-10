@@ -3548,3 +3548,28 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 .guest-compact .capsule-hero.guest-long-name{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:2px}
 .guest-compact .capsule-hero.guest-long-name>div{width:100%}
 .guest-compact .guest-long-name #guest-concept-open{justify-self:end;min-height:44px;background:transparent;border:0;padding:4px}
+
+/* Keep capsule preparation within a desktop viewport, with natural flow for errors and zoom. */
+.create-page .create-intro p,.create-page .field-help,.create-page .create-payment-note{color:#5e5a55}
+.create-page .create-form{margin-bottom:24px}
+@media(min-width:900px){
+ .create-page .create-wrap{max-width:780px;padding-top:20px;padding-bottom:20px;display:flex;flex-direction:column;justify-content:center}
+ .create-page .create-intro{max-width:none;width:100%;padding:0 0 18px}
+ .create-page .create-intro h1{font-size:2.6rem;margin-bottom:8px}
+ .create-page .create-intro p{max-width:none;line-height:1.45}
+ .create-page .create-form{width:100%;max-width:none;margin:0;padding:24px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px;align-items:start}
+ .create-page .create-form>.field{min-width:0;margin:0}
+ .create-page .create-form label{margin-bottom:5px}
+ .create-page .create-form input,.create-page .create-form select{min-height:44px;padding-top:10px;padding-bottom:10px}
+ .create-page .create-form .field-help{margin-top:5px;font-size:.82rem;line-height:1.4}
+ .create-page .create-submit,.create-page .create-payment-note,.create-page #status{grid-column:1/-1}
+ .create-page .create-submit{min-height:46px;margin-top:0}
+ .create-page .create-payment-note{margin:0;line-height:1.4}
+ .create-page #status{margin-top:0}
+}
+@media(min-width:900px) and (max-height:700px){
+ .create-page .create-wrap{padding-top:8px;padding-bottom:8px}
+ .create-page .create-intro{padding-bottom:12px}
+ .create-page .create-form{padding:16px;gap:12px 24px}
+ .create-page .forge-style-footer{padding-top:12px;padding-bottom:12px}
+}

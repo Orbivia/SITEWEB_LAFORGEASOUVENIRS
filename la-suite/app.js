@@ -269,7 +269,7 @@ async function initCreate(){
  const iso=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
  const tomorrow=new Date(parisDay()+'T12:00:00Z');tomorrow.setUTCDate(tomorrow.getUTCDate()+1);
  const minDate=tomorrow.toISOString().slice(0,10),maxDate=latestEventDate();
- $("wedding-date-help").textContent="Événement à prévoir dans les deux prochaines années, jusqu’au "+fdate(maxDate)+" inclus.";
+ $("wedding-date-help").textContent="Date possible jusqu’au "+fdate(maxDate)+".";
  const clearDraft=()=>{try{localStorage.removeItem(draftKey)}catch{}};
  const storeDraft=d=>{try{localStorage.setItem(draftKey,JSON.stringify(d));return true}catch{return false}};
 
@@ -403,10 +403,10 @@ async function initCreate(){
   }}catch(error){show(status,"Connexion interrompue. Votre préparation est conservée ; réessayez.",false);submit.disabled=false}
  }
  const pending=readDraft();
- if(currentUser){emailInput.value=currentUser.email;emailInput.readOnly=true;$("email-help").textContent="Cette capsule sera enregistrée dans votre compte."}
+ if(currentUser){emailInput.value=currentUser.email;emailInput.readOnly=true;$("email-help").textContent="Capsule enregistrée dans votre compte."}
  if(pending){$("couple").value=pending.couple;dateInput.value=pending.wedding;dateDisplay.value=frFromIso(pending.wedding);if(!currentUser)emailInput.value=pending.email}
  $("plan").value=PLAN_NAMES[qs.get("plan")]?qs.get("plan"):(pending?.plan||"premium");
- const planDetails={photo:"1 Go · Photos et messages texte.",audio:"2 Go · Photos, messages texte et audio.",premium:"5 Go · Photos, messages texte, audio et vidéo."};
+ const planDetails={photo:"1 Go · Photos et textes.",audio:"2 Go · Photos, textes et audio.",premium:"5 Go · Photos, textes, audio et vidéo."};
  const updatePlanDetails=()=>{$("plan-details").textContent=planDetails[$("plan").value]||planDetails.premium};
  $("plan").addEventListener("change",updatePlanDetails);updatePlanDetails();
  if(qs.get("resume")==="1"&&currentUser&&pending){
