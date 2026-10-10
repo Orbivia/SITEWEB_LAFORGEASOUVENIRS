@@ -6,7 +6,7 @@
   if(!controls||document.body.classList.contains('organizer-layout-ready'))return;
   document.body.classList.add('organizer-layout-ready');
   const header=document.querySelector('.suite-topbar'),tabs=document.querySelector('.owner-tabs');
-  const brand=header.querySelector('.suite-brand img');brand.src='assets/la-suite-logo.webp?v=20261010-medium';brand.alt='La Suite — Capsule temporelle';
+  const brand=header.querySelector('.suite-brand img');brand.src='assets/la-suite-logo.webp?v=20261010-forge-type';brand.alt='La Suite — Capsule temporelle';
   header.insertBefore(tabs,header.children[1]);
   new ResizeObserver(()=>document.body.style.setProperty('--organizer-header-height',Math.ceil(header.parentElement.getBoundingClientRect().height)+'px')).observe(header.parentElement);
   const selector=document.querySelector('.workspace-selector');

@@ -1240,7 +1240,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
 
 
  try{
-  const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20261010-medium");
+  const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20261010-forge-type");
   const maxW=mobileLogo?360:260,maxH=mobileLogo?144:104,scale=Math.min(maxW/logo.naturalWidth,maxH/logo.naturalHeight);
   const lw=Math.round(logo.naturalWidth*scale),lh=Math.round(logo.naturalHeight*scale);
   // Keep the original alpha, with a light monochrome mark on dark designs.
