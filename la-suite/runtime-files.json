@@ -5,6 +5,7 @@
   "dashboard.html",
   "capsule.html",
   "admin.html",
+  "qr-drawing.js",
   "app.js",
   "workspace.js",
   "admin.js",
@@ -16,5 +17,11 @@
   "capsule-design.js",
   "admin.css",
   "styles.css",
-  "supabase-config.js"
+  "supabase-config.js",
+  "organizer-layout.js",
+  "organizer-layout.css",
+  "guest-landing.js",
+  "guest-landing.css",
+  "welcome-visual.js",
+  "welcome-visual.css"
 ]

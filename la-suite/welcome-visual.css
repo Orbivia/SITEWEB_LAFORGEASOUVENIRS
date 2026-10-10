@@ -81,3 +81,17 @@
 .visual-primary[data-tool=theme] .visual-drawer{transform:translateY(-50%)}
 @media(min-width:761px){.visual-primary .visual-themes img{height:40px}}
 @media(max-height:650px){.visual-primary .visual-themes{gap:4px}.visual-primary .visual-themes img{height:24px}.visual-primary .visual-font-samples button{min-height:40px}.visual-primary .visual-font-samples span{font-size:13px}.visual-primary .visual-drawer section{padding-top:5px;padding-bottom:8px}}
+
+/* Compact full artwork previews, complete palette and QR variants. */
+.visual-primary .visual-themes img{width:auto;max-width:100%;height:36px;object-fit:contain;border-radius:3px}
+.visual-qr-shapes{display:flex;gap:5px;margin-top:10px}
+.visual-qr-shapes button{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:44px;border:1px solid #dce2d7;border-radius:7px;background:#fffefa;padding:5px;font:400 10px Inter,Arial,sans-serif;color:#414b42}
+.visual-qr-shapes span{font-size:18px;line-height:1}.visual-qr-shapes [data-qr-shape=rounded] span{border-radius:5px;background:#e2e8df}
+.visual-qr-shapes [aria-pressed=true]{background:#365748;color:#fff;border-color:#365748}
+@media(max-height:650px){.visual-primary .visual-themes img{height:24px}.visual-primary [data-panel=details] label{margin-bottom:6px}.visual-primary .visual-drawer .visual-check{margin-bottom:7px}.visual-primary .visual-date-help{margin:3px 0 6px}.visual-qr-shapes{margin-top:6px}}
+@media(max-height:650px){
+.visual-primary [data-panel=details] .visual-check{display:inline-flex;width:calc(50% - 3px);gap:4px;font-size:10px;margin:0 0 7px}
+.visual-primary input[data-event-date],.visual-primary input[data-initials]{min-height:32px;font-size:11px;padding:4px}
+.visual-primary .visual-qr-shapes button{min-height:36px;padding:3px;font-size:9px}
+.visual-primary .visual-popover-head{padding-top:5px}
+}

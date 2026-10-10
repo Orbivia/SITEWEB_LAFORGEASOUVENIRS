@@ -864,6 +864,8 @@ function qrOptions(c){
   font:["elegant","classic","modern","romantic","editorial","refined","contemporary","signature"].includes(c.qr_font)?c.qr_font:"elegant",
   style:Object.hasOwn(qrThemes,c.qr_style)?c.qr_style:"romantic",
   size:QR_LARGE_SIZE,
+  showBrand:c.qr_show_brand!==false,
+  shape:["classic","rounded","hearts"].includes(c.welcome_config?.qrShape)?c.welcome_config.qrShape:"classic",
   showInitials:matchMedia("(max-width:760px)").matches?Boolean((c.qr_initials??defaultInitials(c.couple_name)).trim()):c.qr_show_initials!==false
  }
 }
@@ -891,7 +893,7 @@ function collectQrCustomization(c){
   qr_style:$("qr-style")?.value||"romantic",
   qr_size:QR_LARGE_SIZE,
   qr_show_initials:matchMedia("(max-width:760px)").matches?Boolean($("qr-initials-input")?.value.trim()):Boolean($("qr-show-initials")?.checked),
-  qr_show_brand:true,
+  qr_show_brand:document.querySelector('[data-show-logo="card"]')?.checked??(c.qr_show_brand!==false),
   welcome_config:window.SuiteWelcome.collectShared?.()||{...window.SuiteWelcome.options(c.welcome_config||{}),...window.SuiteDesign.fields(c),style:window.SuiteDesign.styles.some(s=>s.id===$("qr-style")?.value)||$("qr-style")?.value==="custom"?$("qr-style").value:(c.welcome_config?.style||"capsule"),font:$("qr-font")?.value||"elegant",color:$("qr-color")?.value||"#8b2730"}
  }
 }
@@ -935,12 +937,12 @@ function makeQrCanvas(url,o){
   qrModelCache={key,model:code._oQRCode};
  }
  // Repaint from the cached matrix: reused canvas bitmaps may be discarded by the browser.
- const model=qrModelCache.model,n=model.getModuleCount(),cell=12,quiet=4;
+ const model=qrModelCache.model,n=model.getModuleCount(),cell=12,quiet=o.shape==='hearts'?7:4;
  const canvas=document.createElement("canvas");canvas.width=canvas.height=(n+quiet*2)*cell;
  const ctx=canvas.getContext("2d");
  ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.fillStyle=qrInk(o.color);
- for(let y=0;y<n;y++)for(let x=0;x<n;x++)if(model.isDark(y,x))ctx.fillRect((x+quiet)*cell,(y+quiet)*cell,cell,cell);
+ window.SuiteQr.draw(ctx,model,{shape:o.shape,cell,quiet});
  return canvas;
 }
 function drawQrMonogram(ctx,o,cx,cy,size,background){
@@ -1242,7 +1244,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:explanationBottom-explanationY},{size:44,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
 
 
- try{
+ if(o.showBrand)try{
   const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20261010-forge-type");
   const maxW=mobileLogo?360:260,maxH=mobileLogo?144:104,scale=Math.min(maxW/logo.naturalWidth,maxH/logo.naturalHeight);
   const lw=Math.round(logo.naturalWidth*scale),lh=Math.round(logo.naturalHeight*scale);

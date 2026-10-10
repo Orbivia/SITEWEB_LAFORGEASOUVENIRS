@@ -33,7 +33,7 @@
   $('guest-read-more').hidden=!$('capsule-welcome').textContent.trim()||$('capsule-welcome').scrollHeight<=$('capsule-welcome').clientHeight+1;
  }
  function render(state){
-  const o=window.SuiteWelcome.options(state.welcome_config),theme=window.SuiteDesign.styles.find(s=>s.id===o.style),dark=theme?.dark||false;
+  landing.querySelector('.guest-home-footer img').hidden=state.welcome_config?.welcomeShowLogo===false;const o=window.SuiteWelcome.options(state.welcome_config),theme=window.SuiteDesign.styles.find(s=>s.id===o.style),dark=theme?.dark||false;
   const surface=dark?theme.background:getComputedStyle(body).getPropertyValue('--welcome-paper').trim();
   const luminance=c=>{const v=c.replace('#','').match(/../g)?.map(n=>{const x=parseInt(n,16)/255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4});return v?.length===3?v[0]*.2126+v[1]*.7152+v[2]*.0722:1;};
   const a=luminance(o.color),b=luminance(surface),ratio=(Math.max(a,b)+.05)/(Math.min(a,b)+.05),accent=ratio>=3?o.color:dark?'#eee2cc':'#514536';
