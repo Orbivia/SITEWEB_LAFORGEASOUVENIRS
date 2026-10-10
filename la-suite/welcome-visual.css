@@ -410,3 +410,8 @@
 .visual-primary .visual-welcome-content>.visual-intro-pencil:focus-visible{outline:3px solid #365748;outline-offset:3px}
 .visual-primary .visual-welcome-content>.visual-message{padding-right:24px}
 .visual-primary .visual-welcome-content>.visual-welcome-edit{margin-top:0;margin-bottom:0}
+
+/* Keep available download, print and sharing actions in a single equal-width row. */
+.visual-primary-ready .visual-primary .visual-actions .qr-preview-actions{display:grid!important;grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;flex-wrap:nowrap}
+.visual-primary-ready .visual-primary .visual-actions .qr-preview-actions .btn{width:100%;min-width:0;max-width:none;margin:0;box-sizing:border-box;min-height:48px!important;padding:8px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:12px!important;line-height:1.2;white-space:nowrap}
+.visual-primary-ready .visual-primary .visual-actions .qr-preview-actions .btn i{font-size:16px}
