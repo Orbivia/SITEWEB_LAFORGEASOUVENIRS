@@ -333,3 +333,20 @@
  .visual-primary .visual-actions{padding:8px 6px}
  .visual-primary .visual-actions .organizer-export-availability{margin:7px 0 2px}
 }
+
+/* More legible choices and a clear separation from the card. */
+.welcome-visual-editor.visual-primary,.welcome-visual-editor.visual-primary[data-panel-open=true]{column-gap:8px;--visual-panel-width:clamp(136px,35%,245px)}
+.visual-primary .visual-drawer .visual-tools{gap:3px}
+.visual-primary .visual-drawer .visual-tools span{font-size:9px;letter-spacing:-.2px}
+.visual-primary .visual-drawer .visual-tools button{min-height:44px}
+.visual-primary .visual-targets button{font-size:13px}
+.visual-primary .visual-actions button{font-size:13px!important}
+.visual-primary .visual-drawer .visual-themes button,.visual-primary[data-tool=theme] .visual-drawer .visual-themes button{font-size:11px;line-height:1.15}
+.visual-primary .visual-themes span:not(.visual-theme-motif){white-space:normal}
+.visual-primary .visual-colors button,.visual-primary .visual-custom-color small{font-size:12px}
+.visual-primary .visual-font-samples span{font-size:16px}.visual-primary .visual-font-samples small{font-size:11px}
+.visual-primary .visual-drawer [data-panel=details] .visual-qr-shapes button{font-size:12px}
+.visual-primary[data-tight-panel=true] .visual-drawer [data-panel=details] .visual-qr-shapes button{font-size:10px}
+.visual-primary[data-tight-panel=true] .visual-drawer [data-panel=details]>label:not(.visual-check){flex-direction:column;align-items:stretch;white-space:normal;font-size:10px}
+@media(min-width:761px){.visual-primary .visual-drawer .visual-tools span{font-size:11px}}
+@media(max-width:350px){.welcome-visual-editor.visual-primary,.welcome-visual-editor.visual-primary[data-panel-open=true]{--visual-panel-width:124px;column-gap:6px}.visual-primary .visual-drawer .visual-tools span{font-size:8px}}

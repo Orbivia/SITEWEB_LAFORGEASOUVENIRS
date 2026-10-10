@@ -1219,7 +1219,7 @@ function drawPrintTextBox(ctx,text,box,{size,family,weight,maxLines=12,minSize=3
 async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const o=qrOptions(c);
  const qr=makeQrCanvas(url,o);
- if(document.fonts?.load)try{await Promise.all([document.fonts.load(qrFontWeight(o.font)+' 72px "'+qrFontFamily(o.font)+'"'),document.fonts.load('600 32px "Cormorant Garamond"'),document.fonts.load('400 25px Inter'),document.fonts.load('700 32px Inter')])}catch(e){}
+ if(document.fonts?.load)try{await Promise.all([document.fonts.load(qrFontWeight(o.font)+' 72px "'+qrFontFamily(o.font)+'"'),document.fonts.load(qrFontWeight(o.font)+' 56px "'+qrFontFamily(o.font)+'"'),document.fonts.load('400 44px "'+qrFontFamily(o.font)+'"'),document.fonts.load('400 25px Inter'),document.fonts.load('700 32px Inter')])}catch(e){}
  const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
  const W=1181,H=1772,contentInset=200,frameMargin=84;canvas.width=W;canvas.height=H;
  const issues=[];canvas.cardTextIssues=issues;
@@ -1247,11 +1247,11 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const explanationBottom=Math.min(1540,logoTop-32);
  const textBox={x:contentInset,y:1220,width:W-contentInset*2,height:150};
  ctx.fillStyle=accent;
- const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'Inter, Arial, sans-serif',weight:'600',maxLines:6,minSize:38,onOverflow:()=>issues.push('print-note')});
+ const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:6,minSize:38,onOverflow:()=>issues.push('print-note')});
  const explanationY=noteBottom+(o.note?26:0);
  canvas.cardTextBoxes={'print-title':{x:contentInset,y:210,width:W-contentInset*2,height:175},date:{x:contentInset,y:397,width:W-contentInset*2,height:60},'print-note':{...textBox,height:Math.max(55,noteBottom-textBox.y)},'print-explanation':{...textBox,y:explanationY,height:Math.max(55,explanationBottom-explanationY)}};
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
- drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:explanationBottom-explanationY},{size:44,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
+ drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:explanationBottom-explanationY},{size:44,family:'"'+ff+'", serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
 
 
  if(o.showBrand)try{
