@@ -203,3 +203,20 @@
 @media(min-width:761px){.welcome-visual-editor.visual-primary{--visual-panel-width:160px;--visual-rail-width:64px}.visual-primary .visual-tools button{min-height:56px}.visual-primary .visual-tools span{font-size:10px}.visual-primary .visual-popover-head strong{font-size:12px;line-height:16px}.visual-primary .visual-themes button,.visual-primary[data-tool=theme] .visual-themes button{font-size:10px;min-height:36px}.visual-primary .visual-font-samples span{font-size:15px}}
 @media(max-width:350px){.welcome-visual-editor.visual-primary{--visual-panel-width:88px;--visual-rail-width:44px}}
 @media(max-height:650px){.visual-primary .visual-tools button{min-height:40px;padding:5px 1px}.visual-primary .visual-tools i,.visual-primary .visual-tools strong{font-size:17px}}
+
+/* Full-height appearance panels: all choices stay visible on one screen. */
+.visual-primary .visual-drawer,.visual-primary[data-tool=theme] .visual-drawer,.visual-primary[data-tool=color] .visual-drawer,.visual-primary[data-tool=font] .visual-drawer,.visual-primary[data-tool=options] .visual-drawer{overflow:hidden;display:flex;flex-direction:column;align-self:stretch}
+.visual-primary .visual-drawer[hidden]{display:none!important}
+.visual-primary .visual-popover-head{position:relative;justify-content:flex-end;flex:0 0 24px;padding:0 2px;height:24px;box-sizing:border-box}
+.visual-primary .visual-popover-head button{min-height:24px;height:24px}
+.visual-primary #visual-settings{flex:1;min-height:0;overflow:hidden}
+.visual-primary .visual-drawer section,.visual-primary[data-tool=theme] .visual-drawer section{box-sizing:border-box;padding:4px;overflow:visible}
+.visual-primary .visual-themes,.visual-primary[data-tool=theme] .visual-themes,.visual-primary .visual-font-samples{grid-auto-rows:var(--visual-choice-height,32px);gap:3px}
+.visual-primary .visual-themes button,.visual-primary .visual-themes .visual-import,.visual-primary[data-tool=theme] .visual-themes button,.visual-primary[data-tool=theme] .visual-themes .visual-import{min-height:0;height:100%;padding:2px;gap:3px;box-sizing:border-box}
+.visual-primary .visual-themes .visual-theme-motif,.visual-primary .visual-themes img,.visual-primary[data-tool=theme] .visual-themes .visual-theme-motif,.visual-primary[data-tool=theme] .visual-themes img{height:clamp(10px,calc(var(--visual-choice-height,32px) - 6px),24px);width:clamp(10px,calc(var(--visual-choice-height,32px) - 6px),24px);flex-basis:clamp(10px,calc(var(--visual-choice-height,32px) - 6px),24px)}
+.visual-primary .visual-font-samples button{min-height:0;height:100%;padding:2px;gap:1px;box-sizing:border-box}
+.visual-primary .visual-font-samples span{font-size:12px;line-height:1.1}.visual-primary .visual-font-samples small{font-size:8px;line-height:1.1}
+.visual-primary .visual-colors{grid-template-columns:var(--visual-choice-height,32px);gap:3px;padding:0;margin:0}
+.visual-primary .visual-colors button,.visual-primary .visual-custom-color{width:var(--visual-choice-height,32px);height:var(--visual-choice-height,32px);min-height:0;box-sizing:border-box;flex-basis:auto}
+.visual-primary .visual-qr-shapes button{min-height:24px;padding:2px 3px}
+.visual-primary .visual-drawer [data-panel=details]>small{display:block;font-size:9px;line-height:1.2}
