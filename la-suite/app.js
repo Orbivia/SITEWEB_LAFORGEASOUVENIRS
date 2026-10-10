@@ -1116,8 +1116,11 @@ function applyQrPreview(url,c){
  clearTimeout(qrPreviewTimer);
  qrPreviewTimer=setTimeout(async()=>{
   try{
-   const canvas=await buildPrintCardCanvas(snapshot,url);
+   const canvas=await buildPrintCardCanvas(snapshot,url,{preview:true});
    if(revision!==qrPreviewRevision||ownerSessionEnded)return;
+   const labels={'print-title':'le titre','print-note':'le message sous le QR','print-explanation':'le texte d’explication'};
+   Object.keys(labels).forEach(id=>{const field=$(id),hint=$(id+'-fit');if(field)field.setAttribute('aria-invalid',String(canvas.cardTextIssues.includes(id)));if(hint){hint.hidden=!canvas.cardTextIssues.includes(id);hint.textContent='Texte trop long pour rester lisible : raccourcissez-le.';}});
+   const warning=$('organizer-card-readability');if(warning){warning.hidden=!canvas.cardTextIssues.length;warning.textContent=canvas.cardTextIssues.length?'Raccourcissez '+canvas.cardTextIssues.map(id=>labels[id]).join(' et ')+'. L’aperçu est abrégé ; votre texte complet est conservé.':'';}
    const thumbnail=document.createElement('canvas');thumbnail.width=720;thumbnail.height=1080;
    thumbnail.getContext('2d').drawImage(canvas,0,0,thumbnail.width,thumbnail.height);
    const blob=await new Promise(resolve=>thumbnail.toBlob(resolve,'image/png'));
@@ -1175,36 +1178,46 @@ function fitPrintFont(ctx,text,width,lines,size,family,weight){
  return size;
 }
 // Fit actual glyph bounds, including script flourishes, inside a reserved text rectangle.
-function drawPrintTextBox(ctx,text,box,{size,family,weight,maxLines=12}){
+function drawPrintTextBox(ctx,text,box,{size,family,weight,maxLines=12,minSize=34,onOverflow}){
  if(!String(text||'').trim())return box.y;
  ctx.textAlign='center';ctx.textBaseline='alphabetic';
  let lines,metrics,lineHeight,ascent,descent,height;
- for(;size>=16;size--){
+ let fits=false;
+ for(;size>=minSize;size--){
   ctx.font=weight+' '+size+'px '+family;
   lines=wrapCanvasLines(ctx,text,box.width,100);metrics=lines.map(line=>ctx.measureText(line));
   ascent=Math.max(...metrics.map(m=>m.actualBoundingBoxAscent||size));
   descent=Math.max(0,...metrics.map(m=>m.actualBoundingBoxDescent||0));
   lineHeight=Math.max(size*1.2,ascent+descent+8);height=ascent+descent+(lines.length-1)*lineHeight;
-  if(lines.length<=maxLines&&height<=box.height&&metrics.every(m=>m.width<=box.width&&m.actualBoundingBoxLeft<=box.width/2&&m.actualBoundingBoxRight<=box.width/2))break;
+  fits=lines.length<=maxLines&&height<=box.height&&metrics.every(m=>m.width<=box.width&&m.actualBoundingBoxLeft<=box.width/2&&m.actualBoundingBoxRight<=box.width/2);
+  if(fits||size===minSize)break;
+ }
+ if(!fits){
+  onOverflow?.();
+  const count=Math.max(1,Math.min(maxLines,Math.floor((box.height-ascent-descent)/lineHeight)+1));
+  lines=lines.slice(0,count);
+  lines=lines.map((line,i)=>{let value=line+(i===lines.length-1?'…':'');for(let m=ctx.measureText(value);value.length>1&&(m.width>box.width||m.actualBoundingBoxLeft>box.width/2||m.actualBoundingBoxRight>box.width/2);m=ctx.measureText(value))value=value.slice(0,-2)+'…';return value;});
+  metrics=lines.map(line=>ctx.measureText(line));ascent=Math.max(...metrics.map(m=>m.actualBoundingBoxAscent||size));descent=Math.max(0,...metrics.map(m=>m.actualBoundingBoxDescent||0));height=ascent+descent+(lines.length-1)*lineHeight;
  }
  ctx.textAlign='center';ctx.textBaseline='alphabetic';
  const y=box.y+(box.center?(box.height-height)/2:0)+ascent;
  lines.forEach((line,i)=>ctx.fillText(line,box.x+box.width/2,y+i*lineHeight));
  return y+(lines.length-1)*lineHeight+descent;
 }
-async function buildPrintCardCanvas(c,url){
+async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const o=qrOptions(c);
  const qr=makeQrCanvas(url,o);
  if(document.fonts?.load)try{await Promise.all([document.fonts.load(qrFontWeight(o.font)+' 72px "'+qrFontFamily(o.font)+'"'),document.fonts.load('600 32px "Cormorant Garamond"'),document.fonts.load('400 25px Inter'),document.fonts.load('700 32px Inter')])}catch(e){}
  const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
  const W=1181,H=1772;canvas.width=W;canvas.height=H;
+ const issues=[];canvas.cardTextIssues=issues;
  const config=c.welcome_config||{},artwork=window.SuiteDesign.artwork(o.style,{...config,background:window.SuiteDesign.background(c)});
  if(artwork){const image=await loadCanvasImage(artwork);const scale=Math.max(W/image.naturalWidth,H/image.naturalHeight),iw=image.naturalWidth*scale,ih=image.naturalHeight*scale;ctx.drawImage(image,(W-iw)*window.SuiteDesign.position(config.cardX)/100,(H-ih)*window.SuiteDesign.position(config.cardY)/100,iw,ih);}else{drawQrBackdrop(ctx,o,W,H);drawQrDecor(ctx,o,W,H);}
  // The artwork itself reserves the text area; no colored panel covers the design.
  const dark=qrThemes[o.style].dark;
  ctx.fillStyle=dark?'#fffaf1':'#201c1a';
  const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?150:o.font==='contemporary'?120:o.font==='refined'?122:140;
- drawPrintTextBox(ctx,o.title,{x:180,y:190,width:W-360,height:195,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3});
+ drawPrintTextBox(ctx,o.title,{x:180,y:190,width:W-360,height:195,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3,minSize:56,onOverflow:()=>issues.push('print-title')});
  ctx.font='400 44px Inter,Arial,sans-serif';ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
  drawQrDivider(ctx,o,W/2,490);
  const qsize=660,qx=Math.round((W-qsize)/2),qy=510;
@@ -1218,10 +1231,10 @@ async function buildPrintCardCanvas(c,url){
 
  const textBox={x:180,y:1220,width:W-360,height:150};
  ctx.fillStyle=dark?'#fffaf1':'#262220';
- const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'Inter, Arial, sans-serif',weight:'600',maxLines:6});
+ const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'Inter, Arial, sans-serif',weight:'600',maxLines:6,minSize:38,onOverflow:()=>issues.push('print-note')});
  const explanationY=noteBottom+(o.note?26:0);
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
- drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:1540-explanationY},{size:44,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12});
+ drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:1540-explanationY},{size:44,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
 
 
  try{
@@ -1238,6 +1251,7 @@ async function buildPrintCardCanvas(c,url){
   ctx.font='700 34px "Cormorant Garamond", Georgia, serif';
   ctx.fillText("La Suite",W/2,H-105)
  }
+ if(issues.length&&!preview)throw new Error('Raccourcissez les textes signalés avant de télécharger ou d’imprimer la fiche. Le QR code seul reste disponible.');
  return canvas
 }
 async function buildA4PrintCanvas(c,url){
@@ -1868,7 +1882,7 @@ async function initDashboard(){
  if(adminError)return $('dashboard-content').innerHTML='<p class="status show err">Vérification du compte impossible. Rechargez la page.</p>';
  if(adminMember===true)return location.replace('admin.html'+location.hash);
 
- sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;ownerDownloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));$('organizer-guest-preview')?.close();$('welcome-editor')?.close();$('print-download-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
+ sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;ownerDownloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));$('organizer-guest-preview')?.close();$('welcome-editor')?.close();$('print-download-dialog')?.close();$('organizer-card-preview-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
  const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
  const{data:caps,error}=await sb.from("capsules").select("id,slug,status,plan,admin_plan_override,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,welcome_config,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(ownerSessionEnded)return;

@@ -202,3 +202,62 @@
  .organizer-layout-ready #design-welcome-preview{height:max(350px,calc(100dvh - 305px))}
 }
 @media(max-width:760px){.organizer-layout-ready .organizer-date-picker{top:27px}.organizer-layout-ready #qr-artwork-preview{height:auto!important}.organizer-layout-ready .qr-designer-preview{padding:10px}}
+
+/* Readable editor, larger card and activation beside the preview. */
+.organizer-layout-ready .qr-designer-grid{grid-template-columns:minmax(390px,.85fr) minmax(0,1.15fr)!important;align-items:start}
+.organizer-layout-ready .qr-designer-preview{align-self:start}
+.organizer-layout-ready .qr-preview-sticky{position:static!important}
+.organizer-layout-ready .organizer-compact-fields .field:has(#print-title),.organizer-layout-ready .organizer-compact-fields .field:has(#print-note){grid-column:1/-1}
+.organizer-layout-ready .organizer-welcome-shortcut{order:2}
+.organizer-layout-ready .organizer-compact-fields .field:has(#print-note){order:3}
+.organizer-layout-ready .organizer-compact-fields [data-char-count]{display:inline;font:400 11px Inter,sans-serif;color:#76675e;margin-left:auto;white-space:nowrap}
+.organizer-layout-ready .organizer-compact-fields .qr-field-label-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.organizer-layout-ready .organizer-compact-fields textarea{height:80px;min-height:80px;resize:vertical;font:400 14px/1.5 Inter,sans-serif;padding:9px 11px}
+.organizer-layout-ready .organizer-compact-fields #print-note{font:400 14px/1.5 Inter,sans-serif}
+.organizer-layout-ready .organizer-extra-options textarea{min-height:96px;font:400 14px/1.5 Inter,sans-serif}
+.organizer-layout-ready .organizer-extra-options [data-char-count]{font:400 11px Inter,sans-serif;margin-left:auto}
+.organizer-layout-ready .qr-font-menu button{min-height:58px;padding:5px!important}
+.organizer-layout-ready .qr-font-menu .qr-font-sample{font-size:20px!important;line-height:1.3!important;white-space:normal}
+.organizer-layout-ready .qr-font-menu small{font:400 11px Inter,sans-serif}
+.organizer-color-status{font:400 11px/1.5 Inter,sans-serif;color:#706359;margin:5px 0 0;min-height:17px}
+.organizer-layout-ready .qr-color-palette [aria-pressed=true]::before,.organizer-layout-ready .qr-custom-color.is-selected::before{outline:2px solid var(--organizer-burgundy);outline-offset:3px}
+.organizer-layout-ready .qr-color-palette [aria-pressed=true] span,.organizer-layout-ready .qr-custom-color.is-selected span{font-weight:700;color:var(--organizer-burgundy)}
+.organizer-preview-zoom{display:block;margin:0 auto 4px;padding:3px 8px;border:0;background:none;color:#650f25;font:500 11px/1.5 Inter,sans-serif;cursor:pointer}
+.organizer-layout-ready #qr-artwork-preview{cursor:zoom-in}
+.organizer-layout-ready #qr-artwork-preview:focus-visible,.organizer-preview-zoom:focus-visible{outline:2px solid #650f25;outline-offset:3px}
+.organizer-layout-ready .qr-designer-preview .activation-panel{margin:12px 0 0;gap:7px}
+.organizer-layout-ready .qr-designer-preview .atelier-customization-note{background:none;padding:0;text-align:center;font:400 11px/1.5 Inter,sans-serif}
+.organizer-layout-ready .qr-preview-actions .btn:disabled{opacity:1!important;background:#eee8e1!important;color:#83766d!important;border:1px solid #ddd3c9!important;cursor:not-allowed}
+.organizer-export-availability{font:400 11px/1.5 Inter,sans-serif;text-align:center;color:#706359;margin:6px 0}
+.organizer-readability-warning,.organizer-text-fit{font:500 12px/1.5 Inter,sans-serif;color:#9b2336;margin:6px 0}
+.organizer-text-fit{display:block}
+.organizer-text-fit[hidden],.organizer-readability-warning[hidden],.organizer-export-availability[hidden],.organizer-preview-zoom[hidden]{display:none!important}
+.organizer-layout-ready [aria-invalid=true]{border-color:#9b2336!important}
+.organizer-card-dialog{box-sizing:border-box;width:min(96vw,900px);max-width:none;max-height:96dvh;padding:18px;border:1px solid #e5dbce;border-radius:14px;background:#fcfaf6}
+.organizer-card-dialog::backdrop{background:#211517b3}
+.organizer-card-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:12px}
+.organizer-card-dialog-head h2{margin:0;font:600 24px 'Cormorant Garamond',serif;color:#650f25}
+.organizer-card-dialog-head button{width:40px;height:40px;border:1px solid #dfd5ca;border-radius:8px;background:white;font-size:24px;cursor:pointer}
+.organizer-card-dialog>img{display:block;width:auto;max-width:100%;height:auto;max-height:calc(96dvh - 125px);margin:auto;object-fit:contain}
+.organizer-card-dialog>p{text-align:center;font:400 11px Inter,sans-serif;color:#706359;margin:10px 0 0}
+@media(min-width:761px){
+ .organizer-layout-ready .suite-topbar,.organizer-layout-ready .owner-tabs button{min-height:64px!important}
+ .organizer-layout-ready main.dashboard-page{max-width:1520px;padding-top:12px!important}
+ .organizer-layout-ready .qr-designer-head{width:calc(42.5% - 19px)}
+ .organizer-layout-ready .qr-designer-head h2{font-size:34px}
+ .organizer-layout-ready .qr-designer-head p{font-size:12px;line-height:1.4}
+ .organizer-layout-ready .qr-designer-preview{margin-top:64px}
+ .organizer-layout-ready #qr-artwork-preview{height:clamp(390px,calc(100dvh - 330px),820px)!important}
+ .organizer-layout-ready #design-welcome-preview{height:clamp(390px,calc(100dvh - 330px),820px)}
+ .organizer-layout-ready .design-preview-tabs button{min-height:30px}
+}
+@media(min-width:761px) and (max-width:1050px){.organizer-layout-ready .qr-designer-grid{grid-template-columns:minmax(310px,.85fr) minmax(0,1.15fr)!important;gap:20px!important}.organizer-layout-ready .qr-font-menu .qr-font-sample{font-size:16px!important}}
+@media(max-width:760px){
+ .organizer-layout-ready .qr-designer-grid{grid-template-columns:minmax(0,1fr)!important}
+ .organizer-layout-ready .qr-font-menu,.organizer-layout-ready .qr-font-menu[hidden]{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .organizer-layout-ready .qr-font-menu .qr-font-sample{font-size:20px!important}
+ .organizer-layout-ready .organizer-compact-fields{grid-template-columns:minmax(0,1fr)}
+ .organizer-layout-ready .organizer-welcome-shortcut{order:4}
+ .organizer-layout-ready #qr-artwork-preview{height:auto!important;width:100%!important}
+ .organizer-card-dialog{padding:12px}
+}

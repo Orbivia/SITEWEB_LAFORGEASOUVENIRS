@@ -15,7 +15,10 @@
   document.querySelector('.qr-control-title').hidden=true;
   const design=document.querySelector('.qr-theme-gallery').closest('.customization-card');
   const designHeading=design.querySelector('h3,h4,strong');if(designHeading)designHeading.textContent='Design commun';
-  document.querySelectorAll('.qr-font-sample').forEach(e=>e.textContent='Aa');
+  document.querySelectorAll('.qr-font-menu .qr-font-sample').forEach(e=>e.textContent='Votre événement');
+  const colorGroup=document.querySelector('.qr-color-palette').closest('.customization-card');colorGroup.querySelector('h3,h4').textContent='Couleur du QR';
+  const colorStatus=document.createElement('p');colorStatus.className='organizer-color-status';colorStatus.setAttribute('aria-live','polite');colorGroup.append(colorStatus);
+  const syncColorChoice=()=>{const value=$('qr-color').value.toUpperCase();let name='Palette personnalisée';document.querySelectorAll('[data-qr-color]').forEach(b=>{const selected=b.dataset.qrColor.toUpperCase()===value;b.setAttribute('aria-pressed',String(selected));if(selected)name=b.getAttribute('aria-label');});const custom=document.querySelector('.qr-custom-color');custom.classList.toggle('is-selected',name==='Palette personnalisée');colorStatus.textContent=name+' · le contraste du QR est ajusté pour rester lisible.';};$('qr-color').addEventListener('input',syncColorChoice);$('qr-style').addEventListener('change',syncColorChoice);syncColorChoice();
   const personalization=document.querySelector('.qr-personalization-group');
   const compact=document.createElement('div');compact.className='organizer-compact-fields';
   const date=$('capsule-date').closest('.field'),dateHome=document.createComment('date');date.before(dateHome);
@@ -33,9 +36,18 @@
   const advanced=document.createElement('details');advanced.className='organizer-extra-options';advanced.innerHTML='<summary>Options de la fiche · monogramme et explication</summary>';advanced.append(textGroup,document.querySelector('.qr-initials-card'));compact.after(advanced);
   // Intro controls are edited in the existing welcome dialog, not duplicated on the page.
   $('organizer-welcome').classList.add('organizer-welcome-hidden');
-  const stage=document.querySelector('.activation-panel');if(stage)advanced.after(stage);
+  const preview=document.querySelector('.qr-designer-preview'),previewStage=document.querySelector('.qr-preview-stage');
+  const stage=document.querySelector('.activation-panel');
+  const placeActivation=()=>{if(!stage)return;if(!matchMedia('(max-width:760px)').matches||document.querySelector('.qr-designer-panel').dataset.designView==='preview')previewStage.after(stage);else controls.insertBefore(stage,controls.querySelector('.design-mobile-footer'));};
+  window.SuiteOrganizerLayout.placeActivation=placeActivation;matchMedia('(max-width:760px)').addEventListener('change',placeActivation);placeActivation();
+  const warning=document.createElement('p');warning.id='organizer-card-readability';warning.className='organizer-readability-warning';warning.hidden=true;warning.setAttribute('role','status');previewStage.after(warning);
+  for(const id of ['print-title','print-note','print-explanation']){const field=$(id),hint=document.createElement('small');hint.id=id+'-fit';hint.className='organizer-text-fit';hint.hidden=true;hint.setAttribute('role','status');field.setAttribute('aria-describedby',hint.id);field.after(hint);}
+  const zoom=document.createElement('button');zoom.type='button';zoom.className='organizer-preview-zoom';zoom.innerHTML='<i class="fa-solid fa-expand" aria-hidden="true"></i> Agrandir l’aperçu';previewStage.before(zoom);
+  const full=document.createElement('dialog');full.id='organizer-card-preview-dialog';full.className='organizer-card-dialog';full.setAttribute('aria-labelledby','organizer-card-preview-title');full.innerHTML='<div class="organizer-card-dialog-head"><h2 id="organizer-card-preview-title">Votre fiche QR</h2><button type="button" aria-label="Fermer l’aperçu agrandi">×</button></div><img alt="Votre fiche QR en grand format"><p>Carte 10 × 15 cm · aperçu de l’impression</p>';$('dashboard-content').append(full);
+  const artwork=$('qr-artwork-preview');const openFull=()=>{if(artwork.hidden||!artwork.src)return;full.querySelector('img').src=artwork.src;full.showModal();};zoom.onclick=openFull;artwork.tabIndex=0;artwork.setAttribute('role','button');artwork.setAttribute('aria-label','Agrandir l’aperçu de la fiche QR');artwork.onclick=openFull;artwork.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openFull();}});full.querySelector('button').onclick=()=>full.close();full.addEventListener('close',()=>zoom.focus());new MutationObserver(()=>{zoom.hidden=artwork.hidden;if(full.open)full.querySelector('img').src=artwork.src;}).observe(artwork,{attributes:true,attributeFilter:['src','hidden']});
   const actions=document.querySelector('.qr-preview-actions');actions.append($('download-print-card'),$('print-print-card'),$('share-link'));$('share-link').innerHTML='<i class="fa-solid fa-share-nodes" aria-hidden="true"></i>Partager le lien';
   $('print-print-card').classList.replace('primary','secondary');$('download-print-card').classList.replace('secondary','primary');
+  const availability=document.createElement('p');availability.className='organizer-export-availability';availability.textContent=!$('download-print-card').disabled?'':c.usage?.state==='expired'?'La période de conservation est terminée.':'Téléchargement, impression et partage disponibles après activation.';availability.hidden=!$('download-print-card').disabled;actions.after(availability);
   // Keep the full guest journey accessible without adding a fourth action to the row.
   const guide=document.querySelector('.qr-print-guide');guide.after($('open-guest-link'));$('open-guest-link').className='organizer-guest-preview-link';guide.querySelector('summary').textContent='Conseils d’impression et aperçu du parcours invité';
   if(c.print_title==='Notre capsule temporelle'&&c.couple_name){$('print-title').value=c.couple_name.slice(0,42);$('print-title').dispatchEvent(new Event('input',{bubbles:true}));}
