@@ -1229,27 +1229,29 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
 
  if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize,background);
 
+ const mobileLogo=matchMedia("(max-width:760px)").matches,logoTop=H-(mobileLogo?(o.style==="gatsby"?240:180):150);
+ const explanationBottom=mobileLogo&&o.style==="gatsby"?logoTop-30:1540;
  const textBox={x:180,y:1220,width:W-360,height:150};
  ctx.fillStyle=dark?'#fffaf1':'#262220';
  const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'Inter, Arial, sans-serif',weight:'600',maxLines:6,minSize:38,onOverflow:()=>issues.push('print-note')});
  const explanationY=noteBottom+(o.note?26:0);
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
- drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:1540-explanationY},{size:44,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
+ drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:explanationBottom-explanationY},{size:44,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
 
 
  try{
-  const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20261010-legible");
-  const mobileLogo=matchMedia("(max-width:760px)").matches,maxW=mobileLogo?360:260,maxH=mobileLogo?144:104,scale=Math.min(maxW/logo.naturalWidth,maxH/logo.naturalHeight);
+  const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20261010-medium");
+  const maxW=mobileLogo?360:260,maxH=mobileLogo?144:104,scale=Math.min(maxW/logo.naturalWidth,maxH/logo.naturalHeight);
   const lw=Math.round(logo.naturalWidth*scale),lh=Math.round(logo.naturalHeight*scale);
   // Keep the original alpha, with a light monochrome mark on dark designs.
   const mark=document.createElement('canvas');mark.width=lw;mark.height=lh;
   const markCtx=mark.getContext('2d');markCtx.drawImage(logo,0,0,lw,lh);
   if(dark){markCtx.globalCompositeOperation='source-in';markCtx.fillStyle='#fffaf1';markCtx.fillRect(0,0,lw,lh);}
-  ctx.drawImage(mark,(W-lw)/2,H-(matchMedia("(max-width:760px)").matches?180:150),lw,lh)
+  ctx.drawImage(mark,(W-lw)/2,logoTop,lw,lh)
  }catch(e){
   ctx.textAlign="center";ctx.fillStyle=dark?'#fffaf1':'#211d1d';
   ctx.font='700 34px "Cormorant Garamond", Georgia, serif';
-  ctx.fillText("La Suite",W/2,H-(matchMedia("(max-width:760px)").matches?135:105))
+  ctx.fillText("La Suite",W/2,logoTop+45)
  }
  if(issues.length&&!preview)throw new Error('Raccourcissez les textes signalés avant de télécharger ou d’imprimer la fiche. Le QR code seul reste disponible.');
  return canvas
