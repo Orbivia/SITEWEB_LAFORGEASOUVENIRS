@@ -839,7 +839,7 @@ const DEFAULT_CARD_TITLE="Notre capsule temporelle";
 const DEFAULT_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard.";
 const OLD_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard, à la date que vous choisissez.";
 const OLD_CARD_EXPLANATIONS=["une photo ou un texte","une photo, un audio ou un texte","une photo, un audio, une vidéo ou un texte"].map(formats=>"Flashez ce QR code et déposez-y "+formats+". Choisissez la manière la plus naturelle de partager un souvenir avec nous.");
-function capsulePlan(c){return c.admin_plan_override||(['free_beta','legacy'].includes(c.activation_source)?'premium':c.plan)}
+function capsulePlan(c){return window.SuiteDesign.effectivePlan(c)}
 function defaultCardExplanation(plan){
  const formats={photo:"une photo ou un texte",audio:"une photo, un audio ou un texte",premium:"une photo, un audio, une vidéo ou un texte"};
  return "Scannez ce QR code pour déposer "+(formats[plan]||formats.premium)+".";
@@ -1684,16 +1684,21 @@ function setupQrTextCounters(){
 
 function capsuleAccessLastDay(usage){return usage?.access_until?usage.access_until+'T12:00:00Z':usage?.retention_years>3&&usage.delivery_before===usage.expires_at?new Date(new Date(usage.expires_at).getTime()-1000).toISOString():usage?.expires_at}
 function capsuleExpired(c){return c?.usage?.state==='expired'||Boolean(c?.usage?.expires_at&&new Date(c.usage.expires_at).getTime()<=Date.now())}
-const autoOpenedMemories=new Set();
+const memoryRefreshRetries=new Map(),memoryRefreshInFlight=new Set();
 function nextCountdown(c,manifest,onReady){
  clearInterval(countdownTimer);const box=$("next-delivery");box.hidden=false;
  if(capsuleExpired(c)){box.textContent='La période de conservation de cette capsule est terminée.';return}
+ for(const id of memoryRefreshRetries.keys())if(!manifest.some(m=>m.id===id&&!m.is_available))memoryRefreshRetries.delete(id);
  const next=manifest.filter(m=>!m.is_available).sort((a,b)=>new Date(a.delivery_at)-new Date(b.delivery_at))[0];
  if(!next){box.hidden=true;return}
  const tick=()=>{
+  if(ownerSessionEnded||!box.isConnected){clearInterval(countdownTimer);return}
   if(capsuleExpired(c)){clearInterval(countdownTimer);box.textContent='La période de conservation de cette capsule est terminée.';return}
   const delta=new Date(next.delivery_at)-new Date();
-  if(delta<=0){box.innerHTML='<strong>Un souvenir est prêt à être découvert.</strong>';if(document.visibilityState==='visible'&&!autoOpenedMemories.has(next.id)){autoOpenedMemories.add(next.id);setTimeout(onReady,0)}return}
+  if(delta<=0){box.innerHTML='<strong>Un souvenir est prêt à être découvert.</strong>';if(document.visibilityState==='visible'&&!memoryRefreshInFlight.has(next.id)&&Date.now()>=(memoryRefreshRetries.get(next.id)||0)){
+    memoryRefreshRetries.set(next.id,Date.now()+30000);memoryRefreshInFlight.add(next.id);
+    Promise.resolve().then(()=>{if(!ownerSessionEnded&&box.isConnected&&document.visibilityState==='visible')return onReady()}).catch(()=>{}).finally(()=>memoryRefreshInFlight.delete(next.id));
+   }return}
   const d=Math.floor(delta/86400000),h=Math.floor((delta%86400000)/3600000),m=Math.floor((delta%3600000)/60000);box.innerHTML='<span>Prochain souvenir dans</span><strong>'+(d?d+' j ':'')+h+' h '+m+' min</strong>';
  };tick();countdownTimer=setInterval(tick,Math.min(60000,Math.max(1000,new Date(next.delivery_at)-Date.now())));
 }
@@ -1712,7 +1717,7 @@ let memoryMediaObserver=null;
 const pendingMediaUrls=new WeakMap();
 async function renderManifest(c,manifest){
  const list=$("memory-list");
- if(!manifest.length){memoryMediaObserver?.disconnect();list.innerHTML='<div class="notice">Aucun souvenir reçu pour le moment.</div>';return}
+ if(!manifest.length){memoryMediaObserver?.disconnect();list.innerHTML='<div class="notice">Aucun souvenir reçu pour le moment.</div>';applyMemoryFilter();return}
  const{data:rows,error}=await sb.from("messages").select("id,guest_name,message_text,media_type,media_path,delivery_at,created_at").eq("capsule_id",c.id);
  if(ownerSessionEnded)return;
  if(error)throw error;
@@ -2023,7 +2028,3 @@ async function initDashboard(){
 initAuth();initCreate();initCapsule();initDashboard();
 window.addEventListener("beforeunload",stopStream);
 })();
-
-
-
-

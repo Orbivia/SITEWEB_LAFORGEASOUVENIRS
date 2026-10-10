@@ -10,6 +10,31 @@
  function crops(c){return Object.fromEntries(['cardX','cardY','welcomeX','welcomeY'].map(key=>[key,position(c._designCrop?.[key]??c.welcome_config?.[key])]));}
  function fields(c){return {...(background(c)?{background:background(c)}:{}),...crops(c)};}
  function artwork(style,config={}){return style==='custom'?validBackground(config.background):styles.some(s=>s.id===style)?'assets/themes/backgrounds/'+style+'.webp?v=20261009-border1':null;}
+ function effectivePlan(c){return c.admin_plan_override||(['free_beta','legacy'].includes(c.activation_source)?'premium':c.plan);}
+ function thumbnail(style){
+  if(style==='custom')return 'assets/themes/previews/importer.webp';
+  if(styles.some(s=>s.id===style))return 'assets/themes/previews/'+style+'.webp';
+  const legacy=['minimal','editorial','signature','chic','palace','arch','botanical','olive','pressed','romantic','boho','seaside','riviera','dolce','confetti','celestial','pearl'];
+  return legacy.includes(style)?'assets/themes/'+style+'.webp':'assets/themes/previews/fond-blanc.webp';
+ }
+ function introUrlCache(storage){
+  let path=null,url=null,signedAt=0,pending=null;
+  return async nextPath=>{
+   if(nextPath!==path){path=nextPath;url=null;pending=null;}
+   if(!nextPath)return null;
+   if(url&&Date.now()-signedAt<240000)return url;
+   if(!pending){
+    const requestedAt=Date.now();
+    const request=storage.from('capsule-media').createSignedUrl(nextPath,300).then(({data,error})=>{
+     if(error||!data?.signedUrl)throw Error('Accueil indisponible');
+     if(path===nextPath&&pending===request){url=data.signedUrl;signedAt=requestedAt;}
+     return data.signedUrl;
+    }).finally(()=>{if(pending===request)pending=null;});
+    pending=request;
+   }
+   return pending;
+  };
+ }
  function mount(c){
   document.body.classList.add('collection-ready','studio-ready');
   const panel=document.querySelector('.qr-designer-panel'),controls=document.querySelector('.qr-designer-controls'),preview=document.querySelector('.qr-designer-preview');
@@ -25,8 +50,19 @@
   const welcome=$('organizer-welcome');welcome.open=true;welcome.querySelector('summary').addEventListener('click',e=>e.preventDefault());controls.append(welcome);controls.append(footer);controls.prepend(gallery.closest('.qr-control-group'));
   const tabs=document.createElement('div');tabs.className='design-preview-tabs';tabs.innerHTML='<button type="button" data-design-preview="card" aria-pressed="true">Fiche QR</button><button type="button" data-design-preview="welcome" aria-pressed="false">Accueil invités</button>';preview.querySelector('.qr-preview-label').before(tabs);
   const guest=document.createElement('iframe');guest.id='design-welcome-preview';guest.title='Aperçu de l’accueil des invités';guest.hidden=true;guest.src='capsule.html?preview=1';preview.querySelector('.qr-preview-stage').append(guest);
-  let selected='card',ready=false,introUrl=null,introPath=null,loadVersion=0;
-  const refresh=async()=>{const revision=++loadVersion;if(!ready)return;try{if(c.intro_path!==introPath){introUrl=null;introPath=c.intro_path;}if(c.intro_path&&!introUrl){const r=await window.SuiteDesign.storage.from('capsule-media').createSignedUrl(c.intro_path,300);introUrl=r.data?.signedUrl||null;}if(revision!==loadVersion)return;const config=window.SuiteWelcome.collectShared?.()||c.welcome_config;guest.contentWindow.postMessage({type:'la-suite-guest-preview',capsule:{couple_name:$('capsule-name')?.value||c.couple_name,wedding_date:$('capsule-date')?.value||c.wedding_date,welcome_message:$('intro-text')?.value||c.welcome_message,welcome_config:config,effective_plan:c.admin_plan_override||c.plan,delivery_before:c.usage?.delivery_before||new Date(Date.now()+900*86400000).toISOString(),has_intro:Boolean(introUrl),preview_intro_url:introUrl,preview_intro_type:/\.(jpg|jpeg|png|webp)$/i.test(c.intro_path||'')?'image':'video'}},location.origin);}catch{$('design-upload-status').textContent='L’aperçu de l’accueil n’a pas chargé. Réessayez.';}};
+  let selected='card',ready=false,loadVersion=0,previewError=false;
+  const signedIntro=introUrlCache(window.SuiteDesign.storage);
+  const refresh=async()=>{
+   const revision=++loadVersion;if(!ready||!guest.isConnected)return;
+   try{
+    const path=c.intro_path,introUrl=await signedIntro(path);
+    if(revision!==loadVersion||!guest.isConnected||path!==c.intro_path)return;
+    if(previewError){const status=$('design-upload-status');if(status)status.textContent='';previewError=false;}
+    const config=window.SuiteWelcome.collectShared?.()||c.welcome_config;
+    guest.contentWindow.postMessage({type:'la-suite-guest-preview',capsule:{couple_name:$('capsule-name')?.value||c.couple_name,wedding_date:$('capsule-date')?.value||c.wedding_date,welcome_message:$('intro-text')?.value??c.welcome_message,welcome_config:config,effective_plan:effectivePlan(c),delivery_before:c.usage?.delivery_before||new Date(Date.now()+900*86400000).toISOString(),has_intro:Boolean(introUrl),preview_intro_url:introUrl,preview_intro_type:/\.(jpg|jpeg|png|webp)$/i.test(path||'')?'image':'video'}},location.origin);
+   }catch{if(revision===loadVersion&&guest.isConnected){const status=$('design-upload-status');if(status)status.textContent='L’aperçu de l’accueil n’a pas chargé. Réessayez.';previewError=true;}}
+  };
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&selected==='welcome')refresh();});
   window.addEventListener('message',event=>{if(event.origin===location.origin&&event.source===guest.contentWindow&&event.data?.type==='la-suite-guest-preview-ready'){ready=true;refresh();}});
   tabs.querySelectorAll('button').forEach(b=>b.onclick=()=>{selected=b.dataset.designPreview;guest.hidden=selected!=='welcome';$('qr-artwork-preview').hidden=selected!=='card';tabs.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));refresh();});
   controls.addEventListener('input',refresh);controls.addEventListener('change',refresh);
@@ -38,5 +74,5 @@
   const sync=()=>{const style=$('qr-style').value;$('design-crop').hidden=style!=='custom';$('design-import').setAttribute('aria-pressed',String(style==='custom'));};$('qr-style').addEventListener('change',sync);sync();
   return {refresh};
  }
- window.SuiteDesign={styles,colors,position,validBackground,background,fields,artwork,mount,storage:null};
+ window.SuiteDesign={styles,colors,position,validBackground,background,fields,artwork,effectivePlan,thumbnail,mount,storage:null};
 })();
