@@ -419,3 +419,8 @@
  .organizer-layout-ready .organizer-date-picker{top:31px}
 }
 @media(max-width:760px){.organizer-layout-ready .qr-theme-gallery .qr-theme-name{min-height:44px;display:flex;align-items:center;justify-content:center;box-sizing:border-box}}
+
+/* Match the two preview navigation bars and separate guest-link icon. */
+.organizer-layout-ready .design-preview-tabs{border-radius:12px;padding:3px;border:1px solid #ded5ca;box-sizing:border-box}
+.organizer-layout-ready .design-preview-tabs button{border-radius:9px}
+.organizer-layout-ready .organizer-guest-preview-link{gap:8px}
