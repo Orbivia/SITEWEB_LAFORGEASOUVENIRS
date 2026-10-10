@@ -43,6 +43,7 @@
   if(remaining.total===0&&!openingNotified){openingNotified=true;setTimeout(()=>window.dispatchEvent(new Event('la-suite-guest-boundary')),1000);}
  }
  function render(state){
+  if(form.hidden&&body.dataset.guestView==='compose')body.dataset.guestView='home';
   currentState=state;openingNotified=false;clearInterval(countdownTimer);updateCountdown();if(state.state==='scheduled')countdownTimer=setInterval(updateCountdown,1000);
   landing.querySelector('.guest-home-footer img').hidden=false;const o=window.SuiteWelcome.options(state.welcome_config),theme=window.SuiteDesign.styles.find(s=>s.id===o.style),dark=theme?.dark||false;
   const surface=dark?theme.background:getComputedStyle(body).getPropertyValue('--welcome-paper').trim();
