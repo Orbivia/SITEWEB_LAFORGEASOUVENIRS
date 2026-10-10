@@ -49,7 +49,7 @@
   $('organizer-welcome').classList.add('organizer-welcome-hidden');
   const preview=document.querySelector('.qr-designer-preview'),previewStage=document.querySelector('.qr-preview-stage');
   const stage=document.querySelector('.activation-panel');
-  const placeActivation=()=>{if(!stage)return;if(!matchMedia('(max-width:760px)').matches||document.querySelector('.qr-designer-panel').dataset.designView==='preview')previewStage.after(stage);else controls.insertBefore(stage,controls.querySelector('.design-mobile-footer'));};
+  const placeActivation=()=>{if(!stage)return;if(!mobileLayout.matches)previewStage.after(stage);else if(document.querySelector('.qr-designer-panel').dataset.designView==='preview')preview.append(stage);else controls.append(stage);};
   window.SuiteOrganizerLayout.placeActivation=placeActivation;matchMedia('(max-width:760px)').addEventListener('change',placeActivation);placeActivation();
   const warning=document.createElement('p');warning.id='organizer-card-readability';warning.className='organizer-readability-warning';warning.hidden=true;warning.setAttribute('role','status');previewStage.after(warning);
   for(const id of ['print-title','print-note','print-explanation']){const field=$(id),hint=document.createElement('small');hint.id=id+'-fit';hint.className='organizer-text-fit';hint.hidden=true;hint.setAttribute('role','status');field.setAttribute('aria-describedby',hint.id);field.after(hint);}
@@ -60,6 +60,9 @@
   const availability=document.createElement('p');availability.className='organizer-export-availability';availability.textContent=!$('download-print-card').disabled?'':c.usage?.state==='expired'?'La période de conservation est terminée.':'Téléchargement, impression et partage disponibles après activation.';availability.hidden=!$('download-print-card').disabled;actions.after(availability);const syncActions=()=>{const buttons=[...actions.querySelectorAll('button')];buttons.forEach(button=>button.hidden=button.disabled);actions.hidden=buttons.every(button=>button.disabled);availability.hidden=!actions.hidden;};const actionObserver=new MutationObserver(syncActions);actions.querySelectorAll('button').forEach(button=>actionObserver.observe(button,{attributes:true,attributeFilter:['disabled']}));syncActions();
   // Keep the full guest journey accessible without adding a fourth action to the row.
   const guide=document.querySelector('.qr-print-guide');guide.after($('open-guest-link'));$('open-guest-link').className='organizer-guest-preview-link';guide.innerHTML='<summary>Conseils d’impression</summary><p class="field-help">Imprimez sur A4 à 100 %, sans ajuster à la page. Découpez sur les repères pour obtenir une carte 10 × 15 cm.</p><p class="field-help">Placez-la dans un cadre ou sur un chevalet. Disposez plusieurs cartes sur les tables et partagez le lien aux absents.</p>';
+  const guideHome=document.createComment('print-guide');guide.before(guideHome);
+  const placePrintGuide=()=>{if(mobileLayout.matches){$('print-download-dialog').querySelector('.guest-dialog-body').append(guide);guide.open=false;}else guideHome.after(guide);placeActivation();};
+  mobileLayout.addEventListener('change',placePrintGuide);placePrintGuide();
   if(c.print_title==='Notre capsule temporelle'&&c.couple_name){$('print-title').value=c.couple_name.slice(0,42);$('print-title').dispatchEvent(new Event('input',{bubbles:true}));}
   if(mobileLayout.matches)document.querySelector('[data-design-view=preview]').click();
   // Existing date locking, helper text and autosave continue to use the moved input.
