@@ -1132,7 +1132,7 @@ function applyQrPreview(url,c){
    if(revision!==qrPreviewRevision||ownerSessionEnded)return;
    if(!blob)throw Error('Aperçu indisponible');
    const preview=$("qr-artwork-preview");if(!preview)return;
-   const oldUrl=qrPreviewUrl;qrPreviewUrl=URL.createObjectURL(blob);preview.dataset.textBoxes=JSON.stringify(canvas.cardTextBoxes);preview.src=qrPreviewUrl;
+   const oldUrl=qrPreviewUrl;qrPreviewUrl=URL.createObjectURL(blob);preview.dataset.textBoxes=JSON.stringify(canvas.cardTextBoxes);preview.dataset.qrBox=JSON.stringify(canvas.cardQrBox);preview.src=qrPreviewUrl;
    if(oldUrl)URL.revokeObjectURL(oldUrl);
   }catch{if(revision===qrPreviewRevision&&!ownerSessionEnded)show($("qr-status"),"Impossible de préparer l’aperçu. Réessayez.",false)}
  },100);
@@ -1226,6 +1226,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  ctx.font='400 44px Inter,Arial,sans-serif';if(c.welcome_config?.cardShowDate!==false)ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
  drawQrDivider(ctx,{...o,color:qrThemes[o.style].accent},W/2,490);
  const qsize=660,qx=Math.round((W-qsize)/2),qy=510;
+ canvas.cardQrBox={x:qx,y:qy,width:qsize,height:qsize};
  const background=document.createElement("canvas");background.width=W;background.height=H;
  background.getContext("2d").drawImage(canvas,0,0);
  ctx.imageSmoothingEnabled=false;

@@ -142,3 +142,26 @@
 .visual-primary[data-tool=theme] .visual-themes span:not(.visual-theme-motif){min-height:22px}
 @media(min-width:761px){.visual-primary[data-tool=theme] .visual-drawer{width:176px}}
 @media(max-height:650px){.visual-primary[data-tool=theme] .visual-themes button,.visual-primary[data-tool=theme] .visual-themes .visual-import{min-height:44px}.visual-primary[data-tool=theme] .visual-themes .visual-theme-motif,.visual-primary[data-tool=theme] .visual-themes img{height:16px}}
+
+/* Every floating panel uses a narrow vertical layout; JS protects the QR bounds. */
+.visual-primary .visual-drawer,.visual-primary[data-tool=theme] .visual-drawer,.visual-primary[data-tool=color] .visual-drawer,.visual-primary[data-tool=font] .visual-drawer,.visual-primary[data-tool=options] .visual-drawer{width:min(148px,calc(100% - 80px));max-height:calc(100% - 130px);transform:translateY(-50%)}
+.visual-primary .visual-popover-head strong{font-size:12px;line-height:15px}
+.visual-primary .visual-drawer section{padding:5px 6px 7px}
+.visual-primary .visual-colors{grid-template-columns:repeat(2,40px);justify-content:center;gap:10px}
+.visual-primary .visual-font-samples{grid-template-columns:1fr;gap:4px}
+.visual-primary .visual-font-samples button{min-height:44px;padding:4px}
+.visual-primary .visual-font-samples span{font-size:14px}
+.visual-primary [data-panel=details]>label:not(.visual-check){flex-direction:column;align-items:stretch;gap:3px;margin-bottom:7px}
+.visual-primary input[data-event-date],.visual-primary input[data-initials]{width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:11px}
+.visual-primary .visual-drawer [data-panel=details] .visual-check{display:flex;width:100%;margin:0 0 6px;font-size:10px}
+.visual-primary .visual-date-help,.visual-primary .visual-detail-help{font-size:9px;line-height:1.35}
+.visual-primary .visual-qr-row{display:block;margin-top:6px}
+.visual-primary .visual-qr-label{display:block;width:auto;margin-bottom:3px}
+.visual-primary .visual-qr-shapes button{min-width:0;padding:3px 1px;font-size:9px}
+.visual-primary .visual-intro-host .field{min-width:0}
+.visual-primary .visual-intro-host input,.visual-primary .visual-intro-host select,.visual-primary .visual-intro-host textarea{width:100%;max-width:100%;min-width:0;box-sizing:border-box;font-size:11px}
+@media(min-width:761px){.visual-primary .visual-drawer,.visual-primary[data-tool=theme] .visual-drawer,.visual-primary[data-tool=color] .visual-drawer,.visual-primary[data-tool=font] .visual-drawer,.visual-primary[data-tool=options] .visual-drawer{width:176px}}
+
+.visual-primary .visual-font-samples button{min-height:36px;gap:2px;padding:3px}
+.visual-primary .visual-font-samples span{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+@media(max-height:650px){.visual-primary .visual-font-samples button{min-height:32px}}
