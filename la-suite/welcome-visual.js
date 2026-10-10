@@ -95,7 +95,8 @@
    const panel=document.querySelector('.qr-designer-panel');panel.prepend(studio);document.body.classList.add('visual-primary-ready');
    studio.querySelector('.visual-intro-host').append(document.querySelector('.intro-video-panel'));
    const crop=$('design-crop');studio.querySelector('.visual-background-host').append(crop);const uploadStatus=$('design-upload-status');studio.querySelector('.visual-background-host').append(uploadStatus);
-   const actions=document.createElement('div');actions.className='visual-actions';panel.append(actions);actions.append(document.querySelector('.qr-preview-actions'),document.querySelector('.activation-panel'),document.querySelector('.organizer-export-availability'),$('organizer-card-readability'),$('qr-status'));
+   const actions=document.createElement('div');actions.className='visual-actions';studio.append(actions);actions.append(document.querySelector('.qr-preview-actions'),document.querySelector('.activation-panel'),document.querySelector('.organizer-export-availability'),$('organizer-card-readability'),$('qr-status'));
+   new ResizeObserver(()=>{studio.style.setProperty('--visual-actions-height',actions.offsetHeight+'px');fitPreview()}).observe(actions);
    window.SuiteOrganizerLayout.placeActivation=()=>{const activation=document.querySelector('.activation-panel');if(activation&&activation.parentElement!==actions)actions.append(activation)};
    $('customize-welcome').onclick=()=>{selectTarget('welcome');studio.scrollIntoView({block:'start'})};
    $('open-guest-link').hidden=true;$('organizer-modify').hidden=true;
