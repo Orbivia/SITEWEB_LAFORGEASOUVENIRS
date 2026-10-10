@@ -84,7 +84,7 @@
    if(target==='welcome'){const height=Math.max(page.offsetHeight,page.scrollHeight),scale=Math.min(1,width/340,available/height);fit.style.width=340*scale+'px';fit.style.height=height*scale+'px';page.style.transform='scale('+scale+')';previewHeight=height*scale;}
    studio.style.setProperty('--visual-preview-height',previewHeight+'px');fitPanel();
   }
-  const previewResize=new ResizeObserver(()=>requestAnimationFrame(fitPreview));previewResize.observe(studio.querySelector('.visual-stage'));previewResize.observe(studio.querySelector('.visual-drawer'));
+  const previewResize=new ResizeObserver(()=>requestAnimationFrame(fitPreview));previewResize.observe(studio.querySelector('.visual-stage'));previewResize.observe(studio.querySelector('.visual-drawer'));previewResize.observe(studio);window.addEventListener('resize',()=>requestAnimationFrame(fitPreview));window.visualViewport?.addEventListener('resize',()=>requestAnimationFrame(fitPreview));
   studio.addEventListener('focusin',e=>{if(e.target.matches('[contenteditable],input,textarea'))studio.classList.add('visual-editing')});studio.addEventListener('focusout',()=>requestAnimationFrame(()=>{if(!studio.contains(document.activeElement)||!document.activeElement.matches('[contenteditable],input,textarea'))studio.classList.remove('visual-editing')}));
   studio.querySelector('[data-back]').onclick=()=>{$('workspace-open-capsules')?.click()};
   const drawer=studio.querySelector('.visual-drawer-toggle');
