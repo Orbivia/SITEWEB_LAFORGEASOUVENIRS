@@ -166,8 +166,8 @@
 .visual-primary .visual-font-samples span{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 @media(max-height:650px){.visual-primary .visual-font-samples button{min-height:32px}}
 
-/* Mode 2: a docked retractable column; the complete card has its own space. */
-.welcome-visual-editor.visual-primary{--visual-rail-width:48px;--visual-panel-width:96px;grid-template-columns:minmax(0,1fr) 0 var(--visual-rail-width)}
+/* Mode 2: reserve the dock permanently so both previews stay fixed. */
+.welcome-visual-editor.visual-primary{--visual-rail-width:48px;--visual-panel-width:96px;grid-template-columns:minmax(0,1fr) var(--visual-panel-width) var(--visual-rail-width)}
 .welcome-visual-editor.visual-primary[data-panel-open=true]{grid-template-columns:minmax(0,1fr) var(--visual-panel-width) var(--visual-rail-width)}
 .visual-primary .visual-stage{grid-column:1;grid-row:3;min-width:0;min-height:0;display:flex;align-items:center;justify-content:center;padding:8px;overflow:hidden}
 .visual-primary .visual-card{margin:0;flex:none;box-sizing:border-box}
