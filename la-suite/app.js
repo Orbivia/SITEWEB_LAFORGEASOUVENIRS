@@ -1245,11 +1245,11 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
   const mark=document.createElement('canvas');mark.width=lw;mark.height=lh;
   const markCtx=mark.getContext('2d');markCtx.drawImage(logo,0,0,lw,lh);
   if(dark){markCtx.globalCompositeOperation='source-in';markCtx.fillStyle='#fffaf1';markCtx.fillRect(0,0,lw,lh);}
-  ctx.drawImage(mark,(W-lw)/2,H-150,lw,lh)
+  ctx.drawImage(mark,(W-lw)/2,H-(matchMedia("(max-width:760px)").matches?180:150),lw,lh)
  }catch(e){
   ctx.textAlign="center";ctx.fillStyle=dark?'#fffaf1':'#211d1d';
   ctx.font='700 34px "Cormorant Garamond", Georgia, serif';
-  ctx.fillText("La Suite",W/2,H-105)
+  ctx.fillText("La Suite",W/2,H-(matchMedia("(max-width:760px)").matches?135:105))
  }
  if(issues.length&&!preview)throw new Error('Raccourcissez les textes signalés avant de télécharger ou d’imprimer la fiche. Le QR code seul reste disponible.');
  return canvas

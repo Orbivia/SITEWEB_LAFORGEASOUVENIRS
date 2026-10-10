@@ -498,3 +498,9 @@
  .organizer-layout-ready #activation-plan{width:100%;min-width:0;min-height:48px;padding:10px;border:1px solid #ded5cb;border-radius:10px;background:#fffdf9;font:400 14px Inter,sans-serif;color:#302725}
 }
 @media(max-width:359px){.organizer-layout-ready .organizer-compact-fields{grid-template-columns:minmax(0,1fr)}}
+
+@media(max-width:760px){
+ .organizer-layout-ready .organizer-extra-options>h3{margin:0 0 14px;font:600 14px/1.4 Inter,sans-serif;color:var(--organizer-burgundy)}
+ .organizer-layout-ready section.organizer-extra-options{padding:12px}
+ .organizer-layout-ready .activation-panel>.atelier-customization-note{display:none}
+}
