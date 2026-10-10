@@ -504,3 +504,5 @@
  .organizer-layout-ready section.organizer-extra-options{padding:12px}
  .organizer-layout-ready .activation-panel>.atelier-customization-note{display:none}
 }
+
+@media(max-width:760px){.organizer-layout-ready .suite-brand img{width:126px;max-width:126px;height:auto;max-height:52px}}
