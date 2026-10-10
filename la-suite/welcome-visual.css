@@ -350,3 +350,19 @@
 .visual-primary[data-tight-panel=true] .visual-drawer [data-panel=details]>label:not(.visual-check){flex-direction:column;align-items:stretch;white-space:normal;font-size:10px}
 @media(min-width:761px){.visual-primary .visual-drawer .visual-tools span{font-size:11px}}
 @media(max-width:350px){.welcome-visual-editor.visual-primary,.welcome-visual-editor.visual-primary[data-panel-open=true]{--visual-panel-width:124px;column-gap:6px}.visual-primary .visual-drawer .visual-tools span{font-size:8px}}
+
+/* Direct editing replaces the Options selector. */
+.visual-primary .visual-drawer .visual-tools{grid-template-columns:repeat(3,minmax(0,1fr))}
+.visual-primary .visual-drawer [data-panel=details]{grid-template-rows:auto minmax(0,1fr) minmax(0,1fr)}
+.visual-card-qr{position:absolute;padding:0;border:1px solid transparent;background:transparent;cursor:pointer;border-radius:4px}
+.visual-card-qr>span{position:absolute;right:-8px;top:-8px;width:24px;height:24px;display:grid;place-items:center;border-radius:50%;background:#fffefa;color:#365748;box-shadow:0 1px 5px #0002;font-size:18px}
+.visual-card-qr:hover,.visual-card-qr:focus-visible{border-color:#365748;outline:2px solid #365748;outline-offset:2px}
+.visual-primary .visual-card-date{color:#365748;font-size:11px}
+.visual-primary .visual-drawer [data-panel=date]{display:flex;flex-direction:column;gap:12px;font-size:12px}
+.visual-primary .visual-drawer [data-panel=date]>label:first-child{flex-direction:column;align-items:stretch;gap:6px}
+.visual-primary .visual-drawer [data-panel=date] .visual-check{justify-content:flex-start;font-size:11px;gap:5px}
+.visual-intro-actions{display:flex;flex-direction:column;gap:5px;padding:8px;border:1px dashed #849588;border-radius:8px;background:#fffefaed;color:#365748}
+.visual-intro-actions>button{border:0;background:transparent;color:inherit;font:600 13px Inter,Arial,sans-serif;padding:3px;min-height:28px}
+.visual-intro-actions>div{display:flex;gap:5px}.visual-intro-actions [data-intro-format]{flex:1;min-height:32px;border:1px solid #c8d2c9;border-radius:5px;background:white;color:#365748;font-size:12px}
+.visual-intro-actions [aria-pressed=true]{background:#365748;color:white;border-color:#365748}
+.visual-primary .visual-page{min-height:600px}
