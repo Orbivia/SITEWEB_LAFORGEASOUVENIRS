@@ -366,3 +366,20 @@
 .visual-intro-actions>div{display:flex;gap:5px}.visual-intro-actions [data-intro-format]{flex:1;min-height:32px;border:1px solid #c8d2c9;border-radius:5px;background:white;color:#365748;font-size:12px}
 .visual-intro-actions [aria-pressed=true]{background:#365748;color:white;border-color:#365748}
 .visual-primary .visual-page{min-height:600px}
+
+/* Keep editor controls outside the guest preview and anchor validation. */
+.visual-primary .visual-welcome-edit{flex:none;margin:0 1px 6px;min-height:34px;width:calc(100% - 2px);padding:6px 4px;border:1px solid #bac9bf;background:#edf3ee;color:#365748;border-radius:6px;font:600 11px Inter,Arial,sans-serif}
+.visual-primary .visual-intro-actions{margin-bottom:8px;padding:6px}
+.visual-primary .visual-intro-actions>button[data-edit-intro]{display:none}
+.visual-primary .visual-intro-actions>div{flex-direction:column}
+.visual-primary .visual-intro-actions>button:not([data-edit-intro]){font-size:11px;font-weight:400}
+.visual-welcome-reminder{width:min(420px,calc(100% - 32px));box-sizing:border-box;border:0;border-radius:16px;padding:28px 20px;color:#27352e;background:#fffefa}
+.visual-welcome-reminder::backdrop{background:#18241f77}.visual-welcome-reminder h2{font-size:21px;margin:0 0 12px}.visual-welcome-reminder p{font-size:14px;line-height:1.5}.visual-welcome-reminder>.btn{width:100%;margin-top:10px;min-height:44px}
+@media(max-width:760px){
+ .welcome-visual-editor.visual-primary{height:var(--visual-editor-height,auto);max-height:var(--visual-editor-height,calc(100dvh - var(--organizer-header-height,65px) - 82px));grid-template-rows:auto auto minmax(0,1fr) auto auto}
+ .visual-primary .visual-stage{align-items:center;padding-top:0;padding-bottom:0}
+ .visual-primary .visual-drawer{align-self:center;height:var(--visual-preview-height);max-height:100%}
+ .visual-primary .visual-head{padding-top:8px;padding-bottom:8px}
+ .visual-primary .visual-targets{padding-top:5px;padding-bottom:9px}
+ .visual-primary .visual-actions{padding-top:10px;padding-bottom:5px}
+}
