@@ -77,9 +77,12 @@
    const natural=Math.max(panel.scrollHeight,panel.offsetHeight),scale=Math.min(1,available/Math.max(1,natural));
    panel.style.transform='scale('+scale+')';panel.style.transformOrigin='top left';
   }
-  function fitPreview(){fitPanel();const stage=studio.querySelector('.visual-stage');if(!stage.clientHeight)return;const available=Math.max(1,stage.clientHeight-16),width=Math.max(1,stage.clientWidth-16),card=studio.querySelector('.visual-card');
-   card.style.width=Math.min(width,available*1181/1772,420)+'px';
-   if(target==='welcome'){const height=Math.max(page.offsetHeight,page.scrollHeight),scale=Math.min(1,width/340,available/height);fit.style.width=340*scale+'px';fit.style.height=height*scale+'px';page.style.transform='scale('+scale+')';}
+  function fitPreview(){const stage=studio.querySelector('.visual-stage');if(!stage.clientWidth)return;
+   const limit=parseFloat(getComputedStyle(studio).maxHeight),fixed=[...studio.children].filter(el=>el.matches('.visual-head,.visual-targets,.visual-actions,.visual-status')&&!el.hidden&&getComputedStyle(el).position!=='absolute').reduce((sum,el)=>sum+el.offsetHeight,2);
+   const available=Math.max(1,limit-fixed),width=Math.max(1,stage.clientWidth-16),card=studio.querySelector('.visual-card');
+   const cardWidth=Math.min(width,available*1181/1772,420);card.style.width=cardWidth+'px';let previewHeight=cardWidth*1772/1181;
+   if(target==='welcome'){const height=Math.max(page.offsetHeight,page.scrollHeight),scale=Math.min(1,width/340,available/height);fit.style.width=340*scale+'px';fit.style.height=height*scale+'px';page.style.transform='scale('+scale+')';previewHeight=height*scale;}
+   studio.style.setProperty('--visual-preview-height',previewHeight+'px');fitPanel();
   }
   const previewResize=new ResizeObserver(()=>requestAnimationFrame(fitPreview));previewResize.observe(studio.querySelector('.visual-stage'));previewResize.observe(studio.querySelector('.visual-drawer'));
   studio.addEventListener('focusin',e=>{if(e.target.matches('[contenteditable],input,textarea'))studio.classList.add('visual-editing')});studio.addEventListener('focusout',()=>requestAnimationFrame(()=>{if(!studio.contains(document.activeElement)||!document.activeElement.matches('[contenteditable],input,textarea'))studio.classList.remove('visual-editing')}));
