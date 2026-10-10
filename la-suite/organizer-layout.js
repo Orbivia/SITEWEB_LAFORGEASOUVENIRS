@@ -13,6 +13,11 @@
   if(!selector){const choose=document.createElement('button');choose.type='button';choose.className='organizer-capsule-selector';choose.innerHTML='Mes capsules <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';choose.setAttribute('aria-haspopup','dialog');choose.setAttribute('aria-controls','workspace-capsules');choose.onclick=()=>$('workspace-open-capsules').click();header.insertBefore(choose,header.querySelector('.workspace-account-button'));}
   if(selector){selector.classList.add('organizer-capsule-selector');const label=document.createElement('span');label.textContent='Mes capsules';selector.prepend(label);header.insertBefore(selector,header.querySelector('.workspace-account-button'));}
   const head=document.querySelector('.qr-designer-head');const subtitle=document.createElement('p');subtitle.textContent='Créez une carte QR et une page d’accueil qui vous ressemblent.';head.firstElementChild.append(subtitle);
+  const edit=document.createElement('button');edit.id='organizer-modify';edit.type='button';edit.className='btn secondary organizer-modify';edit.setAttribute('aria-controls','organizer-editor-controls');controls.id='organizer-editor-controls';head.append(edit);
+  const mobileLayout=matchMedia('(max-width:760px)'),tabsHome=document.createComment('workspace-navigation');tabs.before(tabsHome);
+  const syncMobileNavigation=()=>{const mobile=mobileLayout.matches;if(mobile)document.body.append(tabs);else tabsHome.after(tabs);const editing=document.querySelector('.qr-designer-panel').dataset.designView==='settings';head.querySelector('h2').textContent=mobile?'Ma capsule':'Personnaliser ma capsule';$('owner-tab-configuration').querySelector('span').textContent=mobile?'Capsule':'Personnalisation';edit.innerHTML=editing?'<i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Aperçu':'<i class="fa-solid fa-sliders" aria-hidden="true"></i> Modifier';edit.setAttribute('aria-expanded',String(editing));};
+  edit.onclick=()=>document.querySelector('[data-design-view="'+(document.querySelector('.qr-designer-panel').dataset.designView==='settings'?'preview':'settings')+'"]').click();
+  window.addEventListener('suite-design-view',syncMobileNavigation);mobileLayout.addEventListener('change',syncMobileNavigation);syncMobileNavigation();
   // Reserve the measured heading height, including wrapped text and browser zoom.
   new ResizeObserver(()=>document.body.style.setProperty('--organizer-title-height',Math.ceil(head.getBoundingClientRect().height+12)+'px')).observe(head);
   document.querySelector('.qr-control-title').hidden=true;
@@ -56,6 +61,7 @@
   // Keep the full guest journey accessible without adding a fourth action to the row.
   const guide=document.querySelector('.qr-print-guide');guide.after($('open-guest-link'));$('open-guest-link').className='organizer-guest-preview-link';guide.innerHTML='<summary>Conseils d’impression</summary><p class="field-help">Imprimez sur A4 à 100 %, sans ajuster à la page. Découpez sur les repères pour obtenir une carte 10 × 15 cm.</p><p class="field-help">Placez-la dans un cadre ou sur un chevalet. Disposez plusieurs cartes sur les tables et partagez le lien aux absents.</p>';
   if(c.print_title==='Notre capsule temporelle'&&c.couple_name){$('print-title').value=c.couple_name.slice(0,42);$('print-title').dispatchEvent(new Event('input',{bubbles:true}));}
+  if(mobileLayout.matches)document.querySelector('[data-design-view=preview]').click();
   // Existing date locking, helper text and autosave continue to use the moved input.
  }};
 })();
