@@ -929,6 +929,13 @@ function qrInk(color){
  while(luminance()>.10)rgb=rgb.map(x=>Math.floor(x*.9));
  return "#"+rgb.map(x=>x.toString(16).padStart(2,"0")).join("");
 }
+function qrAccent(color,dark=false){
+ if(!dark)return qrInk(color);
+ let rgb=(/^#[0-9a-f]{6}$/i.test(color)?color:'#8b2730').slice(1).match(/../g).map(x=>parseInt(x,16));
+ const luminance=()=>rgb.map(x=>{x/=255;return x<=.04045?x/12.92:((x+.055)/1.055)**2.4}).reduce((v,x,i)=>v+x*[.2126,.7152,.0722][i],0);
+ while(luminance()<.45)rgb=rgb.map(x=>Math.min(255,Math.ceil(x+(255-x)*.1)));
+ return '#'+rgb.map(x=>x.toString(16).padStart(2,'0')).join('');
+}
 let qrModelCache=null;
 function makeQrCanvas(url,o){
  const key=JSON.stringify([url,qrInk(o.color)]);
@@ -953,7 +960,7 @@ function drawQrMonogram(ctx,o,cx,cy,size,background){
  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
  ctx.fillStyle="#ffffff";ctx.fillRect(cx-r,cy-r,d,d);
  ctx.restore();ctx.save();ctx.translate(cx,cy);
- ctx.strokeStyle='#202020';ctx.lineWidth=Math.max(.8,size*.0013);ctx.globalAlpha=.45;
+ ctx.strokeStyle=qrInk(o.color);ctx.lineWidth=Math.max(.8,size*.0013);ctx.globalAlpha=.45;
  const badge=theme.badge;
  if(badge!=="plain"){
   ctx.beginPath();
@@ -974,7 +981,7 @@ function drawQrMonogram(ctx,o,cx,cy,size,background){
   if(Math.max(metrics.width,metrics.actualBoundingBoxLeft+metrics.actualBoundingBoxRight)<=maxW&&metrics.actualBoundingBoxAscent+metrics.actualBoundingBoxDescent<=maxH)break;
   fontSize--;
  }while(fontSize>12);
- ctx.fillStyle='#202020';ctx.textAlign="left";ctx.textBaseline="alphabetic";
+ ctx.fillStyle=qrInk(o.color);ctx.textAlign="left";ctx.textBaseline="alphabetic";
  ctx.fillText(letters,(metrics.actualBoundingBoxLeft-metrics.actualBoundingBoxRight)/2,(metrics.actualBoundingBoxAscent-metrics.actualBoundingBoxDescent)/2);
  ctx.restore();
 }
@@ -1220,11 +1227,11 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  if(artwork){const image=await loadCanvasImage(artwork);const scale=Math.max(W/image.naturalWidth,H/image.naturalHeight),iw=image.naturalWidth*scale,ih=image.naturalHeight*scale;ctx.drawImage(image,(W-iw)*window.SuiteDesign.position(config.cardX)/100,(H-ih)*window.SuiteDesign.position(config.cardY)/100,iw,ih);}else{drawQrBackdrop(ctx,{...o,color:qrThemes[o.style].accent},W,H);drawQrDecor(ctx,{...o,color:qrThemes[o.style].accent},W,H);}
  // The artwork itself reserves the text area; no colored panel covers the design.
  const dark=qrThemes[o.style].dark;
- ctx.fillStyle=dark?'#fffaf1':'#201c1a';
+ const accent=qrAccent(o.color,dark);ctx.fillStyle=accent;
  const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?150:o.font==='contemporary'?120:o.font==='refined'?122:140;
  drawPrintTextBox(ctx,o.title,{x:180,y:190,width:W-360,height:195,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3,minSize:56,onOverflow:()=>issues.push('print-title')});
- ctx.font='400 44px Inter,Arial,sans-serif';if(c.welcome_config?.cardShowDate!==false)ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
- drawQrDivider(ctx,{...o,color:qrThemes[o.style].accent},W/2,490);
+ ctx.fillStyle=dark?'#fffaf1':'#201c1a';ctx.font='400 44px Inter,Arial,sans-serif';if(c.welcome_config?.cardShowDate!==false)ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
+ drawQrDivider(ctx,{...o,color:accent},W/2,490);
  const qsize=660,qx=Math.round((W-qsize)/2),qy=510;
  canvas.cardQrBox={x:qx,y:qy,width:qsize,height:qsize};
  const background=document.createElement("canvas");background.width=W;background.height=H;
@@ -1238,7 +1245,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const mobileLogo=matchMedia("(max-width:760px)").matches,logoTop=H-(mobileLogo?(o.style==="gatsby"?240:180):150);
  const explanationBottom=mobileLogo&&o.style==="gatsby"?logoTop-30:1540;
  const textBox={x:180,y:1220,width:W-360,height:150};
- ctx.fillStyle=dark?'#fffaf1':'#262220';
+ ctx.fillStyle=accent;
  const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'Inter, Arial, sans-serif',weight:'600',maxLines:6,minSize:38,onOverflow:()=>issues.push('print-note')});
  const explanationY=noteBottom+(o.note?26:0);
  canvas.cardTextBoxes={'print-title':{x:180,y:190,width:W-360,height:195},date:{x:180,y:397,width:W-360,height:60},'print-note':{...textBox,height:Math.max(55,noteBottom-textBox.y)},'print-explanation':{...textBox,y:explanationY,height:Math.max(55,explanationBottom-explanationY)}};
