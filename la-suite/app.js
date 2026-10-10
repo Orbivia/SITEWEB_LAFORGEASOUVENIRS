@@ -683,7 +683,7 @@ async function initCapsule(){
   try{
    guestState=await guestInvoke({action:"get_status",guest_token:token});
    window.SuiteWelcome.apply(guestState.welcome_config);
-   $("capsule-title").textContent=guestState.couple_name;$("capsule-welcome").textContent=guestState.welcome_message||"";
+   $("capsule-title").textContent=guestState.couple_name;$("capsule-title").closest(".capsule-hero").classList.toggle("guest-long-name",String(guestState.couple_name||"").length>24);$("capsule-welcome").textContent=guestState.welcome_message||"";
    $("capsule-welcome").hidden=!guestState.welcome_message;$("intro-section").hidden=!guestState.welcome_message;
    $('guest-welcome-open').hidden=!guestState.welcome_message;
    $("organizer-intro").hidden=true;$("organizer-intro-image").hidden=true;

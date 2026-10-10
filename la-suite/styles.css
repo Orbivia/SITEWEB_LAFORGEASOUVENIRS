@@ -3543,3 +3543,8 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 .guest-compact[data-welcome-illustration]:not([data-welcome-illustration=none]) .delivery-summary strong{max-width:calc(100% - 110px);overflow-wrap:anywhere}
 .guest-compact .guest-date-art{width:90px;height:76px;right:8px;top:4px}
 .guest-compact[data-welcome-artwork=true] .guest-form{background-image:none}
+
+/* A long event name must never compete with the explanation button. */
+.guest-compact .capsule-hero.guest-long-name{display:grid;grid-template-columns:minmax(0,1fr);align-items:start;gap:2px}
+.guest-compact .capsule-hero.guest-long-name>div{width:100%}
+.guest-compact .guest-long-name #guest-concept-open{justify-self:end;min-height:44px;background:transparent;border:0;padding:4px}
