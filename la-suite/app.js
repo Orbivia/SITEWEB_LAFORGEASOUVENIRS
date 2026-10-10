@@ -403,7 +403,7 @@ async function initCreate(){
   }}catch(error){show(status,"Connexion interrompue. Votre préparation est conservée ; réessayez.",false);submit.disabled=false}
  }
  const pending=readDraft();
- if(currentUser){emailInput.value=currentUser.email;emailInput.readOnly=true;$("email-help").textContent="Capsule enregistrée dans votre compte."}
+ if(currentUser){emailInput.value=currentUser.email;emailInput.readOnly=true}
  if(pending){$("couple").value=pending.couple;dateInput.value=pending.wedding;dateDisplay.value=frFromIso(pending.wedding);if(!currentUser)emailInput.value=pending.email}
  $("plan").value=PLAN_NAMES[qs.get("plan")]?qs.get("plan"):(pending?.plan||"premium");
  const planDetails={photo:"1 Go · Photos et textes.",audio:"2 Go · Photos, textes et audio.",premium:"5 Go · Photos, textes, audio et vidéo."};

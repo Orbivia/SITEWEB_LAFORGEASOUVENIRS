@@ -3553,7 +3553,7 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 .create-page .create-intro p,.create-page .field-help,.create-page .create-payment-note{color:#5e5a55}
 .create-page .create-form{margin-bottom:24px}
 @media(min-width:900px){
- .create-page .create-wrap{max-width:780px;padding-top:20px;padding-bottom:20px;display:flex;flex-direction:column;justify-content:center}
+ .create-page .create-wrap{max-width:780px;padding-top:clamp(20px,calc((100dvh - 600px)/4),100px);padding-bottom:20px;display:flex;flex-direction:column;justify-content:flex-start}
  .create-page .create-intro{max-width:none;width:100%;padding:0 0 18px}
  .create-page .create-intro h1{font-size:2.6rem;margin-bottom:8px}
  .create-page .create-intro p{max-width:none;line-height:1.45}
