@@ -617,7 +617,7 @@ function renderGuestState(state){
  const el=$("guest-state");const messages={
  suspended:"Les dépôts sont temporairement en pause. Réessayez plus tard.",
  scheduled:"Les dépôts ouvriront le "+fParis(state.opens_at)+".",
- closed:"Les dépôts sont terminés. Les souvenirs déjà envoyés seront dévoilés aux dates choisies.",
+ closed:"Les dépôts sont fermés"+(state.closes_at?" depuis le "+fParis(state.closes_at):"")+". Vous ne pouvez plus ajouter de souvenir. Les souvenirs déjà envoyés seront dévoilés aux dates choisies.",
  expired:"La période de conservation de cette capsule est terminée.",
  missing_date:"Cette capsule n’est pas encore prête à recevoir des souvenirs.",
  full:"La capsule est pleine pour les fichiers. Vous pouvez toujours laisser un petit mot.",
@@ -677,7 +677,7 @@ async function initCapsule(){
   })}catch(error){$('guest-state').textContent=error.message;return}
  }else if(!configured||!token){$("guest-state").textContent="Lien de capsule invalide.";return}
  initGuestControls();chooseGuestType("text");
- let refreshing=false,refreshVersion=0;
+ let refreshing=false,refreshVersion=0,boundaryTimer=null;
  async function refreshGuestState(){
   if(refreshing)return;refreshing=true;const version=++refreshVersion;
   $("organizer-intro").pause();
@@ -685,18 +685,23 @@ async function initCapsule(){
   try{
    guestState=await guestInvoke({action:"get_status",guest_token:token});
    window.SuiteWelcome.apply(guestState.welcome_config);
-   $("capsule-title").textContent=guestState.couple_name;$("capsule-title").closest(".capsule-hero").classList.toggle("guest-long-name",String(guestState.couple_name||"").length>24);$("capsule-welcome").textContent=guestState.welcome_message||"";
-   $("capsule-welcome").hidden=!guestState.welcome_message;$("intro-section").hidden=!guestState.welcome_message;
-   $('guest-welcome-open').hidden=!guestState.welcome_message;
+   $("capsule-title").textContent=guestState.couple_name;$("capsule-title").closest(".capsule-hero").classList.toggle("guest-long-name",String(guestState.couple_name||"").length>24);$("capsule-welcome").textContent=SuiteGuestCalendar.welcomeAvailable(guestState)?guestState.welcome_message||"":"";
+   $("capsule-welcome").hidden=!$("capsule-welcome").textContent;$("intro-section").hidden=!$("capsule-welcome").textContent;
+   $('guest-welcome-open').hidden=!$('capsule-welcome').textContent;
    $("organizer-intro").hidden=true;$("organizer-intro-image").hidden=true;
    renderGuestState(guestState);
+   clearTimeout(boundaryTimer);const next=[guestState.opens_at,guestState.closes_at,guestState.expires_at].map(Date.parse).filter(at=>Number.isFinite(at)&&at>Date.now()).sort((a,b)=>a-b)[0];
+   if(!guestIsPreview&&next)boundaryTimer=setTimeout(()=>{if(!guestBusy)refreshGuestState();},Math.min(2147483647,Math.max(100,next-Date.now()+100)));
    if(guestIsPreview)$('guest-state').textContent='Mode aperçu · Aucun souvenir ne sera envoyé.';
-   if(guestState.has_intro&&!["expired","suspended"].includes(guestState.state))guestInvoke({action:"get_intro",guest_token:token}).then(r=>{
+   if(guestState.has_intro&&SuiteGuestCalendar.welcomeAvailable(guestState))guestInvoke({action:"get_intro",guest_token:token}).then(r=>{
     if(version===refreshVersion&&r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false;$('guest-welcome-open').hidden=false;window.SuiteGuestLanding?.syncMedia()}
    }).catch(()=>{});
   }catch(error){$("guest-state").textContent=error.message;$("guest-retry").hidden=false}
   finally{refreshing=false}
  }
+ window.addEventListener('la-suite-guest-boundary',()=>{if(!guestBusy)refreshGuestState()});
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!guestBusy&&!guestIsPreview)refreshGuestState()});
+ window.addEventListener('pagehide',()=>clearTimeout(boundaryTimer));
  $("guest-retry").addEventListener("click",refreshGuestState);
  await refreshGuestState();
  if(guestIsPreview)window.addEventListener('message',event=>{
