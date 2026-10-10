@@ -39,7 +39,7 @@
   const a=luminance(o.color),b=luminance(surface),ratio=(Math.max(a,b)+.05)/(Math.min(a,b)+.05),accent=ratio>=3?o.color:dark?'#eee2cc':'#514536';
   landing.dataset.dark=String(dark);landing.style.setProperty('--home-paper',dark?theme.background:'var(--welcome-paper)');landing.style.setProperty('--home-ink',dark?'#fffaf1':'#292724');landing.style.setProperty('--home-accent',accent);landing.style.setProperty('--home-button-ink',luminance(accent)>.179?'#211f1c':'#ffffff');
   const art=window.SuiteDesign.artwork(o.style,o);landing.style.setProperty('--home-art',art?'url("'+art+'")':'none');
-  const date=state.wedding_date;$('guest-event-date').textContent=/^\d{4}-\d{2}-\d{2}$/.test(date||'')?new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Paris'}).format(new Date(date+'T12:00:00Z')):'';
+  const date=state.wedding_date;$('guest-event-date').hidden=state.welcome_config?.welcomeShowDate===false;$('guest-event-date').textContent=/^\d{4}-\d{2}-\d{2}$/.test(date||'')?new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Paris'}).format(new Date(date+'T12:00:00Z')):'';
   for(const b of types.children)b.hidden=form.hidden||Boolean(form.querySelector('[data-memory-type="'+b.dataset.landingType+'"]').hidden);
   landing.querySelector('.guest-home-prompt').hidden=form.hidden||Boolean(state.welcome_message);$('guest-deposit').hidden=form.hidden;
   landing.classList.toggle('has-greeting',Boolean(state.welcome_message));

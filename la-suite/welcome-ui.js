@@ -51,7 +51,7 @@
  function text(value,fallback,max){return typeof value==='string'&&value.trim()?value.trim().slice(0,max):fallback}
  function options(value={}){
   const style=Object.hasOwn(themes,value?.style)?value.style:'capsule',t=themes[style];
-  return {...(window.SuiteDesign.validBackground(value?.background)?{background:value.background}:{}),...Object.fromEntries(["cardX","cardY","welcomeX","welcomeY"].map(k=>[k,window.SuiteDesign.position(value?.[k])])),style,font:choice(value?.font,Object.keys(fonts),'elegant'),color:hex(value?.color)||'#8B2730',ornament:choice(value?.ornament,Object.keys(ornaments),'none'),title:text(value?.title,'Un mot de vos hôtes',80),illustration:choice(value?.illustration,[...Object.keys(illustrations),'none'],t.art),texture:choice(value?.texture,['plain','grain','linen','stripes'],'plain'),corners:choice(value?.corners,['rounded','soft','square'],'rounded'),initials:typeof value?.initials==='string'?value.initials.slice(0,4):'',dateTitle:text(value?.dateTitle,'Quand l’ouvrir ?',32),invitation:text(value?.invitation,'Choisissez le moment de la surprise',70)};
+  return {cardShowDate:value?.cardShowDate!==false,welcomeShowDate:value?.welcomeShowDate!==false,...(window.SuiteDesign.validBackground(value?.background)?{background:value.background}:{}),...Object.fromEntries(["cardX","cardY","welcomeX","welcomeY"].map(k=>[k,window.SuiteDesign.position(value?.[k])])),style,font:choice(value?.font,Object.keys(fonts),'elegant'),color:hex(value?.color)||'#8B2730',ornament:choice(value?.ornament,Object.keys(ornaments),'none'),title:text(value?.title,'Un mot de vos hôtes',80),illustration:choice(value?.illustration,[...Object.keys(illustrations),'none'],t.art),texture:choice(value?.texture,['plain','grain','linen','stripes'],'plain'),corners:choice(value?.corners,['rounded','soft','square'],'rounded'),initials:typeof value?.initials==='string'?value.initials.slice(0,4):'',dateTitle:text(value?.dateTitle,'Quand l’ouvrir ?',32),invitation:text(value?.invitation,'Choisissez le moment de la surprise',70)};
  }
  function ink(color){const v=color.slice(1).match(/../g).map(n=>{const s=parseInt(n,16)/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4});return v[0]*.2126+v[1]*.7152+v[2]*.0722>.179?'#211F1C':'#FFFFFF'}
  function apply(value,root=document.body){
@@ -107,4 +107,5 @@
  }
  window.SuiteWelcome={options,apply,setup};
 })();
+
 

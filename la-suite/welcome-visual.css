@@ -17,3 +17,61 @@
 .visual-primary .visual-actions{grid-column:1/-1;grid-row:5;background:#fffefa;padding:5px 10px;border-top:1px solid #e0e4db;max-height:130px;overflow:auto}.visual-primary-ready .visual-primary .visual-actions .qr-preview-actions{margin:0;border:0;gap:5px}.visual-primary-ready .visual-primary .visual-actions .activation-panel{margin:0 auto!important;padding:4px!important;border:0;background:none;box-shadow:none}.visual-primary .visual-actions .activation-intro h2,.visual-primary .visual-actions .activation-intro p,.visual-primary .visual-actions .activation-panel>p:not(.status){display:none}.visual-primary .visual-actions .activation-intro{display:none}.visual-primary .visual-actions .organizer-export-availability{font-size:10px;margin:3px}.visual-primary .visual-actions #qr-status:empty{display:none}.visual-primary .visual-actions button{min-height:36px!important;font-size:11px!important}.visual-primary .visual-actions .activation-panel>#review-activation{width:100%;max-width:350px;margin:auto}.visual-primary .visual-actions #organizer-card-readability{font-size:10px;margin:2px auto}
 @media(max-width:760px){.welcome-visual-editor.visual-primary{grid-template-rows:auto auto minmax(0,1fr) auto;height:calc(100dvh - var(--organizer-header-height,65px) - 82px)}.visual-primary .visual-actions{grid-row:4}.visual-primary .visual-drawer{bottom:var(--visual-actions-height,50px)}.visual-primary .visual-status:not(:empty){bottom:calc(var(--visual-actions-height,50px) + 44px)}}
 @media(min-width:761px){.welcome-visual-editor.visual-primary{grid-template-rows:auto auto minmax(0,1fr) auto auto}.visual-primary .visual-actions{grid-row:5}}
+/* Floating controls matching the approved right-side toolbar. */
+.welcome-visual-editor.visual-primary{grid-template-columns:minmax(0,1fr) 64px;grid-template-rows:auto auto minmax(0,1fr) auto auto}
+.visual-primary .visual-head,.visual-primary .visual-targets{grid-column:1/-1}
+.visual-primary .visual-head{grid-row:1}
+.visual-primary .visual-targets{grid-row:2}
+.visual-primary .visual-stage{grid-column:1;grid-row:3;padding:8px 4px 8px 12px}
+.visual-primary .visual-help{display:none}
+.visual-primary .visual-tools{grid-column:2;grid-row:3;display:flex;flex-direction:column;justify-content:flex-start;gap:7px;padding:8px 8px 8px 3px}
+.visual-tools button{display:flex;flex:1;max-height:112px;min-height:54px;flex-direction:column;align-items:center;justify-content:center;gap:8px;width:100%;border:1px solid #dce2d7;border-radius:10px;background:#fffefa;color:#414b42;padding:8px 3px;cursor:pointer}
+.visual-tools i,.visual-tools strong{font-size:22px;line-height:1}
+.visual-tools span{font:400 10px Inter,Arial,sans-serif}
+.visual-tools [aria-pressed=true]{background:#365748;color:white;border-color:#365748}
+.visual-primary .visual-drawer{position:absolute;grid-column:auto;grid-row:auto;inset:auto 70px auto auto;top:50%;transform:translateY(-40%);height:auto;width:min(310px,calc(100% - 88px));max-height:calc(100% - 155px);overflow:auto;z-index:8;border:1px solid #e0e5dc;border-radius:12px;background:#fffefa;box-shadow:0 8px 26px #122c2533}
+.visual-primary[data-tool=color] .visual-drawer{width:min(215px,calc(100% - 88px));transform:translateY(-25%)}
+.visual-primary .visual-drawer-toggle,.visual-primary .visual-tabs{display:none!important}
+.visual-popover-head{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 3px}
+.visual-popover-head strong{font:600 13px Inter,Arial,sans-serif}
+.visual-popover-head button{font:400 25px Inter,Arial,sans-serif;min-width:34px;min-height:34px;border:0;background:none;color:#48564b;cursor:pointer}
+.visual-primary .visual-drawer section{padding:8px 12px 12px;overflow:visible}
+.visual-primary .visual-colors{display:grid;grid-template-columns:repeat(3,40px);justify-content:space-between;gap:12px}
+.visual-primary .visual-themes{gap:6px}
+.visual-primary .visual-themes button{padding:4px;font-size:9px;min-width:0}
+.visual-primary .visual-themes img{height:47px;object-fit:cover}
+.visual-primary .visual-theme-pages{display:flex;justify-content:center;gap:10px;margin-top:7px}
+.visual-theme-pages button{border:0;background:none;color:#ced5cc;padding:3px 6px;font-size:14px;min-height:28px}
+.visual-theme-pages [aria-pressed=true]{color:#365748}
+.visual-primary .visual-font-samples{gap:6px}
+.visual-primary .visual-font-samples button{min-height:55px;padding:6px 4px}
+.visual-primary .visual-font-samples span{font-size:17px}
+.visual-primary .visual-font-samples small{font-size:9px}
+.visual-primary .visual-drawer .visual-check{display:flex;justify-content:flex-start;gap:8px;font-size:11px;margin-bottom:12px}
+.visual-primary .visual-drawer .visual-check input{width:17px;height:17px;max-width:none;min-height:0}
+.visual-primary .visual-intro-host .field-help{font-size:10px}
+.visual-primary .visual-intro-host .intro-video-panel{background:none;padding:0;border:0}
+.visual-primary .visual-date-help{font-size:10px;margin:5px 0 10px}
+.visual-primary .visual-drawer [data-panel=details]>small{display:block;font-size:10px;color:#6a7367}
+.visual-primary .visual-status{grid-column:1/-1;grid-row:4;position:static!important;z-index:9}
+.visual-primary .visual-actions{grid-column:1/-1;grid-row:5}
+.visual-primary [data-panel=details] label{font-size:11px}
+.visual-primary input[data-event-date],.visual-primary input[data-initials]{min-height:36px;padding:6px;font-size:12px}
+.visual-primary .visual-themes [hidden]{display:none!important}
+@media(min-width:761px){
+.welcome-visual-editor.visual-primary{grid-template-columns:minmax(0,1fr) 84px;max-width:1050px;margin:auto}
+.visual-primary .visual-tools{padding:10px;gap:10px}
+.visual-tools span{font-size:11px}
+.visual-primary .visual-drawer{right:94px;max-height:calc(100% - 140px);width:330px}
+.visual-primary[data-tool=color] .visual-drawer{width:220px}
+.visual-primary .visual-stage{padding:10px 14px}
+.visual-primary .visual-tools button{max-height:125px}
+}
+@media(max-height:650px){
+.visual-tools button{gap:4px;min-height:46px}
+.visual-tools i,.visual-tools strong{font-size:18px}
+.visual-primary .visual-themes img{height:36px}
+.visual-primary .visual-font-samples button{min-height:44px}
+.visual-primary .visual-font-samples span{font-size:14px}
+.visual-primary .visual-drawer{max-height:calc(100% - 130px);top:48%;transform:translateY(-35%)}
+}

@@ -882,7 +882,7 @@ function qrFontWeight(key){
 }
 function collectQrCustomization(c){
  return {
-  qr_initials:(matchMedia("(max-width:760px)").matches?($("qr-initials-input")?.value??defaultInitials(c.couple_name)):($("qr-initials-input")?.value||defaultInitials(c.couple_name))).trim().slice(0,4),
+  qr_initials:($("qr-initials-input")?.value??defaultInitials(c.couple_name)).trim().slice(0,4),
   qr_color:$("qr-color")?.value||"#b78b38",
   print_title:($("print-title")?.value||c.couple_name||DEFAULT_CARD_TITLE).trim().slice(0,42),
   print_note:($("print-note")?.value??DEFAULT_CARD_NOTE).trim().slice(0,120),
@@ -1220,7 +1220,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  ctx.fillStyle=dark?'#fffaf1':'#201c1a';
  const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?150:o.font==='contemporary'?120:o.font==='refined'?122:140;
  drawPrintTextBox(ctx,o.title,{x:180,y:190,width:W-360,height:195,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3,minSize:56,onOverflow:()=>issues.push('print-title')});
- ctx.font='400 44px Inter,Arial,sans-serif';ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
+ ctx.font='400 44px Inter,Arial,sans-serif';if(c.welcome_config?.cardShowDate!==false)ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
  drawQrDivider(ctx,o,W/2,490);
  const qsize=660,qx=Math.round((W-qsize)/2),qy=510;
  const background=document.createElement("canvas");background.width=W;background.height=H;
