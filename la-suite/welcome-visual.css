@@ -226,3 +226,15 @@
 .visual-primary .visual-stage{padding:0 8px;align-items:flex-start}
 .visual-primary .visual-tools{padding-top:0;padding-bottom:0;justify-content:space-between}
 @media(max-width:760px){.welcome-visual-editor.visual-primary{max-height:calc(100dvh - var(--organizer-header-height,65px) - 82px)}}
+
+/* Fixed appearance sidebar with four selectors on one horizontal line. */
+.welcome-visual-editor.visual-primary,.welcome-visual-editor.visual-primary[data-panel-open=true]{--visual-panel-width:clamp(124px,42%,260px);grid-template-columns:minmax(0,1fr) var(--visual-panel-width)}
+.visual-primary .visual-drawer{border-radius:9px;grid-column:2;grid-row:3;padding:4px;background:#fffefa}
+.visual-primary .visual-popover-head{display:none}
+.visual-primary .visual-drawer .visual-tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-column:auto;grid-row:auto;flex:0 0 auto;align-items:stretch;gap:2px;padding:0 0 5px;margin-bottom:3px;border-bottom:1px solid #e3e5dd;min-height:0}
+.visual-primary .visual-drawer .visual-tools button{min-width:0;min-height:42px;max-height:none;padding:4px 0;gap:3px;border-radius:6px;box-sizing:border-box}
+.visual-primary .visual-drawer .visual-tools i,.visual-primary .visual-drawer .visual-tools strong{font-size:15px}
+.visual-primary .visual-drawer .visual-tools span{font-size:7px;line-height:1.1;white-space:nowrap}
+.visual-primary .visual-drawer .visual-themes button,.visual-primary[data-tool=theme] .visual-drawer .visual-themes button{font-size:10px}
+.visual-primary .visual-drawer .visual-themes span:not(.visual-theme-motif){white-space:nowrap}
+@media(min-width:761px){.visual-primary .visual-drawer .visual-tools button{min-height:52px}.visual-primary .visual-drawer .visual-tools span{font-size:10px}.visual-primary .visual-drawer .visual-tools i,.visual-primary .visual-drawer .visual-tools strong{font-size:19px}}
