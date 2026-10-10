@@ -865,7 +865,8 @@ function qrOptions(c){
   style:Object.hasOwn(qrThemes,c.qr_style)?c.qr_style:"romantic",
   size:QR_LARGE_SIZE,
   showBrand:c.qr_show_brand!==false,
-  shape:["classic","rounded","hearts"].includes(c.welcome_config?.qrShape)?c.welcome_config.qrShape:"classic",
+  eyes:["square","rounded","circle"].includes(c.welcome_config?.qrEyes)?c.welcome_config.qrEyes:"square",
+  shape:["classic","rounded","dots"].includes(c.welcome_config?.qrShape)?c.welcome_config.qrShape:"classic",
   showInitials:matchMedia("(max-width:760px)").matches?Boolean((c.qr_initials??defaultInitials(c.couple_name)).trim()):c.qr_show_initials!==false
  }
 }
@@ -937,12 +938,12 @@ function makeQrCanvas(url,o){
   qrModelCache={key,model:code._oQRCode};
  }
  // Repaint from the cached matrix: reused canvas bitmaps may be discarded by the browser.
- const model=qrModelCache.model,n=model.getModuleCount(),cell=12,quiet=o.shape==='hearts'?7:4;
+ const model=qrModelCache.model,n=model.getModuleCount(),cell=12,quiet=4;
  const canvas=document.createElement("canvas");canvas.width=canvas.height=(n+quiet*2)*cell;
  const ctx=canvas.getContext("2d");
  ctx.fillStyle="#ffffff";ctx.fillRect(0,0,canvas.width,canvas.height);
  ctx.fillStyle=qrInk(o.color);
- window.SuiteQr.draw(ctx,model,{shape:o.shape,cell,quiet});
+ window.SuiteQr.draw(ctx,model,{shape:o.shape,eyes:o.eyes,ink:qrInk(o.color),cell,quiet});
  return canvas;
 }
 function drawQrMonogram(ctx,o,cx,cy,size,background){
@@ -952,7 +953,7 @@ function drawQrMonogram(ctx,o,cx,cy,size,background){
  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.clip();
  ctx.fillStyle="#ffffff";ctx.fillRect(cx-r,cy-r,d,d);
  ctx.restore();ctx.save();ctx.translate(cx,cy);
- ctx.strokeStyle=qrInk(o.color);ctx.lineWidth=Math.max(.8,size*.0013);ctx.globalAlpha=.45;
+ ctx.strokeStyle='#202020';ctx.lineWidth=Math.max(.8,size*.0013);ctx.globalAlpha=.45;
  const badge=theme.badge;
  if(badge!=="plain"){
   ctx.beginPath();
@@ -973,7 +974,7 @@ function drawQrMonogram(ctx,o,cx,cy,size,background){
   if(Math.max(metrics.width,metrics.actualBoundingBoxLeft+metrics.actualBoundingBoxRight)<=maxW&&metrics.actualBoundingBoxAscent+metrics.actualBoundingBoxDescent<=maxH)break;
   fontSize--;
  }while(fontSize>12);
- ctx.fillStyle=qrInk(o.color);ctx.textAlign="left";ctx.textBaseline="alphabetic";
+ ctx.fillStyle='#202020';ctx.textAlign="left";ctx.textBaseline="alphabetic";
  ctx.fillText(letters,(metrics.actualBoundingBoxLeft-metrics.actualBoundingBoxRight)/2,(metrics.actualBoundingBoxAscent-metrics.actualBoundingBoxDescent)/2);
  ctx.restore();
 }
@@ -1216,14 +1217,14 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const W=1181,H=1772;canvas.width=W;canvas.height=H;
  const issues=[];canvas.cardTextIssues=issues;
  const config=c.welcome_config||{},artwork=window.SuiteDesign.artwork(o.style,{...config,background:window.SuiteDesign.background(c)});
- if(artwork){const image=await loadCanvasImage(artwork);const scale=Math.max(W/image.naturalWidth,H/image.naturalHeight),iw=image.naturalWidth*scale,ih=image.naturalHeight*scale;ctx.drawImage(image,(W-iw)*window.SuiteDesign.position(config.cardX)/100,(H-ih)*window.SuiteDesign.position(config.cardY)/100,iw,ih);}else{drawQrBackdrop(ctx,o,W,H);drawQrDecor(ctx,o,W,H);}
+ if(artwork){const image=await loadCanvasImage(artwork);const scale=Math.max(W/image.naturalWidth,H/image.naturalHeight),iw=image.naturalWidth*scale,ih=image.naturalHeight*scale;ctx.drawImage(image,(W-iw)*window.SuiteDesign.position(config.cardX)/100,(H-ih)*window.SuiteDesign.position(config.cardY)/100,iw,ih);}else{drawQrBackdrop(ctx,{...o,color:qrThemes[o.style].accent},W,H);drawQrDecor(ctx,{...o,color:qrThemes[o.style].accent},W,H);}
  // The artwork itself reserves the text area; no colored panel covers the design.
  const dark=qrThemes[o.style].dark;
  ctx.fillStyle=dark?'#fffaf1':'#201c1a';
  const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?150:o.font==='contemporary'?120:o.font==='refined'?122:140;
  drawPrintTextBox(ctx,o.title,{x:180,y:190,width:W-360,height:195,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3,minSize:56,onOverflow:()=>issues.push('print-title')});
  ctx.font='400 44px Inter,Arial,sans-serif';if(c.welcome_config?.cardShowDate!==false)ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
- drawQrDivider(ctx,o,W/2,490);
+ drawQrDivider(ctx,{...o,color:qrThemes[o.style].accent},W/2,490);
  const qsize=660,qx=Math.round((W-qsize)/2),qy=510;
  const background=document.createElement("canvas");background.width=W;background.height=H;
  background.getContext("2d").drawImage(canvas,0,0);

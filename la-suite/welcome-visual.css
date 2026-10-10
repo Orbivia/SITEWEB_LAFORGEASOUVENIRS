@@ -95,3 +95,6 @@
 .visual-primary .visual-qr-shapes button{min-height:36px;padding:3px;font-size:9px}
 .visual-primary .visual-popover-head{padding-top:5px}
 }
+
+.visual-qr-row{display:flex;align-items:center;gap:6px;margin-top:7px}.visual-qr-label{width:32px;flex-shrink:0;font:500 10px Inter,Arial,sans-serif}.visual-qr-row .visual-qr-shapes{flex:1;margin:0}.visual-eye{display:block;width:17px;height:17px;border:3px solid currentColor;position:relative}.visual-eye:after{content:'';position:absolute;inset:3px;background:currentColor}.visual-qr-shapes [data-qr-eyes=rounded] .visual-eye{border-radius:5px}.visual-qr-shapes [data-qr-eyes=rounded] .visual-eye:after{border-radius:2px}.visual-qr-shapes [data-qr-eyes=circle] .visual-eye,.visual-qr-shapes [data-qr-eyes=circle] .visual-eye:after{border-radius:50%}
+.visual-primary[data-tool=options] .visual-drawer{max-height:calc(100% - 115px);transform:translateY(-50%)}
