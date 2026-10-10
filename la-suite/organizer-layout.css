@@ -350,3 +350,21 @@
  .organizer-layout-ready .design-mobile-footer{margin-top:4px;padding-top:0}
  .organizer-layout-ready .design-mobile-footer .btn{background:#fffdf9;color:var(--organizer-burgundy);border:1px solid #d8c6c6;box-shadow:none}
 }
+
+/* Put frequently edited fields first and make card options directly accessible. */
+.organizer-layout-ready .organizer-extra-options{border:1px solid #e4dbd0;border-radius:12px;background:#fffdf9;padding:8px 12px;margin:8px 0}
+.organizer-layout-ready .organizer-extra-options[open]{padding-bottom:12px}
+.organizer-layout-ready .organizer-extra-options>summary{font-size:14px;font-weight:600;color:var(--organizer-burgundy)}
+.organizer-layout-ready .organizer-welcome-shortcut{margin:8px 0 0}
+@media(max-width:760px){
+ .organizer-layout-ready .organizer-compact-fields{order:0}
+ .organizer-layout-ready .organizer-extra-options{order:1;margin:4px 0 8px}
+ .organizer-layout-ready .qr-personalization-group{order:2;margin-bottom:0}
+ .organizer-layout-ready .organizer-welcome-shortcut{order:3}
+ .organizer-layout-ready .qr-designer-controls>.activation-panel{order:4}
+ .organizer-layout-ready .organizer-extra-options .field-help{font-size:13px;line-height:1.5;color:#5e534b}
+ .organizer-layout-ready .organizer-extra-options textarea{font-size:16px}
+ .organizer-layout-ready .organizer-extra-options input:not([type=checkbox]){font-size:16px;min-height:44px}
+}
+.organizer-layout-ready .organizer-extra-options .qr-control-group>.customization-heading,
+.organizer-layout-ready .organizer-extra-options .qr-control-group>p.field-help{display:none}
