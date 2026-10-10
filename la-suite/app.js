@@ -864,7 +864,7 @@ function qrOptions(c){
   font:["elegant","classic","modern","romantic","editorial","refined","contemporary","signature"].includes(c.qr_font)?c.qr_font:"elegant",
   style:Object.hasOwn(qrThemes,c.qr_style)?c.qr_style:"romantic",
   size:QR_LARGE_SIZE,
-  showBrand:c.qr_show_brand!==false,
+  showBrand:true,
   eyes:["square","rounded","circle"].includes(c.welcome_config?.qrEyes)?c.welcome_config.qrEyes:"square",
   shape:["classic","rounded","dots"].includes(c.welcome_config?.qrShape)?c.welcome_config.qrShape:"classic",
   showInitials:matchMedia("(max-width:760px)").matches?Boolean((c.qr_initials??defaultInitials(c.couple_name)).trim()):c.qr_show_initials!==false
@@ -894,7 +894,7 @@ function collectQrCustomization(c){
   qr_style:$("qr-style")?.value||"romantic",
   qr_size:QR_LARGE_SIZE,
   qr_show_initials:matchMedia("(max-width:760px)").matches?Boolean($("qr-initials-input")?.value.trim()):Boolean($("qr-show-initials")?.checked),
-  qr_show_brand:document.querySelector('[data-show-logo="card"]')?.checked??(c.qr_show_brand!==false),
+  qr_show_brand:true,
   welcome_config:window.SuiteWelcome.collectShared?.()||{...window.SuiteWelcome.options(c.welcome_config||{}),...window.SuiteDesign.fields(c),style:window.SuiteDesign.styles.some(s=>s.id===$("qr-style")?.value)||$("qr-style")?.value==="custom"?$("qr-style").value:(c.welcome_config?.style||"capsule"),font:$("qr-font")?.value||"elegant",color:$("qr-color")?.value||"#8b2730"}
  }
 }
