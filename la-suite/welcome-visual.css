@@ -98,3 +98,11 @@
 
 .visual-qr-row{display:flex;align-items:center;gap:6px;margin-top:7px}.visual-qr-label{width:32px;flex-shrink:0;font:500 10px Inter,Arial,sans-serif}.visual-qr-row .visual-qr-shapes{flex:1;margin:0}.visual-eye{display:block;width:17px;height:17px;border:3px solid currentColor;position:relative}.visual-eye:after{content:'';position:absolute;inset:3px;background:currentColor}.visual-qr-shapes [data-qr-eyes=rounded] .visual-eye{border-radius:5px}.visual-qr-shapes [data-qr-eyes=rounded] .visual-eye:after{border-radius:2px}.visual-qr-shapes [data-qr-eyes=circle] .visual-eye,.visual-qr-shapes [data-qr-eyes=circle] .visual-eye:after{border-radius:50%}
 .visual-primary[data-tool=options] .visual-drawer{max-height:calc(100% - 115px);transform:translateY(-50%)}
+
+/* Close-up of the real decorative border: recognizable even in compact theme tiles. */
+.visual-primary .visual-themes .visual-theme-motif{display:block;width:100%;height:36px;min-height:0;flex:none;border-radius:4px;background-repeat:no-repeat;background-size:300% auto;background-position:left top;box-shadow:inset 0 0 0 1px #27352e0d}
+.visual-primary .visual-themes [data-style=nuit-etoilee] .visual-theme-motif{background-position:right top;background-size:250% auto}
+.visual-primary .visual-themes [data-style=gatsby] .visual-theme-motif{background-size:230% auto}
+.visual-primary .visual-themes [data-style=terrazzo] .visual-theme-motif{background-size:250% auto}
+.visual-primary .visual-themes [data-style=fond-blanc] .visual-theme-motif{background-size:cover;box-shadow:inset 0 0 0 1px #dedfd7}
+@media(max-height:650px){.visual-primary .visual-themes .visual-theme-motif{height:24px}}
