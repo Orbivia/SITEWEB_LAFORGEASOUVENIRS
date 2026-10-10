@@ -424,3 +424,9 @@
 .organizer-layout-ready .design-preview-tabs{border-radius:12px;padding:3px;border:1px solid #ded5ca;box-sizing:border-box}
 .organizer-layout-ready .design-preview-tabs button{border-radius:9px}
 .organizer-layout-ready .organizer-guest-preview-link{gap:8px}
+
+/* Keep the preview focused on the card and available actions. */
+.organizer-layout-ready .qr-preview-actions[hidden],
+.organizer-layout-ready .qr-preview-actions .btn[hidden],
+.organizer-layout-ready .qr-designer-preview .atelier-customization-note{display:none!important}
+.organizer-layout-ready .qr-print-guide .field-help{font:400 13px/1.5 Inter,sans-serif;color:#5e534b;margin:8px 0}
