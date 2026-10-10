@@ -1129,7 +1129,7 @@ function applyQrPreview(url,c){
    if(revision!==qrPreviewRevision||ownerSessionEnded)return;
    if(!blob)throw Error('Aperçu indisponible');
    const preview=$("qr-artwork-preview");if(!preview)return;
-   const oldUrl=qrPreviewUrl;qrPreviewUrl=URL.createObjectURL(blob);preview.src=qrPreviewUrl;
+   const oldUrl=qrPreviewUrl;qrPreviewUrl=URL.createObjectURL(blob);preview.dataset.textBoxes=JSON.stringify(canvas.cardTextBoxes);preview.src=qrPreviewUrl;
    if(oldUrl)URL.revokeObjectURL(oldUrl);
   }catch{if(revision===qrPreviewRevision&&!ownerSessionEnded)show($("qr-status"),"Impossible de préparer l’aperçu. Réessayez.",false)}
  },100);
@@ -1237,6 +1237,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  ctx.fillStyle=dark?'#fffaf1':'#262220';
  const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'Inter, Arial, sans-serif',weight:'600',maxLines:6,minSize:38,onOverflow:()=>issues.push('print-note')});
  const explanationY=noteBottom+(o.note?26:0);
+ canvas.cardTextBoxes={'print-title':{x:180,y:190,width:W-360,height:195},date:{x:180,y:397,width:W-360,height:60},'print-note':{...textBox,height:Math.max(55,noteBottom-textBox.y)},'print-explanation':{...textBox,y:explanationY,height:Math.max(55,explanationBottom-explanationY)}};
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
  drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:explanationBottom-explanationY},{size:44,family:'Inter, Arial, sans-serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
 
