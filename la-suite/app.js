@@ -578,6 +578,7 @@ function updateDeliveryHelp(){
  $('delivery-value').textContent=$('deliver-now').checked?'Maintenant':$('delivery_date').value?fdate($('delivery_date').value):'Choisir une date';
 }
 function initGuestControls(){
+ window.addEventListener("la-suite-guest-home",()=>interruptCapture("L’enregistrement a été arrêté. Votre aperçu reste disponible."));
  document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy)chooseGuestType(b.dataset.memoryType)}));
  document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy){setGuestMode(b.dataset.mediaMode);if(b.dataset.mediaMode==="upload")$("media-file").click();else if(b.dataset.mediaMode==="photo")$("photo-file").click()}}));
  $("media-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],guestType));
@@ -630,6 +631,7 @@ function renderGuestState(state){
  const max=parisDay(new Date(new Date(state.delivery_before).getTime()-1000));$("delivery_date").max=max;
  document.querySelectorAll("[data-delivery]").forEach(b=>{if(/^\d+$/.test(b.dataset.delivery))b.hidden=addMonthsClamped(parisDay(),Number(b.dataset.delivery))>max});
  if(!deliveryTouched)chooseDelivery("now");
+ window.SuiteGuestLanding?.render(state);
 }
 function uploadGuestFile(file,transaction){
  if(transaction.uploaded)return Promise.resolve();
@@ -690,7 +692,7 @@ async function initCapsule(){
    renderGuestState(guestState);
    if(guestIsPreview)$('guest-state').textContent='Mode aperçu · Aucun souvenir ne sera envoyé.';
    if(guestState.has_intro&&!["expired","suspended"].includes(guestState.state))guestInvoke({action:"get_intro",guest_token:token}).then(r=>{
-    if(version===refreshVersion&&r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false;$('guest-welcome-open').hidden=false}
+    if(version===refreshVersion&&r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false;$('guest-welcome-open').hidden=false;window.SuiteGuestLanding?.syncMedia()}
    }).catch(()=>{});
   }catch(error){$("guest-state").textContent=error.message;$("guest-retry").hidden=false}
   finally{refreshing=false}
