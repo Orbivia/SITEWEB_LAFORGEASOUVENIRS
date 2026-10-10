@@ -106,3 +106,28 @@
 .visual-primary .visual-themes [data-style=terrazzo] .visual-theme-motif{background-size:250% auto}
 .visual-primary .visual-themes [data-style=fond-blanc] .visual-theme-motif{background-size:cover;box-shadow:inset 0 0 0 1px #dedfd7}
 @media(max-height:650px){.visual-primary .visual-themes .visual-theme-motif{height:24px}}
+
+/* Keep the QR preview on the left and floating settings as small as their content permits. */
+.visual-primary[data-target=card] .visual-stage{padding-left:6px}
+.visual-primary[data-target=card] .visual-card{margin-left:0;margin-right:auto}
+.visual-primary .visual-drawer{width:min(260px,calc(100% - 80px))}
+.visual-primary[data-tool=theme] .visual-drawer{width:min(260px,calc(100% - 80px))}
+.visual-primary[data-tool=font] .visual-drawer{width:min(230px,calc(100% - 80px))}
+.visual-primary[data-tool=color] .visual-drawer{width:min(176px,calc(100% - 80px))}
+.visual-primary .visual-popover-head{padding:6px 8px 0;gap:4px}
+.visual-primary .visual-drawer section{padding:6px 8px 8px}
+.visual-primary .visual-themes{gap:4px}
+.visual-primary .visual-themes button,.visual-primary .visual-themes .visual-import{padding:2px;gap:2px}
+.visual-primary .visual-themes .visual-theme-motif,.visual-primary .visual-themes img{height:30px}
+.visual-primary .visual-colors{gap:8px}
+.visual-primary .visual-font-samples{gap:4px}
+.visual-primary .visual-font-samples button{min-height:48px;padding:5px 3px}
+.visual-primary .visual-font-samples span{font-size:15px}
+.visual-primary [data-panel=details] label{margin-bottom:8px;gap:6px}
+.visual-primary .visual-drawer [data-panel=details] .visual-check{display:inline-flex;width:calc(50% - 3px);font-size:10px;margin:0 0 8px;gap:5px;vertical-align:top}
+.visual-primary .visual-date-help{margin:3px 0 8px}
+.visual-primary .visual-qr-row{gap:4px;margin-top:6px}
+.visual-primary .visual-qr-label{width:28px}
+.visual-primary .visual-qr-shapes{gap:3px}
+@media(min-width:761px){.visual-primary[data-tool=theme] .visual-drawer{width:280px}}
+@media(max-height:650px){.visual-primary .visual-themes .visual-theme-motif,.visual-primary .visual-themes img{height:24px}.visual-primary .visual-font-samples button{min-height:40px}}
