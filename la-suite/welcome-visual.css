@@ -131,3 +131,14 @@
 .visual-primary .visual-qr-shapes{gap:3px}
 @media(min-width:761px){.visual-primary[data-tool=theme] .visual-drawer{width:280px}}
 @media(max-height:650px){.visual-primary .visual-themes .visual-theme-motif,.visual-primary .visual-themes img{height:24px}.visual-primary .visual-font-samples button{min-height:40px}}
+
+/* Tall, narrow theme picker alongside the QR, with every choice on one panel. */
+.visual-primary[data-tool=theme] .visual-drawer{width:min(148px,calc(100% - 80px));max-height:calc(100% - 130px)}
+.visual-primary[data-tool=theme] .visual-popover-head strong{font-size:12px;line-height:15px}
+.visual-primary[data-tool=theme] .visual-drawer section{padding:5px 6px 7px}
+.visual-primary[data-tool=theme] .visual-themes{grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+.visual-primary[data-tool=theme] .visual-themes button,.visual-primary[data-tool=theme] .visual-themes .visual-import{min-height:48px;padding:2px;gap:2px;font-size:9px;line-height:11px}
+.visual-primary[data-tool=theme] .visual-themes .visual-theme-motif,.visual-primary[data-tool=theme] .visual-themes img{height:20px}
+.visual-primary[data-tool=theme] .visual-themes span:not(.visual-theme-motif){min-height:22px}
+@media(min-width:761px){.visual-primary[data-tool=theme] .visual-drawer{width:176px}}
+@media(max-height:650px){.visual-primary[data-tool=theme] .visual-themes button,.visual-primary[data-tool=theme] .visual-themes .visual-import{min-height:44px}.visual-primary[data-tool=theme] .visual-themes .visual-theme-motif,.visual-primary[data-tool=theme] .visual-themes img{height:16px}}
