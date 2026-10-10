@@ -368,3 +368,54 @@
 }
 .organizer-layout-ready .organizer-extra-options .qr-control-group>.customization-heading,
 .organizer-layout-ready .organizer-extra-options .qr-control-group>p.field-help{display:none}
+
+/* Shared control styles across the organizer and its editing dialogs. */
+.organizer-layout-ready{--organizer-control-radius:10px;--organizer-control-border:#ded5cb;--organizer-control-surface:#fffdf9}
+.organizer-layout-ready .btn,
+.organizer-layout-ready #review-activation,
+.organizer-layout-ready #customize-welcome{
+ font:600 14px/1.35 Inter,sans-serif;min-height:44px;border-radius:var(--organizer-control-radius);padding:10px 14px;gap:8px;box-sizing:border-box;text-decoration:none
+}
+.organizer-layout-ready .btn.primary{background:var(--organizer-burgundy);border:1px solid var(--organizer-burgundy);color:#fff;box-shadow:none}
+.organizer-layout-ready .btn.secondary,
+.organizer-layout-ready #share-link,
+.organizer-layout-ready #customize-welcome{background:var(--organizer-control-surface);border:1px solid var(--organizer-control-border);color:var(--organizer-burgundy);box-shadow:none}
+.organizer-layout-ready .btn:disabled{background:#eee8e1!important;border-color:#ddd3c9!important;color:#83766d!important;opacity:1;cursor:not-allowed}
+.organizer-layout-ready :is(button,a,input,textarea,select,summary):focus-visible{outline:2px solid var(--organizer-burgundy);outline-offset:3px}
+.organizer-layout-ready input[type=checkbox]{accent-color:var(--organizer-burgundy)}
+.organizer-layout-ready .organizer-compact-fields :is(input,textarea),
+.organizer-layout-ready .organizer-extra-options :is(input:not([type=checkbox]),textarea),
+.organizer-layout-ready #welcome-editor :is(input:not([type=color]):not([type=checkbox]),textarea,select){border:1px solid var(--organizer-control-border);border-radius:var(--organizer-control-radius);background:var(--organizer-control-surface);color:#302725;box-sizing:border-box}
+.organizer-layout-ready .organizer-compact-fields #print-title,
+.organizer-layout-ready .organizer-compact-fields #print-note,
+.organizer-layout-ready .organizer-compact-fields #organizer-event-date,
+.organizer-layout-ready .organizer-extra-options #print-explanation,
+.organizer-layout-ready .organizer-extra-options #qr-initials-input{font:400 14px/1.5 Inter,sans-serif;padding:10px 12px;min-height:44px}
+.organizer-layout-ready .organizer-compact-fields label,
+.organizer-layout-ready .organizer-welcome-shortcut>label,
+.organizer-layout-ready .organizer-extra-options label:not(.studio-text-toggle){font:500 14px/1.4 Inter,sans-serif;color:#302725}
+.organizer-layout-ready .organizer-compact-fields .studio-text-toggle,
+.organizer-layout-ready .organizer-extra-options .studio-text-toggle{font:400 12px/1.4 Inter,sans-serif;color:#5e534b}
+.organizer-layout-ready .qr-theme-gallery .qr-style-choice,
+.organizer-layout-ready .qr-font-menu button{border-radius:var(--organizer-control-radius);border:1px solid var(--organizer-control-border);background:var(--organizer-control-surface)}
+.organizer-layout-ready .qr-theme-gallery .qr-style-choice.is-selected,
+.organizer-layout-ready .qr-font-menu .is-selected{border-color:var(--organizer-burgundy);box-shadow:0 0 0 1px var(--organizer-burgundy);background:#f8f1ef}
+.organizer-layout-ready .qr-theme-gallery .qr-theme-name{font:500 12px/1.4 Inter,sans-serif;padding:5px 4px}
+.organizer-layout-ready .organizer-date-picker{top:30px}
+.organizer-layout-ready .design-preview-tabs button{font:500 13px/1.4 Inter,sans-serif}
+@media(hover:hover){
+ .organizer-layout-ready .btn.secondary:not(:disabled):hover,
+ .organizer-layout-ready #share-link:not(:disabled):hover,
+ .organizer-layout-ready #customize-welcome:hover{background:#f8f1ef;border-color:#b69c9f}
+ .organizer-layout-ready .btn.primary:not(:disabled):hover{background:#510c1e;border-color:#510c1e}
+}
+@media(max-width:760px){
+ .organizer-layout-ready .btn,.organizer-layout-ready #review-activation,.organizer-layout-ready #customize-welcome{min-height:48px;font-size:14px}
+ .organizer-layout-ready .organizer-compact-fields #print-title,
+ .organizer-layout-ready .organizer-compact-fields #print-note,
+ .organizer-layout-ready .organizer-compact-fields #organizer-event-date,
+ .organizer-layout-ready .organizer-extra-options #print-explanation,
+ .organizer-layout-ready .organizer-extra-options #qr-initials-input{font-size:16px}
+ .organizer-layout-ready .organizer-date-picker{top:31px}
+}
+@media(max-width:760px){.organizer-layout-ready .qr-theme-gallery .qr-theme-name{min-height:44px;display:flex;align-items:center;justify-content:center;box-sizing:border-box}}
