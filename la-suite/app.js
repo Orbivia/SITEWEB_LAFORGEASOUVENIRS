@@ -1975,7 +1975,7 @@ async function initDashboard(){
    if(organizerState.intro&&!await uploadIntro(c))return false;
    if(organizerState.welcome&&welcomeDesigner){const config=welcomeDesigner.collect();await updateOwnedCapsule(c,{welcome_config:config});c.welcome_config=config;if(JSON.stringify(config)===JSON.stringify(welcomeDesigner.collect()))organizerState.welcome=false;}
    if(organizerState.qr&&!await saveQrCustomization(c,url.href,true))return false;
-   organizerState.error=false;if(organizerDirty()){show($("organizer-save-error"),"Des modifications ont été faites pendant la sauvegarde. Enregistrez-les avant de continuer.",false);return false}show($("organizer-save-error"),'');return true;
+   organizerState.error=false;show($("organizer-save-error"),'');if(organizerDirty()){scheduleAutoSave();return false}return true;
   }catch(e){organizerState.error=true;show($("organizer-save-error"),'Enregistrement impossible : '+e.message,false);return false}
   finally{organizerState.saving--;saveIndicator();saveAllPending=null}})();
   return saveAllPending;
