@@ -111,7 +111,7 @@
 }
 
 @media(max-width:760px){
- body.organizer-layout-ready.owner-screen-fits{overflow-y:hidden;overscroll-behavior-y:none}
+ body.organizer-layout-ready.owner-screen-fits{overflow-y:auto;overscroll-behavior-y:auto}
 }
 
 @media(max-width:760px){
@@ -173,3 +173,6 @@
  .organizer-layout-ready .owner-deposit-waiting{padding-bottom:clamp(48px,12vw,64px)}
  .deposit-waiting-main{padding-bottom:18px}
 }
+
+/* Allow the browser pull-to-refresh gesture at the top of organizer screens. */
+@media(max-width:760px){html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-behavior-y:auto}}
