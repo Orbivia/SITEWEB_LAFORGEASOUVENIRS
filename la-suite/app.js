@@ -746,7 +746,7 @@ async function initCapsule(){
      await guestInvoke({action:"finalize_media",guest_token:token,message_id:transaction.reserved.message_id,path:transaction.reserved.path});
     }
    }
-   await new Promise(resolve=>setTimeout(resolve,Math.max(0,750-(performance.now()-sendStarted))));
+   await new Promise(resolve=>setTimeout(resolve,Math.max(0,(matchMedia("(prefers-reduced-motion: reduce)").matches?0:3200)-(performance.now()-sendStarted))));
    $("guest-success-date").textContent=instant?"Merci pour votre souvenir !":"Il restera secret jusqu’au "+fdate(date)+".";
    e.target.reset();resetPreview();guestTransaction=null;$("guest-message").hidden=true;$("guest-success").hidden=false;$("guest-success").focus();$("guest-success").scrollIntoView({behavior:"smooth",block:"center"});
   }catch(error){show(status,error.message,false);button.querySelector("span").textContent="Réessayer l’envoi"}
