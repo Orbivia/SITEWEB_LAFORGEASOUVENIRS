@@ -109,3 +109,7 @@
  .deposit-countdown>div{color:#39332d}
  .deposit-countdown span{display:block;color:#39332d;font-weight:500;line-height:1.4;margin-top:4px}
 }
+
+@media(max-width:760px){
+ body.organizer-layout-ready.owner-screen-fits{overflow-y:hidden;overscroll-behavior-y:none}
+}

@@ -1855,6 +1855,21 @@ async function setupOfferServices(c){
 }
 
 
+function updateOwnerScreenScroll(){
+ const panel=document.querySelector('.owner-panel.is-awaiting-deposits:not([hidden])');
+ const frame=$('owner-deposit-waiting'),nav=document.querySelector('.owner-tabs');
+ let fits=false;
+ if(panel&&frame&&!frame.hidden&&nav&&matchMedia('(max-width:760px)').matches&&(window.visualViewport?.scale||1)<=1.01){
+  const rect=frame.getBoundingClientRect(),bottom=nav.getBoundingClientRect().top;
+  const content=frame.querySelector('.deposit-waiting-content');
+  fits=rect.top>=0&&rect.bottom<=bottom+1&&frame.scrollHeight<=frame.clientHeight+1&&Boolean(content)&&content.scrollHeight<=frame.clientHeight;
+ }
+ document.body.classList.toggle('owner-screen-fits',fits);
+}
+window.addEventListener('resize',()=>requestAnimationFrame(updateOwnerScreenScroll));
+window.addEventListener('studio-layout',()=>requestAnimationFrame(updateOwnerScreenScroll));
+window.visualViewport?.addEventListener('resize',()=>requestAnimationFrame(updateOwnerScreenScroll));
+
 let ownerWaitingTimer=null;
 function renderOwnerDepositWaiting(c,count,onOpen){
  clearInterval(ownerWaitingTimer);
@@ -1863,6 +1878,7 @@ function renderOwnerDepositWaiting(c,count,onOpen){
  const opens=new Date(c.usage?.opens_at).getTime();
  const waiting=matchMedia('(max-width:760px)').matches&&c.usage?.state==='scheduled'&&count===0&&Number.isFinite(opens)&&opens>Date.now();
  root.classList.toggle('is-awaiting-deposits',waiting);box.hidden=!waiting;
+ requestAnimationFrame(updateOwnerScreenScroll);
  if(!waiting)return;
  const config={...c.welcome_config,...window.SuiteDesign.fields(c)};
  const style=$("qr-style")?.value||config.style||c.qr_style||'fond-blanc';
@@ -1881,6 +1897,7 @@ function renderOwnerDepositWaiting(c,count,onOpen){
  box.querySelector('[data-wait-understood]').onclick=()=>tips.close();
  tips.addEventListener('close',()=>box.querySelector('[data-wait-tips]').focus());
  const tick=()=>{
+  updateOwnerScreenScroll();
   if(ownerSessionEnded){clearInterval(ownerWaitingTimer);return}
   const remaining=Math.max(0,opens-Date.now()),minutes=Math.ceil(remaining/60000);
   box.querySelector('[data-wait-days]').textContent=String(Math.floor(minutes/1440)).padStart(2,'0');
