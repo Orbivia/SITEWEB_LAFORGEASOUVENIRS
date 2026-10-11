@@ -546,3 +546,46 @@
 .workspace-delete-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .workspace-delete-actions button{min-height:44px}
 #workspace-delete-capsule .status:empty{display:none}
+
+/* Account sheets share the organizer's typography and button language. */
+.workspace-ready .workspace-sheet{--workspace-accent:#650f25;--workspace-green:#385749;--workspace-line:#e4dbd0;background:#fffdf9;color:#302725;font:400 14px/1.5 Inter,Arial,sans-serif}
+.workspace-ready .workspace-sheet .studio-sheet-head{gap:12px;align-items:center}
+.workspace-ready .workspace-sheet .studio-sheet-head h2{margin:0;font:600 22px/1.3 Inter,Arial,sans-serif;color:#302725}
+.workspace-ready .workspace-sheet .studio-close{display:flex;align-items:center;justify-content:center;width:44px;height:44px;min-width:44px;padding:0;border:1px solid var(--workspace-line);border-radius:10px;background:#fffdf9;color:#302725;font:400 26px/1 Inter,Arial,sans-serif}
+.workspace-ready .workspace-sheet .studio-close:hover{background:#f5f3ee}
+.workspace-ready .workspace-sheet .btn{min-height:44px;box-sizing:border-box;padding:11px 14px;border-radius:10px;font:600 14px/1.4 Inter,Arial,sans-serif;text-align:center;box-shadow:none}
+.workspace-ready .workspace-sheet .btn.primary{border:1px solid var(--workspace-accent);background:var(--workspace-accent);color:white}
+.workspace-ready .workspace-sheet .btn.primary:hover:not(:disabled){border-color:#500b1d;background:#500b1d}
+.workspace-ready .workspace-sheet .btn.secondary{border:1px solid var(--workspace-line);background:#fffdf9;color:#302725}
+.workspace-ready .workspace-sheet .btn.secondary:hover:not(:disabled){background:#f5f3ee}
+.workspace-ready .workspace-sheet button:disabled{opacity:.48;cursor:not-allowed}
+.workspace-ready .workspace-sheet button:focus-visible,.workspace-ready .workspace-sheet a:focus-visible,.workspace-ready .workspace-sheet input:focus-visible{outline:3px solid #c7a052;outline-offset:2px}
+.workspace-ready .workspace-sheet input{min-height:44px;box-sizing:border-box;padding:10px 12px;border:1px solid var(--workspace-line);border-radius:10px;background:white;color:#302725;font:400 16px/1.4 Inter,Arial,sans-serif}
+.workspace-ready .workspace-sheet label{font:500 14px/1.4 Inter,Arial,sans-serif}
+.workspace-ready .workspace-sheet .hint,.workspace-ready .workspace-sheet .status,.workspace-ready .workspace-sheet form small{font:400 13px/1.5 Inter,Arial,sans-serif}
+.workspace-ready .workspace-sheet .hint,.workspace-ready .workspace-sheet form small{color:#716b60}
+.workspace-ready .workspace-sheet .workspace-capsule-row strong{font:600 16px/1.4 Inter,Arial,sans-serif}
+.workspace-ready .workspace-sheet .workspace-capsule-row small{font:400 13px/1.5 Inter,Arial,sans-serif}
+.workspace-ready .workspace-sheet .workspace-state{font-weight:500;background:#f0eee8;border-radius:8px}
+.workspace-ready .workspace-capsule-entry{border-color:var(--workspace-line)}
+.workspace-ready .workspace-capsule-entry:has([aria-current=true]){border-color:var(--workspace-green);background:#f0f4f0}
+.workspace-ready .workspace-capsule-actions button{border-color:var(--workspace-line);border-radius:10px;background:#fffdf9;color:#302725}
+.workspace-ready .workspace-capsule-actions button[aria-pressed=true]{border-color:var(--workspace-green);background:var(--workspace-green);color:white;box-shadow:none}
+.workspace-ready .workspace-capsule-actions button:hover:not([aria-pressed=true]){background:#f5f3ee}
+.workspace-ready .workspace-capsule-actions button[data-capsule-delete]{color:var(--workspace-accent)}
+.workspace-ready #workspace-account-dialog .workspace-account-section h3{font:600 14px/1.4 Inter,Arial,sans-serif;color:#302725}
+.workspace-ready #workspace-account-dialog .workspace-account-label{font:500 13px/1.4 Inter,Arial,sans-serif;color:#716b60}
+.workspace-ready #workspace-account-dialog .workspace-account-row{min-height:44px;box-sizing:border-box;margin:0;padding:11px 12px;border:1px solid var(--workspace-line);border-radius:10px;background:#fffdf9;color:#302725;font:600 14px/1.4 Inter,Arial,sans-serif}
+.workspace-ready #workspace-account-dialog .workspace-account-row:hover{background:#f5f3ee}
+.workspace-ready #workspace-account-dialog .workspace-account-row[aria-expanded=true]{border-color:var(--workspace-green);background:var(--workspace-green);color:white}
+.workspace-ready #workspace-account-dialog .workspace-account-row i{font-size:18px}
+.workspace-ready #workspace-account-dialog .workspace-email{font:400 14px/1.5 Inter,Arial,sans-serif}
+.workspace-ready #workspace-account-dialog .workspace-email .btn{font-size:14px;padding:10px 12px}
+.workspace-ready #workspace-account-dialog #logout{margin-top:14px;padding:11px 12px;border:1px solid var(--workspace-line);border-radius:10px;color:var(--workspace-accent)}
+.workspace-ready .workspace-account-button{border-radius:10px;color:#302725}
+.workspace-ready .workspace-account-button[aria-expanded=true]{background:#f8f1ef;color:#650f25}
+@media(max-width:760px){
+ .workspace-ready .workspace-sheet .studio-sheet-head{padding-inline:16px}
+ .workspace-ready .workspace-sheet .studio-sheet-body{padding-inline:16px}
+ .workspace-ready #workspace-account-dialog .studio-sheet-body{padding-inline:16px}
+}
