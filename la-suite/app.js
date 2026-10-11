@@ -1733,6 +1733,28 @@ function updateOpeningCountdown(divider,date){
  const tick=()=>{if(ownerSessionEnded||!divider.isConnected){clearInterval(memoryOpeningTimer);return;}const remaining=Math.max(0,Math.ceil((Date.parse(date)-Date.now())/1000));const days=Math.floor(remaining/86400),hours=Math.floor(remaining%86400/3600),minutes=Math.floor(remaining%3600/60),seconds=remaining%60;const time=days?days+' j '+hours+' h':hours?hours+' h '+minutes+' min':minutes+' min '+seconds+' s';divider.innerHTML='<i class="fa-regular fa-clock" aria-hidden="true"></i><span>Dans <strong>'+time+'</strong></span>';divider.title='Ouverture le '+fParis(date);if(!remaining){divider.textContent='Ouverture en cours…';clearInterval(memoryOpeningTimer);}};
  tick();memoryOpeningTimer=setInterval(tick,1000);
 }
+function setupWholeMemoryRows(){
+ const list=$('memory-list');if(!list)return;
+ if(!list.updateWholeRows){
+  let frame=null;
+  list.updateWholeRows=()=>{
+   if(frame!==null)return;
+   frame=requestAnimationFrame(()=>{
+    frame=null;
+    const compact=Boolean(list.closest('.owner-deposit-open:not([hidden])'))&&matchMedia('(max-width:760px)').matches;
+    const bounds=list.getBoundingClientRect();
+    for(const card of list.querySelectorAll('.memory-row')){
+     const rect=card.getBoundingClientRect();
+     card.classList.toggle('memory-row-clipped',compact&&(rect.top<bounds.top-1||rect.bottom>bounds.bottom+1));
+    }
+   });
+  };
+  list.addEventListener('scroll',list.updateWholeRows,{passive:true});
+  const observer=new ResizeObserver(list.updateWholeRows);observer.observe(list);
+  window.addEventListener('pagehide',()=>observer.disconnect(),{once:true});
+ }
+ list.updateWholeRows();
+}
 function applyMemoryFilter(){
  const cards=[...document.querySelectorAll('#memory-list .memory-row')];
  if(document.querySelector('.owner-deposit-open:not([hidden])'))memoryFilter="all";
@@ -1763,7 +1785,13 @@ function applyMemoryFilter(){
   group.cards.forEach(card=>list.append(card));
  }
  }
- const summary=document.querySelector('.deposit-open-summary');if(summary){summary.querySelector('.memory-unread-count')?.remove();const total=summary.querySelector('[data-open-count]');const unread=cards.filter(card=>card.classList.contains('memory-unread')).length,future=cards.filter(card=>card.classList.contains('locked')).length;if(total)total.textContent=cards.length+' souvenir'+(cards.length>1?'s':'')+(unread?' · '+unread+' à lire':'')+(future?' · '+future+' à venir':'');}
+ const summary=document.querySelector('.deposit-open-summary');
+ if(summary){
+  const unread=cards.filter(card=>card.classList.contains('memory-unread')).length,future=cards.filter(card=>card.classList.contains('locked')).length;
+  summary.innerHTML='<span class="memory-overview-unread"><i class="fa-solid fa-envelope" aria-hidden="true"></i> '+unread+' à lire</span><span class="memory-overview-total" data-open-count>'+cards.length+' souvenir'+(cards.length>1?'s':'')+'</span><span class="memory-overview-future"><i class="fa-solid fa-lock" aria-hidden="true"></i> '+future+' à venir</span>';
+ }
+ setupWholeMemoryRows();
+
 
  for(const button of document.querySelectorAll('[data-memory-filter]'))button.setAttribute('aria-pressed',String(button.dataset.memoryFilter===memoryFilter));
  let empty=$('memory-filter-empty');
@@ -2002,7 +2030,7 @@ function renderOwnerDepositOpen(c,manifest){
  frame.querySelector('[data-open-title]').textContent=count?'Vos souvenirs':'Les dépôts sont ouverts';
  frame.querySelector('[data-open-until]').textContent=c.usage.closes_at?'Jusqu’au '+fParis(new Date(new Date(c.usage.closes_at).getTime()-1000).toISOString())+' · heure de Paris':'';
  frame.querySelector('[data-open-count]').textContent=memoryCountLabel(count);
- frame.querySelector('[data-open-available]').textContent=available+' disponible'+(available>1?'s':'')+' maintenant';
+ const availableLabel=frame.querySelector('[data-open-available]');if(availableLabel)availableLabel.textContent=available+' disponible'+(available>1?'s':'')+' maintenant';
  frame.querySelector('.deposit-open-gallery').append(hero,memories);
  const exportLabel=$('export-memories');if(exportLabel)exportLabel.textContent='Tout télécharger';
  applyMemoryFilter();
