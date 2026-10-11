@@ -177,3 +177,21 @@
 .guest-host-zone[data-content=text] .guest-host-label::after{content:'';display:block;width:48px;height:1px;margin:12px auto 0;background:var(--home-accent);opacity:.65}
 .guest-host-zone[data-content=text] #capsule-welcome{font-family:var(--welcome-font);font-weight:var(--welcome-weight,500);font-size:22px;line-height:1.4;text-align:center;-webkit-line-clamp:3}
 @media(max-width:760px){.guest-host-zone[data-content=text] #capsule-welcome{font-size:20px}}
+
+/* Fill the available screen while keeping short notes light and balanced. */
+.guest-landing-ready[data-guest-view=home] .guest-page,.guest-landing,.guest-landing.has-cover{min-height:100dvh}
+.guest-landing .guest-home-content{min-height:100dvh;padding-top:clamp(32px,6dvh,60px);padding-bottom:max(24px,env(safe-area-inset-bottom));gap:14px}
+.guest-landing .guest-home-divider{margin:4px 0;height:24px}
+.guest-landing .guest-home-principle{margin-bottom:6px;font-size:14px;line-height:1.6}
+.guest-host-zone{height:clamp(180px,25dvh,240px)}
+.guest-landing .guest-host-zone[data-content=text] .guest-greeting{background:transparent;border:0;border-radius:0;box-shadow:none;padding:24px 22px;position:relative}
+.guest-host-zone[data-content=text] .guest-greeting::before,.guest-host-zone[data-content=text] .guest-greeting::after{content:'';position:absolute;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,var(--home-accent),transparent);opacity:.5}
+.guest-host-zone[data-content=text] .guest-greeting::before{top:10px}
+.guest-host-zone[data-content=text] .guest-greeting::after{bottom:10px}
+.guest-landing .guest-host-zone[data-content=text] .guest-host-label{font:500 20px/1.25 var(--welcome-font);color:var(--home-ink)}
+.guest-landing .guest-host-zone[data-content=text] #capsule-welcome{font:var(--welcome-weight,500) 24px/1.4 var(--welcome-font);color:var(--home-ink)!important}
+.guest-landing .guest-home-footer{margin-top:auto;padding-top:30px}
+.guest-fullscreen{position:absolute;right:22px;bottom:24px;width:40px;height:40px;display:grid;place-items:center;border:0;border-radius:50%;background:transparent;color:var(--home-ink);opacity:.6;cursor:pointer}
+.guest-fullscreen svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.guest-fullscreen:focus-visible{outline:2px solid var(--home-accent);opacity:1}
+@media(max-height:650px){.guest-landing .guest-home-content{gap:10px;padding-top:24px}.guest-host-zone{height:180px}.guest-landing .guest-home-footer img{max-height:44px}.guest-landing .guest-home-footer{padding-top:20px}}
