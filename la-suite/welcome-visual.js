@@ -184,7 +184,7 @@
   queueMicrotask(()=>{
    const panel=document.querySelector('.qr-designer-panel');panel.prepend(studio);document.body.classList.add('visual-primary-ready');window.SuiteDesign.retireLegacyPreview?.();
    studio.querySelector('.visual-intro-host').append(document.querySelector('.intro-video-panel'));$('intro-kind').closest('.field').hidden=true;
-   const none=document.createElement('button');none.type='button';none.textContent='Aucun';none.onclick=()=>{$('intro-kind').value='none';dispatch('intro-kind');render()};studio.querySelector('.visual-intro-actions').append(none);
+   const none=document.createElement('button');none.type='button';none.innerHTML='<i class="fa-solid fa-ban" aria-hidden="true"></i><span>Aucun</span>';none.dataset.introFormat='none';none.onclick=()=>{$('intro-kind').value='none';dispatch('intro-kind');render()};studio.querySelector('.visual-intro-actions [role=group]').append(none);
    const crop=$('design-crop');studio.querySelector('.visual-background-host').append(crop);previewResize.observe(crop);const uploadStatus=$('design-upload-status');studio.querySelector('.visual-background-host').append(uploadStatus);
    const actions=document.createElement('div');actions.className='visual-actions';studio.append(actions);actions.append(document.querySelector('.qr-preview-actions'),document.querySelector('.activation-panel'),document.querySelector('.organizer-export-availability'),$('organizer-card-readability'),$('qr-status'));
    new ResizeObserver(()=>{studio.style.setProperty('--visual-actions-height',actions.offsetHeight+'px');fitPreview()}).observe(actions);
