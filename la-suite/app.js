@@ -1522,6 +1522,7 @@ function ownerShell(c,url,count){
 </div>
 
 <div class="owner-panel" data-owner-panel="messages" hidden>
+ <section id="owner-deposit-waiting" class="owner-deposit-waiting" hidden></section>
  <section class="owner-messages-hero">
   <div>
    <h2>Vos souvenirs</h2>
@@ -1853,6 +1854,36 @@ async function setupOfferServices(c){
  }catch(_){}
 }
 
+
+let ownerWaitingTimer=null;
+function renderOwnerDepositWaiting(c,count,onOpen){
+ clearInterval(ownerWaitingTimer);
+ const root=document.querySelector('[data-owner-panel="messages"]'),box=$("owner-deposit-waiting");
+ if(!root||!box)return;
+ const opens=new Date(c.usage?.opens_at).getTime();
+ const waiting=matchMedia('(max-width:760px)').matches&&c.usage?.state==='scheduled'&&count===0&&Number.isFinite(opens)&&opens>Date.now();
+ root.classList.toggle('is-awaiting-deposits',waiting);box.hidden=!waiting;
+ if(!waiting)return;
+ const config={...c.welcome_config,...window.SuiteDesign.fields(c)};
+ const style=$("qr-style")?.value||config.style||c.qr_style||'fond-blanc';
+ const preset=window.SuiteDesign.styles.find(s=>s.id===style);
+ const artwork=window.SuiteDesign.artwork(style,config);
+ box.style.backgroundImage=artwork?'url("'+artwork+'")':'none';
+ box.style.backgroundColor=preset?.background||'#fcf8ef';
+ box.innerHTML='<div class="deposit-waiting-content"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i><h2>Les dépôts ouvrent bientôt</h2><p>Vos invités pourront déposer leurs souvenirs dans</p><div class="deposit-countdown" role="timer" aria-label="Temps avant l’ouverture des dépôts"><div><strong data-wait-days></strong><span>jours</span></div><div><strong data-wait-hours></strong><span>heures</span></div><div><strong data-wait-minutes></strong><span>minutes</span></div></div><p class="deposit-opening-date">Ouverture le '+esc(fdate(c.usage.opens_at))+' à '+esc(new Date(opens).toLocaleTimeString('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'}))+'</p><button type="button" class="btn primary" data-wait-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><button type="button" class="btn secondary" data-wait-card><i class="fa-solid fa-qrcode" aria-hidden="true"></i> Voir ma fiche QR</button></div>';
+ box.querySelector('[data-wait-share]').onclick=()=>$("share-link").click();
+ box.querySelector('[data-wait-card]').onclick=()=>document.querySelector('[data-owner-tab-link="configuration"]').click();
+ const tick=()=>{
+  if(ownerSessionEnded){clearInterval(ownerWaitingTimer);return}
+  const remaining=Math.max(0,opens-Date.now()),minutes=Math.ceil(remaining/60000);
+  box.querySelector('[data-wait-days]').textContent=String(Math.floor(minutes/1440)).padStart(2,'0');
+  box.querySelector('[data-wait-hours]').textContent=String(Math.floor(minutes%1440/60)).padStart(2,'0');
+  box.querySelector('[data-wait-minutes]').textContent=String(minutes%60).padStart(2,'0');
+  if(!remaining){clearInterval(ownerWaitingTimer);root.classList.remove('is-awaiting-deposits');box.hidden=true;onOpen?.()}
+ };
+ tick();ownerWaitingTimer=setInterval(tick,1000);
+}
+
 async function renderOrganizerLifecycle(c){
  const {data,error}=await sb.rpc("owner_capsule_usage",{p_capsule_id:c.id});
  if(ownerSessionEnded)return;
@@ -1863,7 +1894,7 @@ async function renderOrganizerLifecycle(c){
  updateEventDateControls(c);
  const names={suspended:"Dépôts en pause",draft:"En préparation",scheduled:"Prête à partager",open:"Dépôts ouverts",closed:"Souvenirs à découvrir",full:"Stockage rempli",expired:"Conservation terminée",missing_date:"Date à compléter"};
  const ratio=Math.min(100,Math.round(data.used_bytes/data.quota_bytes*100)),warning=ratio>=95?"Il reste très peu de place pour les fichiers. Les petits mots restent possibles.":ratio>=80?"Votre capsule approche de sa limite de stockage.":"";
- panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong><span class="owner-storage">'+Math.round(data.used_bytes/1000000)+' Mo / '+(data.quota_bytes/1000000000)+' Go</span><progress max="100" value="'+ratio+'" aria-label="Stockage utilisé"></progress>'+(warning?'<p>'+esc(warning)+'</p>':'');
+ panel.innerHTML='<strong>'+esc(names[data.state]||"Votre capsule")+'</strong>'+(warning?'<p>'+esc(warning)+'</p>':'');
  let dates=root.querySelector(".owner-dates");if(!dates){dates=document.createElement("details");dates.className="owner-dates";panel.after(dates);}
  dates.innerHTML='<summary>Dates de votre capsule</summary><p>'+esc(data.legacy&&!data.custom_rules?"Cette capsule conserve sa période de dépôt initiale.":"Dépôts du "+fParis(data.opens_at)+" au "+fParis(new Date(new Date(data.closes_at).getTime()-1000).toISOString())+" inclus · heure de Paris.")+'</p><p>Dévoilement jusqu’au '+esc(fParis(new Date(new Date(data.delivery_before).getTime()-1000).toISOString()))+' · Conservation jusqu’au '+esc(fParis(capsuleAccessLastDay(data)))+'.</p>';
 
@@ -1989,6 +2020,7 @@ async function initDashboard(){
  const updateDesigner=()=>{
    markDirty("qr");
    welcomeDesigner?.syncShared();
+   renderOwnerDepositWaiting(c,manifest.length,refreshMemories);
    const sample=document.querySelector('.studio-font-example');if(sample)sample.textContent=$('print-title').value||DEFAULT_CARD_TITLE;
    const select=$('studio-font-select');if(select){select.value=$('qr-font').value;if(sample)sample.className='studio-font-example qr-font-sample-'+select.value;}
    applyQrPreview(url.href,{...c,...collectQrCustomization(c)});
@@ -2035,7 +2067,7 @@ async function initDashboard(){
  async function refreshMemories(){
   if(refreshInProgress||ownerSessionEnded)return;refreshInProgress=true;
   const button=$("refresh-memories");button.disabled=true;show($("memory-status"),'Chargement des souvenirs…');
-  try{await renderOrganizerLifecycle(c);if(ownerSessionEnded)return;const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(ownerSessionEnded)return;if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);if(ownerSessionEnded)return;$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
+  try{await renderOrganizerLifecycle(c);if(ownerSessionEnded)return;const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(ownerSessionEnded)return;if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);if(ownerSessionEnded)return;$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);renderOwnerDepositWaiting(c,manifest.length,refreshMemories);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  window.addEventListener('suite-capsule-rules-changed',async e=>{if(e.detail===c.id){const expired=capsuleExpired(c);await refreshMemories();if(expired&&!capsuleExpired(c))location.reload()}});
