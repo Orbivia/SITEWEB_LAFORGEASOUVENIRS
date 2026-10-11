@@ -849,9 +849,7 @@ const DEFAULT_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard.";
 const OLD_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard, à la date que vous choisissez.";
 const OLD_CARD_EXPLANATIONS=["une photo ou un texte","une photo, un audio ou un texte","une photo, un audio, une vidéo ou un texte"].map(formats=>"Flashez ce QR code et déposez-y "+formats+". Choisissez la manière la plus naturelle de partager un souvenir avec nous.");
 function capsulePlan(c){return window.SuiteDesign.effectivePlan(c)}
-function defaultCardExplanation(plan){
- const formats={photo:"une photo ou un texte",audio:"une photo, un audio ou un texte",premium:"une photo, un audio, une vidéo ou un texte"};
- return "Scannez ce QR code pour déposer "+(formats[plan]||formats.premium)+".";
+function defaultCardExplanation(plan){return "Scannez ce QR code pour déposer une photo, un audio, une vidéo ou un texte.";
 }
 function cardDefault(value,old,fallback,optional=false){return value==null||(!optional&&!value)||value===old?fallback:String(value)}
 
@@ -867,7 +865,7 @@ function qrOptions(c){
   color:c.qr_color||"#b78b38",
   title:cardDefault(c.print_title,"Laissez-nous un souvenir",c.couple_name||DEFAULT_CARD_TITLE).slice(0,42),
   note:cardDefault(c.print_note===OLD_CARD_NOTE?null:c.print_note,"Scannez ce code pour nous laisser un souvenir.",DEFAULT_CARD_NOTE,true).slice(0,120),
-  explanation:cardDefault(OLD_CARD_EXPLANATIONS.includes(c.print_explanation)?null:c.print_explanation,"Vidéo, audio ou photo : choisissez la manière la plus naturelle de partager un souvenir avec nous.",defaultCardExplanation(capsulePlan(c)),true).slice(0,240),
+  explanation:defaultCardExplanation(capsulePlan(c)),
   font:["elegant","classic","modern","romantic","editorial","refined","contemporary","signature"].includes(c.qr_font)?c.qr_font:"elegant",
   style:Object.hasOwn(qrThemes,c.qr_style)?c.qr_style:"romantic",
   size:QR_LARGE_SIZE,
@@ -896,7 +894,7 @@ function collectQrCustomization(c){
   qr_color:$("qr-color")?.value||"#b78b38",
   print_title:($("print-title")?.value||c.couple_name||DEFAULT_CARD_TITLE).trim().slice(0,42),
   print_note:($("print-note")?.value??DEFAULT_CARD_NOTE).trim().slice(0,120),
-  print_explanation:($("print-explanation")?.value??defaultCardExplanation(capsulePlan(c))).trim().slice(0,240),
+  print_explanation:defaultCardExplanation(capsulePlan(c)),
   qr_font:$("qr-font")?.value||"elegant",
   qr_style:$("qr-style")?.value||"romantic",
   qr_size:QR_LARGE_SIZE,
@@ -1257,14 +1255,14 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const mobileLogo=matchMedia("(max-width:760px)").matches,logoMaxH=mobileLogo?144:104,logoTop=Math.min(H-(mobileLogo?(o.style==="gatsby"?240:180):150),H-frameMargin-logoMaxH);
  const explanationBottom=Math.min(1540,logoTop-32);
  const textBox={x:contentInset,y:1220,width:W-contentInset*2,height:150};
- ctx.fillStyle=accent;
- const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:6,minSize:38,onOverflow:()=>issues.push('print-note')});
- textInk['print-note']=o.note?ctx.lastTextBounds:null;
- const explanationY=noteBottom+(o.note?26:0);
- canvas.cardTextBoxes={'print-title':{x:contentInset,y:210,width:W-contentInset*2,height:175},date:{x:contentInset,y:397,width:W-contentInset*2,height:60,inkRight:dateInkRight},'print-note':{...textBox,height:Math.max(55,noteBottom-textBox.y)},'print-explanation':{...textBox,y:explanationY,height:Math.max(55,explanationBottom-explanationY)}};
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
- drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:explanationBottom-explanationY},{size:44,family:'"'+ff+'", serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
- textInk['print-explanation']=o.explanation?ctx.lastTextBounds:null;
+ const fixedBottom=drawPrintTextBox(ctx,o.explanation,{...textBox,height:135},{size:44,family:'"'+ff+'", serif',weight:'400',maxLines:3,minSize:34,onOverflow:()=>issues.push('print-explanation')});
+ textInk['print-explanation']=ctx.lastTextBounds;
+ const noteY=fixedBottom+26;
+ ctx.fillStyle=accent;
+ const noteBottom=drawPrintTextBox(ctx,o.note,{...textBox,y:noteY,height:Math.max(55,explanationBottom-noteY)},{size:56,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:4,minSize:38,onOverflow:()=>issues.push('print-note')});
+ textInk['print-note']=o.note?ctx.lastTextBounds:null;
+ canvas.cardTextBoxes={'print-title':{x:contentInset,y:210,width:W-contentInset*2,height:175},date:{x:contentInset,y:397,width:W-contentInset*2,height:60,inkRight:dateInkRight},'print-explanation':{...textBox,height:Math.max(55,fixedBottom-textBox.y)},'print-note':{...textBox,y:noteY,height:Math.max(55,noteBottom-noteY)}};
  for(const [id,ink] of Object.entries(textInk))if(ink&&canvas.cardTextBoxes[id])Object.assign(canvas.cardTextBoxes[id],{inkRight:ink.right,inkTop:ink.top});
 
 
