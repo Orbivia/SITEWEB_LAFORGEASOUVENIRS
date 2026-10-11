@@ -701,3 +701,7 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 /* Hidden panels must stay hidden despite layout display rules. */
 .visual-primary [data-panel][hidden],.visual-primary #visual-settings[hidden]{display:none!important}
 .suite-edit-icon{display:inline-block;width:16px;height:16px;vertical-align:middle;flex:none}
+
+/* Keep the title edit marker beside the text rather than at the page edge. */
+.visual-primary #visual-welcome h1[data-field="capsule-name"]{width:fit-content;max-width:100%;box-sizing:border-box;margin-inline:auto;padding-right:30px;padding-left:5px}
+.visual-primary #visual-welcome h1[data-field="capsule-name"]:not(:focus)::after{right:3px;top:50%;transform:translateY(-50%)}
