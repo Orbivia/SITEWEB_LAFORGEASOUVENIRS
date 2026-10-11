@@ -228,3 +228,8 @@
 .guest-landing .guest-home-label{color:#8b2730}
 .guest-landing[data-dark=true] .guest-home-label{color:#b78b38}
 .guest-landing .capsule-hero h1,.guest-landing #guest-event-date,.guest-landing .guest-host-zone[data-content=text] #capsule-welcome{color:var(--home-accent)!important}
+
+/* Standalone fullscreen control has no header wrapper that can reappear. */
+body.guest-landing-ready>.guest-fullscreen{position:fixed!important;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));top:auto!important;left:auto!important;z-index:50;display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid #ffffff90;border-radius:12px;background:#fffdf8;color:#292724;opacity:1;box-shadow:0 3px 14px #0004}
+body.guest-landing-ready>.guest-fullscreen[hidden]{display:none!important}
+body.guest-landing-ready>.guest-fullscreen i{font-size:20px}
