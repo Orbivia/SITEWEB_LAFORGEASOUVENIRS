@@ -286,3 +286,14 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .organizer-layout-ready .deposit-open-export #export-memories{min-height:44px;padding:8px;font-size:12px}
  .memory-upcoming-divider{padding:10px 0}
 }
+
+/* Discovery dates and individual reading states. */
+@media(max-width:760px){
+ .organizer-layout-ready .deposit-open-gallery .memory-filters{display:none!important}
+ .deposit-open-gallery .memory-compact .memory-icon{position:relative}
+ .memory-envelope-lock{position:absolute;right:0;bottom:0;font-size:10px;padding:3px;background:#f1eeea;border-radius:4px}
+ .organizer-layout-ready .deposit-open-gallery .memory-read .memory-icon{background:#f1eeea;color:#817c76}
+ .organizer-layout-ready .deposit-open-gallery .memory-unread .memory-meta strong{color:#690c29}
+ .deposit-open-summary .memory-unread-count{display:inline-flex!important;color:#690c29!important;font-size:10px;background:transparent!important;padding:0!important}
+ .deposit-open-summary .memory-unread-count[hidden]{display:none!important}
+}
