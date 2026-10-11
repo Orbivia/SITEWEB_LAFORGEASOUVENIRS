@@ -11,3 +11,54 @@
 .admin-console .admin-capsules-table th:nth-child(1){width:180px}.admin-console .admin-capsules-table th:nth-child(2){width:auto}.admin-console .admin-capsules-table th:nth-child(3),.admin-console .admin-capsules-table th:nth-child(5){width:130px}.admin-console .admin-capsules-table th:nth-child(4){width:170px}.admin-console .admin-capsules-table th:nth-child(6),.admin-console .admin-capsules-table th:nth-child(7),.admin-console .admin-capsules-table th:nth-child(8){width:74px}.admin-console .admin-capsules-table th:nth-child(9){width:46px}.admin-console .admin-capsules-table th:nth-child(10){width:136px}.admin-console .admin-capsules-table th{box-sizing:border-box;vertical-align:top;padding:12px 5px;font-size:.74rem;line-height:18px}.admin-console .admin-capsules-table th button{margin-bottom:8px;min-height:18px;line-height:18px}.admin-console .admin-capsules-table th select,.admin-console .admin-capsules-table th input{margin:0}.admin-column-unit{display:block;font-size:.64rem;line-height:16px;font-weight:400;color:#756e66}.admin-console .admin-capsules-table th:nth-child(n+6):nth-child(-n+9){text-align:center}.admin-console .admin-capsules-table th:nth-child(n+6):nth-child(-n+8) button{width:100%;text-align:center}.admin-console .admin-capsules-table td:nth-child(n+6):nth-child(-n+8) input{text-align:center}.admin-console .admin-capsules-table td:nth-child(10){border-left:1px solid #eee9e2}.admin-console .admin-capsules-table th:nth-child(10){text-align:center}.admin-console .admin-capsules-table tbody tr:hover{background:#fcfaf6}.admin-console .admin-delete{display:flex;align-items:center;justify-content:center}.admin-console .admin-inline-plan select{font-size:.71rem}.admin-console .admin-console-main{max-width:1480px}.admin-console .admin-capsules-table th:nth-child(2) input{max-width:320px}
 
 #admin-create-form{display:grid;gap:16px}#admin-create-form .field{display:grid;gap:6px}#admin-create-error:empty{display:none}.admin-capsules-table [data-account-row] td:nth-child(2){overflow:hidden;text-overflow:ellipsis}.admin-backups-table{width:100%;border-collapse:collapse;font-size:.875rem}.admin-backups-table th,.admin-backups-table td{text-align:left;padding:14px 12px;border-bottom:1px solid #e8e2d9;vertical-align:middle}.admin-backups-table th{background:#f8f5ef;font-weight:600}.admin-backups-table small{display:block;margin-top:5px;color:#756a60;font-size:.75rem}.admin-backups-table .admin-error{color:#a52d32}.admin-backups-table .admin-actions{flex-wrap:nowrap}.admin-backups-table .btn{font-size:.8rem;padding:8px 12px}@media(max-width:760px){.admin-backups-table{min-width:680px}#panel-backups .admin-section-heading{align-items:flex-start;gap:16px;flex-direction:column}}
+
+/* Fixed French date display; native inputs retain ISO values and picker behavior. */
+.admin-date-control{position:relative;display:flex;align-items:center;gap:0;min-width:0}
+.admin-console .admin-date-control .admin-date-text{width:100%;padding-right:34px;font-variant-numeric:tabular-nums}
+.admin-console .admin-date-control .admin-date-native{position:absolute;width:1px!important;height:1px;min-height:0!important;opacity:0;padding:0;border:0;pointer-events:none}
+.admin-console .admin-date-picker{position:absolute;right:1px;top:1px;bottom:1px;width:30px;min-height:0;border:0;border-radius:6px;background:transparent;color:#746454;cursor:pointer;padding:0}
+.admin-console .admin-date-picker:focus-visible{outline:2px solid #8b2730;outline-offset:1px}
+.admin-console .admin-date-text:invalid{border-color:#a52d32}
+
+/* Overview uses the available screen height; other administration views keep scrolling. */
+.admin-console[data-admin-view="overview"] .admin-console-header{height:68px;box-sizing:border-box;padding-top:10px;padding-bottom:10px}
+.admin-console[data-admin-view="overview"] .admin-console-main{height:calc(100dvh - 68px);box-sizing:border-box;padding:16px 20px}
+.admin-console[data-admin-view="overview"] #admin-content:not([hidden]){height:100%;display:flex;flex-direction:column;gap:12px}
+.admin-console[data-admin-view="overview"] .admin-console-heading{display:none}
+.admin-console[data-admin-view="overview"] .admin-console-tabs{flex:none;margin:0;padding:4px}
+.admin-console[data-admin-view="overview"] #admin-status{flex:none;margin:0}
+.admin-console[data-admin-view="overview"] #panel-overview{flex:1;min-height:0;display:flex;flex-direction:column;gap:12px}
+.admin-console[data-admin-view="overview"] .admin-stats{flex:none;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0}
+.admin-console[data-admin-view="overview"] .admin-stat{padding:12px 16px}
+.admin-console[data-admin-view="overview"] .admin-stat strong{font-size:1.4rem}
+.admin-console[data-admin-view="overview"] #panel-overview>.admin-console-panel{flex:1;min-height:0;display:flex;flex-direction:column;padding:16px;box-sizing:border-box}
+.admin-console[data-admin-view="overview"] .admin-section-heading{flex:none;gap:12px;margin:0 0 10px}
+.admin-console[data-admin-view="overview"] .admin-section-heading h2{font-size:1.05rem;margin:0 0 4px}
+.admin-console[data-admin-view="overview"] #admin-sales-description{margin:0}
+.admin-console[data-admin-view="overview"] .admin-search{margin:0;gap:4px;width:190px;flex:none}
+.admin-console[data-admin-view="overview"] .admin-search select{padding:8px}
+.admin-console[data-admin-view="overview"] .admin-sales-totals{flex:none;gap:10px;margin:0 0 12px}
+.admin-console[data-admin-view="overview"] .admin-sales-totals>div{padding:10px 12px}
+.admin-console[data-admin-view="overview"] .admin-sales-totals strong{font-size:1.25rem}
+.admin-console[data-admin-view="overview"] #admin-sales-chart{flex:1;min-height:110px;display:flex;flex-direction:column}
+.admin-console[data-admin-view="overview"] #admin-sales-chart>.hint{margin:0 0 6px}
+.admin-console[data-admin-view="overview"] .admin-sales-scroll{flex:1;min-height:80px}
+.admin-console[data-admin-view="overview"] .admin-sales-bars{height:100%;min-height:80px}
+.admin-console[data-admin-view="overview"] .admin-sales-group{height:auto;flex:1;min-height:50px}
+.admin-console[data-admin-view="overview"] .admin-sales-legend{flex:none;margin:8px 0 0;gap:14px}
+@media(max-width:650px){
+ .admin-console[data-admin-view="overview"] .admin-console-main{padding:12px}
+ .admin-console[data-admin-view="overview"] .admin-stat{padding:10px}
+ .admin-console[data-admin-view="overview"] .admin-stat strong{font-size:1.15rem}
+ .admin-console[data-admin-view="overview"] #panel-overview>.admin-console-panel{padding:12px}
+ .admin-console[data-admin-view="overview"] .admin-section-heading{gap:8px}
+ .admin-console[data-admin-view="overview"] .admin-search{width:100%;display:flex;align-items:center;gap:8px}
+ .admin-console[data-admin-view="overview"] .admin-search select{flex:1;min-width:0}
+ .admin-console[data-admin-view="overview"] .admin-sales-totals>div{padding:8px}
+ .admin-console[data-admin-view="overview"] .admin-sales-totals span{font-size:.7rem}
+}
+@media(max-height:500px){
+ .admin-console[data-admin-view="overview"] .admin-console-main{height:auto;min-height:calc(100dvh - 68px)}
+ .admin-console[data-admin-view="overview"] #admin-content:not([hidden]){height:auto}
+ .admin-console[data-admin-view="overview"] #admin-sales-chart{min-height:140px}
+}

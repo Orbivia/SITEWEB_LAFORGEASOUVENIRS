@@ -7,6 +7,45 @@ async function initSuiteAdmin(){
  const backupStates={queued:'En attente',running:'Sauvegarde en cours',ready:'Sauvegarde prête',failed:'À réessayer',restoring:'Restauration en cours',restored:'Restaurée',importing:'Import en cours'};
  let view='overview',rowDrafts=new Map(),sortDirection=1,sortKey='name',emailFilter='',stateFilter='all',planFilter='all',creationOwner=null,creationPending=false;
  let data={capsules:[],clients:[],backups:[]},busy=false,authorized=false,timer=null;
+
+ function adminDateToIso(value){
+  const m=String(value).trim().match(/^(\d{2})[\/ .-](\d{2})[\/ .-](\d{4})$/);
+  if(!m)return null;
+  const iso=m[3]+'-'+m[2]+'-'+m[1],d=new Date(iso+'T12:00:00Z');
+  return Number.isFinite(d.getTime())&&d.toISOString().slice(0,10)===iso?iso:null;
+ }
+ function adminDateToFrench(value){return /^\d{4}-\d{2}-\d{2}$/.test(value)?value.slice(8,10)+'/'+value.slice(5,7)+'/'+value.slice(0,4):''}
+ function enhanceAdminDates(root){
+  root.querySelectorAll('input[type="date"]').forEach(native=>{
+   if(native.dataset.frenchDate)return;
+   native.dataset.frenchDate='true';native.lang='fr-FR';
+   const wrapper=document.createElement('div');wrapper.className='admin-date-control';
+   native.before(wrapper);wrapper.append(native);
+   const text=document.createElement('input');text.type='text';text.className='admin-date-text';text.placeholder='JJ/MM/AAAA';text.maxLength=10;text.inputMode='numeric';text.autocomplete='off';text.required=native.required;text.disabled=native.disabled;
+   if(native.dataset.locked)text.dataset.locked=native.dataset.locked;
+   text.setAttribute('aria-label',(native.getAttribute('aria-label')||'Date de l’événement')+' · JJ/MM/AAAA');
+   const button=document.createElement('button');button.type='button';button.className='admin-date-picker';button.innerHTML='<i class="fa-solid fa-calendar-days" aria-hidden="true"></i>';button.setAttribute('aria-label','Choisir la date dans le calendrier');button.disabled=native.disabled;
+   if(native.dataset.locked)button.dataset.locked=native.dataset.locked;
+   native.classList.add('admin-date-native');native.tabIndex=-1;native.setAttribute('aria-hidden','true');
+   wrapper.prepend(text);wrapper.append(button);
+   const sync=()=>{text.value=adminDateToFrench(native.value);text.setCustomValidity('')};
+   sync();native.addEventListener('change',sync);
+   const commit=()=>{
+    if(text.disabled)return;
+    const iso=text.value.trim()?adminDateToIso(text.value):'';
+    if(iso===null){text.setCustomValidity('Saisissez une date valide au format JJ/MM/AAAA.');text.reportValidity();return}
+    if(iso&&(native.min&&iso<native.min||native.max&&iso>native.max)){text.setCustomValidity('Choisissez une date dans la période autorisée.');text.reportValidity();return}
+    text.setCustomValidity('');native.value=iso;sync();native.dispatchEvent(new Event('input',{bubbles:true}));native.dispatchEvent(new Event('change',{bubbles:true}));
+   };
+   text.addEventListener('input',()=>text.setCustomValidity(text.value.trim()&&!adminDateToIso(text.value)?'Saisissez une date valide au format JJ/MM/AAAA.':''));
+   text.addEventListener('change',commit);
+   text.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();commit()}});
+   button.onclick=()=>{try{native.showPicker()}catch{native.focus();native.click()}};
+   native.form?.addEventListener('reset',()=>queueMicrotask(sync));
+  });
+ }
+ enhanceAdminDates(document);
+
  function status(text,error=false){$('admin-status').textContent=text;$('admin-status').className=text?'status show '+(error?'err':'ok'):'status';}
  function setBusy(value){busy=value;document.querySelectorAll('#admin-content button:not([data-tab]),#admin-content input,#admin-content select').forEach(b=>b.disabled=value||b.dataset.locked==='true');}
  window.addEventListener('hashchange',()=>{if(/^[a-f0-9]{64}$/.test(new URLSearchParams(location.hash.slice(1)).get('invite')||''))location.reload();});
@@ -30,7 +69,7 @@ async function initSuiteAdmin(){
  }
  function selectView(next){
   if(!authorized||busy||!['overview','capsules','settings'].includes(next))return;
-  view=next;document.querySelectorAll('[data-admin-view]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.adminView===view)));
+  view=next;document.body.dataset.adminView=view;document.querySelectorAll('[data-admin-view]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.adminView===view)));
   for(const key of ['overview','capsules','settings'])$('panel-'+key).hidden=key!==view;
  }
  function capsuleExpected(c){const u=c.usage;return {date:c.date,plan:c.plan,admin_plan_override:c.admin_plan_override??null,activated_at:c.activated_at??null,...Object.fromEntries(['opens_at','closes_at','delivery_before','expires_at','quota_bytes'].map(k=>[k,u[k]]))};}
@@ -47,7 +86,7 @@ async function initSuiteAdmin(){
    const lock=custom?'':'disabled data-locked="true"';
    return `<tr data-capsule-row="${c.id}"><td><div class="admin-row-name"><span class="admin-state-dot" data-state="${esc(u.state)}" title="${esc(states[u.state]||'Indisponible')}" role="img" aria-label="${esc(states[u.state]||'Indisponible')}"></span><strong title="${esc(c.name)}">${esc(c.name)}</strong></div></td><td>${input('email','email','required maxlength="254"')}<p class="admin-row-status" role="status">${esc(draft?.error||'')}</p></td><td>${input('event','date','required')}</td><td><div class="admin-inline-plan"><select data-field="plan" aria-label="Formule · ${esc(c.name)}">${[...Object.entries(planDefaults).map(([key,d])=>[key,d.label]),['custom','Perso.']].map(([key,label])=>`<option value="${key}" ${v.plan===key?'selected':''}>${label}</option>`).join('')}</select>${custom?`<select data-field="base" aria-label="Formats · ${esc(c.name)}" title="Formats inclus dans la formule personnalisée">${Object.entries(planDefaults).map(([key,d])=>`<option value="${key}" ${v.base===key?'selected':''}>${({photo:'Photo',audio:'Audio',premium:'Vidéo'})[key]}</option>`).join('')}</select>`:''}</div></td><td>${input('activation','date',c.status==='active'?'required max="'+parisDate(new Date().toISOString())+'"':'disabled data-locked="true"')}</td><td>${input('deposit','number','required min="1" max="36525" step="1" '+lock)}</td><td>${input('quota','number','required min="'+Math.max(.1,Math.ceil(Number(u.used_bytes)/1e8)/10)+'" max="50" step="0.1" title="'+bytes(u.used_bytes)+' utilisés" '+lock)}</td><td>${input('storage','number','required min="0.1" max="100" step="0.1" '+lock)}</td><td><label class="admin-pause" title="Mettre les dépôts en pause"><input data-field="paused" type="checkbox" aria-label="Dépôts en pause · ${esc(c.name)}" ${v.paused==='yes'?'checked':''}></label></td><td><div class="admin-compact-actions"><button type="button" class="btn secondary" data-capsule-download="${c.id}" ${u.state==='expired'?'disabled data-locked="true"':''}>Télécharger</button><button type="button" class="admin-delete" data-capsule-delete="${c.id}" title="Supprimer la capsule" aria-label="Supprimer · ${esc(c.name)}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/></svg></button></div></td></tr>`;});
   $('capsule-cards').innerHTML=`<table class="admin-capsules-table"><thead><tr>${head('name','Capsule',`<select id="admin-state-filter" aria-label="Filtrer par état"><option value="all">Tous les états</option><option value="none">Pas de capsule</option><option value="attention">À surveiller</option><option value="draft">En préparation</option><option value="suspended">Dépôts en pause</option><option value="expired">Terminées</option></select>`)}${head('email','E-mail',`<input id="admin-email-filter" type="search" aria-label="Filtrer les e-mails" placeholder="Filtrer les e-mails" value="${esc(emailFilter)}">`)}${head('date','Événement')}${head('plan','Formule',`<select id="admin-plan-filter" aria-label="Filtrer par formule"><option value="all">Toutes</option><option value="none">Pas de capsule</option>${[...Object.entries(planDefaults).map(([key,d])=>[key,d.label]),['custom','Perso.']].map(([key,name])=>`<option value="${key}">${name}</option>`).join('')}</select>`)}${head('activated_at','Activation')}${head('deposit','Dépôt <span class="admin-column-unit">jours</span>')}${head('quota','Capacité <span class="admin-column-unit">Go</span>')}${head('storage','Stockage <span class="admin-column-unit">ans</span>')}<th scope="col">Pause</th><th scope="col">Actions</th></tr></thead><tbody>${rows.join('')||'<tr><td colspan="10" class="admin-empty">Aucune capsule.</td></tr>'}</tbody></table>`;
-  $('admin-state-filter').value=stateFilter;$('admin-plan-filter').value=planFilter;
+  $('admin-state-filter').value=stateFilter;$('admin-plan-filter').value=planFilter;enhanceAdminDates($('capsule-cards'));
  }
  function openAccountCreation(ownerId,plan='premium'){
   if(busy||!authorized)return;const owner=data.clients.find(c=>c.id===ownerId&&!c.is_admin);if(!owner)return;
@@ -119,7 +158,7 @@ async function initSuiteAdmin(){
   const row=e.target.closest('[data-capsule-row]');if(!row||!e.target.matches('[data-field]')||busy||!authorized)return;
   const draft=captureRow(row),c=draft.capsule,v=draft.values,old=draft.original,id=c.id;
   if(v.plan!=='custom'){v.base=v.plan;v.quota=String(planDefaults[v.plan].quota);v.deposit='2';v.storage='3';}
-  const invalid=[...row.querySelectorAll('[data-field]')].find(input=>!input.disabled&&!input.checkValidity());if(invalid){invalid.reportValidity();draft.error='Corrigez le champ indiqué.';status(draft.error,true);row.querySelector('.admin-row-status').textContent=draft.error;return;}
+  const invalid=[...row.querySelectorAll('[data-field],.admin-date-text')].find(input=>!input.disabled&&!input.checkValidity());if(invalid){invalid.reportValidity();draft.error='Corrigez le champ indiqué.';status(draft.error,true);row.querySelector('.admin-row-status').textContent=draft.error;return;}
   if(v.email!==old.email){if(!await confirmAction('Changer l’adresse du client ?',old.email+' → '+v.email+'. Cette adresse deviendra son identifiant pour toutes ses capsules.')){rowDrafts.delete(id);renderCapsules();return;}setBusy(true);try{await api('client_email',{id,email:v.email,expected_email:old.email});rowDrafts.delete(id);status('');await refresh();}catch(error){draft.error=error.message;status(draft.error,true);renderCapsules();}finally{setBusy(false);}return;}
   const payload={id,expected:draft.expected,mode:v.plan==='custom'?'custom':'standard',plan:v.plan==='custom'?v.base:v.plan};
   if(v.event!==old.event)payload.event_date=v.event;
