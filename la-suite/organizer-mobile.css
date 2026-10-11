@@ -404,3 +404,13 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
 .memory-scroll-hint[hidden]{display:none!important}
 .memory-scroll-hint i{font-size:12px}
 @media(max-width:760px){.deposit-open-gallery .memories-section:has(.memory-scroll-hint){display:flex;flex-direction:column;min-height:0}.deposit-open-gallery #memory-list{min-height:0;flex:1}}
+
+/* Readable memory information on dark decorative themes. */
+.organizer-layout-ready .deposit-open-dark .memory-compact,.organizer-layout-ready .deposit-open-dark .memory-compact.locked{color:#fff8eb!important}
+.organizer-layout-ready .deposit-open-dark .memory-meta strong{color:#fff8eb!important}
+.organizer-layout-ready .deposit-open-dark .memory-unread .memory-meta strong{color:#f5d999!important}
+.organizer-layout-ready .deposit-open-dark .memory-meta span,.organizer-layout-ready .deposit-open-dark .memory-meta small{color:#e0d9cc!important;opacity:1}
+.organizer-layout-ready .deposit-open-dark .memory-actions .memory-read-button,.organizer-layout-ready .deposit-open-dark .memory-actions .lock-badge{color:#f5d999!important}
+.organizer-layout-ready .deposit-open-dark .memory-compact{border-bottom-color:#fff8eb40}
+.organizer-layout-ready .deposit-open-dark .memory-scroll-hint{color:#fff8eb}
+.organizer-layout-ready .deposit-open-dark .memory-section-heading,.organizer-layout-ready .deposit-open-dark .memory-section-heading h3{color:#fff8eb}
