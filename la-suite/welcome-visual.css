@@ -746,3 +746,5 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-primary .visual-head h2{margin-right:auto}
 .visual-primary .visual-head .visual-screenbar{flex:0 0 auto;height:36px;margin:0;grid-column:auto}
 .visual-primary .visual-head .visual-save-state{flex:0 1 auto}
+
+.visual-primary .visual-head .visual-screenbar{display:none!important}
