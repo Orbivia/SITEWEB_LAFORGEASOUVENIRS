@@ -79,7 +79,7 @@
    mediaButton.hidden=!['image','video'].includes(kind);if(mediaButton.dataset.key!==key){mediaButton.dataset.key=key;mediaButton.replaceChildren();if(mediaUrl){URL.revokeObjectURL(mediaUrl);mediaUrl=null}
     if(!mediaButton.hidden){const src=file?(mediaUrl=URL.createObjectURL(file)):existing?.src;if(src){const media=document.createElement(kind==='image'?'img':'video');media.src=src;media.alt='Votre accueil';if(kind==='video'){media.muted=true;media.playsInline=true;media.preload='metadata'}mediaButton.append(media)}}
    }
-   const hasText=kind==='text'&&Boolean($('intro-text').value.trim()),hasMedia=!mediaButton.hidden&&Boolean(mediaButton.firstElementChild);introContent.dataset.content=hasMedia?'media':hasText?'text':'empty';hostLabel.hidden=!hasText;emptyWelcome.hidden=hasText||hasMedia;
+   const hasText=kind==='text'&&Boolean($('intro-text').value.trim()),hasMedia=['image','video'].includes(kind)&&Boolean(mediaButton.firstElementChild?.getAttribute('src'));mediaButton.hidden=!hasMedia;introContent.dataset.content=hasMedia?'media':hasText?'text':'empty';hostLabel.hidden=!hasText;emptyWelcome.hidden=hasText||hasMedia;
    qrRender();requestAnimationFrame(fitPreview);
   }
   const page=studio.querySelector('.visual-page'),fit=document.createElement('div');fit.className='visual-fit';page.before(fit);fit.append(page);
