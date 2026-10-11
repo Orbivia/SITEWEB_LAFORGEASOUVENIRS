@@ -579,7 +579,7 @@ function updateDeliveryHelp(){
 }
 function initGuestControls(){
  window.addEventListener("la-suite-guest-home",()=>interruptCapture("L’enregistrement a été arrêté. Votre aperçu reste disponible."));
- document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy)chooseGuestType(b.dataset.memoryType)}));
+ document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy&&b.dataset.memoryType!==guestType)chooseGuestType(b.dataset.memoryType)}));
  document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy){setGuestMode(b.dataset.mediaMode);if(b.dataset.mediaMode==="upload")$("media-file").click();else if(b.dataset.mediaMode==="photo")$("photo-file").click()}}));
  $("media-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],guestType));
  $("photo-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],"image"));
@@ -2325,4 +2325,5 @@ async function initDashboard(){
 initAuth();initCreate();initCapsule();initDashboard();
 window.addEventListener("beforeunload",stopStream);
 })();
+
 

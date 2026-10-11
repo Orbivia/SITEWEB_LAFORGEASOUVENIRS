@@ -341,37 +341,6 @@ body[data-compose-dark=true] .guest-compose-footer img{filter:brightness(0) inve
 .guest-reveal-secret{font:500 11px/1.4 Inter,sans-serif;color:var(--home-ink);margin:8px 0 0}
 .guest-landing-ready[data-guest-view=compose] .guest-composer-body{height:clamp(130px,22dvh,210px);flex:1 0 130px}
 .guest-landing-ready[data-guest-view=compose] #message_text{min-height:100px}
-.guest-send-animation{width:min(320px,calc(100vw - 48px));box-sizing:border-box;border:0;border-radius:22px;background:#fffdf7;color:#20392f;padding:28px 24px;text-align:center;box-shadow:0 12px 50px #0004}
-.guest-send-animation::backdrop{background:#0007}
-.guest-send-animation p{font:600 15px/1.5 Inter,sans-serif;margin:14px 0 6px}
-.guest-send-animation small{font:400 12px/1.4 Inter,sans-serif;color:#746c60}
-.guest-letter-motion{height:130px;position:relative}
-.guest-envelope{position:absolute;bottom:0;left:50%;transform:translateX(-50%);font-size:104px;color:#b78b38}
-.guest-paper{position:absolute;left:50%;top:0;width:64px;height:76px;display:grid;place-items:center;background:#fffdf7;border:1px solid #d9c7a4;border-radius:6px;color:#365748;font-size:26px;transform:translateX(-50%);animation:guest-fold-letter .8s ease both}
-@keyframes guest-fold-letter{0%{transform:translate(-50%,-14px) rotate(-6deg);opacity:0}30%{opacity:1}100%{transform:translate(-50%,42px) scale(.75);opacity:1}}
-@media(prefers-reduced-motion:reduce){.guest-paper{animation:none;transform:translate(-50%,35px)}}
-
-/* Three-second sealing sequence, themed like the invitation and tied to upload. */
-.guest-send-animation{position:fixed;inset:0;width:100%;max-width:none;height:100dvh;max-height:none;margin:0;padding:clamp(36px,9vw,70px);border:0;border-radius:0;background:var(--home-paper,#fcf8ef);color:var(--home-ink,#20392f);box-shadow:none;overflow:auto}
-.guest-send-animation::before{content:'';position:absolute;inset:0;background-image:var(--home-art);background-size:100% 100%;background-position:center;pointer-events:none}
-.guest-send-animation::backdrop{background:#0008}
-.guest-seal-scene{position:relative;min-height:calc(100dvh - 140px);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.guest-seal-envelope{position:relative;width:min(280px,80vw);height:210px;margin:0 0 30px;perspective:900px}
-.guest-seal-back{position:absolute;left:0;right:0;bottom:0;height:150px;background:#d4b56c;border:1px solid #af8b3e;border-radius:8px;box-shadow:0 10px 30px #0002}
-.guest-seal-card{position:absolute;left:8%;right:8%;top:0;height:155px;padding:20px 16px;box-sizing:border-box;background:#fffdf7;border:1px solid #d9c7a4;border-radius:8px;color:#365748;display:flex;flex-direction:column;gap:14px;align-items:center;justify-content:center;box-shadow:0 4px 18px #0001;animation:guest-card-insert 2.1s cubic-bezier(.4,0,.2,1) both}
-.guest-seal-type{font-size:26px}
-.guest-seal-excerpt{font:400 13px/1.5 Inter,sans-serif;max-height:62px;overflow:hidden;overflow-wrap:anywhere}
-.guest-seal-pocket{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(135deg,#edd69a,#c9a455);clip-path:polygon(0 0,50% 55%,100% 0,100% 100%,0 100%);border-radius:0 0 8px 8px;z-index:3}
-.guest-seal-flap{position:absolute;left:0;right:0;top:60px;height:84px;background:linear-gradient(#eddaaa,#d5b76b);clip-path:polygon(0 0,100% 0,50% 100%);transform-origin:50% 0;transform:rotateX(180deg);z-index:4;backface-visibility:visible;animation:guest-flap-close 1s ease 1.6s both}
-.guest-seal-stamp{position:absolute;left:50%;top:132px;z-index:5;width:38px;height:38px;border-radius:50%;background:var(--home-accent,#8b2730);color:var(--home-button-ink,#fff);box-shadow:0 2px 5px #0003,inset 0 0 0 3px #ffffff30;display:grid;place-items:center;opacity:0;transform:translateX(-50%) scale(.3);animation:guest-stamp-seal .5s ease 2.6s both}
-.guest-send-animation .guest-seal-title{font:500 26px/1.2 var(--welcome-font,Georgia,serif);color:var(--home-ink);margin:0 0 14px;max-width:320px}
-.guest-send-animation .guest-seal-date{font:600 14px/1.5 Inter,sans-serif;margin:0 0 14px;color:var(--home-accent,#8b2730)}
-.guest-send-animation .guest-seal-scene>small{font:400 12px/1.4 Inter,sans-serif;color:var(--home-ink);opacity:.75}
-@keyframes guest-card-insert{0%,40%{transform:translateY(-12px);opacity:1}100%{transform:translateY(75px) scale(.88);opacity:1}}
-@keyframes guest-flap-close{0%{transform:rotateX(180deg)}100%{transform:rotateX(0)}}
-@keyframes guest-stamp-seal{to{opacity:1;transform:translateX(-50%) scale(1)}}
-@media(prefers-reduced-motion:reduce){.guest-seal-card,.guest-seal-flap,.guest-seal-stamp{animation:none}.guest-seal-card{transform:translateY(75px) scale(.88)}.guest-seal-flap{transform:none}.guest-seal-stamp{opacity:1;transform:translateX(-50%)}}
-
 .guest-media-dialog{width:min(480px,calc(100vw - 24px));max-height:calc(100dvh - 32px);box-sizing:border-box;overflow:auto;margin:auto;padding:20px;border:1px solid #e3dbcd;border-radius:20px;background:#fffdf8;color:#20392f;box-shadow:0 12px 40px #0003}
 .guest-media-dialog::backdrop{background:#0007}
 .guest-media-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:transparent;padding:0;margin:0 0 16px}
@@ -393,3 +362,58 @@ body[data-compose-dark=true] .guest-compose-footer img{filter:brightness(0) inve
 .guest-success-animation{position:relative;width:min(360px,100%);aspect-ratio:1.2;margin:0 auto 12px;overflow:hidden;pointer-events:none}
 .guest-success-animation picture{display:contents}
 .guest-success-animation img{position:absolute;top:50%;left:50%;display:block;width:125%;max-width:none;height:auto;transform:translate(-50%,-50%);object-fit:contain}
+
+/* Guest flow: the same invitation surface and landmarks on all three screens. */
+.guest-landing-ready .guest-page{width:min(640px,100%);max-width:640px;margin:auto;box-sizing:border-box}
+.guest-landing-ready[data-guest-view=home] .guest-page,.guest-landing-ready[data-guest-view=success] .guest-page{padding:0!important}
+.guest-landing-ready[data-guest-view=home] .guest-home-content,.guest-landing-ready[data-guest-view=compose] #guest-message,.guest-landing-ready[data-guest-view=success] #guest-success{min-height:100svh;padding:clamp(28px,5svh,48px) clamp(24px,7vw,48px) max(24px,env(safe-area-inset-bottom));box-sizing:border-box}
+.guest-landing-ready .guest-home-footer,.guest-landing-ready .guest-compose-footer,.guest-landing-ready .guest-success-footer{position:static!important;inset:auto!important;flex:none;height:48px;width:100%;margin:22px 0 0!important;padding:0!important;display:flex;align-items:center;justify-content:center;background:transparent!important;border:0!important}
+.guest-landing-ready .guest-home-footer img,.guest-landing-ready .guest-compose-footer img,.guest-landing-ready .guest-success-footer img{width:125px;height:auto;max-height:48px;object-fit:contain}
+body[data-compose-dark=true] .guest-success-footer img{filter:brightness(0) invert(1)}
+.guest-landing-ready button:focus-visible{outline:3px solid var(--home-accent,#8b2730);outline-offset:3px}
+.guest-landing-ready button:disabled{cursor:wait;opacity:.6}
+/* Welcome media and the host's note stack instead of competing for one row. */
+.guest-landing .guest-home-content{gap:16px}
+.guest-landing .guest-host-zone{height:auto;min-height:160px;flex-direction:column;gap:16px;flex-shrink:0}
+.guest-landing .guest-host-zone .guest-cover{width:100%;height:auto;aspect-ratio:16/9;flex-shrink:0}
+.guest-landing .guest-host-zone .guest-greeting{width:100%;height:auto;min-height:140px;padding:20px 12px;flex-shrink:0}
+.guest-landing .guest-host-zone[data-content=media] .guest-greeting{min-height:0;padding:8px 4px;background:transparent;border:0;box-shadow:none}
+.guest-landing .guest-host-zone[data-content=empty]{min-height:clamp(140px,20svh,200px)}
+.guest-landing .guest-home-principle{max-width:360px;font-size:15px;line-height:1.6}
+.guest-landing #guest-deposit{margin-top:auto;min-height:52px}
+#guest-read-more{min-height:44px;padding:10px 14px}
+/* The content changes; signature, revelation date and send stay together. */
+.guest-landing-ready[data-guest-view=compose] #guest-message{gap:14px}
+.guest-landing-ready[data-guest-view=compose] .guest-compose-heading p{margin:0;overflow-wrap:anywhere}
+.guest-landing-ready[data-guest-view=compose] .memory-type{min-height:56px}
+.guest-landing-ready[data-guest-view=compose] .guest-composer-body{height:auto;min-height:clamp(140px,22svh,200px);flex:0 0 auto;overflow:visible;padding:0;gap:8px}
+.guest-landing-ready[data-guest-view=compose] #guest-text-content,.guest-landing-ready[data-guest-view=compose] #guest-message-field{min-height:0}
+.guest-landing-ready[data-guest-view=compose] #message_text{font-size:16px;min-height:100px;resize:vertical}
+.guest-landing-ready[data-guest-view=compose] .guest-submit-fields{margin-top:auto!important;gap:12px}
+.guest-landing-ready[data-guest-view=compose] .guest-submit-fields #guest_name{font-size:16px;height:48px;min-height:48px}
+.guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-personalization{padding:14px!important;background:color-mix(in srgb,var(--home-paper),var(--home-accent) 5%);border-color:color-mix(in srgb,var(--home-accent),transparent 65%)}
+.guest-reveal-heading strong{font-size:15px;line-height:1.4}
+.guest-reveal-heading p{display:none}
+.guest-quick-dates{display:flex;gap:6px;margin:12px 0 8px}
+.guest-quick-dates button{flex:1;min-height:44px;font-size:12px;line-height:1.35}
+.guest-quick-dates button[hidden]{display:none!important}
+.guest-landing-ready[data-guest-view=compose] .guest-submit-fields .delivery-summary{min-height:46px;height:auto;padding:10px 12px}
+.guest-landing-ready[data-guest-view=compose] .guest-submit-fields #delivery-value{font-size:14px}
+.guest-reveal-secret{font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.guest-landing-ready[data-guest-view=compose] .submit-memory{min-height:52px;font-size:15px}
+/* Keep the selected photo visible without reopening the capture popup. */
+.guest-media-launch{box-sizing:border-box;min-height:clamp(140px,22svh,200px);gap:8px;padding:16px}
+.guest-media-launch[data-ready=true]{border-style:solid;background:color-mix(in srgb,var(--home-paper),var(--home-accent) 6%)}
+.guest-media-thumbnail{display:block;width:auto;max-width:100%;height:76px;object-fit:contain;border-radius:8px}
+.guest-media-launch [hidden]{display:none!important}
+.guest-media-dialog{background:var(--home-paper,#fffdf8);color:var(--home-ink,#20392f);border-color:color-mix(in srgb,var(--home-accent,#8b2730),transparent 65%)}
+.guest-media-dialog h2,.guest-media-dialog .guest-media-close{color:var(--home-ink,#20392f)}
+.guest-media-dialog-body .media-choice{min-height:48px}
+/* Confirmation belongs to the invitation, with the chosen reveal date in focus. */
+.guest-landing-ready[data-guest-view=success] #guest-success{position:relative;isolation:isolate;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;margin:0;border:0;border-radius:0;box-shadow:none;background:var(--home-paper,#fffdf8);color:var(--home-ink,#292724);text-align:center}
+.guest-landing-ready[data-guest-view=success] #guest-success::before{content:'';position:absolute;inset:0;z-index:-1;background-image:var(--home-art);background-size:100% 100%;background-position:center;pointer-events:none}
+.guest-landing-ready[data-guest-view=success] .guest-success-animation{flex:none;width:min(320px,100%);margin:0 auto}
+.guest-landing-ready[data-guest-view=success] #guest-success h2{font:var(--welcome-weight,500) clamp(28px,7vw,36px)/1.2 var(--welcome-font,Georgia,serif);color:var(--home-ink);max-width:360px;margin:0;overflow-wrap:anywhere}
+.guest-landing-ready[data-guest-view=success] #guest-success-date{font:500 15px/1.6 Inter,sans-serif;color:var(--home-accent);max-width:360px;margin:0;padding:12px 18px;border:1px solid color-mix(in srgb,var(--home-accent),transparent 70%);border-radius:12px;background:color-mix(in srgb,var(--home-paper),var(--home-accent) 5%)}
+.guest-landing-ready[data-guest-view=success] #another-memory{width:100%;min-height:52px;margin-top:auto;border:0;border-radius:12px;background:var(--home-accent);color:var(--home-button-ink);font:600 15px/1.4 Inter,sans-serif}
+@media(max-width:350px){.guest-landing-ready[data-guest-view=home] .guest-home-content,.guest-landing-ready[data-guest-view=compose] #guest-message,.guest-landing-ready[data-guest-view=success] #guest-success{padding-inline:20px}.guest-quick-dates button{font-size:11px}}
