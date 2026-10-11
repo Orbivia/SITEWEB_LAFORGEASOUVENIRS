@@ -113,3 +113,11 @@
 @media(max-width:760px){
  body.organizer-layout-ready.owner-screen-fits{overflow-y:hidden;overscroll-behavior-y:none}
 }
+
+@media(max-width:760px){
+ .organizer-layout-ready .owner-deposit-waiting{background-size:100% 100%;background-repeat:no-repeat;display:flex;flex-direction:column;align-items:stretch;padding:24px 20px}
+ .deposit-waiting-content{display:flex;flex-direction:column;flex:1;padding:0 8px}
+ .deposit-waiting-main{display:flex;flex-direction:column;justify-content:center;flex:1;padding:20px 0}
+ .deposit-waiting-actions{margin-top:auto;padding:0 0 4px}
+ .deposit-waiting-actions>.btn:first-child{margin-top:0}
+}
