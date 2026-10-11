@@ -195,3 +195,11 @@
 .guest-fullscreen svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
 .guest-fullscreen:focus-visible{outline:2px solid var(--home-accent);opacity:1}
 @media(max-height:650px){.guest-landing .guest-home-content{gap:10px;padding-top:24px}.guest-host-zone{height:180px}.guest-landing .guest-home-footer img{max-height:44px}.guest-landing .guest-home-footer{padding-top:20px}}
+
+/* Fullscreen lives outside the decorative invitation frame. */
+.guest-landing-ready[data-guest-view=home] .guest-page{display:block}
+.guest-screenbar{display:flex;justify-content:flex-end;align-items:center;height:44px;padding:0 16px;box-sizing:border-box;background:var(--welcome-bg,#fffdf8)}
+.guest-screenbar .guest-fullscreen{position:static;opacity:.8;color:var(--guest-accent,#365748)}
+.guest-screenbar:has([hidden]){display:none}
+.guest-landing-ready:not([data-guest-view=home]) .guest-screenbar{display:none}
+.guest-landing-ready[data-guest-view=home] .guest-screenbar:not(:has([hidden]))~.guest-landing,.guest-landing-ready[data-guest-view=home] .guest-screenbar:not(:has([hidden]))~.guest-landing .guest-home-content{min-height:calc(100dvh - 44px)}
