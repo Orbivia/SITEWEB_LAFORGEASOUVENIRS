@@ -399,3 +399,8 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .organizer-layout-ready .deposit-open-gallery #memory-list{padding-inline:20px}
  .deposit-open-has-memories .deposit-open-summary{padding-inline:12px}
 }
+
+.memory-scroll-hint{display:flex;justify-content:center;align-items:center;gap:8px;padding:6px 8px;color:var(--organizer-burgundy,#6f102b);font:500 11px/1.4 Inter,sans-serif;text-align:center;flex:none}
+.memory-scroll-hint[hidden]{display:none!important}
+.memory-scroll-hint i{font-size:12px}
+@media(max-width:760px){.deposit-open-gallery .memories-section:has(.memory-scroll-hint){display:flex;flex-direction:column;min-height:0}.deposit-open-gallery #memory-list{min-height:0;flex:1}}
