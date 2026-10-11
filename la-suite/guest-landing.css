@@ -212,3 +212,9 @@
 /* Keep the guest fullscreen header accessible during deposit and confirmation. */
 .guest-landing-ready:not([data-guest-view=home]) .guest-screenbar{display:flex}
 .guest-screenbar:has(.guest-fullscreen[hidden]){display:none!important}
+
+/* Guest fullscreen: floating standard control, no extra logo header. */
+.guest-landing-ready .guest-screenbar{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:50;display:flex;width:auto;height:auto;padding:0;border:0;background:transparent}
+.guest-landing-ready .guest-screenbar .guest-fullscreen{width:44px;height:44px;border:1px solid #ffffff90;border-radius:12px;background:#fffdf8;color:#292724;opacity:1;box-shadow:0 3px 14px #0004}
+.guest-fullscreen i{font-size:20px}
+.guest-landing-ready[data-guest-view=home] .guest-page,.guest-landing-ready .guest-landing,.guest-landing-ready .guest-landing .guest-home-content{min-height:100dvh}
