@@ -415,3 +415,15 @@
 .visual-primary-ready .visual-primary .visual-actions .qr-preview-actions{display:grid!important;grid-template-columns:none!important;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;flex-wrap:nowrap}
 .visual-primary-ready .visual-primary .visual-actions .qr-preview-actions .btn{width:100%;min-width:0;max-width:none;margin:0;box-sizing:border-box;min-height:48px!important;padding:8px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;font-size:12px!important;line-height:1.2;white-space:nowrap}
 .visual-primary-ready .visual-primary .visual-actions .qr-preview-actions .btn i{font-size:16px}
+
+/* Choices retain readable rows when the viewport is zoomed or short. */
+.visual-primary #visual-settings{overflow-y:auto;overflow-x:hidden;overscroll-behavior-y:contain;scrollbar-gutter:stable}
+.visual-primary .visual-drawer section{height:auto;min-height:0;flex-shrink:0}
+.visual-primary .visual-themes,.visual-primary[data-tool=theme] .visual-themes,.visual-primary .visual-colors,.visual-primary .visual-font-samples{grid-auto-rows:minmax(44px,auto);align-content:start;flex-shrink:0}
+.visual-primary .visual-themes button,.visual-primary[data-tool=theme] .visual-themes button,.visual-primary .visual-colors button,.visual-primary .visual-custom-color,.visual-primary .visual-font-samples button{height:auto;min-height:44px;flex-shrink:0;line-height:1.4;padding-top:6px;padding-bottom:6px}
+.visual-primary .visual-drawer [data-panel=details]{height:auto;min-height:0;display:flex;flex-direction:column;gap:10px}
+.visual-primary .visual-drawer [data-panel=details] .visual-qr-row{flex:none;gap:6px}
+.visual-primary .visual-drawer [data-panel=details] .visual-qr-shapes{flex:none;grid-template-rows:repeat(3,minmax(32px,auto))}
+.visual-primary .visual-drawer [data-panel=details] .visual-qr-shapes button{height:auto;min-height:32px;padding:5px;line-height:1.4}
+
+.visual-primary .visual-themes .visual-import,.visual-primary[data-tool=theme] .visual-themes .visual-import{height:auto;min-height:44px;padding:6px 3px;line-height:1.4}
