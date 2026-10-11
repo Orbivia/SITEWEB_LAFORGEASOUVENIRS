@@ -220,3 +220,6 @@
 .guest-landing-ready[data-guest-view=home] .guest-page,.guest-landing-ready .guest-landing,.guest-landing-ready .guest-landing .guest-home-content{min-height:100dvh}
 
 .guest-landing .guest-empty-welcome{display:none!important}
+
+.guest-landing .guest-empty-welcome:not([hidden]){display:flex!important}
+.guest-landing .guest-empty-welcome[hidden]{display:none!important}
