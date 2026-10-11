@@ -1,0 +1,15 @@
+/* Mobile organizer overrides. Desktop changes belong in min-width:761px rules. */
+@media(max-width:760px){
+ .organizer-layout-ready .owner-messages-hero{padding:18px 16px;margin-bottom:12px}
+ .organizer-layout-ready .owner-messages-hero h2{font-size:24px;margin:0 0 8px}
+ .organizer-layout-ready .owner-messages-hero p{font-size:14px;line-height:1.5;margin:0}
+ .organizer-layout-ready .memory-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .organizer-layout-ready .memory-filters button{min-height:44px;padding:8px 4px;font-size:12px;white-space:normal}
+ .organizer-layout-ready .memory-tools{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+ .organizer-layout-ready .memory-tools .btn{width:100%;min-height:44px;white-space:normal;line-height:1.4}
+ .organizer-layout-ready .memory-list{grid-template-columns:minmax(0,1fr);gap:14px}
+ .organizer-layout-ready .memory-content img,.organizer-layout-ready .memory-content video{height:auto;max-height:360px;object-fit:contain}
+ .organizer-layout-ready .memory-actions .mini-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;box-sizing:border-box}
+ .organizer-layout-ready .memory-meta strong{overflow-wrap:anywhere}
+ .organizer-layout-ready .next-delivery{max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+}
