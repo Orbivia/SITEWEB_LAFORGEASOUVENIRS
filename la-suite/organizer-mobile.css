@@ -32,3 +32,20 @@
  .deposit-countdown span{font-size:12px}
  .deposit-waiting-content .btn{width:100%;min-height:44px;margin-top:10px;white-space:normal;line-height:1.4;display:flex;align-items:center;justify-content:center;gap:8px}
 }
+
+@media(max-width:760px){
+ .organizer-layout-ready .owner-panel.is-awaiting-deposits>.capsule-lifecycle,
+ .organizer-layout-ready .owner-panel.is-awaiting-deposits>.owner-dates,
+ .organizer-layout-ready .owner-panel.is-awaiting-deposits>.owner-messages-hero,
+ .organizer-layout-ready .owner-panel.is-awaiting-deposits>.memories-section{display:none!important}
+ .organizer-layout-ready .owner-deposit-waiting{min-height:calc(100dvh - var(--organizer-header-height,64px) - 88px - env(safe-area-inset-bottom,0px));padding:24px 20px;align-items:center}
+ .deposit-hourglass-icon{width:48px;height:48px;color:#690c29;display:block;margin:0 auto}
+ .deposit-preparation-dialog{max-width:480px;width:calc(100% - 32px);max-height:calc(100dvh - 48px);box-sizing:border-box;overflow:auto;border:1px solid #e4dccd;border-radius:18px;padding:24px;background:#fffdf7;color:#292525;text-align:left}
+ .deposit-preparation-dialog::backdrop{background:#211c1866}
+ .deposit-preparation-dialog>[data-wait-close]{display:block;margin-left:auto;width:44px;height:44px;border:1px solid #e4dccd;border-radius:12px;background:#fffdf7;font-size:28px;color:#292525}
+ .deposit-preparation-dialog h2{font:600 28px/1.2 "Cormorant Garamond",serif;color:#690c29;margin:12px 0 20px}
+ .deposit-preparation-dialog ol{padding-left:24px;margin:0}
+ .deposit-preparation-dialog li{font-size:15px;line-height:1.5;margin-bottom:18px}
+ .deposit-preparation-dialog li strong{display:block;margin-bottom:4px}
+ .deposit-preparation-dialog p{font-size:14px;line-height:1.5;color:#71685f}
+}
