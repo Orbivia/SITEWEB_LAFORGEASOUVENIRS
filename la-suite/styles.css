@@ -3348,7 +3348,7 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 .print-format-choices button{display:flex;align-items:center;gap:14px;min-width:0;min-height:76px;padding:14px;border:1px solid #e7ded3;border-radius:14px;background:#fff;text-align:left;cursor:pointer;color:#43372d}
 .print-format-choices button:hover{background:#faf5ec;border-color:#b69a69}
 .print-format-choices button:focus-visible{outline:3px solid #c7a052;outline-offset:2px}
-.print-format-icon{width:32px;height:32px;color:#8b2730;flex:none}
+.print-format-icon{display:block;width:40px;height:42px;color:#8b2730;flex:none}
 .print-format-choices button>i:last-child{font-size:10px;margin-left:auto;flex:none}
 .print-format-choices button span{min-width:0}
 .print-format-choices strong{display:block;font:600 .85rem/1.4 Inter,Arial,sans-serif}
