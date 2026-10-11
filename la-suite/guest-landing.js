@@ -56,8 +56,7 @@
   const art=window.SuiteDesign.artwork(o.style,o);landing.style.setProperty('--home-art',art?'url("'+art+'")':'none');
   const date=state.wedding_date;$('guest-event-date').hidden=state.state==='scheduled'||state.welcome_config?.welcomeShowDate===false;$('guest-event-date').textContent=/^\d{4}-\d{2}-\d{2}$/.test(date||'')?new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long',year:'numeric',timeZone:'Europe/Paris'}).format(new Date(date+'T12:00:00Z')):'';
   for(const b of types.children)b.hidden=form.hidden||Boolean(form.querySelector('[data-memory-type="'+b.dataset.landingType+'"]').hidden);
-  emptyWelcome.querySelector('.guest-empty-formats').replaceChildren(...[...types.children].filter(b=>!b.hidden).map(b=>{const item=document.createElement('span');item.innerHTML=b.innerHTML;return item;}));
-  landing.querySelector('.guest-home-prompt').hidden=form.hidden||Boolean(SuiteGuestCalendar.welcomeAvailable(state)&&state.welcome_message);$('guest-deposit').hidden=form.hidden;
+    landing.querySelector('.guest-home-prompt').hidden=form.hidden||Boolean(SuiteGuestCalendar.welcomeAvailable(state)&&state.welcome_message);$('guest-deposit').hidden=form.hidden;
   landing.classList.toggle('has-greeting',Boolean(SuiteGuestCalendar.welcomeAvailable(state)&&state.welcome_message));
   const divider=landing.querySelector('.guest-home-divider');divider.innerHTML=['botanique','botanical','olive'].includes(o.style)?'<svg viewBox="0 0 80 30"><path d="M8 24Q35 12 70 8M25 19Q14 3 34 12M38 14Q33 0 47 9M49 12Q55 24 63 12M34 16Q34 28 47 18"/></svg>':'<span>✧</span>'; 
   syncMedia();document.body.classList.remove('guest-loading','guest-load-error');landing.setAttribute('aria-busy','false');requestAnimationFrame(syncMedia);
