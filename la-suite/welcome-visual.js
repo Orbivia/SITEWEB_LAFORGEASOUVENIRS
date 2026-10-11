@@ -58,6 +58,7 @@
    studio.querySelectorAll('.visual-card-text').forEach(el=>{let box=boxes[el.dataset.field]||fallback[el.dataset.field];if(el.dataset.field==='print-note'&&!$('print-note').value.trim())box={...box,y:1175,height:40};Object.assign(el.style,{left:box.x/1181*100+'%',top:box.y/1772*100+'%',width:box.width/1181*100+'%',height:Math.max(55,box.height)/1772*100+'%'});el.classList.toggle('is-empty',!$(el.dataset.field).value.trim());el.classList.toggle('has-error',$(el.dataset.field).getAttribute('aria-invalid')==='true')});
    studio.querySelectorAll('.visual-text-pen[data-edit-field]').forEach(pen=>{let box=boxes[pen.dataset.editField]||fallback[pen.dataset.editField];if(pen.dataset.editField==='print-note'&&!$('print-note').value.trim())box={...box,y:1175,height:40};Object.assign(pen.style,{left:Math.min(1080,(box.inkRight??box.x+box.width)+14)/1181*100+'%',top:(box.inkTop??box.y)/1772*100+'%'});});
    dateButton.textContent=visibility.cardShowDate?'':'+ Date';if(visibility.cardShowDate)dateButton.append(datePen);const box=boxes.date||fallback.date;Object.assign(dateButton.style,{left:box.x/1181*100+'%',top:box.y/1772*100+'%',width:box.width/1181*100+'%',height:box.height/1772*100+'%'});
+   datePen.style.left=Math.max(0,Math.min(100,((box.inkRight??box.x+box.width)-box.x+14)/box.width*100))+'%';
    let qrBox={x:261,y:510,width:660,height:660};try{qrBox=JSON.parse(qrSource.dataset.qrBox)||qrBox}catch{}Object.assign(qrButton.style,{left:qrBox.x/1181*100+'%',top:qrBox.y/1772*100+'%',width:qrBox.width/1181*100+'%',height:qrBox.height/1772*100+'%'});
   }
   new MutationObserver(()=>{qrRender();requestAnimationFrame(fitPreview)}).observe(qrSource,{attributes:true,attributeFilter:['src','data-text-boxes','data-qr-box']});
@@ -126,7 +127,7 @@
 
   const drawer=studio.querySelector('.visual-drawer-toggle');
   function expanded(){studio.dataset.panelOpen='true';studio.querySelector('.visual-drawer').hidden=false;$('visual-settings').hidden=false;drawer.setAttribute('aria-expanded','true');requestAnimationFrame(fitPreview)}
-  function tab(name){if(name==='options')name=target==='card'?'details':'intro';const key=['details','intro','date'].includes(name)?'options':name;activeTool=key;expanded(true);studio.dataset.tool=key;studio.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===name;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1});studio.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);studio.querySelectorAll('[data-tool]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.tool===key));b.setAttribute('aria-expanded',String(b.dataset.tool===key))});}
+  function tab(name){if(name==='options')name=target==='card'?'details':'intro';const key=['details','intro','date'].includes(name)?'options':name;activeTool=key;expanded(true);studio.dataset.tool=key;studio.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===name;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1});studio.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);const viewport=$('visual-settings');viewport.scrollTop=0;viewport.querySelectorAll('.visual-choice-clipped').forEach(choice=>choice.classList.remove('visual-choice-clipped'));requestAnimationFrame(fitPreview);studio.querySelectorAll('[data-tool]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.tool===key));b.setAttribute('aria-expanded',String(b.dataset.tool===key))});}
   studio.querySelectorAll('[data-tool]').forEach(b=>{b.setAttribute('aria-controls','visual-settings');b.onclick=()=>tab(b.dataset.tool)});
   function tabKeys(buttons,key){buttons.forEach((b,i)=>b.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowRight'?1:buttons.length-1))%buttons.length];next.click();next.focus()}))}
   const tabs=[...studio.querySelectorAll('[data-tab]')];tabs.forEach(b=>{b.onclick=()=>tab(b.dataset.tab);b.id='visual-tab-'+b.dataset.tab;const panel=studio.querySelector('[data-panel="'+b.dataset.tab+'"]');panel.id='visual-panel-'+b.dataset.tab;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',b.id);b.setAttribute('aria-controls',panel.id)});tabKeys(tabs);
@@ -173,26 +174,6 @@
   ['intro-kind','intro-file','intro-text','qr-style','qr-font','qr-color','capsule-date','capsule-name','print-title','print-note','print-explanation','qr-show-initials','qr-initials-input'].forEach(id=>{for(const event of ['input','change'])$(id).addEventListener(event,render)});
   new MutationObserver(render).observe($('intro-preview-wrap'),{childList:true});new MutationObserver(render).observe($('intro-text'),{attributes:true,attributeFilter:['disabled']});new MutationObserver(render).observe($('capsule-date'),{attributes:true,attributeFilter:['disabled','min','max']});
   function syncSaveState(){const source=$('organizer-save-state'),error=$('organizer-save-error'),status=studio.querySelector('.visual-status'),state=studio.querySelector('.visual-save-state');if(!source)return;state.textContent=source.dataset.state==='saved'?'Enregistré':source.dataset.state==='error'?'À réessayer':'Enregistrement…';state.dataset.state=source.dataset.state;status.textContent=source.dataset.state==='error'?(error?.textContent||''):'';retry.hidden=source.dataset.state!=='error';}
-  // Keep individual appearance choices whole at the panel viewport edges.
-  const settingsViewport=$('visual-settings');let choiceFrame=null;
-  const alignWholeChoices=()=>{
-   if(choiceFrame!==null)return;
-   choiceFrame=requestAnimationFrame(()=>{
-    choiceFrame=null;const bounds=settingsViewport.getBoundingClientRect();
-    const mobile=matchMedia('(max-width:760px)').matches&&bounds.height>0;
-    for(const choice of settingsViewport.querySelectorAll('button,.field')){
-     const rect=choice.getBoundingClientRect();
-     const partial=mobile&&rect.height<=bounds.height&&!choice.contains(document.activeElement)&&(rect.top<bounds.top-1||rect.bottom>bounds.bottom+1);
-     choice.classList.toggle('visual-choice-clipped',partial);
-    }
-   });
-  };
-  settingsViewport.addEventListener('scroll',alignWholeChoices,{passive:true});
-  const choicesResize=new ResizeObserver(alignWholeChoices);choicesResize.observe(settingsViewport);
-  const choicesChanges=new MutationObserver(alignWholeChoices);choicesChanges.observe(settingsViewport,{childList:true,subtree:true});
-  settingsViewport.addEventListener('focusin',alignWholeChoices);
-  window.addEventListener('suite-design-view',alignWholeChoices);
-  window.addEventListener('pagehide',()=>{choicesResize.disconnect();choicesChanges.disconnect()},{once:true});
   const retry=document.createElement('button');retry.type='button';retry.className='visual-retry';retry.textContent='Réessayer';retry.hidden=true;retry.onclick=()=>context.saveAll();studio.append(retry);
   for(const source of [$('organizer-save-state'),$('organizer-save-error')])if(source)new MutationObserver(syncSaveState).observe(source,{childList:true,subtree:true,attributes:true,attributeFilter:['data-state']});syncSaveState();
   queueMicrotask(()=>{
