@@ -1767,11 +1767,39 @@ async function renderManifest(c,manifest){
    actions.append(refresh,download);content.append(media,status);loadMedia=renew;
   }else if(available&&!row){content.textContent='Ce souvenir n’a pas pu être chargé. Actualisez la liste.'}
   if(!available){const placeholder=document.createElement('p');placeholder.className='memory-locked-preview';placeholder.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i><span>La surprise vous attend</span>';content.append(placeholder)}
+  if(matchMedia('(max-width:760px)').matches&&c.status==='active'&&c.usage?.state==='open')setupCompactMemoryCard(article,item,available);
   list.append(article);
   if(loadMedia){if(memoryMediaObserver){pendingMediaUrls.set(article,loadMedia);memoryMediaObserver.observe(article)}else loadMedia();}
  }
  applyMemoryFilter();
 }
+
+function setupCompactMemoryCard(article,item,available){
+ article.classList.add('memory-compact');
+ if(!available)return;
+ const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
+ const dialog=document.createElement('dialog');dialog.className='memory-reader';
+ dialog.setAttribute('aria-label','Souvenir de '+(item.guest_name||'votre invité'));
+ const heading=document.createElement('div');heading.className='memory-reader-heading';
+ const title=document.createElement('strong');title.textContent=item.guest_name||'Invité';
+ const close=document.createElement('button');close.type='button';close.className='memory-reader-close';close.textContent='×';close.setAttribute('aria-label','Fermer le souvenir');
+ heading.append(title,close);
+ const readerTools=document.createElement('div');readerTools.className='memory-reader-tools';
+ actions.querySelectorAll('.mini-link').forEach(button=>readerTools.append(button));
+ dialog.append(heading,readerTools);article.append(dialog);
+ const open=document.createElement('button');open.type='button';open.className='memory-read-button';
+ open.textContent=({image:'Voir la photo',video:'Voir la vidéo',audio:'Écouter'})[item.media_type]||'Lire le message';
+ open.onclick=()=>{dialog.insertBefore(content,readerTools);dialog.showModal()};
+ close.onclick=()=>dialog.close();
+ dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(content);open.focus()});
+ actions.append(open);
+ const photo=content.querySelector('img');
+ if(photo)photo.addEventListener('load',()=>{
+  const thumbnail=document.createElement('img');thumbnail.src=photo.src;thumbnail.alt='';thumbnail.className='memory-thumbnail';
+  article.querySelector('.memory-icon').replaceChildren(thumbnail);
+ });
+}
+
 function latestEventDate(today=parisDay()){
  const d=new Date(today+'T12:00:00Z'),day=d.getUTCDate();d.setUTCDate(1);d.setUTCFullYear(d.getUTCFullYear()+2);const last=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth()+1,0)).getUTCDate();d.setUTCDate(Math.min(day,last));return d.toISOString().slice(0,10);
 }
@@ -1898,9 +1926,9 @@ function renderOwnerDepositOpen(c,manifest){
  const active=matchMedia('(max-width:760px)').matches&&c.status==='active'&&c.usage?.state==='open';
  root.classList.toggle('is-deposits-open',active);frame.hidden=!active;
  const hero=root.querySelector('.owner-messages-hero'),memories=root.querySelector('.memories-section');
- if(!active){if(frame.contains(hero))root.append(hero,memories);return}
+ if(!active){const exportButton=$('export-memories');if(exportButton&&memories?.querySelector('.memory-tools'))memories.querySelector('.memory-tools').append(exportButton);if(frame.contains(hero))root.append(hero,memories);return}
  if(!frame.firstElementChild){
-  frame.innerHTML='<div class="deposit-open-content"><header class="deposit-open-heading"><span class="deposit-open-badge"><i class="fa-solid fa-circle" aria-hidden="true"></i> Dépôts ouverts</span><button type="button" class="deposit-open-refresh" data-open-refresh aria-label="Actualiser les souvenirs"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i></button><h2 data-open-title></h2><p data-open-until></p></header><div class="deposit-open-main"><div class="deposit-open-empty"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i><h3>Place aux souvenirs</h3><p>Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.</p></div><div class="deposit-open-summary" aria-live="polite"><span data-open-count></span><span data-open-available></span></div><div class="deposit-open-gallery"></div></div><footer class="deposit-open-actions"><button type="button" class="btn primary" data-open-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-open-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger</button><button type="button" class="btn secondary" data-open-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button></div><button type="button" class="btn secondary" data-open-tips><i class="fa-solid fa-list-check" aria-hidden="true"></i> Conseils de préparation</button></footer></div>'+DEPOSIT_PREPARATION_HTML;
+  frame.innerHTML='<div class="deposit-open-content"><header class="deposit-open-heading"><span class="deposit-open-badge"><i class="fa-solid fa-circle" aria-hidden="true"></i> Dépôts ouverts</span><button type="button" class="deposit-open-refresh" data-open-refresh aria-label="Actualiser les souvenirs"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i></button><h2 data-open-title></h2><p data-open-until></p></header><div class="deposit-open-main"><div class="deposit-open-empty"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i><h3>Place aux souvenirs</h3><p>Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.</p></div><div class="deposit-open-summary" aria-live="polite"><span data-open-count></span><span data-open-available></span></div><div class="deposit-open-gallery"></div></div><div class="deposit-open-export"></div><footer class="deposit-open-actions"><button type="button" class="btn primary" data-open-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-open-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger</button><button type="button" class="btn secondary" data-open-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button></div><button type="button" class="btn secondary" data-open-tips><i class="fa-solid fa-list-check" aria-hidden="true"></i> Conseils de préparation</button></footer></div>'+DEPOSIT_PREPARATION_HTML;
   frame.querySelector('[data-open-refresh]').onclick=()=>$('refresh-memories').click();
   frame.querySelector('[data-open-share]').onclick=()=>$('share-link').click();
   frame.querySelector('[data-open-download]').onclick=()=>$('download-print-card').click();
@@ -1917,6 +1945,8 @@ function renderOwnerDepositOpen(c,manifest){
  }
  const count=manifest.length,available=manifest.filter(m=>m.is_available).length;
  frame.classList.toggle('deposit-open-has-memories',count>0);
+ const exportSlot=frame.querySelector('.deposit-open-export'),exportButton=$('export-memories');
+ if(exportSlot&&exportButton)(count?exportSlot:memories.querySelector('.memory-tools')).append(exportButton);
  frame.querySelector('[data-open-title]').textContent=count?'Vos souvenirs':'Les dépôts sont ouverts';
  frame.querySelector('[data-open-until]').textContent=c.usage.closes_at?'Jusqu’au '+fParis(new Date(new Date(c.usage.closes_at).getTime()-1000).toISOString())+' · heure de Paris':'';
  frame.querySelector('[data-open-count]').textContent=memoryCountLabel(count);
