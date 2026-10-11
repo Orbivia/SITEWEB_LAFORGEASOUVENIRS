@@ -506,3 +506,13 @@
 }
 
 @media(max-width:760px){.organizer-layout-ready .suite-brand img{width:126px;max-width:126px;height:auto;max-height:52px}}
+
+/* Two primary destinations; capsule settings live in the capsule chooser. */
+.organizer-layout-ready .owner-tabs .owner-nav-icon{width:24px;height:24px;flex:none;overflow:visible}
+.workspace-settings-link{margin:16px 0;border-color:#d7ded8}
+.workspace-settings-link:focus-visible{outline:3px solid #c7a052;outline-offset:2px}
+@media(max-width:760px){
+ .organizer-layout-ready .owner-tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .organizer-layout-ready .owner-tabs [role=tab]{font-size:14px!important;gap:4px}
+ .organizer-layout-ready .owner-tabs .owner-nav-icon{width:22px;height:22px}
+}

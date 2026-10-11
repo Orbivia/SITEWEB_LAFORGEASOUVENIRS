@@ -1382,10 +1382,10 @@ function ownerShell(c,url,count){
  return `
 <div class="owner-overview" id="owner-overview"></div>
 <nav class="owner-tabs" role="tablist" aria-label="Votre capsule">
- <button id="owner-tab-configuration" type="button" role="tab" aria-controls="owner-panel-configuration" data-owner-tab-link="configuration"><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span>Personnalisation</span></button>
- <button id="owner-tab-messages" type="button" role="tab" aria-controls="owner-panel-messages" data-owner-tab-link="messages"><i class="fa-regular fa-images" aria-hidden="true"></i><span>Souvenirs</span> <span id="owner-unread-badge" class="owner-unread-badge" hidden></span></button>
- <button id="owner-tab-settings" type="button" role="tab" aria-controls="owner-panel-settings" data-owner-tab-link="settings"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Paramètres</span></button>
+ <button id="owner-tab-configuration" type="button" role="tab" aria-controls="owner-panel-configuration" data-owner-tab-link="configuration"><svg class="owner-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v4M7 8h10M7 12h3"/><path d="m14 20-1 1 1-4 6-6 3 3-6 6-4 1m5-8 3 3"/></svg><span>Personnaliser</span></button>
+ <button id="owner-tab-messages" type="button" role="tab" aria-controls="owner-panel-messages" data-owner-tab-link="messages"><svg class="owner-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 9 9 4 9-4-9-4-9 4Zm0 0v10l9 4 9-4V9M12 13v10M7 3l1 2M17 3l-1 2M12 1v3"/></svg><span>Découvrir</span> <span id="owner-unread-badge" class="owner-unread-badge" hidden></span></button>
 </nav>
+<button id="owner-tab-settings" type="button" class="workspace-account-row workspace-settings-link" aria-controls="owner-panel-settings" data-owner-tab-link="settings" hidden><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Paramètres de cette capsule</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
 <div class="owner-panel" data-owner-panel="configuration">
 <div class="owner-card-and-intro">
 <section class="qr-designer-panel">
@@ -1586,7 +1586,13 @@ function compactOwnerEditors(c){
 }
 
 function setupOwnerTabs(c,manifest){
+ const settingsLink=$("owner-tab-settings"),capsulesMenu=$("workspace-capsules");
+ if(settingsLink&&capsulesMenu){
+  $("workspace-capsule-list").after(settingsLink);settingsLink.hidden=false;
+  settingsLink.addEventListener("click",()=>capsulesMenu.close());
+ }
  const links=[...document.querySelectorAll("[data-owner-tab-link]")];
+ const tabLinks=links.filter(link=>link.getAttribute("role")==="tab");
  const panels=[...document.querySelectorAll("[data-owner-panel]")];
  if(!links.length||!panels.length)return;
 
@@ -1595,7 +1601,9 @@ function setupOwnerTabs(c,manifest){
   links.forEach(link=>{
    const active=link.dataset.ownerTabLink===target;
    link.classList.toggle("is-active",active);
-   link.setAttribute("aria-selected",String(active));link.tabIndex=active?0:-1;
+   if(link.getAttribute("role")==="tab"){
+    link.setAttribute("aria-selected",String(active));link.tabIndex=active||(target==="settings"&&link===tabLinks[0])?0:-1;
+   }else{if(active)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current");}
   });
   panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
   if(name==="accueil")$("organizer-welcome").open=true;
@@ -1612,11 +1620,11 @@ function setupOwnerTabs(c,manifest){
  }));
 
  updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));
- links.forEach((link,index)=>link.addEventListener("keydown",e=>{
-  let next;if(e.key==="ArrowRight")next=(index+1)%links.length;else if(e.key==="ArrowLeft")next=(index+links.length-1)%links.length;else if(e.key==="Home")next=0;else if(e.key==="End")next=links.length-1;else return;
-  e.preventDefault();links[next].focus();activate(links[next].dataset.ownerTabLink);
+ tabLinks.forEach((link,index)=>link.addEventListener("keydown",e=>{
+  let next;if(e.key==="ArrowRight")next=(index+1)%tabLinks.length;else if(e.key==="ArrowLeft")next=(index+tabLinks.length-1)%tabLinks.length;else if(e.key==="Home")next=0;else if(e.key==="End")next=tabLinks.length-1;else return;
+  e.preventDefault();tabLinks[next].focus();activate(tabLinks[next].dataset.ownerTabLink);
  }));
- panels.forEach(panel=>{panel.id="owner-panel-"+panel.dataset.ownerPanel;panel.setAttribute("role","tabpanel");panel.setAttribute("aria-labelledby","owner-tab-"+panel.dataset.ownerPanel)});
+ panels.forEach(panel=>{panel.id="owner-panel-"+panel.dataset.ownerPanel;panel.setAttribute("role",panel.dataset.ownerPanel==="settings"?"region":"tabpanel");panel.setAttribute("aria-labelledby","owner-tab-"+panel.dataset.ownerPanel)});
  window.addEventListener("hashchange",()=>activate(location.hash.slice(1),false));
  activate(location.hash.slice(1),false)
 }
