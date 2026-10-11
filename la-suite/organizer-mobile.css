@@ -168,3 +168,8 @@
  .deposit-waiting-main{min-height:0;overflow-y:auto;overscroll-behavior-y:contain}
  .deposit-waiting-actions{align-self:end;margin:0;position:relative;z-index:1}
 }
+
+@media(max-width:760px){
+ .organizer-layout-ready .owner-deposit-waiting{padding-bottom:clamp(48px,12vw,64px)}
+ .deposit-waiting-main{padding-bottom:18px}
+}
