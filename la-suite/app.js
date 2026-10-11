@@ -1586,17 +1586,22 @@ function setupOwnerTabs(c,manifest){
   settingsLink.addEventListener("click",()=>capsulesMenu.close());
  }
  const links=[...document.querySelectorAll("[data-owner-tab-link]")];
- const tabLinks=links.filter(link=>link.getAttribute("role")==="tab");
+ const discoveryUnavailable=c.status==='draft';
+ for(const link of links.filter(link=>link.dataset.ownerTabLink==='messages')){
+  if(discoveryUnavailable){link.setAttribute('aria-disabled','true');link.title='Validez votre capsule pour découvrir les souvenirs.';link.tabIndex=-1;}
+ }
+ const tabLinks=links.filter(link=>link.getAttribute("role")==="tab"&&!(discoveryUnavailable&&link.dataset.ownerTabLink==='messages'));
  const panels=[...document.querySelectorAll("[data-owner-panel]")];
  if(!links.length||!panels.length)return;
 
  const activate=async(name,updateHash=true)=>{
-  const target=["configuration","messages","settings"].includes(name)?name:"configuration";
+  const target=discoveryUnavailable&&name==='messages'?'configuration':["configuration","messages","settings"].includes(name)?name:"configuration";
+  if(discoveryUnavailable&&name==='messages')history.replaceState(null,"","#configuration");
   links.forEach(link=>{
    const active=link.dataset.ownerTabLink===target;
    link.classList.toggle("is-active",active);
    if(link.getAttribute("role")==="tab"){
-    link.setAttribute("aria-selected",String(active));link.tabIndex=active||(target==="settings"&&link===tabLinks[0])?0:-1;
+    link.setAttribute("aria-selected",String(active));link.tabIndex=discoveryUnavailable&&link.dataset.ownerTabLink==="messages"?-1:active||(target==="settings"&&link===tabLinks[0])?0:-1;
    }else{link.setAttribute("aria-pressed",String(active));if(active)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current");}
   });
   panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
@@ -1610,6 +1615,7 @@ function setupOwnerTabs(c,manifest){
 
  links.forEach(link=>link.addEventListener("click",e=>{
   e.preventDefault();
+  if(discoveryUnavailable&&link.dataset.ownerTabLink==="messages")return;
   activate(link.dataset.ownerTabLink||"configuration")
  }));
 
