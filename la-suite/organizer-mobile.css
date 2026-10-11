@@ -307,3 +307,9 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .memory-upcoming-divider{min-height:36px;box-sizing:border-box;flex:none;font-variant-numeric:tabular-nums}
  .memory-upcoming-divider strong{color:#690c29;font-weight:600}
 }
+
+@media(max-width:760px){
+ .deposit-open-has-memories .deposit-open-summary [data-open-count]{display:block!important;background:transparent!important;padding:0!important;color:inherit!important}
+ .deposit-open-summary [data-open-available]{display:none!important}
+ .deposit-open-refresh{display:none!important}
+}
