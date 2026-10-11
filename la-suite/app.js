@@ -1769,19 +1769,20 @@ async function renderManifest(c,manifest){
    actions.append(refresh,download);content.append(media,status);loadMedia=renew;
   }else if(available&&!row){content.textContent='Ce souvenir n’a pas pu être chargé. Actualisez la liste.'}
   if(!available){const placeholder=document.createElement('p');placeholder.className='memory-locked-preview';placeholder.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i><span>La surprise vous attend</span>';content.append(placeholder)}
-  if(matchMedia('(max-width:760px)').matches&&c.status==='active'&&c.usage?.state==='open')setupCompactMemoryCard(article,item,available);
+  if(matchMedia('(max-width:760px)').matches&&c.status==='active'&&c.usage?.state==='open')setupCompactMemoryCard(article,item,available,row?.created_at);
   list.append(article);
   if(loadMedia){if(memoryMediaObserver){pendingMediaUrls.set(article,loadMedia);memoryMediaObserver.observe(article)}else loadMedia();}
  }
  applyMemoryFilter();
 }
 
-function setupCompactMemoryCard(article,item,available){
+function setupCompactMemoryCard(article,item,available,depositedAt){
  article.classList.add('memory-compact');
+ const typeLabel=article.querySelector('.memory-meta span');
+ const depositDate=depositedAt||item.created_at;
+ if(typeLabel){typeLabel.textContent=depositDate?'Déposé le '+fParis(depositDate):'Date de dépôt inconnue';if(!available)typeLabel.title='Découverte le '+fdate(item.delivery_at);}
  if(!available)return;
  article.querySelector('.lock-badge')?.remove();
- const typeLabel=article.querySelector('.memory-meta span');
- if(typeLabel)typeLabel.textContent=label(item.media_type);
  const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
  const dialog=document.createElement('dialog');dialog.className='memory-reader';
  dialog.setAttribute('aria-label','Souvenir de '+(item.guest_name||'votre invité'));
@@ -1793,7 +1794,8 @@ function setupCompactMemoryCard(article,item,available){
  actions.querySelectorAll('.mini-link').forEach(button=>readerTools.append(button));
  dialog.append(heading,readerTools);article.append(dialog);
  const open=document.createElement('button');open.type='button';open.className='memory-read-button';
- open.textContent=({image:'Voir la photo',video:'Voir la vidéo',audio:'Écouter'})[item.media_type]||'Lire le message';
+ open.textContent='Ouvrir';
+ open.setAttribute('aria-label',(({image:'Voir la photo',video:'Voir la vidéo',audio:'Écouter'})[item.media_type]||'Lire le message')+' de '+(item.guest_name||'votre invité'));
  open.onclick=()=>{dialog.insertBefore(content,readerTools);dialog.showModal()};
  close.onclick=()=>dialog.close();
  dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(content);open.focus()});
