@@ -138,3 +138,16 @@
 /* Separate the retry action from capsule access errors. */
 #guest-retry:not([hidden]){display:flex;align-items:center;justify-content:center;width:fit-content;min-width:140px;min-height:44px;margin:24px auto 0;padding:10px 24px}
 #guest-state{ text-align:center }
+
+/* Guest welcome: host configuration, capsule explanation, one deposit action. */
+.guest-landing .guest-home-types,.guest-landing .guest-home-prompt,.guest-landing #guest-welcome-title{display:none!important}
+.guest-home-label{font:600 11px/1.4 Inter,sans-serif;letter-spacing:.2em;text-transform:uppercase;margin:0;color:var(--home-accent);text-align:center}
+.guest-home-principle{font:400 16px/1.6 Inter,sans-serif;color:var(--home-ink);text-align:center;margin:0 0 12px;max-width:440px}
+.guest-landing.has-cover{display:block;height:auto;min-height:100svh;max-width:640px;margin:auto}
+.guest-landing .guest-home-content{min-height:100svh;box-sizing:border-box}
+.guest-landing .guest-cover{width:100%;max-width:420px;height:auto;aspect-ratio:16/9;border-radius:14px;margin:0;background:transparent;flex-shrink:0}
+.guest-cover img,.guest-cover video{object-fit:contain}
+.guest-landing .guest-home-footer{padding-top:32px}
+.guest-landing[data-state=scheduled] .guest-home-principle,.guest-landing[data-state=scheduled] .guest-home-label,.guest-load-error .guest-home-principle,.guest-load-error .guest-home-label{display:none!important}
+@media(min-width:761px){.guest-landing:not(.has-cover){min-height:min(800px,100svh)}.guest-landing .guest-home-content{padding:60px 48px 24px}}
+@media(max-width:760px){.guest-landing .guest-home-content{padding:clamp(32px,7svh,64px) 30px max(20px,env(safe-area-inset-bottom));gap:14px}.guest-home-principle{font-size:14px}}
