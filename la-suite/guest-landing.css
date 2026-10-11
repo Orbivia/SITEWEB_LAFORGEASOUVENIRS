@@ -167,3 +167,6 @@
 .guest-empty-formats svg{width:16px;height:16px;fill:var(--home-accent)}
 .guest-landing .guest-home-footer{margin-top:clamp(24px,6svh,60px)}
 .guest-landing[data-state=scheduled] .guest-host-zone,.guest-load-error .guest-host-zone{display:none!important}
+
+.guest-landing .guest-empty-formats{display:none!important}
+.guest-empty-illustration{height:180px;width:min(280px,85%)}
