@@ -1975,6 +1975,7 @@ function setupOrganizerGuestPreview(c,saveAll){
 }
 async function initDashboard(){
  if(!$("dashboard-content"))return;
+ try{
  if(!configured)return $("dashboard-content").innerHTML='<div class="notice">Supabase non configuré.</div>';
  const u=await user();if(!u)return location.href=qs.get("view")==="service"?"auth.html?next=admin":"auth.html";
  if(qs.get('view')==='service')return location.replace('admin.html'+location.hash);
@@ -2139,6 +2140,16 @@ async function initDashboard(){
   const success=document.createElement('section');success.className='activation-success';success.innerHTML='<div class="eyebrow">Capsule active</div><h2>Votre capsule est prête à être partagée !</h2><p>Votre carte et votre message d’accueil sont enregistrés. Invitez maintenant vos proches à participer.</p><div class="success-actions"><button class="btn primary" data-success-action="share-link">Partager le lien</button><button class="btn secondary" data-success-action="download-print-card">Télécharger la carte</button><button class="btn secondary" data-success-action="print-print-card">Imprimer</button></div>';
   $("dashboard-content").prepend(success);success.querySelectorAll('[data-success-action]').forEach(button=>button.addEventListener('click',()=>$(button.dataset.successAction).click()));
   history.replaceState(null,'','dashboard.html?slug='+encodeURIComponent(c.slug));
+ }
+ }catch(error){
+  if(!ownerSessionEnded)$("dashboard-content").innerHTML='<p class="status show err" role="alert">Chargement de votre espace impossible. Rechargez la page pour réessayer.</p><button type="button" class="btn secondary" id="retry-organizer-loading">Réessayer</button>';
+  $("retry-organizer-loading")?.addEventListener('click',()=>location.reload());
+ }finally{
+  // Keep layout measurements available, then reveal only after queued studio work.
+  await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+  document.body.classList.remove('organizer-initializing');
+  $("dashboard-content")?.setAttribute('aria-busy','false');
+  if($("organizer-loading"))$("organizer-loading").hidden=true;
  }
 }
 

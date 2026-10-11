@@ -10,8 +10,16 @@
 <link rel="stylesheet" href="organizer-layout.css?v=20261011-cleanup1">
 <link rel="stylesheet" href="welcome-visual.css?v=20261011-cleanup1">
 <link rel="stylesheet" href="organizer-mobile.css?v=20261011-cleanup1">
+<style>
+/* Present from the first paint; visibility keeps editor measurements available. */
+body.organizer-initializing .dashboard-head,
+body.organizer-initializing #dashboard-content,
+body.organizer-initializing .forge-style-footer{visibility:hidden}
+#organizer-loading{position:fixed;inset:110px 16px auto;margin:0;padding:20px;text-align:center;color:#73766d;font:400 14px/1.5 Inter,Arial,sans-serif}
+#organizer-loading[hidden]{display:none}
+</style>
 </head>
-<body class="suite-shell-page">
+<body class="suite-shell-page organizer-initializing">
 <header class="forge-style-header">
   <div class="suite-container suite-topbar">
     <a class="suite-brand" href="index.html" aria-label="La Suite — Accueil">
@@ -31,7 +39,8 @@
 <section class="dashboard-head">
   <div><div class="eyebrow">Espace organisateur</div><h1 id="dashboard-title">Votre capsule</h1></div>
 </section>
-<div id="dashboard-content"><p class="hint">Chargement…</p></div>
+<p id="organizer-loading" role="status" aria-live="polite">Chargement de votre espace…</p>
+<div id="dashboard-content" aria-busy="true"><p class="hint">Chargement…</p></div>
 </main>
 <footer class="forge-style-footer">
   <div class="suite-container footerbar">
@@ -47,5 +56,5 @@
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script>
 <script src="supabase-config.js"></script>
-<script src="souvenir-zip.js?v=20261003-offer2"></script><script src="workspace.js?v=20261011-cleanup1"></script><script src="card-pdf.js?v=20261008-rules1"></script><script src="capsule-design.js?v=20261010-previewfix1"></script><script src="welcome-ui.js?v=20261010-brandicons1"></script><script src="welcome-visual.js?v=20261011-cleanup1"></script><script src="organizer-layout.js?v=20261011-cleanup1"></script><script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261011-cleanup1"></script>
+<script src="souvenir-zip.js?v=20261003-offer2"></script><script src="workspace.js?v=20261011-cleanup1"></script><script src="card-pdf.js?v=20261008-rules1"></script><script src="capsule-design.js?v=20261010-previewfix1"></script><script src="welcome-ui.js?v=20261010-brandicons1"></script><script src="welcome-visual.js?v=20261011-cleanup1"></script><script src="organizer-layout.js?v=20261011-cleanup1"></script><script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261011-loading1"></script>
 </body></html>
