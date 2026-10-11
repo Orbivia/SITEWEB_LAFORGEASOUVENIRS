@@ -173,6 +173,26 @@
   ['intro-kind','intro-file','intro-text','qr-style','qr-font','qr-color','capsule-date','capsule-name','print-title','print-note','print-explanation','qr-show-initials','qr-initials-input'].forEach(id=>{for(const event of ['input','change'])$(id).addEventListener(event,render)});
   new MutationObserver(render).observe($('intro-preview-wrap'),{childList:true});new MutationObserver(render).observe($('intro-text'),{attributes:true,attributeFilter:['disabled']});new MutationObserver(render).observe($('capsule-date'),{attributes:true,attributeFilter:['disabled','min','max']});
   function syncSaveState(){const source=$('organizer-save-state'),error=$('organizer-save-error'),status=studio.querySelector('.visual-status'),state=studio.querySelector('.visual-save-state');if(!source)return;state.textContent=source.dataset.state==='saved'?'Enregistré':source.dataset.state==='error'?'À réessayer':'Enregistrement…';state.dataset.state=source.dataset.state;status.textContent=source.dataset.state==='error'?(error?.textContent||''):'';retry.hidden=source.dataset.state!=='error';}
+  // Keep individual appearance choices whole at the panel viewport edges.
+  const settingsViewport=$('visual-settings');let choiceFrame=null;
+  const alignWholeChoices=()=>{
+   if(choiceFrame!==null)return;
+   choiceFrame=requestAnimationFrame(()=>{
+    choiceFrame=null;const bounds=settingsViewport.getBoundingClientRect();
+    const mobile=matchMedia('(max-width:760px)').matches&&bounds.height>0;
+    for(const choice of settingsViewport.querySelectorAll('button,.field')){
+     const rect=choice.getBoundingClientRect();
+     const partial=mobile&&rect.height<=bounds.height&&!choice.contains(document.activeElement)&&(rect.top<bounds.top-1||rect.bottom>bounds.bottom+1);
+     choice.classList.toggle('visual-choice-clipped',partial);
+    }
+   });
+  };
+  settingsViewport.addEventListener('scroll',alignWholeChoices,{passive:true});
+  const choicesResize=new ResizeObserver(alignWholeChoices);choicesResize.observe(settingsViewport);
+  const choicesChanges=new MutationObserver(alignWholeChoices);choicesChanges.observe(settingsViewport,{childList:true,subtree:true});
+  settingsViewport.addEventListener('focusin',alignWholeChoices);
+  window.addEventListener('suite-design-view',alignWholeChoices);
+  window.addEventListener('pagehide',()=>{choicesResize.disconnect();choicesChanges.disconnect()},{once:true});
   const retry=document.createElement('button');retry.type='button';retry.className='visual-retry';retry.textContent='Réessayer';retry.hidden=true;retry.onclick=()=>context.saveAll();studio.append(retry);
   for(const source of [$('organizer-save-state'),$('organizer-save-error')])if(source)new MutationObserver(syncSaveState).observe(source,{childList:true,subtree:true,attributes:true,attributeFilter:['data-state']});syncSaveState();
   queueMicrotask(()=>{
