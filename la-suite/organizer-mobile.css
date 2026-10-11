@@ -255,3 +255,19 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .memory-reader .memory-reader-tools .mini-link:disabled{opacity:.6;cursor:wait}
  .memory-reader .memory-reader-tools .mini-link:focus-visible{outline:2px solid #690c29;outline-offset:3px}
 }
+
+/* Approved light list with upcoming locked memories. */
+@media(max-width:760px){
+ .organizer-layout-ready .deposit-open-gallery #memory-list{gap:0;border:1px solid #e4dccd;border-radius:14px;background:#fffdf7;padding:0 10px 0;align-items:stretch}
+ .organizer-layout-ready .deposit-open-gallery .memory-compact{border:0;border-bottom:1px solid #e9e1d7;border-radius:0;background:transparent;padding:10px 0;min-height:64px}
+ .organizer-layout-ready .deposit-open-gallery .memory-compact:last-child{border-bottom:0}
+ .organizer-layout-ready .deposit-open-gallery .memory-compact.locked{color:#817c76}
+ .organizer-layout-ready .deposit-open-gallery .memory-compact.locked .memory-icon{background:#f1eeea;color:#817c76}
+ .organizer-layout-ready .deposit-open-gallery .memory-compact .lock-badge{background:transparent;color:#817c76;font-size:16px;padding:10px}
+ .organizer-layout-ready .deposit-open-gallery .memory-actions .memory-read-button{background:transparent;border:0;width:44px;padding:10px}
+ .memory-row-clickable{cursor:pointer}
+ .memory-row-clickable:focus-visible{outline:2px solid #690c29;outline-offset:-2px}
+ .deposit-open-summary span:last-of-type{display:none}
+ .memory-sort{margin-left:auto;max-width:130px;padding:9px 10px;min-height:40px;border:1px solid #e4dccd;border-radius:9px;background:#fffdf7;color:#690c29;font:500 11px Inter,sans-serif}
+ .memory-upcoming-divider{display:flex;align-items:center;justify-content:center;gap:7px;flex:none;margin:0;padding:15px 0 10px;color:#776f65;font:400 10px/1.5 Inter,sans-serif;border-bottom:1px solid #e9e1d7}
+}
