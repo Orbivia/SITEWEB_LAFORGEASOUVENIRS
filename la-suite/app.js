@@ -1729,6 +1729,7 @@ function nextCountdown(c,manifest,onReady){
 let memoryFilter="all";
 function applyMemoryFilter(){
  const cards=[...document.querySelectorAll('#memory-list .memory-row')];
+ if(document.querySelector('.deposit-open-all-available'))memoryFilter="all";
  for(const card of cards)card.hidden=memoryFilter!=="all"&&!card.classList.contains(memoryFilter);
  for(const button of document.querySelectorAll('[data-memory-filter]'))button.setAttribute('aria-pressed',String(button.dataset.memoryFilter===memoryFilter));
  let empty=$('memory-filter-empty');
@@ -1778,6 +1779,9 @@ async function renderManifest(c,manifest){
 function setupCompactMemoryCard(article,item,available){
  article.classList.add('memory-compact');
  if(!available)return;
+ article.querySelector('.lock-badge')?.remove();
+ const typeLabel=article.querySelector('.memory-meta span');
+ if(typeLabel)typeLabel.textContent=label(item.media_type);
  const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
  const dialog=document.createElement('dialog');dialog.className='memory-reader';
  dialog.setAttribute('aria-label','Souvenir de '+(item.guest_name||'votre invité'));
@@ -1946,6 +1950,7 @@ function renderOwnerDepositOpen(c,manifest){
  }
  const count=manifest.length,available=manifest.filter(m=>m.is_available).length;
  frame.classList.toggle('deposit-open-has-memories',count>0);
+ frame.classList.toggle('deposit-open-all-available',count>0&&available===count);
  const exportSlot=frame.querySelector('.deposit-open-export'),exportButton=$('export-memories');
  if(exportSlot&&exportButton)(count?exportSlot:memories.querySelector('.memory-tools')).append(exportButton);
  frame.querySelector('[data-open-title]').textContent=count?'Vos souvenirs':'Les dépôts sont ouverts';
@@ -1953,6 +1958,7 @@ function renderOwnerDepositOpen(c,manifest){
  frame.querySelector('[data-open-count]').textContent=memoryCountLabel(count);
  frame.querySelector('[data-open-available]').textContent=available+' disponible'+(available>1?'s':'')+' maintenant';
  frame.querySelector('.deposit-open-gallery').append(hero,memories);
+ applyMemoryFilter();
  const config={...c.welcome_config,...window.SuiteDesign.fields(c)},style=$('qr-style')?.value||config.style||c.qr_style||'fond-blanc';
  const preset=window.SuiteDesign.styles.find(s=>s.id===style),art=window.SuiteDesign.artwork(style,config);
  frame.style.backgroundImage=art?'url("'+art+'")':'none';frame.style.backgroundColor=preset?.background||'#fcf8ef';
