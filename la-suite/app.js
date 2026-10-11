@@ -665,7 +665,7 @@ async function initCapsule(){
  if(!$("capsule-title"))return;
  const token=qs.get("t")||qs.get("token");
  if(guestIsPreview){
-  if(window.parent===window){$('guest-state').textContent='Ouvrez cet aperçu depuis votre espace organisateur.';return}
+  if(window.parent===window){$('guest-state').textContent='Ouvrez cet aperçu depuis votre espace organisateur.';window.SuiteGuestLanding?.fail();return}
   $('guest-state').textContent='Préparation de l’aperçu…';
   try{await new Promise((resolve,reject)=>{
    const timeout=setTimeout(()=>{window.removeEventListener('message',receive);reject(Error('L’aperçu n’a pas chargé. Fermez-le puis réessayez.'))},10000);
@@ -674,8 +674,8 @@ async function initCapsule(){
     clearTimeout(timeout);window.removeEventListener('message',receive);guestPreviewState={...e.data.capsule,state:'open',legacy:true};resolve();
    }
    window.addEventListener('message',receive);window.parent.postMessage({type:'la-suite-guest-preview-ready'},location.origin);
-  })}catch(error){$('guest-state').textContent=error.message;return}
- }else if(!configured||!token){$("guest-state").textContent="Lien de capsule invalide.";return}
+  })}catch(error){$('guest-state').textContent=error.message;window.SuiteGuestLanding?.fail();return}
+ }else if(!configured||!token){$("guest-state").textContent="Lien de capsule invalide.";window.SuiteGuestLanding?.fail();return}
  initGuestControls();chooseGuestType("text");
  let refreshing=false,refreshVersion=0,boundaryTimer=null;
  async function refreshGuestState(){
@@ -696,7 +696,7 @@ async function initCapsule(){
    if(guestState.has_intro&&SuiteGuestCalendar.welcomeAvailable(guestState))guestInvoke({action:"get_intro",guest_token:token}).then(r=>{
     if(version===refreshVersion&&r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false;$('guest-welcome-open').hidden=false;window.SuiteGuestLanding?.syncMedia()}
    }).catch(()=>{});
-  }catch(error){$("guest-state").textContent=error.message;$("guest-retry").hidden=false}
+  }catch(error){$("guest-state").textContent=error.message;$("guest-retry").hidden=false;window.SuiteGuestLanding?.fail()}
   finally{refreshing=false}
  }
  window.addEventListener('la-suite-guest-boundary',()=>{if(!guestBusy)refreshGuestState()});

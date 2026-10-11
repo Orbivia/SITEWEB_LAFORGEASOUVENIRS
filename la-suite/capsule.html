@@ -7,9 +7,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Serif+Display&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@500;600;700&family=Parisienne&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="styles.css?v=20261010-logo1">
-<link rel="stylesheet" href="guest-landing.css?v=20261010-opening1">
+<link rel="stylesheet" href="guest-landing.css?v=20261011-splash1">
+<style>
+body.guest-loading{background:#fffdf8!important}
+.guest-loading-logo{display:none}
+.guest-loading .guest-loading-logo{position:fixed;inset:0;display:grid;place-items:center;background:#fffdf8;z-index:1000}
+.guest-loading-logo img{width:180px;height:auto}
+.guest-loading .guest-page{visibility:hidden}
+.guest-loading .forge-style-header,.guest-loading>.forge-style-footer{display:none!important}
+</style>
 </head>
-<body class="suite-shell-page guest-compact">
+<body class="suite-shell-page guest-compact guest-loading">
+<div class="guest-loading-logo" role="status" aria-label="Chargement de la capsule"><img src="assets/la-suite-logo.webp?v=20261010-forge-type" alt="La Suite — capsule temporelle" width="180"></div>
 <header class="forge-style-header">
   <div class="suite-container suite-topbar">
     <a class="suite-brand" href="index.html" aria-label="La Suite — Accueil">
@@ -146,6 +155,6 @@
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
 <script src="capsule-design.js?v=20261010-previewfix1"></script><script src="welcome-ui.js?v=20261010-brandicons1"></script>
-<script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261010-opening2"></script>
-<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261010-opening1"></script>
+<script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261011-splash1"></script>
+<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261011-splash1"></script>
 </body></html>
