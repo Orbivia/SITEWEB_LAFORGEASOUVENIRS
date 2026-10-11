@@ -1748,6 +1748,7 @@ function updateOpeningCountdown(divider,date){
 function setupWholeMemoryRows(){
  const list=$('memory-list');if(!list)return;
  if(!list.updateWholeRows){
+  const hint=document.createElement('div');hint.className='memory-scroll-hint';hint.hidden=true;hint.innerHTML='<span>Faites défiler pour voir la suite</span><i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';list.after(hint);
   let frame=null;
   list.updateWholeRows=()=>{
    if(frame!==null)return;
@@ -1755,6 +1756,7 @@ function setupWholeMemoryRows(){
     frame=null;
     const compact=Boolean(list.closest('.owner-deposit-open:not([hidden])'))&&matchMedia('(max-width:760px)').matches;
     const bounds=list.getBoundingClientRect();
+    hint.hidden=!compact||list.scrollHeight<=list.clientHeight+2||list.scrollTop+list.clientHeight>=list.scrollHeight-8;
     for(const card of list.querySelectorAll('.memory-row')){
      const rect=card.getBoundingClientRect();
      card.classList.toggle('memory-row-clipped',compact&&(rect.top<bounds.top-1||rect.bottom>bounds.bottom+1));
