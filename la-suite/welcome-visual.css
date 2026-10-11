@@ -780,3 +780,5 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-settings-popup input[type=date]{width:100%;min-height:44px;box-sizing:border-box;padding:10px;border:1px solid #ddd7cd;border-radius:10px;font:16px Inter,sans-serif}
 .visual-settings-popup .visual-intro-actions [data-intro-format]{min-height:48px;font-size:14px}
 .visual-settings-popup .intro-video-panel{margin:16px 0 0;border:0;background:transparent;padding:0}
+
+.visual-settings-popup .visual-date-lock{font:400 13px/1.5 Inter,sans-serif;color:#756b61;margin:8px 0}
