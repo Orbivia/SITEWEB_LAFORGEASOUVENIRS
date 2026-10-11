@@ -131,3 +131,9 @@
  .deposit-card-actions{align-items:stretch}
  .deposit-card-actions .btn{height:100%;font-size:14px}
 }
+
+@media(max-width:760px){
+ body.organizer-layout-ready.owner-pinch-zoom .forge-style-header{position:relative;top:auto}
+ body.organizer-layout-ready.owner-pinch-zoom .owner-tabs{position:absolute!important;top:var(--owner-zoom-nav-top)!important;bottom:auto!important}
+ body.organizer-layout-ready.owner-pinch-zoom .design-mobile-tabs{position:relative;top:auto}
+}

@@ -88,13 +88,23 @@
   const editable=el=>el&&studio.contains(el)&&el.matches('[contenteditable],input:not([type=checkbox]):not([type=file]),textarea');
   function keyboardOpen(){return editingLayout&&editingLayout.viewportHeight-(window.visualViewport?.height||innerHeight)>100;}
   function revealEditingField(){
+   if((window.visualViewport?.scale||1)>1.01)return;
    if(!editingLayout)return;if(!keyboardOpen()){keyboardLift=0;studio.style.transform='';return;}if(!editable(document.activeElement))return;
    const view=window.visualViewport,bottom=(view?.offsetTop||0)+(view?.height||innerHeight)-16,box=document.activeElement.getBoundingClientRect();
    const overflow=box.bottom-bottom;
    if(overflow>0){keyboardLift+=Math.min(overflow,Math.max(0,box.top-(view?.offsetTop||0)-16));studio.style.transform='translateY(-'+keyboardLift+'px)';}
   }
   function releaseEditingLayout(){editingLayout=null;keyboardLift=0;studio.style.transform='';page.style.height='';page.style.minHeight='';page.style.overflow='';studio.classList.remove('visual-editing');}
-  function fitPreview(){const stage=studio.querySelector('.visual-stage');if(!stage.clientWidth)return;
+  let zoomNavTop=null;
+  function stabilizePinchZoom(){
+   const zoomed=matchMedia('(max-width:760px)').matches&&(window.visualViewport?.scale||1)>1.01;
+   const nav=document.querySelector('.owner-tabs');
+   if(!zoomed&&nav)zoomNavTop=nav.getBoundingClientRect().top+window.scrollY;
+   if(zoomed&&zoomNavTop!==null)document.body.style.setProperty('--owner-zoom-nav-top',zoomNavTop+'px');
+   document.body.classList.toggle('owner-pinch-zoom',zoomed);
+   return zoomed;
+  }
+  function fitPreview(){if(stabilizePinchZoom())return;const stage=studio.querySelector('.visual-stage');if(!stage.clientWidth)return;
    if(editingLayout){if(editable(document.activeElement)||keyboardOpen()){fitPanel();requestAnimationFrame(revealEditingField);return;}releaseEditingLayout();}
 
    if(matchMedia('(max-width:760px)').matches){const nav=document.querySelector('.owner-tabs'),view=window.visualViewport,bottom=Math.min(view&&view.scale<=1.01?view.height+view.offsetTop:innerHeight,nav&&getComputedStyle(nav).position==='fixed'?nav.getBoundingClientRect().top:innerHeight);studio.style.setProperty('--visual-editor-height',Math.max(1,bottom-Math.max(0,studio.getBoundingClientRect().top)-8)+'px');}else studio.style.removeProperty('--visual-editor-height');
