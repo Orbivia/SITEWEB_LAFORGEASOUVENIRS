@@ -17,7 +17,7 @@
   if(error)throw error;
   if(data?.length!==1||data[0].id!==capsule.id)throw Error('La capsule a changé ou n’est plus disponible. Rouvrez la liste.');
  }
- window.SuiteWorkspace={deleteOwnedCapsule,async setup({sb,user,caps,access,selected,canLeave,prepareLeave,logout}){
+ window.SuiteWorkspace={deleteOwnedCapsule,async setup({sb,user,caps,access,selected,canLeave,prepareLeave,downloadCapsule,logout}){
   let ended=false,accountBusy=false,deleteBusy=false,deleteTarget=null;
   document.body.classList.add('workspace-ready');
   // Reserve the device inset once; Android browser chrome must not resize the tabs.
@@ -32,13 +32,14 @@
   accountButton.setAttribute('aria-controls',account.id);
   const body=choose.querySelector('.studio-sheet-body');body.innerHTML='<div id="workspace-mine"><div id="workspace-capsule-list"></div><a id="workspace-create" class="btn primary" href="create.html"><i class="fa-solid fa-plus" aria-hidden="true"></i>Créer une capsule</a><p id="workspace-create-help" class="hint"></p></div><p id="workspace-selection-status" class="status" role="status"></p>';
   $('workspace-create').hidden=!access.can_create;$('workspace-create-help').textContent=access.can_create?'':access.reason||'';
+  const planNames={photo:'Essentiel',audio:'Plus',premium:'Premium'};
   const summaries=new Map(),states={draft:'En préparation',scheduled:'Prête à partager',open:'Dépôts ouverts',closed:'Dépôts terminés',full:'Stockage rempli',expired:'Conservation terminée',suspended:'Dépôts en pause',missing_date:'Date à compléter'};
-  const gear='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#parametres"></use></svg>';
+  const downloadIcon='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 2h2v11l4-4 1.4 1.4L12 16l-6.4-5.6L7 9l4 4V2zM4 16h2v4h12v-4h2v6H4z"></path></svg>';
   const trash='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#supprimer"></use></svg>';
   function render(){
    $('workspace-capsule-list').innerHTML=caps.map(c=>{
     const info=summaries.get(c.id),state=info?.state||(c.status==='active'?'scheduled':'draft'),current=c.slug===selected?.slug,settingsActive=current&&location.hash==='#settings';
-    return '<div class="workspace-capsule-entry"><a class="workspace-capsule-row" href="dashboard.html?slug='+encodeURIComponent(c.slug)+'#configuration" '+(current?'aria-current="true"':'')+'><img src="'+esc(window.SuiteDesign.thumbnail(c.qr_style||'minimal'))+'" alt=""><span><strong>'+esc(c.couple_name)+'</strong><small>'+esc(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR'))+'</small><small class="workspace-state" data-state="'+esc(state)+'">'+esc(states[state]||'Indisponible')+'</small><small class="workspace-discovery">'+(info?Number(info.available_count)+' à découvrir · '+Number(info.locked_count)+' programmé'+(Number(info.locked_count)>1?'s':''):'Chargement des souvenirs…')+'</small></span></a><div class="workspace-capsule-actions"><button type="button" data-capsule-settings="'+esc(c.id)+'" aria-label="Paramètres de '+esc(c.couple_name)+'" title="Paramètres" aria-pressed="'+settingsActive+'">'+gear+'</button><button type="button" data-capsule-delete="'+esc(c.id)+'" aria-label="Supprimer '+esc(c.couple_name)+'" title="Supprimer">'+trash+'</button></div></div>';
+    return '<div class="workspace-capsule-entry"><a class="workspace-capsule-row" href="dashboard.html?slug='+encodeURIComponent(c.slug)+'#configuration" '+(current?'aria-current="true"':'')+'><img src="'+esc(window.SuiteDesign.thumbnail(c.qr_style||'minimal'))+'" alt=""><span><strong>'+esc(c.couple_name)+'</strong><small class="workspace-plan">'+esc(planNames[window.SuiteDesign.effectivePlan(c)]||'Premium')+'</small><small>'+esc(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR'))+'</small><small class="workspace-state" data-state="'+esc(state)+'">'+esc(states[state]||'Indisponible')+'</small><small class="workspace-discovery">'+(info?Number(info.available_count)+' à découvrir · '+Number(info.locked_count)+' programmé'+(Number(info.locked_count)>1?'s':''):'Chargement des souvenirs…')+'</small></span></a><div class="workspace-capsule-actions"><button type="button" data-capsule-download="'+esc(c.id)+'" aria-label="Télécharger les souvenirs ouverts de '+esc(c.couple_name)+'" title="Télécharger les souvenirs ouverts">'+downloadIcon+'</button><button type="button" data-capsule-delete="'+esc(c.id)+'" aria-label="Supprimer '+esc(c.couple_name)+'" title="Supprimer">'+trash+'</button></div></div>';
    }).join('')||'<p class="hint">Créez votre première capsule pour commencer.</p>';
   }
   let summaryLoading=false;
@@ -48,15 +49,13 @@
   choose.canClose=()=>true;account.canClose=()=>!accountBusy;deletion.canClose=()=>!deleteBusy;
   choose.querySelector('.studio-close').onclick=()=>choose.close();
   choose.addEventListener('close',()=>{accountButton.focus()});
-  body.addEventListener('click',e=>{
-   const settings=e.target.closest('[data-capsule-settings]'),remove=e.target.closest('[data-capsule-delete]');
+  body.addEventListener('click',async e=>{
+   const settings=e.target.closest('[data-capsule-download]'),remove=e.target.closest('[data-capsule-delete]');
    if(!settings&&!remove||ended||deleteBusy)return;
-   const capsule=caps.find(c=>c.id===(settings?.dataset.capsuleSettings||remove?.dataset.capsuleDelete));if(!capsule)return;
+   const capsule=caps.find(c=>c.id===(settings?.dataset.capsuleDownload||remove?.dataset.capsuleDelete));if(!capsule)return;
    if(!canLeave()){$('workspace-selection-status').textContent='Patientez jusqu’à la fin de l’enregistrement.';return;}
    if(settings){
-    choose.close();
-    if(capsule.slug===selected?.slug)$('owner-tab-settings')?.click();
-    else location.href='dashboard.html?slug='+encodeURIComponent(capsule.slug)+'#settings';
+    await downloadCapsule?.(capsule,settings,$('workspace-selection-status'));
    }else{
     deleteTarget=capsule;$('workspace-delete-name').textContent=capsule.couple_name;
     $('workspace-delete-confirmation').value='';$('workspace-delete-status').textContent='';$('workspace-delete-submit').disabled=true;deletion.showModal();
