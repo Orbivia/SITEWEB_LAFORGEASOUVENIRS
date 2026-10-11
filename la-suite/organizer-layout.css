@@ -604,3 +604,9 @@
 .workspace-ready #workspace-delete-capsule .studio-sheet-body>p{margin:0 0 16px}
 .workspace-ready #workspace-delete-status:not(:empty),.workspace-ready #workspace-selection-status:not(:empty){display:block;margin:0;padding:10px 12px;background:#f5f3ee;color:#302725}
 .workspace-ready #workspace-selection-status:not(:empty){margin-top:12px}
+
+.organizer-layout-ready .owner-tabs:has(.owner-fullscreen:not([hidden])){grid-template-columns:minmax(0,1fr) minmax(0,1fr) 48px!important}
+.organizer-layout-ready .owner-tabs .owner-fullscreen{display:flex;align-items:center;justify-content:center;align-self:center;flex:0 0 44px;width:44px;height:44px!important;min-height:44px!important;padding:10px;border:0!important;border-radius:10px;background:transparent!important;color:#302725}
+.organizer-layout-ready .owner-tabs .owner-fullscreen[hidden]{display:none!important}
+.owner-fullscreen svg{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.owner-fullscreen:focus-visible{outline:2px solid #365748;outline-offset:-2px}
