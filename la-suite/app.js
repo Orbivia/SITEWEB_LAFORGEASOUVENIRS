@@ -1903,9 +1903,9 @@ async function saveCapsuleSettings(c){
 
 let exportingMemories=false;
 window.addEventListener('beforeunload',e=>{if(exportingMemories&&!ownerSessionEnded){e.preventDefault();e.returnValue=''}});
-async function exportOpenedMemories(c){
+async function exportOpenedMemories(c,sourceButton,sourceStatus){
  if(exportingMemories)return;
- let writable,parts=[],size=0;const button=$("export-memories"),name='souvenirs-'+slugify(c.couple_name)+'.zip';
+ let writable,parts=[],size=0;const button=sourceButton||$("export-memories"),status=sourceStatus||$("export-status"),name='souvenirs-'+slugify(c.couple_name)+'.zip';
  exportingMemories=true;button.disabled=true;
  try{
   // Keep the native picker inside the click gesture, before the first request.
@@ -1920,8 +1920,8 @@ async function exportOpenedMemories(c){
   }
   if(ownerSessionEnded)throw Error("Votre session est terminée. Reconnectez-vous.");
   if(capsuleExpired(c))throw Error("La période de conservation est terminée.");
-  await SouvenirZip.write(entries,writable,(i,total)=>show($("export-status"),'Téléchargement : '+i+' / '+total+' fichiers…'),{signal:ownerDownloadSession.signal});if(!ownerSessionEnded)show($("export-status"),'Vos souvenirs ouverts ont été téléchargés.');
- }catch(e){await writable?.abort?.();if(e.name!=='AbortError')show($("export-status"),e.message||'Téléchargement interrompu. Réessayez.',false)}
+  await SouvenirZip.write(entries,writable,(i,total)=>show(status,'Téléchargement : '+i+' / '+total+' fichiers…'),{signal:ownerDownloadSession.signal});if(!ownerSessionEnded)show(status,'Vos souvenirs ouverts ont été téléchargés.');
+ }catch(e){await writable?.abort?.();if(e.name!=='AbortError')show(status,e.message||'Téléchargement interrompu. Réessayez.',false)}
  finally{exportingMemories=false;button.disabled=capsuleExpired(c)||ownerSessionEnded}
 }
 async function setupOfferServices(c){
@@ -2116,7 +2116,7 @@ async function initDashboard(){
  if(ownerSessionEnded)return;
  if(!qs.get("slug")&&caps.length){let last;try{last=localStorage.getItem('la_suite_last_'+u.id)}catch{}const chosen=caps.find(c=>c.slug===last)||caps[0];location.replace("dashboard.html?slug="+encodeURIComponent(chosen.slug)+location.hash);return;}
  const c=caps.find(x=>x.slug===qs.get("slug"));
- await window.SuiteWorkspace.setup({sb,user:u,caps,access,selected:c,canLeave:()=>!organizerDirty()&&!organizerState.saving,prepareLeave:()=>saveAll(),logout});
+ await window.SuiteWorkspace.setup({sb,user:u,caps,access,selected:c,canLeave:()=>!organizerDirty()&&!organizerState.saving,prepareLeave:()=>saveAll(),downloadCapsule:(capsule,button,status)=>exportOpenedMemories(capsule,button,status),logout});
  if(ownerSessionEnded)return;
  if(!caps.length){$("dashboard-title").textContent="Mon espace";$("dashboard-content").innerHTML='<section class="workspace-empty"><h2>Votre première capsule</h2><p>Créez votre capsule, personnalisez votre carte et partagez-la avec vos invités.</p>'+ (access.can_create?'<a class="btn primary" href="create.html">Créer une capsule</a>':'<p>'+esc(access.reason||"Création momentanément indisponible.")+'</p>')+'</section>';return;}
  if(!c)return $("dashboard-content").innerHTML='<div class="notice">Capsule introuvable. Ouvrez « Mon compte », puis « Mes capsules » pour en choisir une autre.</div>';
