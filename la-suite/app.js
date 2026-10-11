@@ -1856,19 +1856,38 @@ async function setupOfferServices(c){
 
 
 function updateOwnerScreenScroll(){
- const panel=document.querySelector('.owner-panel.is-awaiting-deposits:not([hidden])');
- const frame=$('owner-deposit-waiting'),nav=document.querySelector('.owner-tabs');
+ const waiting=document.querySelector('.owner-panel.is-awaiting-deposits:not([hidden])');
+ const preparation=document.querySelector('.owner-panel[data-owner-panel="configuration"]:not([hidden])');
+ const frame=waiting?$('owner-deposit-waiting'):preparation?$('welcome-visual-editor'):null;
+ const nav=document.querySelector('.owner-tabs');
+ const editing=document.activeElement?.matches('input,textarea,select,[contenteditable]');
  let fits=false;
- if(panel&&frame&&!frame.hidden&&nav&&matchMedia('(max-width:760px)').matches&&(window.visualViewport?.scale||1)<=1.01){
+ if(frame&&!frame.hidden&&nav&&!editing&&matchMedia('(max-width:760px)').matches&&(window.visualViewport?.scale||1)<=1.01){
   const rect=frame.getBoundingClientRect(),bottom=nav.getBoundingClientRect().top;
-  const content=frame.querySelector('.deposit-waiting-content');
-  fits=rect.top>=0&&rect.bottom<=bottom+1&&frame.scrollHeight<=frame.clientHeight+1&&Boolean(content)&&content.scrollHeight<=frame.clientHeight;
+  const panel=waiting||preparation,content=waiting?frame.querySelector('.deposit-waiting-content'):frame;
+  fits=rect.top>=0&&rect.bottom<=bottom+1&&panel.getBoundingClientRect().bottom<=bottom+1&&frame.scrollHeight<=frame.clientHeight+1&&Boolean(content)&&content.scrollHeight<=frame.clientHeight;
  }
  document.body.classList.toggle('owner-screen-fits',fits);
 }
-window.addEventListener('resize',()=>requestAnimationFrame(updateOwnerScreenScroll));
-window.addEventListener('studio-layout',()=>requestAnimationFrame(updateOwnerScreenScroll));
-window.visualViewport?.addEventListener('resize',()=>requestAnimationFrame(updateOwnerScreenScroll));
+let ownerScrollCheckFrame=null;
+function scheduleOwnerScrollCheck(){
+ if(ownerScrollCheckFrame!==null)return;
+ ownerScrollCheckFrame=requestAnimationFrame(()=>{ownerScrollCheckFrame=null;updateOwnerScreenScroll()});
+}
+window.addEventListener('resize',scheduleOwnerScrollCheck);
+window.addEventListener('studio-layout',scheduleOwnerScrollCheck);
+document.addEventListener('focusin',scheduleOwnerScrollCheck);
+document.addEventListener('focusout',scheduleOwnerScrollCheck);
+window.visualViewport?.addEventListener('resize',scheduleOwnerScrollCheck);
+function observeOwnerScreenScroll(){
+ const root=$('dashboard-content'),nav=document.querySelector('.owner-tabs');
+ if(!root)return;
+ const resize=new ResizeObserver(scheduleOwnerScrollCheck);resize.observe(root);if(nav)resize.observe(nav);
+ const changes=new MutationObserver(scheduleOwnerScrollCheck);
+ changes.observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','open','style','class']});
+ window.addEventListener('pagehide',()=>{resize.disconnect();changes.disconnect()},{once:true});
+ scheduleOwnerScrollCheck();
+}
 
 let ownerWaitingTimer=null;
 function renderOwnerDepositWaiting(c,count,onOpen){
@@ -2072,6 +2091,7 @@ async function initDashboard(){
  setupIntro(c);saveIndicator();
  welcomeDesigner=window.SuiteWelcome.setup({capsule:c,markDirty,scheduleSave:scheduleAutoSave,saveAll});
  window.SuiteOrganizerLayout?.mount(c);
+ observeOwnerScreenScroll();
  $('capsule-date').addEventListener('input',()=>{if($('capsule-date').validity.valid)applyQrPreview(url.href,{...c,...collectQrCustomization(c),wedding_date:$('capsule-date').value})});
  function scheduleAutoSave(){
   clearTimeout(autoSaveTimer);
