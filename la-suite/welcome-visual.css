@@ -689,3 +689,10 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-primary .visual-page [contenteditable][data-field]:not(:focus)::after{right:2px;top:4px}
 .visual-primary .visual-page [contenteditable][data-field]{padding-right:26px}
 .visual-primary .visual-welcome-content>.visual-message::after{display:none}
+
+@media(max-width:760px){
+ .visual-primary #visual-settings{scroll-snap-type:y proximity;scroll-padding-block:4px}
+ .visual-primary #visual-settings button,.visual-primary #visual-settings .field{scroll-snap-align:start}
+ .visual-primary #visual-settings .visual-choice-clipped{visibility:hidden;pointer-events:none}
+ .visual-primary #visual-settings .field:focus-within{visibility:visible}
+}
