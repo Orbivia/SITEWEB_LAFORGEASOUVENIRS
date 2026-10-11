@@ -2039,7 +2039,25 @@ async function initDashboard(){
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  window.addEventListener('suite-capsule-rules-changed',async e=>{if(e.detail===c.id){const expired=capsuleExpired(c);await refreshMemories();if(expired&&!capsuleExpired(c))location.reload()}});
- document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&(capsuleExpired(c)||manifest.some(m=>!m.is_available&&new Date(m.delivery_at)<=new Date())))refreshMemories()});
+ // Check new deposits without rebuilding the list or interrupting media playback.
+ let badgeCheckInProgress=false;
+ async function refreshNewMemoryBadge(){
+  if(badgeCheckInProgress||refreshInProgress||ownerSessionEnded||document.visibilityState!=='visible'||!navigator.onLine)return;
+  badgeCheckInProgress=true;
+  try{
+   const {data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});
+   if(!error&&!ownerSessionEnded)updateOwnerUnreadBadge(ownerUnreadCount(c,data||[]));
+  }catch{/* Retry on the next check; retain the current badge. */}
+  finally{badgeCheckInProgress=false}
+ }
+ let newMemoryBadgeTimer=setInterval(refreshNewMemoryBadge,60000);
+ window.addEventListener('pagehide',()=>{clearInterval(newMemoryBadgeTimer);newMemoryBadgeTimer=null});
+ window.addEventListener('pageshow',()=>{if(!newMemoryBadgeTimer&&!ownerSessionEnded)newMemoryBadgeTimer=setInterval(refreshNewMemoryBadge,60000)});
+ document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible')return;
+  if(capsuleExpired(c)||manifest.some(m=>!m.is_available&&new Date(m.delivery_at)<=new Date()))refreshMemories();
+  else refreshNewMemoryBadge();
+ });
  if(capsuleExpired(c)){document.querySelectorAll('#dashboard-content input,#dashboard-content select,#dashboard-content textarea,.owner-panel button,#save-organizer').forEach(e=>e.disabled=true)}
  if(qs.get('activated')==='1'&&c.status==='active'&&!capsuleExpired(c)){
   const success=document.createElement('section');success.className='activation-success';success.innerHTML='<div class="eyebrow">Capsule active</div><h2>Votre capsule est prête à être partagée !</h2><p>Votre carte et votre message d’accueil sont enregistrés. Invitez maintenant vos proches à participer.</p><div class="success-actions"><button class="btn primary" data-success-action="share-link">Partager le lien</button><button class="btn secondary" data-success-action="download-print-card">Télécharger la carte</button><button class="btn secondary" data-success-action="print-print-card">Imprimer</button></div>';
