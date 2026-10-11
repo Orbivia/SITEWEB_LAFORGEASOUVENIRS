@@ -271,3 +271,16 @@ body[data-compose-dark=true] .guest-compose-footer img{filter:brightness(0) inve
 .guest-landing-ready[data-guest-view=compose] .delivery-summary::after{display:none}
 .guest-date-pencil{grid-column:2;grid-row:1/3;align-self:center;font-size:17px;color:#58655e}
 .guest-landing-ready[data-guest-view=compose] #guest-message>*{order:0}
+
+/* Compact deposit layout fits the available mobile page, including branding. */
+.guest-landing-ready[data-guest-view=compose] #guest-message{padding-top:clamp(24px,4dvh,36px);padding-bottom:38px;gap:10px}
+.guest-landing-ready[data-guest-view=compose] .guest-compose-heading{background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;margin:0 0 4px}
+.guest-landing-ready[data-guest-view=compose] .guest-compose-heading h2{font-size:clamp(28px,7vw,36px);line-height:1.1}
+.guest-landing-ready[data-guest-view=compose] .guest-compose-heading p{color:var(--home-ink)!important;font-size:12px}
+.guest-landing-ready[data-guest-view=compose] .memory-type{min-height:58px;gap:5px}
+.guest-landing-ready[data-guest-view=compose] #message_text{height:clamp(120px,20dvh,180px);min-height:120px;padding:12px}
+.guest-landing-ready[data-guest-view=compose] #guest_name{min-height:44px;height:44px;padding:10px 12px}
+.guest-landing-ready[data-guest-view=compose] .delivery-summary{min-height:58px;padding:9px 12px;gap:4px}
+.guest-landing-ready[data-guest-view=compose] .submit-memory{min-height:46px}
+.guest-landing-ready[data-guest-view=compose] .guest-compose-footer{margin-top:auto;padding:12px 0 0;border:0!important;background:transparent!important}
+.guest-landing-ready[data-guest-view=compose] .guest-compose-footer img{width:125px;max-height:48px}
