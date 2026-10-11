@@ -49,3 +49,9 @@
  .deposit-preparation-dialog li strong{display:block;margin-bottom:4px}
  .deposit-preparation-dialog p{font-size:14px;line-height:1.5;color:#71685f}
 }
+
+@media(max-width:760px){
+ .deposit-waiting-content{background:transparent;border-radius:0}
+ .deposit-waiting-dark .deposit-waiting-content{color:#fff8eb}
+ .deposit-waiting-dark .deposit-waiting-content h2,.deposit-waiting-dark .deposit-hourglass-icon{color:#fff8eb}
+}
