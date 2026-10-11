@@ -170,3 +170,10 @@
 
 .guest-landing .guest-empty-formats{display:none!important}
 .guest-empty-illustration{height:180px;width:min(280px,85%)}
+
+/* Host note inherits the invitation typography and palette. */
+.guest-host-zone[data-content=text] .guest-greeting{position:relative;background:color-mix(in srgb,var(--home-paper),transparent 82%);border-color:color-mix(in srgb,var(--home-accent),transparent 45%);border-radius:12px;padding:22px 26px;gap:16px;box-shadow:0 4px 18px #00000008}
+.guest-host-zone[data-content=text] .guest-host-label{font:500 19px/1.2 var(--welcome-font);color:var(--home-ink);margin:0}
+.guest-host-zone[data-content=text] .guest-host-label::after{content:'';display:block;width:48px;height:1px;margin:12px auto 0;background:var(--home-accent);opacity:.65}
+.guest-host-zone[data-content=text] #capsule-welcome{font-family:var(--welcome-font);font-weight:var(--welcome-weight,500);font-size:22px;line-height:1.4;text-align:center;-webkit-line-clamp:3}
+@media(max-width:760px){.guest-host-zone[data-content=text] #capsule-welcome{font-size:20px}}
