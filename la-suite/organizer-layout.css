@@ -610,3 +610,5 @@
 .organizer-layout-ready .owner-tabs .owner-fullscreen[hidden]{display:none!important}
 .owner-fullscreen svg{fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
 .owner-fullscreen:focus-visible{outline:2px solid #365748;outline-offset:-2px}
+
+.organizer-layout-ready .owner-tabs .owner-fullscreen>i{display:block;font-size:20px}
