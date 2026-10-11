@@ -508,7 +508,7 @@ function chooseGuestType(type){
  importButton.querySelector('.media-action-label').textContent=type==="image"?"Choisir une photo":type==="audio"?"Choisir un audio":"Choisir une vidéo";
  importButton.querySelector('i').className=type==="image"?'fa-solid fa-images':type==="audio"?'fa-solid fa-microphone':'fa-solid fa-video';
  $('import-memory-help').textContent=type==='image'?'Depuis votre galerie':'Depuis vos fichiers';$("message_text").required=type==="text";
- $("message-label").innerHTML=type==="text"?"Votre petit mot":'Un petit mot <span class="optional">(facultatif)</span>';
+ $("message-label").innerHTML=type==="text"?"Votre message":'Un petit mot <span class="optional">(facultatif)</span>';
  $("message_text").placeholder=type==="text"?"Écrivez ce que vous aimeriez leur dire…":"Quelques mots pour accompagner votre souvenir…";
  const messageField=$('guest-message-field'),extras=$('guest-extras');
  (type==='text'?$('guest-text-content'):$('guest-extras-body')).prepend(messageField);extras.open=false;
