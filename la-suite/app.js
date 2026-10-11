@@ -1729,7 +1729,7 @@ function nextCountdown(c,manifest,onReady){
 let memoryFilter="all",memoryOpeningTimer=null;
 function updateOpeningCountdown(divider,date){
  clearInterval(memoryOpeningTimer);
- const tick=()=>{if(ownerSessionEnded||!divider.isConnected){clearInterval(memoryOpeningTimer);return;}const remaining=Math.max(0,Math.ceil((Date.parse(date)-Date.now())/1000));const days=Math.floor(remaining/86400),hours=Math.floor(remaining%86400/3600),minutes=Math.floor(remaining%3600/60),seconds=remaining%60;const time=days?days+' j '+hours+' h '+minutes+' min':hours?hours+' h '+minutes+' min '+seconds+' s':minutes+' min '+seconds+' s';divider.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i><span>Prochaine ouverture dans <strong>'+time+'</strong></span>';divider.title='Ouverture le '+fParis(date);if(!remaining){divider.textContent='Ouverture en cours…';clearInterval(memoryOpeningTimer);}};
+ const tick=()=>{if(ownerSessionEnded||!divider.isConnected){clearInterval(memoryOpeningTimer);return;}const remaining=Math.max(0,Math.ceil((Date.parse(date)-Date.now())/1000));const days=Math.floor(remaining/86400),hours=Math.floor(remaining%86400/3600),minutes=Math.floor(remaining%3600/60),seconds=remaining%60;const time=days?days+' j '+hours+' h':hours?hours+' h '+minutes+' min':minutes+' min '+seconds+' s';divider.innerHTML='<i class="fa-regular fa-clock" aria-hidden="true"></i><span>Dans <strong>'+time+'</strong></span>';divider.title='Ouverture le '+fParis(date);if(!remaining){divider.textContent='Ouverture en cours…';clearInterval(memoryOpeningTimer);}};
  tick();memoryOpeningTimer=setInterval(tick,1000);
 }
 function applyMemoryFilter(){
@@ -1740,10 +1740,27 @@ function applyMemoryFilter(){
  if(document.querySelector('.owner-deposit-open:not([hidden])')&&list){
  const rank=card=>card.classList.contains('memory-unread')?0:card.classList.contains('locked')?2:1;
  cards.sort((a,b)=>rank(a)-rank(b)||(rank(a)===2?(Date.parse(a.dataset.deliveryAt)||0)-(Date.parse(b.dataset.deliveryAt)||0):(Date.parse(b.dataset.depositedAt)||0)-(Date.parse(a.dataset.depositedAt)||0)));
- let divider=$('memory-upcoming-divider');if(!divider){divider=document.createElement('p');divider.id='memory-upcoming-divider';divider.className='memory-upcoming-divider';}
- clearInterval(memoryOpeningTimer);divider.remove();cards.forEach(card=>list.append(card));
- const future=cards.filter(card=>card.classList.contains('locked')&&Date.parse(card.dataset.deliveryAt)>Date.now());const firstLocked=cards.find(card=>card.classList.contains('locked')&&!card.hidden);
- if(firstLocked&&future.length){const next=future.reduce((a,b)=>Date.parse(a.dataset.deliveryAt)<Date.parse(b.dataset.deliveryAt)?a:b);list.insertBefore(divider,firstLocked);updateOpeningCountdown(divider,next.dataset.deliveryAt);}
+ clearInterval(memoryOpeningTimer);
+ list.querySelectorAll('.memory-section-heading,.memory-upcoming-divider').forEach(node=>node.remove());
+ const groups=[
+  {label:'À lire',cards:cards.filter(card=>rank(card)===0)},
+  {label:'Déjà ouverts',cards:cards.filter(card=>rank(card)===1)},
+  {label:'À venir',cards:cards.filter(card=>rank(card)===2)}
+ ];
+ for(const group of groups){
+  if(!group.cards.length)continue;
+  const heading=document.createElement('div');heading.className='memory-section-heading';
+  const title=document.createElement('h3');title.textContent=group.label+' · '+group.cards.length;
+  heading.append(title);list.append(heading);
+  if(group.label==='À venir'){
+   const future=group.cards.filter(card=>Date.parse(card.dataset.deliveryAt)>Date.now());
+   if(future.length){const next=future.reduce((a,b)=>Date.parse(a.dataset.deliveryAt)<Date.parse(b.dataset.deliveryAt)?a:b);
+    const timer=document.createElement('span');timer.id='memory-upcoming-divider';timer.className='memory-upcoming-divider';
+    heading.append(timer);updateOpeningCountdown(timer,next.dataset.deliveryAt);
+   }
+  }
+  group.cards.forEach(card=>list.append(card));
+ }
  }
  const summary=document.querySelector('.deposit-open-summary');if(summary){summary.querySelector('.memory-unread-count')?.remove();const total=summary.querySelector('[data-open-count]');const unread=cards.filter(card=>card.classList.contains('memory-unread')).length,future=cards.filter(card=>card.classList.contains('locked')).length;if(total)total.textContent=cards.length+' souvenir'+(cards.length>1?'s':'')+(unread?' · '+unread+' à lire':'')+(future?' · '+future+' à venir':'');}
 
