@@ -364,3 +364,17 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .organizer-layout-ready .deposit-open-gallery #memory-list{padding-inline:14px}
  .deposit-open-has-memories .deposit-open-summary{padding-inline:14px}
 }
+
+/* Show only complete memory rows at the scroll viewport edges. */
+@media(max-width:760px){
+ .deposit-open-gallery .memory-row-clipped{visibility:hidden;pointer-events:none}
+ .organizer-layout-ready .deposit-open-gallery .memory-row{scroll-snap-align:start}
+ .organizer-layout-ready .deposit-open-gallery #memory-list{scroll-snap-type:y proximity}
+ .deposit-open-has-memories .deposit-open-summary{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:0;padding:6px 4px 8px;text-align:center;font-size:10px}
+ .deposit-open-summary>span{display:flex!important;align-items:center;justify-content:center;gap:5px;background:transparent!important;padding:0 5px!important;color:#302a25!important;white-space:nowrap;min-width:0}
+ .deposit-open-summary>span+span{border-left:1px solid #ded5c6}
+ .deposit-open-summary>.memory-overview-unread{color:#690c29!important;font-weight:600}
+ .deposit-open-summary>.memory-overview-future i{color:#817c76}
+ .deposit-open-summary i{font-size:15px}
+ .deposit-open-dark .deposit-open-summary>span{color:#fff8eb!important}
+}
