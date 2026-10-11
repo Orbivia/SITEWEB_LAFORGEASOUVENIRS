@@ -342,3 +342,10 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .deposit-open-gallery .memory-compact .memory-actions{min-width:0;max-width:44px;flex-wrap:nowrap}
  .deposit-open-dark .memory-section-heading::before,.deposit-open-dark .memory-section-heading::after{background:#fff8eb66}
 }
+
+/* Export lives in My capsules; leave more room for the discovery list. */
+@media(max-width:760px){
+ .organizer-layout-ready .deposit-open-export{display:none!important}
+ .deposit-open-has-memories .deposit-open-content{grid-template-rows:auto minmax(0,1fr)}
+}
+.workspace-capsule-row .workspace-plan{color:#690c29;font-weight:600}
