@@ -223,3 +223,8 @@
 
 .guest-landing .guest-empty-welcome:not([hidden]){display:flex!important}
 .guest-landing .guest-empty-welcome[hidden]{display:none!important}
+
+/* Selected ink belongs to editable welcome content; brand label stays fixed. */
+.guest-landing .guest-home-label{color:#8b2730}
+.guest-landing[data-dark=true] .guest-home-label{color:#b78b38}
+.guest-landing .capsule-hero h1,.guest-landing #guest-event-date,.guest-landing .guest-host-zone[data-content=text] #capsule-welcome{color:var(--home-accent)!important}
