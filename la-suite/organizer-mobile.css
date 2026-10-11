@@ -297,3 +297,13 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .deposit-open-summary .memory-unread-count{display:inline-flex!important;color:#690c29!important;font-size:10px;background:transparent!important;padding:0!important}
  .deposit-open-summary .memory-unread-count[hidden]{display:none!important}
 }
+
+@media(max-width:760px){
+ .deposit-open-summary .memory-sort{display:none}
+ .organizer-layout-ready>.memory-reader{position:fixed;z-index:10000;margin:auto;isolation:isolate}
+ .organizer-layout-ready>.memory-reader .memory-content{min-height:0;background:transparent}
+ .organizer-layout-ready>.memory-reader .memory-content img,.organizer-layout-ready>.memory-reader .memory-content video{height:auto;max-height:60dvh;object-fit:contain}
+ .organizer-layout-ready>.memory-reader .mini-link{text-decoration:none}
+ .memory-upcoming-divider{min-height:36px;box-sizing:border-box;flex:none;font-variant-numeric:tabular-nums}
+ .memory-upcoming-divider strong{color:#690c29;font-weight:600}
+}
