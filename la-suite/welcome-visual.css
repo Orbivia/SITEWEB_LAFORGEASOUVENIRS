@@ -748,3 +748,14 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-primary .visual-head .visual-save-state{flex:0 1 auto}
 
 .visual-primary .visual-head .visual-screenbar{display:none!important}
+
+/* Compact direct content choices, saved by the existing auto-save pipeline. */
+.visual-primary #upload-intro,.visual-primary #choose-intro-file{display:none!important}
+.visual-primary .visual-intro-actions{border:0!important;padding:0!important;display:flex;flex-direction:column;gap:8px}
+.visual-primary .visual-intro-actions>[data-edit-intro]{display:none!important}
+.visual-primary .visual-intro-actions>[role=group]{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.visual-primary .visual-intro-actions [data-intro-format]{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:62px;padding:8px 3px;border-radius:10px;font:500 12px/1.2 Inter,sans-serif}
+.visual-primary .visual-intro-actions [data-intro-format] i{font-size:18px}
+.visual-primary .visual-intro-actions>button:last-child{align-self:center;width:auto;min-height:32px;padding:4px 12px;font-size:12px;border:0;background:transparent;text-decoration:underline}
+.visual-primary #visual-welcome .visual-empty-welcome{display:none!important}
+.visual-primary #visual-welcome .visual-message:empty::before{content:'Écrivez votre message…';font-size:16px;opacity:.5}
