@@ -395,3 +395,5 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
 
 /* Keep the discovery heading focused on the memories. */
 .owner-deposit-open [data-open-until]{display:none!important}
+
+[data-owner-tab-link="messages"][aria-disabled="true"]{opacity:.4;cursor:default}
