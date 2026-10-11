@@ -1731,6 +1731,15 @@ function applyMemoryFilter(){
  const cards=[...document.querySelectorAll('#memory-list .memory-row')];
  if(document.querySelector('.deposit-open-all-available'))memoryFilter="all";
  for(const card of cards)card.hidden=memoryFilter!=="all"&&!card.classList.contains(memoryFilter);
+ const list=$('memory-list');
+ if(document.querySelector('.owner-deposit-open:not([hidden])')&&list){
+ const direction=document.querySelector('.memory-sort')?.value==='oldest'?1:-1;
+ cards.sort((a,b)=>Number(a.classList.contains('locked'))-Number(b.classList.contains('locked'))||direction*((Date.parse(a.dataset.depositedAt)||0)-(Date.parse(b.dataset.depositedAt)||0)));
+ let divider=$('memory-upcoming-divider');if(!divider){divider=document.createElement('p');divider.id='memory-upcoming-divider';divider.className='memory-upcoming-divider';}
+ divider.remove();cards.forEach(card=>list.append(card));
+ const future=cards.filter(card=>card.classList.contains('locked')&&Date.parse(card.dataset.deliveryAt)>Date.now());const firstLocked=cards.find(card=>card.classList.contains('locked')&&!card.hidden);
+ if(firstLocked&&future.length){const next=future.reduce((a,b)=>Date.parse(a.dataset.deliveryAt)<Date.parse(b.dataset.deliveryAt)?a:b);divider.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i> Prochaine ouverture : '+esc(fParis(next.dataset.deliveryAt));list.insertBefore(divider,firstLocked);}
+ }
  for(const button of document.querySelectorAll('[data-memory-filter]'))button.setAttribute('aria-pressed',String(button.dataset.memoryFilter===memoryFilter));
  let empty=$('memory-filter-empty');
  if(!empty){empty=document.createElement('p');empty.id='memory-filter-empty';empty.className='notice';$('memory-list').after(empty)}
@@ -1753,6 +1762,8 @@ async function renderManifest(c,manifest){
   let loadMedia=null;
   const row=map.get(item.id),expired=capsuleExpired(c),available=item.is_available&&!expired;
   const article=document.createElement("article");article.className="memory-row "+(available?"available":"locked");
+  article.dataset.depositedAt=row?.created_at||item.created_at||'';
+  article.dataset.deliveryAt=item.delivery_at||'';
   article.innerHTML='<div class="memory-icon">'+icon(item.media_type)+'</div><div class="memory-meta"><strong>'+esc(item.guest_name||"Invité")+'</strong><span>'+label(item.media_type)+' · découverte le '+esc(fdate(item.delivery_at))+'</span></div><div class="memory-actions"><span class="lock-badge '+(available?'open':'locked')+'">'+(expired?'Accès terminé':available?'Disponible':'<i class="fa-solid fa-lock" aria-hidden="true"></i> Verrouillé')+'</span></div><div class="memory-content"></div>';
   const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
   if(available&&row?.message_text){const text=document.createElement('p');text.className='memory-text';text.textContent=row.message_text;content.append(text)}
@@ -1780,8 +1791,8 @@ function setupCompactMemoryCard(article,item,available,depositedAt){
  article.classList.add('memory-compact');
  const typeLabel=article.querySelector('.memory-meta span');
  const depositDate=depositedAt||item.created_at;
- if(typeLabel){typeLabel.textContent=depositDate?'Déposé le '+fParis(depositDate):'Date de dépôt inconnue';if(!available)typeLabel.title='Découverte le '+fdate(item.delivery_at);}
- if(!available)return;
+ if(typeLabel){typeLabel.textContent=depositDate?fParis(depositDate)+' · '+new Date(depositDate).toLocaleTimeString('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'}):'Date de dépôt inconnue';if(!available)typeLabel.title='Découverte le '+fdate(item.delivery_at);}
+ if(!available){const badge=article.querySelector('.lock-badge');if(badge){badge.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i>';badge.setAttribute('aria-label','Ouverture le '+fdate(item.delivery_at));badge.title='Ouverture le '+fdate(item.delivery_at);}return;}
  article.querySelector('.lock-badge')?.remove();
  const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
  const dialog=document.createElement('dialog');dialog.className='memory-reader';
@@ -1796,12 +1807,15 @@ function setupCompactMemoryCard(article,item,available,depositedAt){
  actions.querySelectorAll('.mini-link').forEach(button=>readerTools.append(button));
  dialog.append(heading,readerTools);article.append(dialog);
  const open=document.createElement('button');open.type='button';open.className='memory-read-button';
- open.textContent='Ouvrir';
+ open.innerHTML='<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';
  open.setAttribute('aria-label',(({image:'Voir la photo',video:'Voir la vidéo',audio:'Écouter'})[item.media_type]||'Lire le message')+' de '+(item.guest_name||'votre invité'));
  open.onclick=()=>{dialog.insertBefore(content,readerTools);dialog.showModal();article.refreshMemoryMedia?.()};
  close.onclick=()=>dialog.close();
  dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(content);open.focus()});
  actions.append(open);
+ article.classList.add('memory-row-clickable');article.tabIndex=0;article.setAttribute('role','button');article.setAttribute('aria-label',open.getAttribute('aria-label'));
+ article.addEventListener('click',event=>{if(event.target.closest('button,a,dialog'))return;open.click()});
+ article.addEventListener('keydown',event=>{if(event.target!==article)return;if(event.key==='Enter'||event.key===' '){event.preventDefault();open.click()}});
  const photo=content.querySelector('img');
  if(photo)photo.addEventListener('load',()=>{
   const thumbnail=document.createElement('img');thumbnail.src=photo.src;thumbnail.alt='';thumbnail.className='memory-thumbnail';
@@ -1962,6 +1976,8 @@ function renderOwnerDepositOpen(c,manifest){
  frame.querySelector('[data-open-count]').textContent=memoryCountLabel(count);
  frame.querySelector('[data-open-available]').textContent=available+' disponible'+(available>1?'s':'')+' maintenant';
  frame.querySelector('.deposit-open-gallery').append(hero,memories);
+ if(!frame.querySelector('.memory-sort')){const select=document.createElement('select');select.className='memory-sort';select.setAttribute('aria-label','Trier les souvenirs');select.innerHTML='<option value="newest">Plus récents</option><option value="oldest">Plus anciens</option>';select.onchange=applyMemoryFilter;frame.querySelector('.deposit-open-summary').append(select);}
+ const exportLabel=$('export-memories');if(exportLabel)exportLabel.textContent='Tout télécharger';
  applyMemoryFilter();
  const config={...c.welcome_config,...window.SuiteDesign.fields(c)},style=$('qr-style')?.value||config.style||c.qr_style||'fond-blanc';
  const preset=window.SuiteDesign.styles.find(s=>s.id===style),art=window.SuiteDesign.artwork(style,config);
