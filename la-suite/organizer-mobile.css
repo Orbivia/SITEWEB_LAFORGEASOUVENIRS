@@ -246,3 +246,12 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .deposit-open-has-memories .deposit-open-heading h2{margin-top:0}
  .deposit-open-gallery .memory-compact .memory-actions{justify-content:flex-end}
 }
+
+@media(max-width:760px){
+ .memory-reader-title{min-width:0}
+ .memory-reader-title strong{overflow-wrap:anywhere}
+ .memory-reader-date{margin:6px 0 0;font:400 11px/1.5 Inter,sans-serif;color:#776f65}
+ .memory-reader .memory-reader-tools .mini-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border:1px solid #690c29;border-radius:10px;background:#690c29;color:#fffdf7;font:600 13px/1.4 Inter,sans-serif;cursor:pointer}
+ .memory-reader .memory-reader-tools .mini-link:disabled{opacity:.6;cursor:wait}
+ .memory-reader .memory-reader-tools .mini-link:focus-visible{outline:2px solid #690c29;outline-offset:3px}
+}
