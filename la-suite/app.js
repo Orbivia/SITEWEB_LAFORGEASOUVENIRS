@@ -717,6 +717,7 @@ async function initCapsule(){
   e.preventDefault();if(guestBusy)return;
   const name=$("guest_name").value.trim(),text=$("message_text").value.trim(),instant=$("deliver-now").checked,date=$("delivery_date").value,status=$("status");
   if(!name){show(status,"Indiquez votre prénom ou votre signature pour envoyer ce souvenir.",false);$("guest_name").focus();return;}
+  if(name.length>30){show(status,"Limitez votre prénom ou votre signature à 30 caractères.",false);$("guest_name").focus();return;}
   if(recorder?.state==="recording"||recorderPreparing)return showCapture("Terminez votre enregistrement avant l’envoi.",false);
   if(guestType!=="text"&&!selectedMedia)return showCapture("Ajoutez votre souvenir, ou choisissez « Petit mot ».",false);
   if(guestType==="text"&&!text)return show(status,"Écrivez votre petit mot.",false);
