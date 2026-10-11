@@ -693,11 +693,11 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 @media(max-width:760px){
  .visual-primary #visual-settings{scroll-snap-type:y proximity;scroll-padding-block:4px}
  .visual-primary #visual-settings button,.visual-primary #visual-settings .field{scroll-snap-align:start}
- .visual-primary #visual-settings .visual-choice-clipped{visibility:hidden;pointer-events:none}
- .visual-primary #visual-settings .field:focus-within{visibility:visible}
 }
 
-/* Selection choices remain visible while scrolling and switching panels. */
-.visual-primary #visual-settings .visual-choice-clipped{visibility:visible!important;pointer-events:auto!important}
 
 .visual-card-overlays .visual-text-pen[data-edit-field="print-title"]{display:grid!important;place-items:center;visibility:visible!important;opacity:1!important;z-index:6}
+
+/* Hidden panels must stay hidden despite layout display rules. */
+.visual-primary [data-panel][hidden],.visual-primary #visual-settings[hidden]{display:none!important}
+.suite-edit-icon{display:inline-block;width:16px;height:16px;vertical-align:middle;flex:none}
