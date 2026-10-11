@@ -9,7 +9,10 @@
   d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)if(!d.canClose||d.canClose())d.close()}});return d;
  }
  async function deleteOwnedCapsule(sb,userId,capsule,confirmation){
-  if(!userId||capsule.owner_id!==userId||confirmation!==capsule.couple_name)throw Error('Confirmez le nom exact de votre capsule.');
+  if(!userId)throw Error('Votre session a expiré. Reconnectez-vous.');
+  if(!capsule.owner_id)throw Error('Les informations de la capsule sont incomplètes. Rechargez la page.');
+  if(capsule.owner_id!==userId)throw Error('Cette capsule n’est pas rattachée à votre compte.');
+  if(confirmation!==capsule.couple_name)throw Error('Confirmez le nom exact de votre capsule.');
   const {data,error}=await sb.from('capsules').delete().eq('id',capsule.id).eq('owner_id',userId).eq('couple_name',confirmation).select('id');
   if(error)throw error;
   if(data?.length!==1||data[0].id!==capsule.id)throw Error('La capsule a changé ou n’est plus disponible. Rouvrez la liste.');
