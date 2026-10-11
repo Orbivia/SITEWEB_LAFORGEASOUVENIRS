@@ -1744,7 +1744,7 @@ function nextCountdown(c,manifest,onReady){
 let memoryFilter="all",memoryOpeningTimer=null;
 function updateOpeningCountdown(divider,date){
  clearInterval(memoryOpeningTimer);
- const tick=()=>{if(ownerSessionEnded||!divider.isConnected){clearInterval(memoryOpeningTimer);return;}const remaining=Math.max(0,Math.ceil((Date.parse(date)-Date.now())/1000));const days=Math.floor(remaining/86400),hours=Math.floor(remaining%86400/3600),minutes=Math.floor(remaining%3600/60),seconds=remaining%60;const time=days?days+' j '+hours+' h':hours?hours+' h '+minutes+' min':minutes+' min '+seconds+' s';divider.innerHTML='<i class="fa-regular fa-clock" aria-hidden="true"></i><span>Dans <strong>'+time+'</strong></span>';divider.title='Ouverture le '+fParis(date);if(!remaining){divider.textContent='Ouverture en cours…';clearInterval(memoryOpeningTimer);}};
+ const tick=()=>{if(ownerSessionEnded||!divider.isConnected){clearInterval(memoryOpeningTimer);return;}const {remaining,text:time}=window.SuiteMemoryState.countdown(date);divider.innerHTML='<i class="fa-regular fa-clock" aria-hidden="true"></i><span>Dans <strong>'+time+'</strong></span>';divider.title='Ouverture le '+fParis(date);if(!remaining){divider.textContent='Ouverture en cours…';clearInterval(memoryOpeningTimer);}};
  tick();memoryOpeningTimer=setInterval(tick,1000);
 }
 function setupWholeMemoryRows(){
@@ -1775,8 +1775,8 @@ function applyMemoryFilter(){
  for(const card of cards)card.hidden=memoryFilter!=="all"&&!card.classList.contains(memoryFilter);
  const list=$('memory-list');
  if(document.querySelector('.owner-deposit-open:not([hidden])')&&list){
- const rank=card=>card.classList.contains('memory-unread')?0:card.classList.contains('locked')?2:1;
- cards.sort((a,b)=>rank(a)-rank(b)||(rank(a)===2?(Date.parse(a.dataset.deliveryAt)||0)-(Date.parse(b.dataset.deliveryAt)||0):(Date.parse(b.dataset.depositedAt)||0)-(Date.parse(a.dataset.depositedAt)||0)));
+ const rank=window.SuiteMemoryState.rank;
+ cards.sort(window.SuiteMemoryState.compare);
  clearInterval(memoryOpeningTimer);
  list.querySelectorAll('.memory-section-heading,.memory-upcoming-divider').forEach(node=>node.remove());
  const groups=[
@@ -1854,9 +1854,8 @@ async function renderManifest(c,manifest){
  applyMemoryFilter();
 }
 
-const memoryReadIds=new Set();
-function memoryWasRead(id){if(memoryReadIds.has(id))return true;try{return localStorage.getItem('la_suite_memory_read_'+id)==='1'}catch{return false}}
-function markMemoryRead(id){memoryReadIds.add(id);try{localStorage.setItem('la_suite_memory_read_'+id,'1')}catch{}}
+function memoryWasRead(id){return window.SuiteMemoryState.wasRead(id)}
+function markMemoryRead(id){window.SuiteMemoryState.markRead(id)}
 function setupCompactMemoryCard(article,item,available,depositedAt){
  article.classList.add('memory-compact');
  const typeLabel=article.querySelector('.memory-meta span');
