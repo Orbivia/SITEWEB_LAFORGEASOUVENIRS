@@ -121,3 +121,13 @@
  .deposit-waiting-actions{margin-top:auto;padding:0 0 4px}
  .deposit-waiting-actions>.btn:first-child{margin-top:0}
 }
+
+@media(max-width:760px){
+ .organizer-layout-ready .owner-deposit-waiting{height:calc(100dvh - var(--organizer-header-height,64px) - 88px - env(safe-area-inset-bottom,0px));min-height:min-content}
+ .deposit-waiting-content{flex:1 0 auto;width:100%;min-height:0}
+ .deposit-waiting-main{flex:1 0 auto}
+ .deposit-waiting-actions{flex:none;display:grid;gap:8px;width:100%;margin-top:auto;padding-bottom:0}
+ .deposit-waiting-content .deposit-waiting-actions .btn{margin:0;box-sizing:border-box;min-height:44px}
+ .deposit-card-actions{align-items:stretch}
+ .deposit-card-actions .btn{height:100%;font-size:14px}
+}
