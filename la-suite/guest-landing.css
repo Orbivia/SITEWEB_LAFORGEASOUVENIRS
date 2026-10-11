@@ -151,3 +151,19 @@
 .guest-landing[data-state=scheduled] .guest-home-principle,.guest-landing[data-state=scheduled] .guest-home-label,.guest-load-error .guest-home-principle,.guest-load-error .guest-home-label{display:none!important}
 @media(min-width:761px){.guest-landing:not(.has-cover){min-height:min(800px,100svh)}.guest-landing .guest-home-content{padding:60px 48px 24px}}
 @media(max-width:760px){.guest-landing .guest-home-content{padding:clamp(32px,7svh,64px) 30px max(20px,env(safe-area-inset-bottom));gap:14px}.guest-home-principle{font-size:14px}}
+
+/* Stable host-content area for absent, written and media greetings. */
+.guest-host-zone{width:100%;max-width:420px;height:clamp(180px,26svh,230px);display:flex;align-items:center;justify-content:center;min-width:0}
+.guest-host-zone>[hidden]{display:none!important}
+.guest-host-zone .guest-greeting{height:100%;box-sizing:border-box;padding:20px 24px;border:1px solid color-mix(in srgb,var(--home-accent),transparent 55%);border-radius:16px;background:color-mix(in srgb,var(--home-paper),var(--home-ink) 8%);display:flex;flex-direction:column;justify-content:center;gap:12px;color:var(--home-ink)}
+.guest-host-label{margin:0;font:600 14px/1.4 Inter,sans-serif;text-align:center;color:var(--home-ink)}
+.guest-host-zone .guest-cover{height:100%;aspect-ratio:auto}
+.guest-host-zone .guest-cover-slot{height:100%}
+.guest-landing #capsule-welcome{color:var(--home-ink)!important}
+.guest-empty-welcome{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px}
+.guest-empty-illustration{width:min(250px,80%);height:150px}
+.guest-empty-formats{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font:400 11px/1.3 Inter,sans-serif;color:var(--home-ink)}
+.guest-empty-formats>span{display:flex;align-items:center;gap:5px}
+.guest-empty-formats svg{width:16px;height:16px;fill:var(--home-accent)}
+.guest-landing .guest-home-footer{margin-top:clamp(24px,6svh,60px)}
+.guest-landing[data-state=scheduled] .guest-host-zone,.guest-load-error .guest-host-zone{display:none!important}
