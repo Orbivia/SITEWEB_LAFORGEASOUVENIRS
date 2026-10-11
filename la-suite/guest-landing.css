@@ -203,3 +203,8 @@
 .guest-screenbar:has([hidden]){display:none}
 .guest-landing-ready:not([data-guest-view=home]) .guest-screenbar{display:none}
 .guest-landing-ready[data-guest-view=home] .guest-screenbar:not(:has([hidden]))~.guest-landing,.guest-landing-ready[data-guest-view=home] .guest-screenbar:not(:has([hidden]))~.guest-landing .guest-home-content{min-height:calc(100dvh - 44px)}
+
+.guest-screenbar{justify-content:space-between;height:52px;padding:5px 16px;background:#fffdf8;border-bottom:1px solid #e8e3d9}
+.guest-screenbar>img{width:92px;height:40px;object-fit:contain}
+.guest-screenbar .guest-fullscreen{border:1px solid #36574825;border-radius:10px;width:36px;height:36px;color:#365748;background:#fffdf8}
+.guest-landing-ready[data-guest-view=home] .guest-screenbar:not(:has([hidden]))~.guest-landing,.guest-landing-ready[data-guest-view=home] .guest-screenbar:not(:has([hidden]))~.guest-landing .guest-home-content{min-height:calc(100dvh - 52px)}
