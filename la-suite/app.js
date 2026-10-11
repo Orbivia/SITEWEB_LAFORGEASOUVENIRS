@@ -1729,17 +1729,18 @@ function nextCountdown(c,manifest,onReady){
 let memoryFilter="all";
 function applyMemoryFilter(){
  const cards=[...document.querySelectorAll('#memory-list .memory-row')];
- if(document.querySelector('.deposit-open-all-available'))memoryFilter="all";
+ if(document.querySelector('.owner-deposit-open:not([hidden])'))memoryFilter="all";
  for(const card of cards)card.hidden=memoryFilter!=="all"&&!card.classList.contains(memoryFilter);
  const list=$('memory-list');
  if(document.querySelector('.owner-deposit-open:not([hidden])')&&list){
  const direction=document.querySelector('.memory-sort')?.value==='oldest'?1:-1;
- cards.sort((a,b)=>Number(a.classList.contains('locked'))-Number(b.classList.contains('locked'))||direction*((Date.parse(a.dataset.depositedAt)||0)-(Date.parse(b.dataset.depositedAt)||0)));
+ cards.sort((a,b)=>Number(a.classList.contains('locked'))-Number(b.classList.contains('locked'))||direction*((Date.parse(a.dataset.deliveryAt)||0)-(Date.parse(b.dataset.deliveryAt)||0)));
  let divider=$('memory-upcoming-divider');if(!divider){divider=document.createElement('p');divider.id='memory-upcoming-divider';divider.className='memory-upcoming-divider';}
  divider.remove();cards.forEach(card=>list.append(card));
  const future=cards.filter(card=>card.classList.contains('locked')&&Date.parse(card.dataset.deliveryAt)>Date.now());const firstLocked=cards.find(card=>card.classList.contains('locked')&&!card.hidden);
  if(firstLocked&&future.length){const next=future.reduce((a,b)=>Date.parse(a.dataset.deliveryAt)<Date.parse(b.dataset.deliveryAt)?a:b);divider.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i> Prochaine ouverture : '+esc(fParis(next.dataset.deliveryAt));list.insertBefore(divider,firstLocked);}
  }
+ const summary=document.querySelector('.deposit-open-summary');if(summary){let unread=summary.querySelector('.memory-unread-count');if(!unread){unread=document.createElement('span');unread.className='memory-unread-count';summary.insertBefore(unread,summary.querySelector('.memory-sort'));}const count=cards.filter(card=>card.classList.contains('memory-unread')).length;unread.textContent=count+' non lu'+(count>1?'s':'');unread.hidden=count===0;}
  for(const button of document.querySelectorAll('[data-memory-filter]'))button.setAttribute('aria-pressed',String(button.dataset.memoryFilter===memoryFilter));
  let empty=$('memory-filter-empty');
  if(!empty){empty=document.createElement('p');empty.id='memory-filter-empty';empty.className='notice';$('memory-list').after(empty)}
@@ -1787,12 +1788,19 @@ async function renderManifest(c,manifest){
  applyMemoryFilter();
 }
 
+const memoryReadIds=new Set();
+function memoryWasRead(id){if(memoryReadIds.has(id))return true;try{return localStorage.getItem('la_suite_memory_read_'+id)==='1'}catch{return false}}
+function markMemoryRead(id){memoryReadIds.add(id);try{localStorage.setItem('la_suite_memory_read_'+id,'1')}catch{}}
 function setupCompactMemoryCard(article,item,available,depositedAt){
  article.classList.add('memory-compact');
  const typeLabel=article.querySelector('.memory-meta span');
  const depositDate=depositedAt||item.created_at;
- if(typeLabel){typeLabel.textContent=depositDate?fParis(depositDate)+' · '+new Date(depositDate).toLocaleTimeString('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'}):'Date de dépôt inconnue';if(!available)typeLabel.title='Découverte le '+fdate(item.delivery_at);}
- if(!available){const badge=article.querySelector('.lock-badge');if(badge){badge.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i>';badge.setAttribute('aria-label','Ouverture le '+fdate(item.delivery_at));badge.title='Ouverture le '+fdate(item.delivery_at);}return;}
+ if(typeLabel)typeLabel.textContent='Découverte le '+fParis(item.delivery_at);
+ article.dataset.memoryId=item.id;
+ const stateIcon=article.querySelector('.memory-icon');
+ const updateReadState=()=>{const read=memoryWasRead(item.id);article.classList.toggle('memory-unread',available&&!read);article.classList.toggle('memory-read',available&&read);stateIcon.innerHTML='<i class="fa-solid '+(read?'fa-envelope-open':'fa-envelope')+'" aria-hidden="true"></i>';stateIcon.setAttribute('aria-label',read?'Souvenir lu':'Souvenir non lu');};
+ if(!available){stateIcon.innerHTML='<i class="fa-solid fa-envelope" aria-hidden="true"></i><i class="fa-solid fa-lock memory-envelope-lock" aria-hidden="true"></i>';stateIcon.setAttribute('aria-label','Souvenir verrouillé');const badge=article.querySelector('.lock-badge');if(badge){badge.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i>';badge.setAttribute('aria-label','Ouverture le '+fdate(item.delivery_at));badge.title='Ouverture le '+fdate(item.delivery_at);}return;}
+ updateReadState();
  article.querySelector('.lock-badge')?.remove();
  const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
  const dialog=document.createElement('dialog');dialog.className='memory-reader';
@@ -1801,7 +1809,7 @@ function setupCompactMemoryCard(article,item,available,depositedAt){
  const title=document.createElement('strong');title.textContent=item.guest_name||'Invité';
  const close=document.createElement('button');close.type='button';close.className='memory-reader-close';close.textContent='×';close.setAttribute('aria-label','Fermer le souvenir');
  const titleBlock=document.createElement('div');titleBlock.className='memory-reader-title';titleBlock.append(title);
- if(depositDate){const timestamp=document.createElement('p');timestamp.className='memory-reader-date';timestamp.textContent='Déposé le '+fParis(depositDate)+' à '+new Date(depositDate).toLocaleTimeString('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'})+' · heure de Paris';titleBlock.append(timestamp);}
+ if(depositDate){const timestamp=document.createElement('p');timestamp.className='memory-reader-date';timestamp.textContent='Date de découverte choisie : '+fParis(item.delivery_at);titleBlock.append(timestamp);}
  heading.append(titleBlock,close);
  const readerTools=document.createElement('div');readerTools.className='memory-reader-tools';
  actions.querySelectorAll('.mini-link').forEach(button=>readerTools.append(button));
@@ -1809,18 +1817,14 @@ function setupCompactMemoryCard(article,item,available,depositedAt){
  const open=document.createElement('button');open.type='button';open.className='memory-read-button';
  open.innerHTML='<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';
  open.setAttribute('aria-label',(({image:'Voir la photo',video:'Voir la vidéo',audio:'Écouter'})[item.media_type]||'Lire le message')+' de '+(item.guest_name||'votre invité'));
- open.onclick=()=>{dialog.insertBefore(content,readerTools);dialog.showModal();article.refreshMemoryMedia?.()};
+ open.onclick=()=>{dialog.insertBefore(content,readerTools);dialog.showModal();markMemoryRead(item.id);updateReadState();applyMemoryFilter();article.refreshMemoryMedia?.()};
  close.onclick=()=>dialog.close();
  dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(content);open.focus()});
  actions.append(open);
  article.classList.add('memory-row-clickable');article.tabIndex=0;article.setAttribute('role','button');article.setAttribute('aria-label',open.getAttribute('aria-label'));
  article.addEventListener('click',event=>{if(event.target.closest('button,a,dialog'))return;open.click()});
  article.addEventListener('keydown',event=>{if(event.target!==article)return;if(event.key==='Enter'||event.key===' '){event.preventDefault();open.click()}});
- const photo=content.querySelector('img');
- if(photo)photo.addEventListener('load',()=>{
-  const thumbnail=document.createElement('img');thumbnail.src=photo.src;thumbnail.alt='';thumbnail.className='memory-thumbnail';
-  article.querySelector('.memory-icon').replaceChildren(thumbnail);
- });
+
 }
 
 function latestEventDate(today=parisDay()){
