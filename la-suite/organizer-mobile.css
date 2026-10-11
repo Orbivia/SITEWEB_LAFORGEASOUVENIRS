@@ -378,3 +378,17 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .deposit-open-summary i{font-size:15px}
  .deposit-open-dark .deposit-open-summary>span{color:#fff8eb!important}
 }
+
+/* Larger left-hand preview, compact section spacing. */
+.workspace-ready .workspace-capsule-entry{padding:14px;min-height:0;background:#fffdf9;overflow:hidden}
+.workspace-ready .workspace-capsule-entry:has([aria-current=true]){background:#f0f4f0;outline:none}
+.workspace-capsule-entry .workspace-capsule-row{gap:12px;align-items:center}
+.workspace-capsule-entry .workspace-capsule-row img.workspace-capsule-preview{position:static;width:76px;height:114px;object-fit:contain;border-radius:8px;flex:none;max-width:28%}
+.workspace-capsule-row>span{flex:1;min-width:0}
+@media(max-width:760px){
+ .memory-section-heading{min-height:28px;margin:5px 0 0;padding:0;row-gap:0}
+ .memory-section-heading:first-child{margin-top:0}
+ .memory-section-heading h3{font-size:19px;line-height:1.2}
+ .memory-section-heading .memory-upcoming-divider{padding-bottom:2px}
+ .organizer-layout-ready .deposit-open-gallery .memory-compact{padding-block:5px;min-height:54px}
+}
