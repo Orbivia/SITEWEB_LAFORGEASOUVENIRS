@@ -349,3 +349,18 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .deposit-open-has-memories .deposit-open-content{grid-template-rows:auto minmax(0,1fr)}
 }
 .workspace-capsule-row .workspace-plan{color:#690c29;font-weight:600}
+
+/* Full-width theme preview for each capsule, with readable inset content. */
+.workspace-ready .workspace-capsule-entry{position:relative;isolation:isolate;overflow:hidden;padding:28px 32px;background:#fffdf9;min-height:160px}
+.workspace-capsule-entry>.workspace-capsule-artwork{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;z-index:-1;pointer-events:none}
+.workspace-ready .workspace-capsule-entry:has([aria-current=true]){outline:2px solid var(--workspace-green);outline-offset:-2px;background:#fffdf9}
+.workspace-capsule-entry .workspace-capsule-row{display:flex;min-width:0;align-items:center}
+.workspace-capsule-row>span{min-width:0;max-width:100%}
+.workspace-capsule-row strong{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.workspace-capsule-entry .workspace-capsule-actions{position:relative;z-index:1}
+.workspace-ready .workspace-capsule-row .workspace-plan{font-weight:600}
+@media(max-width:760px){
+ .organizer-layout-ready .owner-deposit-open.deposit-open-has-memories{padding-bottom:clamp(64px,18vw,86px)}
+ .organizer-layout-ready .deposit-open-gallery #memory-list{padding-inline:14px}
+ .deposit-open-has-memories .deposit-open-summary{padding-inline:14px}
+}
