@@ -728,3 +728,10 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 #visual-welcome .visual-host-label{font:500 17px/1.2 var(--welcome-font);color:var(--visual-ink);margin:0}
 #visual-welcome .visual-host-label::after{content:'';display:block;width:42px;height:1px;margin:10px auto 0;background:var(--guest-accent);opacity:.65}
 .visual-primary #visual-welcome .visual-message{font-family:var(--welcome-font);font-weight:var(--welcome-weight,500);font-size:20px;line-height:1.4;text-align:center;width:100%;box-sizing:border-box;padding:0;color:var(--visual-ink);max-height:92px}
+
+.visual-primary #visual-welcome .visual-welcome-content[data-content=text]{background:transparent;border:0;box-shadow:none;border-radius:0;position:relative;padding:24px 22px}
+#visual-welcome .visual-welcome-content[data-content=text]::before,#visual-welcome .visual-welcome-content[data-content=text]::after{content:'';position:absolute;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,var(--guest-accent),transparent);opacity:.5}
+#visual-welcome .visual-welcome-content[data-content=text]::before{top:10px}
+#visual-welcome .visual-welcome-content[data-content=text]::after{bottom:10px}
+.visual-primary #visual-welcome .visual-host-label{font:500 18px/1.25 var(--welcome-font)}
+.visual-primary #visual-welcome .visual-message{font:var(--welcome-weight,500) 22px/1.4 var(--welcome-font)}
