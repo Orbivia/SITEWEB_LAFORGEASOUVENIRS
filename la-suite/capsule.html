@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Serif+Display&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@500;600;700&family=Parisienne&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="styles.css?v=20261011-guestwelcome2">
-<link rel="stylesheet" href="guest-landing.css?v=20261012-standalone-fullscreen1">
+<link rel="stylesheet" href="guest-landing.css?v=20261012-compose-frame1">
 <style>
 body.guest-loading{background:#fffdf8!important}
 .guest-loading-logo{display:none}
@@ -51,11 +51,11 @@ body.guest-loading{background:#fffdf8!important}
 <form class="form-shell guest-form" id="guest-message" hidden>
  <div class="guest-personalization guest-date-first guest-date-feature">
  <div class="delivery-box">
-  <button type="button" id="delivery-summary" class="delivery-summary" aria-label="Modifier la date de découverte" aria-describedby="delivery-value" aria-haspopup="dialog" aria-controls="delivery-dialog"><span class="delivery-caption"><i class="fa-solid fa-calendar" aria-hidden="true"></i><small>Quand l’ouvrir ?</small></span><span class="delivery-invitation">Choisissez le moment de la surprise</span><strong id="delivery-value">Maintenant</strong><span class="delivery-edit">Modifier <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span></button>
+  <button type="button" id="delivery-summary" class="delivery-summary" aria-label="Modifier la date de découverte" aria-describedby="delivery-value" aria-haspopup="dialog" aria-controls="delivery-dialog"><span class="delivery-caption"><i class="fa-solid fa-calendar" aria-hidden="true"></i><small>Quand découvrir ce souvenir ?</small></span><span class="delivery-invitation">Choisissez le moment de la surprise</span><strong id="delivery-value">Maintenant</strong><span class="delivery-edit">Modifier <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span></button>
  </div>
  </div>
  <div class="memory-type-choices" role="group" aria-label="Type de souvenir">
-  <button type="button" class="memory-type active" data-memory-type="text" aria-pressed="true"><i class="fa-solid fa-comment" aria-hidden="true"></i><span>Petit mot</span></button>
+  <button type="button" class="memory-type active" data-memory-type="text" aria-pressed="true"><i class="fa-solid fa-comment" aria-hidden="true"></i><span>Texte</span></button>
   <button type="button" class="memory-type" data-memory-type="image" aria-pressed="false"><i class="fa-solid fa-camera" aria-hidden="true"></i><span>Photo</span></button>
   <button type="button" class="memory-type" data-memory-type="audio" aria-pressed="false"><i class="fa-solid fa-microphone" aria-hidden="true"></i><span>Audio</span></button>
   <button type="button" class="memory-type" data-memory-type="video" aria-pressed="false"><i class="fa-solid fa-video" aria-hidden="true"></i><span>Vidéo</span></button>
@@ -105,9 +105,9 @@ body.guest-loading{background:#fffdf8!important}
 
  <div id="capture-status" class="status" role="status" aria-live="polite"></div>
 
- <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre petit mot</label><textarea id="message_text" maxlength="4000" rows="4" placeholder="Écrivez ce que vous aimeriez leur dire…"></textarea></div></div>
+ <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre message</label><textarea id="message_text" maxlength="4000" rows="4" placeholder="Écrivez ce que vous aimeriez leur dire…"></textarea></div></div>
  <details id="guest-extras" class="guest-extras" hidden><summary>Ajouter un petit mot <span class="optional">Facultatif</span></summary><div id="guest-extras-body"></div></details>
- <div class="field guest-signature"><label for="guest_name"><i class="fa-solid fa-user" aria-hidden="true"></i> Votre prénom ou signature <span class="optional">(obligatoire)</span></label><input id="guest_name" maxlength="30" autocomplete="given-name" required placeholder="Ex. Pierre, Mamie, la famille Charlier"></div>
+ <div class="field guest-signature"><label for="guest_name"><i class="fa-solid fa-user" aria-hidden="true"></i> Votre prénom <span class="optional">(obligatoire)</span></label><input id="guest_name" maxlength="30" autocomplete="given-name" required placeholder="Ex. Pierre, Mamie"></div>
  <button class="btn primary submit-memory" type="submit"><span>Envoyer mon souvenir</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
  <progress id="upload-progress" max="100" value="0" hidden aria-label="Progression de l’envoi"></progress>
  <div id="status" class="status" role="status" aria-live="polite"></div>
@@ -149,6 +149,6 @@ body.guest-loading{background:#fffdf8!important}
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
 <script src="capsule-design.js?v=20261010-previewfix1"></script><script src="welcome-ui.js?v=20261010-brandicons1"></script>
-<script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261012-standalone-fullscreen1"></script>
-<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261011-direct-content1"></script>
+<script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261012-compose-frame1"></script>
+<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261012-compose-frame1"></script>
 </body></html>
