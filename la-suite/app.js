@@ -1240,6 +1240,8 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  drawPrintTextBox(ctx,o.title,{x:contentInset,y:210,width:W-contentInset*2,height:175,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3,minSize:56,onOverflow:()=>issues.push('print-title')});
  textInk['print-title']=o.title?ctx.lastTextBounds:null;
  ctx.fillStyle=dark?'#fffaf1':'#201c1a';ctx.font='400 44px Inter,Arial,sans-serif';if(c.welcome_config?.cardShowDate!==false)ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
+ const dateText=new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
+ const dateInkRight=W/2+ctx.measureText(dateText).width/2;
  drawQrDivider(ctx,{...o,color:accent},W/2,490);
  const qsize=660,qx=Math.round((W-qsize)/2),qy=510;
  canvas.cardQrBox={x:qx,y:qy,width:qsize,height:qsize};
@@ -1259,7 +1261,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:6,minSize:38,onOverflow:()=>issues.push('print-note')});
  textInk['print-note']=o.note?ctx.lastTextBounds:null;
  const explanationY=noteBottom+(o.note?26:0);
- canvas.cardTextBoxes={'print-title':{x:contentInset,y:210,width:W-contentInset*2,height:175},date:{x:contentInset,y:397,width:W-contentInset*2,height:60},'print-note':{...textBox,height:Math.max(55,noteBottom-textBox.y)},'print-explanation':{...textBox,y:explanationY,height:Math.max(55,explanationBottom-explanationY)}};
+ canvas.cardTextBoxes={'print-title':{x:contentInset,y:210,width:W-contentInset*2,height:175},date:{x:contentInset,y:397,width:W-contentInset*2,height:60,inkRight:dateInkRight},'print-note':{...textBox,height:Math.max(55,noteBottom-textBox.y)},'print-explanation':{...textBox,y:explanationY,height:Math.max(55,explanationBottom-explanationY)}};
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
  drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:explanationBottom-explanationY},{size:44,family:'"'+ff+'", serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
  textInk['print-explanation']=o.explanation?ctx.lastTextBounds:null;
