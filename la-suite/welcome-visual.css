@@ -696,3 +696,6 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
  .visual-primary #visual-settings .visual-choice-clipped{visibility:hidden;pointer-events:none}
  .visual-primary #visual-settings .field:focus-within{visibility:visible}
 }
+
+/* Selection choices remain visible while scrolling and switching panels. */
+.visual-primary #visual-settings .visual-choice-clipped{visibility:visible!important;pointer-events:auto!important}
