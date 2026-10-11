@@ -722,3 +722,9 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 /* Formats belong to the deposit screen, never to the welcome preview. */
 .visual-primary #visual-welcome .visual-formats{display:none!important}
 #visual-welcome .visual-empty-illustration{height:160px;width:240px}
+
+/* Styled host note matches the guest invitation rather than a form field. */
+.visual-primary #visual-welcome .visual-welcome-content[data-content=text]{background:color-mix(in srgb,var(--visual-paper),transparent 82%);border-color:color-mix(in srgb,var(--guest-accent),transparent 45%);border-radius:12px;padding:20px 24px;gap:14px;box-shadow:0 4px 18px #00000008}
+#visual-welcome .visual-host-label{font:500 17px/1.2 var(--welcome-font);color:var(--visual-ink);margin:0}
+#visual-welcome .visual-host-label::after{content:'';display:block;width:42px;height:1px;margin:10px auto 0;background:var(--guest-accent);opacity:.65}
+.visual-primary #visual-welcome .visual-message{font-family:var(--welcome-font);font-weight:var(--welcome-weight,500);font-size:20px;line-height:1.4;text-align:center;width:100%;box-sizing:border-box;padding:0;color:var(--visual-ink);max-height:92px}
