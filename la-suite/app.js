@@ -1496,15 +1496,6 @@ function ownerShell(c,url,count){
      <button class="btn secondary" id="download-print-card" type="button"><i class="fa-solid fa-download" aria-hidden="true"></i>Télécharger</button>
      <button class="btn primary" id="print-print-card" type="button"><i class="fa-solid fa-print" aria-hidden="true"></i>Imprimer</button>
     </div>
-    <details class="qr-print-guide">
-     <summary>Impression et conseils</summary>
-     <p class="field-help">Carte 10 × 15 cm centrée sur une feuille A4 avec repères de découpe.</p>
-     <div class="qr-print-guide-grid">
-      <div><i class="fa-regular fa-file-lines" aria-hidden="true"></i><span><strong>Imprimez sur A4</strong><small>À 100 %, sans ajuster à la page. Découpez sur les repères.</small></span></div>
-      <div><i class="fa-regular fa-image" aria-hidden="true"></i><span><strong>Placez-la dans un cadre</strong><small>Placez la carte dans un cadre 10 × 15 cm ou sur un chevalet.</small></span></div>
-      <div><i class="fa-solid fa-qrcode" aria-hidden="true"></i><span><strong>Multipliez les points d’accès</strong><small>Sur les tables ou au bar : les invités scannent le QR code, puis déposent leur souvenir.</small></span></div><div><i class="fa-solid fa-share-nodes" aria-hidden="true"></i><span><strong>Pensez aussi aux absents</strong><small>Partagez aussi le lien aux absents. Dépôts le jour J et le lendemain.</small></span></div>
-     </div>
-    </details>
     <div id="qr-status" class="status"></div>
    </div>
   </div>
