@@ -1588,9 +1588,9 @@ function setupOwnerTabs(c,manifest){
  const links=[...document.querySelectorAll("[data-owner-tab-link]")];
  const discoveryUnavailable=c.status==='draft';
  for(const link of links.filter(link=>link.dataset.ownerTabLink==='messages')){
-  if(discoveryUnavailable){link.setAttribute('aria-disabled','true');link.title='Validez votre capsule pour découvrir les souvenirs.';link.tabIndex=-1;}
+  if(discoveryUnavailable){link.title='Validez votre capsule pour découvrir les souvenirs.';}
  }
- const tabLinks=links.filter(link=>link.getAttribute("role")==="tab"&&!(discoveryUnavailable&&link.dataset.ownerTabLink==='messages'));
+ const tabLinks=links.filter(link=>link.getAttribute("role")==="tab");
  const panels=[...document.querySelectorAll("[data-owner-panel]")];
  if(!links.length||!panels.length)return;
 
@@ -1601,7 +1601,7 @@ function setupOwnerTabs(c,manifest){
    const active=link.dataset.ownerTabLink===target;
    link.classList.toggle("is-active",active);
    if(link.getAttribute("role")==="tab"){
-    link.setAttribute("aria-selected",String(active));link.tabIndex=discoveryUnavailable&&link.dataset.ownerTabLink==="messages"?-1:active||(target==="settings"&&link===tabLinks[0])?0:-1;
+    link.setAttribute("aria-selected",String(active));link.tabIndex=active||(target==="settings"&&link===tabLinks[0])?0:-1;
    }else{link.setAttribute("aria-pressed",String(active));if(active)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current");}
   });
   panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
@@ -1615,7 +1615,7 @@ function setupOwnerTabs(c,manifest){
 
  links.forEach(link=>link.addEventListener("click",e=>{
   e.preventDefault();
-  if(discoveryUnavailable&&link.dataset.ownerTabLink==="messages")return;
+  if(discoveryUnavailable&&link.dataset.ownerTabLink==="messages"){activate("configuration");$("review-activation")?.click();return;}
   activate(link.dataset.ownerTabLink||"configuration")
  }));
 
