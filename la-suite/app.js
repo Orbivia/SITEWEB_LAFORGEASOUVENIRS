@@ -731,7 +731,6 @@ async function initCapsule(){
   if(!guestTransaction||guestTransaction.key!==key)guestTransaction={key,requestId:crypto.randomUUID(),delivery:instant?new Date().toISOString():date};
   const transaction=guestTransaction,button=e.target.querySelector('[type="submit"]');
   const fields=[...e.target.querySelectorAll("input,textarea,button")],disabled=fields.map(f=>f.disabled);
-  const sendStarted=performance.now();window.dispatchEvent(new CustomEvent("la-suite-guest-send",{detail:{phase:"start",type:guestType}}));
   guestBusy=true;fields.forEach(f=>f.disabled=true);button.querySelector("span").textContent="Envoi en cours…";$("upload-progress").value=0;
   try{
    show(status,"Préparation de l’envoi…");
@@ -746,11 +745,10 @@ async function initCapsule(){
      await guestInvoke({action:"finalize_media",guest_token:token,message_id:transaction.reserved.message_id,path:transaction.reserved.path});
     }
    }
-   await new Promise(resolve=>setTimeout(resolve,Math.max(0,(matchMedia("(prefers-reduced-motion: reduce)").matches?0:3200)-(performance.now()-sendStarted))));
    $("guest-success-date").textContent=instant?"Merci pour votre souvenir !":"Il restera secret jusqu’au "+fdate(date)+".";
    e.target.reset();resetPreview();guestTransaction=null;$("guest-message").hidden=true;$("guest-success").hidden=false;$("guest-success").focus();$("guest-success").scrollIntoView({behavior:"smooth",block:"center"});
   }catch(error){show(status,error.message,false);button.querySelector("span").textContent="Réessayer l’envoi"}
-  finally{window.dispatchEvent(new CustomEvent("la-suite-guest-send",{detail:{phase:"end"}}));guestBusy=false;fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;if(!$("guest-success").hidden)button.querySelector("span").textContent="Envoyer mon souvenir"}
+  finally{guestBusy=false;fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;if(!$("guest-success").hidden)button.querySelector("span").textContent="Envoyer mon souvenir"}
  });
 }
 
