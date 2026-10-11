@@ -294,8 +294,6 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .memory-envelope-lock{position:absolute;right:0;bottom:0;font-size:10px;padding:3px;background:#f1eeea;border-radius:4px}
  .organizer-layout-ready .deposit-open-gallery .memory-read .memory-icon{background:#f1eeea;color:#817c76}
  .organizer-layout-ready .deposit-open-gallery .memory-unread .memory-meta strong{color:#690c29}
- .deposit-open-summary .memory-unread-count{display:inline-flex!important;color:#690c29!important;font-size:10px;background:transparent!important;padding:0!important}
- .deposit-open-summary .memory-unread-count[hidden]{display:none!important}
 }
 
 @media(max-width:760px){
@@ -351,9 +349,7 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
 .workspace-capsule-row .workspace-plan{color:#690c29;font-weight:600}
 
 /* Full-width theme preview for each capsule, with readable inset content. */
-.workspace-ready .workspace-capsule-entry{position:relative;isolation:isolate;overflow:hidden;padding:28px 32px;background:#fffdf9;min-height:160px}
-.workspace-capsule-entry>.workspace-capsule-artwork{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;z-index:-1;pointer-events:none}
-.workspace-ready .workspace-capsule-entry:has([aria-current=true]){outline:2px solid var(--workspace-green);outline-offset:-2px;background:#fffdf9}
+.workspace-ready .workspace-capsule-entry{position:relative;isolation:isolate}
 .workspace-capsule-entry .workspace-capsule-row{display:flex;min-width:0;align-items:center}
 .workspace-capsule-row>span{min-width:0;max-width:100%}
 .workspace-capsule-row strong{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
