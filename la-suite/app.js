@@ -1726,19 +1726,23 @@ function nextCountdown(c,manifest,onReady){
  };tick();countdownTimer=setInterval(tick,Math.min(60000,Math.max(1000,new Date(next.delivery_at)-Date.now())));
 }
 
-let memoryFilter="all";
+let memoryFilter="all",memoryOpeningTimer=null;
+function updateOpeningCountdown(divider,date){
+ clearInterval(memoryOpeningTimer);
+ const tick=()=>{if(ownerSessionEnded||!divider.isConnected){clearInterval(memoryOpeningTimer);return;}const remaining=Math.max(0,Math.ceil((Date.parse(date)-Date.now())/1000));const days=Math.floor(remaining/86400),hours=Math.floor(remaining%86400/3600),minutes=Math.floor(remaining%3600/60),seconds=remaining%60;const time=days?days+' j '+hours+' h '+minutes+' min':hours?hours+' h '+minutes+' min '+seconds+' s':minutes+' min '+seconds+' s';divider.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i><span>Prochaine ouverture dans <strong>'+time+'</strong></span>';divider.title='Ouverture le '+fParis(date);if(!remaining){divider.textContent='Ouverture en cours…';clearInterval(memoryOpeningTimer);}};
+ tick();memoryOpeningTimer=setInterval(tick,1000);
+}
 function applyMemoryFilter(){
  const cards=[...document.querySelectorAll('#memory-list .memory-row')];
  if(document.querySelector('.owner-deposit-open:not([hidden])'))memoryFilter="all";
  for(const card of cards)card.hidden=memoryFilter!=="all"&&!card.classList.contains(memoryFilter);
  const list=$('memory-list');
  if(document.querySelector('.owner-deposit-open:not([hidden])')&&list){
- const direction=document.querySelector('.memory-sort')?.value==='oldest'?1:-1;
- cards.sort((a,b)=>Number(a.classList.contains('locked'))-Number(b.classList.contains('locked'))||direction*((Date.parse(a.dataset.deliveryAt)||0)-(Date.parse(b.dataset.deliveryAt)||0)));
+ cards.sort((a,b)=>(Date.parse(a.dataset.deliveryAt)||0)-(Date.parse(b.dataset.deliveryAt)||0));
  let divider=$('memory-upcoming-divider');if(!divider){divider=document.createElement('p');divider.id='memory-upcoming-divider';divider.className='memory-upcoming-divider';}
- divider.remove();cards.forEach(card=>list.append(card));
+ clearInterval(memoryOpeningTimer);divider.remove();cards.forEach(card=>list.append(card));
  const future=cards.filter(card=>card.classList.contains('locked')&&Date.parse(card.dataset.deliveryAt)>Date.now());const firstLocked=cards.find(card=>card.classList.contains('locked')&&!card.hidden);
- if(firstLocked&&future.length){const next=future.reduce((a,b)=>Date.parse(a.dataset.deliveryAt)<Date.parse(b.dataset.deliveryAt)?a:b);divider.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i> Prochaine ouverture : '+esc(fParis(next.dataset.deliveryAt));list.insertBefore(divider,firstLocked);}
+ if(firstLocked&&future.length){const next=future.reduce((a,b)=>Date.parse(a.dataset.deliveryAt)<Date.parse(b.dataset.deliveryAt)?a:b);list.insertBefore(divider,firstLocked);updateOpeningCountdown(divider,next.dataset.deliveryAt);}
  }
  const summary=document.querySelector('.deposit-open-summary');if(summary){let unread=summary.querySelector('.memory-unread-count');if(!unread){unread=document.createElement('span');unread.className='memory-unread-count';summary.insertBefore(unread,summary.querySelector('.memory-sort'));}const count=cards.filter(card=>card.classList.contains('memory-unread')).length;unread.textContent=count+' non lu'+(count>1?'s':'');unread.hidden=count===0;}
  for(const button of document.querySelectorAll('[data-memory-filter]'))button.setAttribute('aria-pressed',String(button.dataset.memoryFilter===memoryFilter));
@@ -1817,9 +1821,9 @@ function setupCompactMemoryCard(article,item,available,depositedAt){
  const open=document.createElement('button');open.type='button';open.className='memory-read-button';
  open.innerHTML='<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';
  open.setAttribute('aria-label',(({image:'Voir la photo',video:'Voir la vidéo',audio:'Écouter'})[item.media_type]||'Lire le message')+' de '+(item.guest_name||'votre invité'));
- open.onclick=()=>{dialog.insertBefore(content,readerTools);dialog.showModal();markMemoryRead(item.id);updateReadState();applyMemoryFilter();article.refreshMemoryMedia?.()};
+ open.onclick=()=>{dialog.insertBefore(content,readerTools);document.body.append(dialog);dialog.showModal();markMemoryRead(item.id);updateReadState();applyMemoryFilter();article.refreshMemoryMedia?.()};
  close.onclick=()=>dialog.close();
- dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(content);open.focus()});
+ dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(content,dialog);open.focus()});
  actions.append(open);
  article.classList.add('memory-row-clickable');article.tabIndex=0;article.setAttribute('role','button');article.setAttribute('aria-label',open.getAttribute('aria-label'));
  article.addEventListener('click',event=>{if(event.target.closest('button,a,dialog'))return;open.click()});
@@ -1980,7 +1984,6 @@ function renderOwnerDepositOpen(c,manifest){
  frame.querySelector('[data-open-count]').textContent=memoryCountLabel(count);
  frame.querySelector('[data-open-available]').textContent=available+' disponible'+(available>1?'s':'')+' maintenant';
  frame.querySelector('.deposit-open-gallery').append(hero,memories);
- if(!frame.querySelector('.memory-sort')){const select=document.createElement('select');select.className='memory-sort';select.setAttribute('aria-label','Trier les souvenirs');select.innerHTML='<option value="newest">Plus récents</option><option value="oldest">Plus anciens</option>';select.onchange=applyMemoryFilter;frame.querySelector('.deposit-open-summary').append(select);}
  const exportLabel=$('export-memories');if(exportLabel)exportLabel.textContent='Tout télécharger';
  applyMemoryFilter();
  const config={...c.welcome_config,...window.SuiteDesign.fields(c)},style=$('qr-style')?.value||config.style||c.qr_style||'fond-blanc';
