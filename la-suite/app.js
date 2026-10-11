@@ -1738,13 +1738,15 @@ function applyMemoryFilter(){
  for(const card of cards)card.hidden=memoryFilter!=="all"&&!card.classList.contains(memoryFilter);
  const list=$('memory-list');
  if(document.querySelector('.owner-deposit-open:not([hidden])')&&list){
- cards.sort((a,b)=>(Date.parse(a.dataset.deliveryAt)||0)-(Date.parse(b.dataset.deliveryAt)||0));
+ const rank=card=>card.classList.contains('memory-unread')?0:card.classList.contains('locked')?2:1;
+ cards.sort((a,b)=>rank(a)-rank(b)||(rank(a)===2?(Date.parse(a.dataset.deliveryAt)||0)-(Date.parse(b.dataset.deliveryAt)||0):(Date.parse(b.dataset.depositedAt)||0)-(Date.parse(a.dataset.depositedAt)||0)));
  let divider=$('memory-upcoming-divider');if(!divider){divider=document.createElement('p');divider.id='memory-upcoming-divider';divider.className='memory-upcoming-divider';}
  clearInterval(memoryOpeningTimer);divider.remove();cards.forEach(card=>list.append(card));
  const future=cards.filter(card=>card.classList.contains('locked')&&Date.parse(card.dataset.deliveryAt)>Date.now());const firstLocked=cards.find(card=>card.classList.contains('locked')&&!card.hidden);
  if(firstLocked&&future.length){const next=future.reduce((a,b)=>Date.parse(a.dataset.deliveryAt)<Date.parse(b.dataset.deliveryAt)?a:b);list.insertBefore(divider,firstLocked);updateOpeningCountdown(divider,next.dataset.deliveryAt);}
  }
- const summary=document.querySelector('.deposit-open-summary');if(summary){let unread=summary.querySelector('.memory-unread-count');if(!unread){unread=document.createElement('span');unread.className='memory-unread-count';summary.insertBefore(unread,summary.querySelector('.memory-sort'));}const count=cards.filter(card=>card.classList.contains('memory-unread')).length;unread.textContent=count+' non lu'+(count>1?'s':'');unread.hidden=count===0;}
+ const summary=document.querySelector('.deposit-open-summary');if(summary){summary.querySelector('.memory-unread-count')?.remove();const total=summary.querySelector('[data-open-count]');const unread=cards.filter(card=>card.classList.contains('memory-unread')).length,future=cards.filter(card=>card.classList.contains('locked')).length;if(total)total.textContent=cards.length+' souvenir'+(cards.length>1?'s':'')+(unread?' · '+unread+' à lire':'')+(future?' · '+future+' à venir':'');}
+
  for(const button of document.querySelectorAll('[data-memory-filter]'))button.setAttribute('aria-pressed',String(button.dataset.memoryFilter===memoryFilter));
  let empty=$('memory-filter-empty');
  if(!empty){empty=document.createElement('p');empty.id='memory-filter-empty';empty.className='notice';$('memory-list').after(empty)}
@@ -1823,7 +1825,7 @@ function setupCompactMemoryCard(article,item,available,depositedAt){
  open.setAttribute('aria-label',(({image:'Voir la photo',video:'Voir la vidéo',audio:'Écouter'})[item.media_type]||'Lire le message')+' de '+(item.guest_name||'votre invité'));
  open.onclick=()=>{dialog.insertBefore(content,readerTools);document.body.append(dialog);dialog.showModal();markMemoryRead(item.id);updateReadState();applyMemoryFilter();article.refreshMemoryMedia?.()};
  close.onclick=()=>dialog.close();
- dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(content,dialog);open.focus()});
+ dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(content,dialog);open.focus();document.dispatchEvent(new Event('suite-memory-reader-closed'))});
  actions.append(open);
  article.classList.add('memory-row-clickable');article.tabIndex=0;article.setAttribute('role','button');article.setAttribute('aria-label',open.getAttribute('aria-label'));
  article.addEventListener('click',event=>{if(event.target.closest('button,a,dialog'))return;open.click()});
@@ -1959,8 +1961,8 @@ function renderOwnerDepositOpen(c,manifest){
  const hero=root.querySelector('.owner-messages-hero'),memories=root.querySelector('.memories-section');
  if(!active){const exportButton=$('export-memories');if(exportButton&&memories?.querySelector('.memory-tools'))memories.querySelector('.memory-tools').append(exportButton);if(frame.contains(hero))root.append(hero,memories);return}
  if(!frame.firstElementChild){
-  frame.innerHTML='<div class="deposit-open-content"><header class="deposit-open-heading"><span class="deposit-open-badge"><i class="fa-solid fa-circle" aria-hidden="true"></i> Dépôts ouverts</span><button type="button" class="deposit-open-refresh" data-open-refresh aria-label="Actualiser les souvenirs"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i></button><h2 data-open-title></h2><p data-open-until></p></header><div class="deposit-open-main"><div class="deposit-open-empty"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i><h3>Place aux souvenirs</h3><p>Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.</p></div><div class="deposit-open-summary" aria-live="polite"><span data-open-count></span><span data-open-available></span></div><div class="deposit-open-gallery"></div></div><div class="deposit-open-export"></div><footer class="deposit-open-actions"><button type="button" class="btn primary" data-open-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-open-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger</button><button type="button" class="btn secondary" data-open-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button></div><button type="button" class="btn secondary" data-open-tips><i class="fa-solid fa-list-check" aria-hidden="true"></i> Conseils de préparation</button></footer></div>'+DEPOSIT_PREPARATION_HTML;
-  frame.querySelector('[data-open-refresh]').onclick=()=>$('refresh-memories').click();
+  frame.innerHTML='<div class="deposit-open-content"><header class="deposit-open-heading"><span class="deposit-open-badge"><i class="fa-solid fa-circle" aria-hidden="true"></i> Dépôts ouverts</span><h2 data-open-title></h2><p data-open-until></p></header><div class="deposit-open-main"><div class="deposit-open-empty"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i><h3>Place aux souvenirs</h3><p>Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.</p></div><div class="deposit-open-summary" aria-live="polite"><span data-open-count></span><span data-open-available></span></div><div class="deposit-open-gallery"></div></div><div class="deposit-open-export"></div><footer class="deposit-open-actions"><button type="button" class="btn primary" data-open-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-open-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger</button><button type="button" class="btn secondary" data-open-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button></div><button type="button" class="btn secondary" data-open-tips><i class="fa-solid fa-list-check" aria-hidden="true"></i> Conseils de préparation</button></footer></div>'+DEPOSIT_PREPARATION_HTML;
+
   frame.querySelector('[data-open-share]').onclick=()=>$('share-link').click();
   frame.querySelector('[data-open-download]').onclick=()=>$('download-print-card').click();
   frame.querySelector('[data-open-print]').onclick=()=>$('print-print-card').click();
@@ -2213,10 +2215,13 @@ async function initDashboard(){
   $(id).addEventListener("input",scheduleAutoSave);$(id).addEventListener("change",scheduleAutoSave);
  });
  let refreshInProgress=false;
- async function refreshMemories(){
+ async function refreshMemories(silent=false){
+  silent=silent===true;
+  if(silent&&document.querySelector('.memory-reader[open]'))return;
+  const listScroll=$('memory-list')?.scrollTop||0;
   if(refreshInProgress||ownerSessionEnded)return;refreshInProgress=true;
-  const button=$("refresh-memories");button.disabled=true;show($("memory-status"),'Chargement des souvenirs…');
-  try{await renderOrganizerLifecycle(c);if(ownerSessionEnded)return;const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(ownerSessionEnded)return;if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);if(ownerSessionEnded)return;$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);renderOwnerDepositWaiting(c,manifest.length,refreshMemories,manifest);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
+  const button=$("refresh-memories");button.disabled=true;if(!silent)show($("memory-status"),'Chargement des souvenirs…');
+  try{await renderOrganizerLifecycle(c);if(ownerSessionEnded)return;const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(ownerSessionEnded)return;if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);if(ownerSessionEnded)return;$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);renderOwnerDepositWaiting(c,manifest.length,refreshMemories,manifest);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'')}catch(e){show($("memory-status"),'Connexion interrompue. Une nouvelle tentative se fera automatiquement.',false)}finally{if(silent&&$('memory-list'))$('memory-list').scrollTop=listScroll;button.disabled=false;refreshInProgress=false}
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  window.addEventListener('suite-capsule-rules-changed',async e=>{if(e.detail===c.id){const expired=capsuleExpired(c);await refreshMemories();if(expired&&!capsuleExpired(c))location.reload()}});
@@ -2227,11 +2232,12 @@ async function initDashboard(){
   badgeCheckInProgress=true;
   try{
    const {data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});
-   if(!error&&!ownerSessionEnded){updateOwnerUnreadBadge(ownerUnreadCount(c,data||[]));if(!manifest.length&&data?.length&&document.querySelector('.is-deposits-open:not([hidden])'))await refreshMemories();}
+   if(!error&&!ownerSessionEnded){updateOwnerUnreadBadge(ownerUnreadCount(c,data||[]));const version=items=>JSON.stringify(items.map(m=>[m.id,m.is_available,m.delivery_at]).sort((a,b)=>String(a[0]).localeCompare(String(b[0]))));if(version(data||[])!==version(manifest)&&!document.querySelector('.memory-reader[open]'))await refreshMemories(true);}
   }catch{/* Retry on the next check; retain the current badge. */}
   finally{badgeCheckInProgress=false}
  }
- let newMemoryBadgeTimer=setInterval(refreshNewMemoryBadge,60000);
+ document.addEventListener('suite-memory-reader-closed',refreshNewMemoryBadge);
+ let newMemoryBadgeTimer=setInterval(refreshNewMemoryBadge,30000);
  window.addEventListener('pagehide',()=>{clearInterval(newMemoryBadgeTimer);newMemoryBadgeTimer=null});
  window.addEventListener('pageshow',()=>{if(!newMemoryBadgeTimer&&!ownerSessionEnded)newMemoryBadgeTimer=setInterval(refreshNewMemoryBadge,60000)});
  document.addEventListener('visibilitychange',()=>{
