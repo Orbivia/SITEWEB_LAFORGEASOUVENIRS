@@ -831,7 +831,7 @@ function renderIntroDraft(c){
 function setupIntro(c){
  const kind=$("intro-kind"),file=$("intro-file");kind.value=introKind(c);
  function update(){
-  $("intro-text-field").hidden=kind.value==="none";
+  $("intro-text-field").hidden=kind.value!=="text";
   $("intro-media-field").hidden=kind.value!=="image"&&kind.value!=="video";
   file.accept=kind.value==="image"?"image/jpeg,image/png,image/webp":"video/mp4,video/quicktime,video/webm";
   $("intro-file-label").textContent=kind.value==="image"?"Votre image":"Votre vidéo";
