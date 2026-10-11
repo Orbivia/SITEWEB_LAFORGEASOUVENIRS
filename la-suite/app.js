@@ -1220,6 +1220,7 @@ function drawPrintTextBox(ctx,text,box,{size,family,weight,maxLines=12,minSize=3
  }
  ctx.textAlign='center';ctx.textBaseline='alphabetic';
  const y=box.y+(box.center?(box.height-height)/2:0)+ascent;
+ ctx.lastTextBounds={right:box.x+box.width/2+Math.max(...metrics.map(m=>m.actualBoundingBoxRight||m.width/2)),top:y-ascent};
  lines.forEach((line,i)=>ctx.fillText(line,box.x+box.width/2,y+i*lineHeight));
  return y+(lines.length-1)*lineHeight+descent;
 }
@@ -1235,8 +1236,9 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  // The artwork itself reserves the text area; no colored panel covers the design.
  const dark=qrThemes[o.style].dark;
  const accent=qrAccent(o.color,dark);ctx.fillStyle=accent;
- const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?150:o.font==='contemporary'?120:o.font==='refined'?122:140;
+ const textInk={};const ff=qrFontFamily(o.font),titleSize=['romantic','signature'].includes(o.font)?150:o.font==='contemporary'?120:o.font==='refined'?122:140;
  drawPrintTextBox(ctx,o.title,{x:contentInset,y:210,width:W-contentInset*2,height:175,center:true},{size:titleSize,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:3,minSize:56,onOverflow:()=>issues.push('print-title')});
+ textInk['print-title']=o.title?ctx.lastTextBounds:null;
  ctx.fillStyle=dark?'#fffaf1':'#201c1a';ctx.font='400 44px Inter,Arial,sans-serif';if(c.welcome_config?.cardShowDate!==false)ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
  drawQrDivider(ctx,{...o,color:accent},W/2,490);
  const qsize=660,qx=Math.round((W-qsize)/2),qy=510;
@@ -1255,10 +1257,14 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const textBox={x:contentInset,y:1220,width:W-contentInset*2,height:150};
  ctx.fillStyle=accent;
  const noteBottom=drawPrintTextBox(ctx,o.note,textBox,{size:56,family:'"'+ff+'", serif',weight:qrFontWeight(o.font),maxLines:6,minSize:38,onOverflow:()=>issues.push('print-note')});
+ textInk['print-note']=o.note?ctx.lastTextBounds:null;
  const explanationY=noteBottom+(o.note?26:0);
  canvas.cardTextBoxes={'print-title':{x:contentInset,y:210,width:W-contentInset*2,height:175},date:{x:contentInset,y:397,width:W-contentInset*2,height:60},'print-note':{...textBox,height:Math.max(55,noteBottom-textBox.y)},'print-explanation':{...textBox,y:explanationY,height:Math.max(55,explanationBottom-explanationY)}};
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
  drawPrintTextBox(ctx,o.explanation,{...textBox,y:explanationY,height:explanationBottom-explanationY},{size:44,family:'"'+ff+'", serif',weight:'400',maxLines:12,minSize:34,onOverflow:()=>issues.push('print-explanation')});
+ textInk['print-explanation']=o.explanation?ctx.lastTextBounds:null;
+ for(const [id,ink] of Object.entries(textInk))if(ink&&canvas.cardTextBoxes[id])Object.assign(canvas.cardTextBoxes[id],{inkRight:ink.right,inkTop:ink.top});
+
 
 
  if(o.showBrand)try{
