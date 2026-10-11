@@ -393,3 +393,9 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
 .owner-deposit-open [data-open-until]{display:none!important}
 
 [data-owner-tab-link="messages"][aria-disabled="true"]{opacity:.4;cursor:default}
+
+@media(max-width:760px){
+ .organizer-layout-ready .owner-deposit-open.deposit-open-has-memories{padding-left:clamp(24px,7vw,36px);padding-right:clamp(24px,7vw,36px);padding-top:28px;padding-bottom:clamp(84px,22vw,108px)}
+ .organizer-layout-ready .deposit-open-gallery #memory-list{padding-inline:20px}
+ .deposit-open-has-memories .deposit-open-summary{padding-inline:12px}
+}
