@@ -766,3 +766,17 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-primary .visual-intro-actions [data-intro-format] i{width:18px;text-align:center;font-size:16px}
 .visual-primary #visual-welcome .visual-empty-welcome:not([hidden]){display:flex!important}
 .visual-primary #visual-welcome .visual-empty-welcome[hidden]{display:none!important}
+
+/* Welcome content and date editors use top-layer dialogs, outside the drawer. */
+.visual-settings-popup{width:min(420px,calc(100vw - 32px));max-height:calc(100dvh - 40px);overflow:auto;box-sizing:border-box;margin:auto;padding:20px;border:1px solid #e4dbd0;border-radius:20px;background:#fffdf8;color:#292724;box-shadow:0 12px 50px #0003}
+.visual-settings-popup::backdrop{background:#0006}
+.visual-settings-popup>header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.visual-settings-popup>header h2{margin:0;font:600 22px/1.2 Inter,sans-serif}
+.visual-settings-popup .visual-popup-close{display:grid;place-items:center;width:40px;height:40px;padding:0;min-height:40px;font:28px/1 Arial,sans-serif;border:1px solid #ddd7cd;border-radius:10px;background:#fffdf8;color:#292724}
+.visual-settings-popup [data-panel]{display:block;padding:0}
+.visual-settings-popup [data-panel][hidden]{display:none!important}
+.visual-settings-popup [data-panel=date] label{display:flex;flex-direction:column;gap:8px;margin:12px 0;font:500 14px/1.4 Inter,sans-serif}
+.visual-settings-popup [data-panel=date] label.visual-check{flex-direction:row;align-items:center}
+.visual-settings-popup input[type=date]{width:100%;min-height:44px;box-sizing:border-box;padding:10px;border:1px solid #ddd7cd;border-radius:10px;font:16px Inter,sans-serif}
+.visual-settings-popup .visual-intro-actions [data-intro-format]{min-height:48px;font-size:14px}
+.visual-settings-popup .intro-video-panel{margin:16px 0 0;border:0;background:transparent;padding:0}
