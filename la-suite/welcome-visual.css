@@ -741,3 +741,8 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-primary .visual-fullscreen{display:grid;place-items:center;width:36px;height:36px;min-height:36px;padding:8px;border:1px solid #36574825;border-radius:10px;background:#fffdf8;color:#365748;cursor:pointer}
 .visual-fullscreen svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
 .visual-fullscreen:focus-visible{outline:3px solid #365748;outline-offset:2px}
+
+.visual-primary .visual-head{display:flex;align-items:center;gap:10px}
+.visual-primary .visual-head h2{margin-right:auto}
+.visual-primary .visual-head .visual-screenbar{flex:0 0 auto;height:36px;margin:0;grid-column:auto}
+.visual-primary .visual-head .visual-save-state{flex:0 1 auto}
