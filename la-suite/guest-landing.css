@@ -134,3 +134,7 @@
 .guest-load-error .guest-home-state{display:block!important;margin:auto 0;font-size:14px}
 
 .guest-home-types svg{fill:var(--home-accent);stroke:none}
+
+/* Separate the retry action from capsule access errors. */
+#guest-retry:not([hidden]){display:flex;align-items:center;justify-content:center;width:fit-content;min-width:140px;min-height:44px;margin:24px auto 0;padding:10px 24px}
+#guest-state{ text-align:center }
