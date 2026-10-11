@@ -1759,14 +1759,14 @@ async function renderManifest(c,manifest){
   if(available&&row?.media_path){
    const media=document.createElement(row.media_type==="image"?'img':row.media_type==='audio'?'audio':'video');media.className='memory-'+(row.media_type==='image'?'image':row.media_type);if(row.media_type==='image'){media.alt='Souvenir de '+(item.guest_name||'votre invité');media.loading='lazy';media.decoding='async'}else{media.controls=true;media.playsInline=true;media.preload='none'}
    const status=document.createElement('p');status.className='hint';status.setAttribute('role','status');
-   const refresh=document.createElement('button');refresh.type='button';refresh.className='mini-link';refresh.textContent='Recharger le média';
    let signedAt=0;
-   const renew=async()=>{if(ownerSessionEnded||!article.isConnected)return false;refresh.disabled=true;try{const{data,error}=await sb.storage.from('capsule-media').createSignedUrl(row.media_path,300);if(ownerSessionEnded||!article.isConnected)return false;if(error||!data?.signedUrl)throw error||new Error('Lien indisponible');signedAt=Date.now();media.src=data.signedUrl;status.textContent='';return true}catch(e){status.textContent='Média indisponible. Réessayez avec « Recharger le média ».';return false}finally{refresh.disabled=false}};
-   refresh.addEventListener('click',renew);media.addEventListener('error',()=>{status.textContent='La lecture a échoué ou le lien a expiré. Rechargez le média.'});
+   const renew=async()=>{if(ownerSessionEnded||!article.isConnected)return false;try{const{data,error}=await sb.storage.from('capsule-media').createSignedUrl(row.media_path,300);if(ownerSessionEnded||!article.isConnected)return false;if(error||!data?.signedUrl)throw error||new Error('Lien indisponible');signedAt=Date.now();media.src=data.signedUrl;status.textContent='';return true}catch(e){status.textContent='Média indisponible. Fermez puis rouvrez le souvenir pour réessayer.';return false}};
+   article.refreshMemoryMedia=()=>Date.now()-signedAt>240000?renew():Promise.resolve(true);
+   media.addEventListener('error',()=>{signedAt=0;status.textContent='Lecture impossible. Fermez puis rouvrez le souvenir pour réessayer.'});
    if(row.media_type!=='image')media.addEventListener('play',async()=>{if(Date.now()-signedAt>240000){media.pause();if(await renew())media.play().catch(()=>{})}});
    const download=document.createElement('button');download.type='button';download.className='mini-link';download.textContent='Télécharger';
    download.addEventListener('click',async()=>{if(ownerSessionEnded)return;download.disabled=true;try{const{data,error}=await sb.storage.from('capsule-media').createSignedUrl(row.media_path,300,{download:true});if(ownerSessionEnded)return;if(error||!data?.signedUrl)throw error||new Error('Lien indisponible');const link=document.createElement('a');link.href=data.signedUrl;link.download='';document.body.append(link);link.click();link.remove();status.textContent=''}catch(e){status.textContent='Téléchargement impossible. Réessayez.'}finally{download.disabled=false}});
-   actions.append(refresh,download);content.append(media,status);loadMedia=renew;
+   actions.append(download);content.append(media,status);loadMedia=renew;
   }else if(available&&!row){content.textContent='Ce souvenir n’a pas pu être chargé. Actualisez la liste.'}
   if(!available){const placeholder=document.createElement('p');placeholder.className='memory-locked-preview';placeholder.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i><span>La surprise vous attend</span>';content.append(placeholder)}
   if(matchMedia('(max-width:760px)').matches&&c.status==='active'&&c.usage?.state==='open')setupCompactMemoryCard(article,item,available,row?.created_at);
@@ -1789,14 +1789,16 @@ function setupCompactMemoryCard(article,item,available,depositedAt){
  const heading=document.createElement('div');heading.className='memory-reader-heading';
  const title=document.createElement('strong');title.textContent=item.guest_name||'Invité';
  const close=document.createElement('button');close.type='button';close.className='memory-reader-close';close.textContent='×';close.setAttribute('aria-label','Fermer le souvenir');
- heading.append(title,close);
+ const titleBlock=document.createElement('div');titleBlock.className='memory-reader-title';titleBlock.append(title);
+ if(depositDate){const timestamp=document.createElement('p');timestamp.className='memory-reader-date';timestamp.textContent='Déposé le '+fParis(depositDate)+' à '+new Date(depositDate).toLocaleTimeString('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'})+' · heure de Paris';titleBlock.append(timestamp);}
+ heading.append(titleBlock,close);
  const readerTools=document.createElement('div');readerTools.className='memory-reader-tools';
  actions.querySelectorAll('.mini-link').forEach(button=>readerTools.append(button));
  dialog.append(heading,readerTools);article.append(dialog);
  const open=document.createElement('button');open.type='button';open.className='memory-read-button';
  open.textContent='Ouvrir';
  open.setAttribute('aria-label',(({image:'Voir la photo',video:'Voir la vidéo',audio:'Écouter'})[item.media_type]||'Lire le message')+' de '+(item.guest_name||'votre invité'));
- open.onclick=()=>{dialog.insertBefore(content,readerTools);dialog.showModal()};
+ open.onclick=()=>{dialog.insertBefore(content,readerTools);dialog.showModal();article.refreshMemoryMedia?.()};
  close.onclick=()=>dialog.close();
  dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(content);open.focus()});
  actions.append(open);
