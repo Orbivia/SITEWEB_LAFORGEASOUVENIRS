@@ -1,178 +1,164 @@
 /* Mobile organizer overrides. Desktop changes belong in min-width:761px rules. */
 @media(max-width:760px){
- .organizer-layout-ready .owner-messages-hero{padding:18px 16px;margin-bottom:12px}
- .organizer-layout-ready .owner-messages-hero h2{font-size:24px;margin:0 0 8px}
- .organizer-layout-ready .owner-messages-hero p{font-size:14px;line-height:1.5;margin:0}
- .organizer-layout-ready .memory-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
- .organizer-layout-ready .memory-filters button{min-height:44px;padding:8px 4px;font-size:12px;white-space:normal}
- .organizer-layout-ready .memory-tools{display:flex;flex-direction:column;align-items:stretch;gap:8px}
- .organizer-layout-ready .memory-tools .btn{width:100%;min-height:44px;white-space:normal;line-height:1.4}
- .organizer-layout-ready .memory-list{grid-template-columns:minmax(0,1fr);gap:14px}
- .organizer-layout-ready .memory-content img,.organizer-layout-ready .memory-content video{height:auto;max-height:360px;object-fit:contain}
- .organizer-layout-ready .memory-actions .mini-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;box-sizing:border-box}
- .organizer-layout-ready .memory-meta strong{overflow-wrap:anywhere}
- .organizer-layout-ready .next-delivery{max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
+.organizer-layout-ready .owner-messages-hero{padding:18px 16px;margin-bottom:12px}
+.organizer-layout-ready .owner-messages-hero h2{font-size:24px;margin:0 0 8px}
+.organizer-layout-ready .owner-messages-hero p{font-size:14px;line-height:1.5;margin:0}
+.organizer-layout-ready .memory-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.organizer-layout-ready .memory-filters button{min-height:44px;padding:8px 4px;font-size:12px;white-space:normal}
+.organizer-layout-ready .memory-tools{display:flex;flex-direction:column;align-items:stretch;gap:8px}
+.organizer-layout-ready .memory-tools .btn{width:100%;min-height:44px;white-space:normal;line-height:1.4}
+.organizer-layout-ready .memory-list{grid-template-columns:minmax(0,1fr);gap:14px}
+.organizer-layout-ready .memory-content img,.organizer-layout-ready .memory-content video{height:auto;max-height:360px;object-fit:contain}
+.organizer-layout-ready .memory-actions .mini-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 12px;box-sizing:border-box}
+.organizer-layout-ready .memory-meta strong{overflow-wrap:anywhere}
+.organizer-layout-ready .next-delivery{max-width:100%;box-sizing:border-box;overflow-wrap:anywhere}
 }
-
 /* Deposit waiting view follows the shared capsule theme. */
 @media(max-width:760px){
- .organizer-layout-ready .is-awaiting-deposits>.capsule-lifecycle,
+.organizer-layout-ready .is-awaiting-deposits>.capsule-lifecycle,
  .organizer-layout-ready .is-awaiting-deposits>.owner-dates,
  .organizer-layout-ready .is-awaiting-deposits>.owner-messages-hero,
  .organizer-layout-ready .is-awaiting-deposits>.memories-section{display:none}
- .organizer-layout-ready .owner-deposit-waiting{background-size:cover;background-position:center;border-radius:18px;min-height:480px;padding:32px 20px;box-sizing:border-box;display:flex;align-items:center;border:1px solid #e4dccd}
- .organizer-layout-ready .owner-deposit-waiting[hidden]{display:none}
- .deposit-waiting-content{width:100%;padding:24px 14px;box-sizing:border-box;background:rgba(255,253,247,.92);border-radius:14px;text-align:center;color:#292525}
- .deposit-waiting-content>i{font-size:30px;color:#690c29}
- .deposit-waiting-content h2{font-family:"Cormorant Garamond",serif;font-size:30px;line-height:1.12;color:#690c29;margin:18px 0 12px}
- .deposit-waiting-content p{font-size:14px;line-height:1.5;margin:12px 0}
- .deposit-countdown{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:22px 0}
- .deposit-countdown>div{background:#f4eee5;border-radius:12px;padding:12px 4px}
- .deposit-countdown strong{display:block;font-size:32px;color:#690c29;font-variant-numeric:tabular-nums}
- .deposit-countdown span{font-size:12px}
- .deposit-waiting-content .btn{width:100%;min-height:44px;margin-top:10px;white-space:normal;line-height:1.4;display:flex;align-items:center;justify-content:center;gap:8px}
+.organizer-layout-ready .owner-deposit-waiting{background-size:cover;background-position:center;border-radius:18px;min-height:480px;padding:32px 20px;box-sizing:border-box;border:1px solid #e4dccd}
+.organizer-layout-ready .owner-deposit-waiting[hidden]{display:none}
+.deposit-waiting-content{padding:24px 14px;box-sizing:border-box;background:rgba(255,253,247,.92);border-radius:14px;text-align:center;color:#292525}
+.deposit-waiting-content>i{font-size:30px;color:#690c29}
+.deposit-waiting-content h2{font-family:"Cormorant Garamond",serif;font-size:30px;color:#690c29;margin:18px 0 12px}
+.deposit-waiting-content p{font-size:14px;line-height:1.5;margin:12px 0}
+.deposit-countdown{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin:22px 0}
+.deposit-countdown>div{background:#f4eee5;border-radius:12px;padding:12px 4px}
+.deposit-countdown strong{display:block;font-size:32px;color:#690c29;font-variant-numeric:tabular-nums}
+.deposit-waiting-content .btn{width:100%;min-height:44px;margin-top:10px;white-space:normal;line-height:1.4;display:flex;align-items:center;justify-content:center;gap:8px}
 }
-
 @media(max-width:760px){
- .organizer-layout-ready .owner-panel.is-awaiting-deposits>.capsule-lifecycle,
+.organizer-layout-ready .owner-panel.is-awaiting-deposits>.capsule-lifecycle,
  .organizer-layout-ready .owner-panel.is-awaiting-deposits>.owner-dates,
  .organizer-layout-ready .owner-panel.is-awaiting-deposits>.owner-messages-hero,
  .organizer-layout-ready .owner-panel.is-awaiting-deposits>.memories-section{display:none!important}
- .organizer-layout-ready .owner-deposit-waiting{min-height:calc(100dvh - var(--organizer-header-height,64px) - 88px - env(safe-area-inset-bottom,0px));padding:24px 20px;align-items:center}
- .deposit-hourglass-icon{width:48px;height:48px;color:#690c29;display:block;margin:0 auto}
- .deposit-preparation-dialog{max-width:480px;width:calc(100% - 32px);max-height:calc(100dvh - 48px);box-sizing:border-box;overflow:auto;border:1px solid #e4dccd;border-radius:18px;padding:24px;background:#fffdf7;color:#292525;text-align:left}
- .deposit-preparation-dialog::backdrop{background:#211c1866}
- .deposit-preparation-dialog>[data-wait-close]{display:block;margin-left:auto;width:44px;height:44px;border:1px solid #e4dccd;border-radius:12px;background:#fffdf7;font-size:28px;color:#292525}
- .deposit-preparation-dialog h2{font:600 28px/1.2 "Cormorant Garamond",serif;color:#690c29;margin:12px 0 20px}
- .deposit-preparation-dialog ol{padding-left:24px;margin:0}
- .deposit-preparation-dialog li{font-size:15px;line-height:1.5;margin-bottom:18px}
- .deposit-preparation-dialog li strong{display:block;margin-bottom:4px}
- .deposit-preparation-dialog p{font-size:14px;line-height:1.5;color:#71685f}
+.organizer-layout-ready .owner-deposit-waiting{min-height:calc(100dvh - var(--organizer-header-height,64px) - 88px - env(safe-area-inset-bottom,0px));align-items:center}
+.deposit-hourglass-icon{width:48px;height:48px;color:#690c29;display:block;margin:0 auto}
+.deposit-preparation-dialog{max-width:480px;width:calc(100% - 32px);max-height:calc(100dvh - 48px);box-sizing:border-box;overflow:auto;border:1px solid #e4dccd;border-radius:18px;padding:24px;background:#fffdf7;color:#292525;text-align:left}
+.deposit-preparation-dialog::backdrop{background:#211c1866}
+.deposit-preparation-dialog>[data-wait-close]{display:block;margin-left:auto;border:1px solid #e4dccd;border-radius:12px;background:#fffdf7;font-size:28px;color:#292525}
+.deposit-preparation-dialog h2{font:600 28px/1.2 "Cormorant Garamond",serif;color:#690c29;margin:12px 0 20px}
+.deposit-preparation-dialog ol{padding-left:24px;margin:0}
+.deposit-preparation-dialog li{font-size:15px;line-height:1.5;margin-bottom:18px}
+.deposit-preparation-dialog li strong{display:block;margin-bottom:4px}
+.deposit-preparation-dialog p{font-size:14px;line-height:1.5;color:#71685f}
 }
-
 @media(max-width:760px){
- .deposit-waiting-content{background:transparent;border-radius:0}
- .deposit-waiting-dark .deposit-waiting-content{color:#fff8eb}
- .deposit-waiting-dark .deposit-waiting-content h2,.deposit-waiting-dark .deposit-hourglass-icon{color:#fff8eb}
+.deposit-waiting-content{background:transparent;border-radius:0}
+.deposit-waiting-dark .deposit-waiting-content{color:#fff8eb}
+.deposit-waiting-dark .deposit-waiting-content h2,.deposit-waiting-dark .deposit-hourglass-icon{color:#fff8eb}
 }
-
 @media(max-width:760px){
- .deposit-preparation-dialog{padding:18px 20px 24px}
- .preparation-heading{text-align:center;margin:0 0 20px}
- .preparation-heading>i{font-size:32px;color:#690c29}
- .deposit-preparation-dialog .preparation-heading h2{margin:12px 0 10px}
- .deposit-preparation-dialog .preparation-heading p{margin:0}
- .deposit-preparation-dialog .preparation-steps{padding:0;list-style:none;margin:0}
- .deposit-preparation-dialog .preparation-steps li{display:grid;grid-template-columns:24px 36px minmax(0,1fr);gap:10px;align-items:start;padding:18px 0;margin:0;border-bottom:1px solid #e4dccd}
- .deposit-preparation-dialog .preparation-steps li:last-child{border-bottom:0}
- .preparation-number{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#f1e4dc;color:#690c29;font-size:13px;font-weight:600}
- .preparation-icon svg{display:block;width:32px;height:36px;color:#690c29}
- .deposit-preparation-dialog .preparation-steps h3{margin:0 0 8px;font:650 16px/1.3 Inter,sans-serif;color:#690c29;overflow-wrap:break-word}
- .deposit-preparation-dialog .preparation-steps p{margin:0;font-size:14px;line-height:1.5;color:#49443e}
- .preparation-reminder{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:#edf0e6;margin:12px 0 16px;color:#34533b}
- .preparation-reminder>i{font-size:24px;flex:none}
- .deposit-preparation-dialog .preparation-reminder p{margin:0;color:inherit;font-size:13px;line-height:1.5}
- .deposit-preparation-dialog .preparation-confirm{width:100%;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.deposit-preparation-dialog{padding:18px 20px 24px}
+.preparation-heading{text-align:center;margin:0 0 20px}
+.preparation-heading>i{font-size:32px;color:#690c29}
+.deposit-preparation-dialog .preparation-heading h2{margin:12px 0 10px}
+.deposit-preparation-dialog .preparation-heading p{margin:0}
+.deposit-preparation-dialog .preparation-steps{padding:0;list-style:none;margin:0}
+.deposit-preparation-dialog .preparation-steps li{display:grid;grid-template-columns:24px 36px minmax(0,1fr);gap:10px;align-items:start;padding:18px 0;margin:0;border-bottom:1px solid #e4dccd}
+.deposit-preparation-dialog .preparation-steps li:last-child{border-bottom:0}
+.preparation-number{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#f1e4dc;color:#690c29;font-size:13px;font-weight:600}
+.preparation-icon svg{display:block;width:32px;height:36px;color:#690c29}
+.deposit-preparation-dialog .preparation-steps h3{margin:0 0 8px;font:650 16px/1.3 Inter,sans-serif;color:#690c29;overflow-wrap:break-word}
+.deposit-preparation-dialog .preparation-steps p{margin:0;font-size:14px;line-height:1.5;color:#49443e}
+.preparation-reminder{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:#edf0e6;margin:12px 0 16px;color:#34533b}
+.preparation-reminder>i{font-size:24px;flex:none}
+.deposit-preparation-dialog .preparation-reminder p{margin:0;color:inherit;font-size:13px;line-height:1.5}
+.deposit-preparation-dialog .preparation-confirm{width:100%;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:15px}
 }
-
 /* Compact advice fits a standard phone viewport; zoom keeps content reachable. */
 @media(max-width:760px){
- .deposit-preparation-dialog{padding:14px 18px 18px;max-height:calc(100dvh - 24px)}
- .deposit-preparation-dialog>[data-wait-close]{width:44px;height:44px;float:right;margin:0}
- .preparation-heading{clear:both;margin:0 0 8px}
- .preparation-heading>i{font-size:24px}
- .deposit-preparation-dialog .preparation-heading h2{font-size:25px;margin:8px 0 6px}
- .deposit-preparation-dialog .preparation-heading p{font-size:13px;line-height:1.4}
- .deposit-preparation-dialog .preparation-steps li{grid-template-columns:20px 28px minmax(0,1fr);gap:8px;padding:12px 0}
- .preparation-number{width:20px;height:20px;font-size:12px}
- .preparation-icon svg{width:26px;height:30px}
- .deposit-preparation-dialog .preparation-steps h3{font-size:14px;line-height:1.3;margin-bottom:5px}
- .deposit-preparation-dialog .preparation-steps p{font-size:13px;line-height:1.4}
- .preparation-reminder{gap:10px;padding:10px;margin:8px 0 12px}
- .preparation-reminder>i{font-size:20px}
- .deposit-preparation-dialog .preparation-reminder p{font-size:12px;line-height:1.4}
+.deposit-preparation-dialog{padding:14px 18px 18px;max-height:calc(100dvh - 24px)}
+.deposit-preparation-dialog>[data-wait-close]{width:44px;height:44px;float:right;margin:0}
+.preparation-heading{clear:both;margin:0 0 8px}
+.preparation-heading>i{font-size:24px}
+.deposit-preparation-dialog .preparation-heading h2{font-size:25px;margin:8px 0 6px}
+.deposit-preparation-dialog .preparation-heading p{font-size:13px;line-height:1.4}
+.deposit-preparation-dialog .preparation-steps li{grid-template-columns:20px 28px minmax(0,1fr);gap:8px;padding:12px 0}
+.preparation-number{width:20px;height:20px;font-size:12px}
+.preparation-icon svg{width:26px;height:30px}
+.deposit-preparation-dialog .preparation-steps h3{font-size:14px;line-height:1.3;margin-bottom:5px}
+.deposit-preparation-dialog .preparation-steps p{font-size:13px;line-height:1.4}
+.preparation-reminder{gap:10px;padding:10px;margin:8px 0 12px}
+.preparation-reminder>i{font-size:20px}
+.deposit-preparation-dialog .preparation-reminder p{font-size:12px;line-height:1.4}
 }
 @media(max-width:760px) and (max-height:650px){
- .deposit-preparation-dialog{padding:10px 14px 14px}
- .preparation-heading>i{display:none}
- .deposit-preparation-dialog .preparation-heading h2{font-size:23px;margin:4px 0}
- .deposit-preparation-dialog .preparation-steps li{padding:9px 0}
- .preparation-reminder{margin:6px 0 8px;padding:8px}
+.deposit-preparation-dialog{padding:10px 14px 14px}
+.preparation-heading>i{display:none}
+.deposit-preparation-dialog .preparation-heading h2{font-size:23px;margin:4px 0}
+.deposit-preparation-dialog .preparation-steps li{padding:9px 0}
+.preparation-reminder{margin:6px 0 8px;padding:8px}
 }
-
 @media(max-width:760px){
- .deposit-card-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
- .deposit-card-actions .btn{font-size:13px;padding:10px 6px}
+.deposit-card-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.deposit-card-actions .btn{font-size:13px;padding:10px 6px}
 }
-
 @media(max-width:760px){
- .deposit-countdown>div{color:#39332d}
- .deposit-countdown span{display:block;color:#39332d;font-weight:500;line-height:1.4;margin-top:4px}
+.deposit-countdown>div{color:#39332d}
+.deposit-countdown span{display:block;color:#39332d;font-weight:500;line-height:1.4}
 }
-
 @media(max-width:760px){
- body.organizer-layout-ready.owner-screen-fits{overflow-y:auto;overscroll-behavior-y:auto}
+body.organizer-layout-ready.owner-screen-fits{overflow-y:auto;overscroll-behavior-y:auto}
 }
-
 @media(max-width:760px){
- .organizer-layout-ready .owner-deposit-waiting{background-size:100% 100%;background-repeat:no-repeat;display:flex;flex-direction:column;align-items:stretch;padding:24px 20px}
- .deposit-waiting-content{display:flex;flex-direction:column;flex:1;padding:0 8px}
- .deposit-waiting-main{display:flex;flex-direction:column;justify-content:center;flex:1;padding:20px 0}
- .deposit-waiting-actions{margin-top:auto;padding:0 0 4px}
- .deposit-waiting-actions>.btn:first-child{margin-top:0}
+.organizer-layout-ready .owner-deposit-waiting{background-size:100% 100%;background-repeat:no-repeat;display:flex;flex-direction:column;align-items:stretch;padding:24px 20px}
+.deposit-waiting-content{display:flex;flex-direction:column;flex:1}
+.deposit-waiting-main{display:flex;flex-direction:column;justify-content:center;flex:1;padding:20px 0}
+.deposit-waiting-actions{padding:0 0 4px}
+.deposit-waiting-actions>.btn:first-child{margin-top:0}
 }
-
 @media(max-width:760px){
- .organizer-layout-ready .owner-deposit-waiting{height:calc(100dvh - var(--organizer-header-height,64px) - 88px - env(safe-area-inset-bottom,0px));min-height:min-content}
- .deposit-waiting-content{flex:1 0 auto;width:100%;min-height:0}
- .deposit-waiting-main{flex:1 0 auto}
- .deposit-waiting-actions{flex:none;display:grid;gap:8px;width:100%;margin-top:auto;padding-bottom:0}
- .deposit-waiting-content .deposit-waiting-actions .btn{margin:0;box-sizing:border-box;min-height:44px}
- .deposit-card-actions{align-items:stretch}
- .deposit-card-actions .btn{height:100%;font-size:14px}
+.organizer-layout-ready .owner-deposit-waiting{height:calc(100dvh - var(--organizer-header-height,64px) - 88px - env(safe-area-inset-bottom,0px));min-height:min-content}
+.deposit-waiting-content{flex:1 0 auto;width:100%}
+.deposit-waiting-main{flex:1 0 auto}
+.deposit-waiting-actions{flex:none;display:grid;gap:8px;width:100%;margin-top:auto;padding-bottom:0}
+.deposit-waiting-content .deposit-waiting-actions .btn{margin:0;box-sizing:border-box}
+.deposit-card-actions{align-items:stretch}
+.deposit-card-actions .btn{height:100%;font-size:14px}
 }
-
 @media(max-width:760px){
- body.organizer-layout-ready.owner-pinch-zoom .forge-style-header{position:relative;top:auto}
- body.organizer-layout-ready.owner-pinch-zoom .owner-tabs{position:absolute!important;top:var(--owner-zoom-nav-top)!important;bottom:auto!important}
- body.organizer-layout-ready.owner-pinch-zoom .design-mobile-tabs{position:relative;top:auto}
+body.organizer-layout-ready.owner-pinch-zoom .forge-style-header{position:relative;top:auto}
+body.organizer-layout-ready.owner-pinch-zoom .owner-tabs{position:absolute!important;top:var(--owner-zoom-nav-top)!important;bottom:auto!important}
+body.organizer-layout-ready.owner-pinch-zoom .design-mobile-tabs{position:relative;top:auto}
 }
-
 @media(max-width:760px){
- .owner-deposit-waiting{-webkit-text-size-adjust:100%;text-size-adjust:100%}
- .organizer-layout-ready .owner-deposit-waiting{padding:20px 18px;min-height:0}
- .deposit-waiting-content{flex:1 1 auto;min-height:0;padding:0 8px}
- .deposit-waiting-main{flex:1 1 auto;min-height:min-content;padding:8px 0 14px}
- .deposit-hourglass-icon{width:40px;height:40px;flex:none}
- .deposit-waiting-content h2{font-size:clamp(24px,6.4vw,28px);line-height:1.12;margin:14px 0 10px}
- .deposit-waiting-content p{font-size:13px;line-height:1.4;margin:8px 0}
- .deposit-countdown{margin:14px 0;gap:8px}
- .deposit-countdown>div{padding:10px 4px}
- .deposit-countdown strong{font-size:30px;line-height:1.2}
- .deposit-countdown span{font-size:12px;margin-top:4px}
- .deposit-waiting-content .deposit-waiting-actions .btn{font-size:13px;line-height:1.3;padding:10px 6px;min-height:44px}
+.owner-deposit-waiting{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+.organizer-layout-ready .owner-deposit-waiting{padding:20px 18px;min-height:0}
+.deposit-waiting-content{flex:1 1 auto;min-height:0;padding:0 8px}
+.deposit-waiting-main{flex:1 1 auto;min-height:min-content;padding:8px 0 14px}
+.deposit-hourglass-icon{width:40px;height:40px;flex:none}
+.deposit-waiting-content h2{font-size:clamp(24px,6.4vw,28px);line-height:1.12;margin:14px 0 10px}
+.deposit-waiting-content p{font-size:13px;line-height:1.4;margin:8px 0}
+.deposit-countdown{margin:14px 0;gap:8px}
+.deposit-countdown>div{padding:10px 4px}
+.deposit-countdown strong{font-size:30px;line-height:1.2}
+.deposit-countdown span{font-size:12px;margin-top:4px}
+.deposit-waiting-content .deposit-waiting-actions .btn{font-size:13px;line-height:1.3;padding:10px 6px;min-height:44px}
 }
 @media(max-width:760px) and (max-height:700px){
- .organizer-layout-ready .owner-deposit-waiting{padding:16px}
- .deposit-waiting-main{padding:4px 0 10px}
- .deposit-hourglass-icon{width:32px;height:32px}
- .deposit-waiting-content h2{font-size:24px;margin:10px 0 6px}
- .deposit-countdown{margin:10px 0}
- .deposit-countdown>div{padding:8px 4px}
- .deposit-waiting-content p{margin:6px 0}
+.organizer-layout-ready .owner-deposit-waiting{padding:16px}
+.deposit-waiting-main{padding:4px 0 10px}
+.deposit-hourglass-icon{width:32px;height:32px}
+.deposit-waiting-content h2{font-size:24px;margin:10px 0 6px}
+.deposit-countdown{margin:10px 0}
+.deposit-countdown>div{padding:8px 4px}
+.deposit-waiting-content p{margin:6px 0}
 }
-
 @media(max-width:760px){
- .organizer-layout-ready .owner-deposit-waiting{padding-bottom:clamp(30px,8vw,40px)}
- .deposit-waiting-content{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:0}
- .deposit-waiting-main{min-height:0;overflow-y:auto;overscroll-behavior-y:contain}
- .deposit-waiting-actions{align-self:end;margin:0;position:relative;z-index:1}
+.organizer-layout-ready .owner-deposit-waiting{padding-bottom:clamp(30px,8vw,40px)}
+.deposit-waiting-content{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:0}
+.deposit-waiting-main{min-height:0;overflow-y:auto;overscroll-behavior-y:contain}
+.deposit-waiting-actions{align-self:end;margin:0;position:relative;z-index:1}
 }
-
 @media(max-width:760px){
- .organizer-layout-ready .owner-deposit-waiting{padding-bottom:clamp(48px,12vw,64px)}
- .deposit-waiting-main{padding-bottom:18px}
+.organizer-layout-ready .owner-deposit-waiting{padding-bottom:clamp(48px,12vw,64px)}
+.deposit-waiting-main{padding-bottom:18px}
 }
-
 /* Allow the browser pull-to-refresh gesture at the top of organizer screens. */
-@media(max-width:760px){html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-behavior-y:auto}}
+@media(max-width:760px){
+html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-behavior-y:auto}
+}

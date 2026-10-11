@@ -33,8 +33,8 @@
   const body=choose.querySelector('.studio-sheet-body');body.innerHTML='<div id="workspace-mine"><div id="workspace-capsule-list"></div><a id="workspace-create" class="btn primary" href="create.html"><i class="fa-solid fa-plus" aria-hidden="true"></i>Créer une capsule</a><p id="workspace-create-help" class="hint"></p></div><p id="workspace-selection-status" class="status" role="status"></p>';
   $('workspace-create').hidden=!access.can_create;$('workspace-create-help').textContent=access.can_create?'':access.reason||'';
   const summaries=new Map(),states={draft:'En préparation',scheduled:'Prête à partager',open:'Dépôts ouverts',closed:'Dépôts terminés',full:'Stockage rempli',expired:'Conservation terminée',suspended:'Dépôts en pause',missing_date:'Date à compléter'};
-  const gear='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12.00 1.00L14.15 1.21L15.33 3.96L16.83 4.77L19.78 4.22L21.15 5.89L20.04 8.67L20.53 10.30L23.00 12.00L22.79 14.15L20.04 15.33L19.23 16.83L19.78 19.78L18.11 21.15L15.33 20.04L13.70 20.53L12.00 23.00L9.85 22.79L8.67 20.04L7.17 19.23L4.22 19.78L2.85 18.11L3.96 15.33L3.47 13.70L1.00 12.00L1.21 9.85L3.96 8.67L4.77 7.17L4.22 4.22L5.89 2.85L8.67 3.96L10.30 3.47ZM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg>';
-  const trash='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M9 2h6a1 1 0 0 1 1 1v1h4a1 1 0 0 1 1 1v2H3V5a1 1 0 0 1 1-1h4V3a1 1 0 0 1 1-1Z"/><path fill-rule="evenodd" d="m4 9 1 11a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2l1-11ZM9 12a1 1 0 0 0-1 1v5a1 1 0 0 0 2 0v-5a1 1 0 0 0-1-1Zm6 0a1 1 0 0 0-1 1v5a1 1 0 0 0 2 0v-5a1 1 0 0 0-1-1Z"/></svg>';
+  const gear='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#parametres"></use></svg>';
+  const trash='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#supprimer"></use></svg>';
   function render(){
    $('workspace-capsule-list').innerHTML=caps.map(c=>{
     const info=summaries.get(c.id),state=info?.state||(c.status==='active'?'scheduled':'draft'),current=c.slug===selected?.slug,settingsActive=current&&location.hash==='#settings';
@@ -133,3 +133,4 @@
   viewport?.addEventListener('resize',align);viewport?.addEventListener('scroll',align);window.addEventListener('resize',align);window.addEventListener('scroll',align,{passive:true});align();
  }};
 })();
+
