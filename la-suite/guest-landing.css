@@ -387,3 +387,9 @@ body[data-compose-dark=true] .guest-compose-footer img{filter:brightness(0) inve
 .guest-media-launch i{font-size:30px;color:var(--home-accent)}
 .guest-media-launch strong{font:600 14px/1.4 Inter,sans-serif}
 .guest-media-launch span{font:400 12px/1.4 Inter,sans-serif;opacity:.75}
+
+
+/* Approved transparent envelope shown after the server confirms the deposit. */
+.guest-success-animation{position:relative;width:min(360px,100%);aspect-ratio:1.2;margin:0 auto 12px;overflow:hidden;pointer-events:none}
+.guest-success-animation picture{display:contents}
+.guest-success-animation img{position:absolute;top:50%;left:50%;display:block;width:125%;max-width:none;height:auto;transform:translate(-50%,-50%);object-fit:contain}

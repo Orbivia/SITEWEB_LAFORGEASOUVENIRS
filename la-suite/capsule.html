@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Serif+Display&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@500;600;700&family=Parisienne&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="styles.css?v=20261011-guestwelcome2">
-<link rel="stylesheet" href="guest-landing.css?v=20261012-media-popup1">
+<link rel="stylesheet" href="guest-landing.css?v=20261012-send-confirmation1">
 <style>
 body.guest-loading{background:#fffdf8!important}
 .guest-loading-logo{display:none}
@@ -130,7 +130,7 @@ body.guest-loading{background:#fffdf8!important}
   </div>
  </dialog>
 <section id="guest-success" class="guest-success" tabindex="-1" hidden>
- <i class="fa-solid fa-check" aria-hidden="true"></i><h2>Votre souvenir est bien enregistré</h2>
+ <div class="guest-success-animation" aria-hidden="true"><picture><source media="(prefers-reduced-motion: reduce)" srcset="assets/validation-envoi-la-suite.png"><img src="assets/validation-envoi-la-suite.gif" width="1200" height="1200" loading="lazy" alt=""></picture></div><h2>Votre souvenir est bien enregistré</h2>
  <p id="guest-success-date"></p><button type="button" class="btn primary" id="another-memory">Ajouter un autre souvenir</button>
 </section>
 </main>
@@ -152,3 +152,4 @@ body.guest-loading{background:#fffdf8!important}
 <script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261012-media-popup1"></script>
 <script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261012-no-send-animation1"></script>
 </body></html>
+
