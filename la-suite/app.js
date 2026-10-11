@@ -512,7 +512,7 @@ function chooseGuestType(type){
  $("message_text").placeholder=type==="text"?"Écrivez ce que vous aimeriez leur dire…":"Quelques mots pour accompagner votre souvenir…";
  const messageField=$('guest-message-field'),extras=$('guest-extras');
  (type==='text'?$('guest-text-content'):$('guest-extras-body')).prepend(messageField);extras.open=false;
- extras.hidden=type==='text';$('guest-limits').hidden=type==='text';
+ extras.hidden=true;if(type!=='text')$('message_text').value='';$('guest-limits').hidden=type==='text';
  const capture=$("capture-memory");capture.dataset.mediaMode=type==="image"?"photo":type;
  capture.querySelector('.media-action-label').textContent=type==="image"?"Prendre une photo":type==="audio"?"M’enregistrer":"Me filmer";
  capture.querySelector('i').className=type==='image'?'fa-solid fa-camera':type==='audio'?'fa-solid fa-microphone':'fa-solid fa-video';
