@@ -237,3 +237,12 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .deposit-open-empty>i{font-size:32px}
  .deposit-open-empty p{font-size:13px}
 }
+
+/* Keep reception controls only when they add information. */
+@media(max-width:760px){
+ .deposit-open-all-available .deposit-open-summary span:last-child,
+ .organizer-layout-ready .deposit-open-all-available .memory-filters{display:none}
+ .deposit-open-has-memories .deposit-open-badge{display:none}
+ .deposit-open-has-memories .deposit-open-heading h2{margin-top:0}
+ .deposit-open-gallery .memory-compact .memory-actions{justify-content:flex-end}
+}
