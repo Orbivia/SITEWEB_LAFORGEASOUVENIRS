@@ -161,3 +161,10 @@
  .deposit-countdown>div{padding:8px 4px}
  .deposit-waiting-content p{margin:6px 0}
 }
+
+@media(max-width:760px){
+ .organizer-layout-ready .owner-deposit-waiting{padding-bottom:clamp(30px,8vw,40px)}
+ .deposit-waiting-content{display:grid;grid-template-rows:minmax(0,1fr) auto;gap:0}
+ .deposit-waiting-main{min-height:0;overflow-y:auto;overscroll-behavior-y:contain}
+ .deposit-waiting-actions{align-self:end;margin:0;position:relative;z-index:1}
+}
