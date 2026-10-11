@@ -55,3 +55,22 @@
  .deposit-waiting-dark .deposit-waiting-content{color:#fff8eb}
  .deposit-waiting-dark .deposit-waiting-content h2,.deposit-waiting-dark .deposit-hourglass-icon{color:#fff8eb}
 }
+
+@media(max-width:760px){
+ .deposit-preparation-dialog{padding:18px 20px 24px}
+ .preparation-heading{text-align:center;margin:0 0 20px}
+ .preparation-heading>i{font-size:32px;color:#690c29}
+ .deposit-preparation-dialog .preparation-heading h2{margin:12px 0 10px}
+ .deposit-preparation-dialog .preparation-heading p{margin:0}
+ .deposit-preparation-dialog .preparation-steps{padding:0;list-style:none;margin:0}
+ .deposit-preparation-dialog .preparation-steps li{display:grid;grid-template-columns:24px 36px minmax(0,1fr);gap:10px;align-items:start;padding:18px 0;margin:0;border-bottom:1px solid #e4dccd}
+ .deposit-preparation-dialog .preparation-steps li:last-child{border-bottom:0}
+ .preparation-number{display:flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#f1e4dc;color:#690c29;font-size:13px;font-weight:600}
+ .preparation-icon svg{display:block;width:32px;height:36px;color:#690c29}
+ .deposit-preparation-dialog .preparation-steps h3{margin:0 0 8px;font:650 16px/1.3 Inter,sans-serif;color:#690c29;overflow-wrap:break-word}
+ .deposit-preparation-dialog .preparation-steps p{margin:0;font-size:14px;line-height:1.5;color:#49443e}
+ .preparation-reminder{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:#edf0e6;margin:12px 0 16px;color:#34533b}
+ .preparation-reminder>i{font-size:24px;flex:none}
+ .deposit-preparation-dialog .preparation-reminder p{margin:0;color:inherit;font-size:13px;line-height:1.5}
+ .deposit-preparation-dialog .preparation-confirm{width:100%;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:15px}
+}
