@@ -218,3 +218,5 @@
 .guest-landing-ready .guest-screenbar .guest-fullscreen{width:44px;height:44px;border:1px solid #ffffff90;border-radius:12px;background:#fffdf8;color:#292724;opacity:1;box-shadow:0 3px 14px #0004}
 .guest-fullscreen i{font-size:20px}
 .guest-landing-ready[data-guest-view=home] .guest-page,.guest-landing-ready .guest-landing,.guest-landing-ready .guest-landing .guest-home-content{min-height:100dvh}
+
+.guest-landing .guest-empty-welcome{display:none!important}
