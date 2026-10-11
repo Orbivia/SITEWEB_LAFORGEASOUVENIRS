@@ -1523,6 +1523,7 @@ function ownerShell(c,url,count){
 
 <div class="owner-panel" data-owner-panel="messages" hidden>
  <section id="owner-deposit-waiting" class="owner-deposit-waiting" hidden></section>
+ <section id="owner-deposit-open" class="owner-deposit-open" hidden></section>
  <section class="owner-messages-hero">
   <div>
    <h2>Vos souvenirs</h2>
@@ -1889,8 +1890,47 @@ function observeOwnerScreenScroll(){
  scheduleOwnerScrollCheck();
 }
 
+
+const DEPOSIT_PREPARATION_HTML="<dialog class=\"deposit-preparation-dialog\" aria-labelledby=\"deposit-preparation-title\" aria-describedby=\"deposit-preparation-intro\"><button type=\"button\" data-wait-close aria-label=\"Fermer les conseils\">×</button><div class=\"preparation-heading\"><i class=\"fa-solid fa-lightbulb\" aria-hidden=\"true\"></i><h2 id=\"deposit-preparation-title\">Préparer votre capsule</h2><p id=\"deposit-preparation-intro\">Trois conseils pour recevoir plus de souvenirs.</p></div><ol class=\"preparation-steps\"><li><span class=\"preparation-number\" aria-hidden=\"true\">1</span><span class=\"preparation-icon\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><circle cx=\"7\" cy=\"7\" r=\"3\"/><circle cx=\"15\" cy=\"5\" r=\"3\"/><path d=\"M1 20v-3a6 6 0 0 1 12 0v3zm12-8a5 5 0 0 0-3-2 6 6 0 0 1 11 2zm4 3h-3v4h3v3l7-5-7-5z\"/></svg></span><div><h3>Invitez aussi les absents</h3><p>Envoyez le lien aux proches absents : ils pourront aussi participer pendant les dépôts.</p></div></li><li><span class=\"preparation-number\" aria-hidden=\"true\">2</span><span class=\"preparation-icon\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path fill-rule=\"evenodd\" d=\"M4 1h10l6 6v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zm10 1v6h5zM5 10h5v5H5zm1 1v3h3v-3zm6-1h5v5h-5zm1 1v3h3v-3zm-8 6h5v5H5zm1 1v3h3v-3zm6-1h2v2h-2zm3 0h2v3h-2zm-3 3h2v2h-2zm3 1h2v1h-2z\"/></svg></span><div><h3>Rendez votre QR code visible</h3><p>Placez-le sur les tables, à l’entrée et près du livre d’or, bien visible et facile à scanner.</p></div></li><li><span class=\"preparation-number\" aria-hidden=\"true\">3</span><span class=\"preparation-icon\"><svg viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path fill-rule=\"evenodd\" d=\"M12 2a10 10 0 0 0-8 16l-2 5 6-2A10 10 0 1 0 12 2zm-5 9a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z\"/></svg></span><div><h3>Parlez-en pendant l’événement</h3><p>Faites un rappel oral ou dans votre groupe pour encourager chacun à laisser un souvenir.</p></div></li></ol><button type=\"button\" class=\"btn primary preparation-confirm\" data-wait-understood>J’ai compris</button></dialog>";
+function renderOwnerDepositOpen(c,manifest){
+ const root=document.querySelector('[data-owner-panel="messages"]'),frame=$('owner-deposit-open');
+ if(!root||!frame)return;
+ const active=matchMedia('(max-width:760px)').matches&&c.status==='active'&&c.usage?.state==='open';
+ root.classList.toggle('is-deposits-open',active);frame.hidden=!active;
+ const hero=root.querySelector('.owner-messages-hero'),memories=root.querySelector('.memories-section');
+ if(!active){if(frame.contains(hero))root.append(hero,memories);return}
+ if(!frame.firstElementChild){
+  frame.innerHTML='<div class="deposit-open-content"><header class="deposit-open-heading"><span class="deposit-open-badge"><i class="fa-solid fa-circle" aria-hidden="true"></i> Dépôts ouverts</span><button type="button" class="deposit-open-refresh" data-open-refresh aria-label="Actualiser les souvenirs"><i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i></button><h2 data-open-title></h2><p data-open-until></p></header><div class="deposit-open-main"><div class="deposit-open-empty"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i><h3>Place aux souvenirs</h3><p>Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.</p></div><div class="deposit-open-summary" aria-live="polite"><span data-open-count></span><span data-open-available></span></div><div class="deposit-open-gallery"></div></div><footer class="deposit-open-actions"><button type="button" class="btn primary" data-open-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-open-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger</button><button type="button" class="btn secondary" data-open-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button></div><button type="button" class="btn secondary" data-open-tips><i class="fa-solid fa-list-check" aria-hidden="true"></i> Conseils de préparation</button></footer></div>'+DEPOSIT_PREPARATION_HTML;
+  frame.querySelector('[data-open-refresh]').onclick=()=>$('refresh-memories').click();
+  frame.querySelector('[data-open-share]').onclick=()=>$('share-link').click();
+  frame.querySelector('[data-open-download]').onclick=()=>$('download-print-card').click();
+  frame.querySelector('[data-open-print]').onclick=()=>$('print-print-card').click();
+  const dialog=frame.querySelector('dialog');
+  // Use separate title IDs from the waiting dialog.
+  dialog.querySelector('#deposit-preparation-title').id='deposit-open-preparation-title';
+  dialog.querySelector('#deposit-preparation-intro').id='deposit-open-preparation-intro';
+  dialog.setAttribute('aria-labelledby','deposit-open-preparation-title');dialog.setAttribute('aria-describedby','deposit-open-preparation-intro');
+  frame.querySelector('[data-open-tips]').onclick=()=>dialog.showModal();
+  frame.querySelector('[data-wait-close]').onclick=()=>dialog.close();
+  frame.querySelector('[data-wait-understood]').onclick=()=>dialog.close();
+  dialog.addEventListener('close',()=>frame.querySelector('[data-open-tips]').focus());
+ }
+ const count=manifest.length,available=manifest.filter(m=>m.is_available).length;
+ frame.classList.toggle('deposit-open-has-memories',count>0);
+ frame.querySelector('[data-open-title]').textContent=count?'Vos souvenirs':'Les dépôts sont ouverts';
+ frame.querySelector('[data-open-until]').textContent=c.usage.closes_at?'Jusqu’au '+fParis(new Date(new Date(c.usage.closes_at).getTime()-1000).toISOString())+' · heure de Paris':'';
+ frame.querySelector('[data-open-count]').textContent=memoryCountLabel(count);
+ frame.querySelector('[data-open-available]').textContent=available+' disponible'+(available>1?'s':'')+' maintenant';
+ frame.querySelector('.deposit-open-gallery').append(hero,memories);
+ const config={...c.welcome_config,...window.SuiteDesign.fields(c)},style=$('qr-style')?.value||config.style||c.qr_style||'fond-blanc';
+ const preset=window.SuiteDesign.styles.find(s=>s.id===style),art=window.SuiteDesign.artwork(style,config);
+ frame.style.backgroundImage=art?'url("'+art+'")':'none';frame.style.backgroundColor=preset?.background||'#fcf8ef';
+ frame.classList.toggle('deposit-open-dark',Boolean(preset?.dark));
+}
+
 let ownerWaitingTimer=null;
-function renderOwnerDepositWaiting(c,count,onOpen){
+function renderOwnerDepositWaiting(c,count,onOpen,manifest=[]){
+ renderOwnerDepositOpen(c,manifest);
  clearInterval(ownerWaitingTimer);
  const root=document.querySelector('[data-owner-panel="messages"]'),box=$("owner-deposit-waiting");
  if(!root||!box)return;
@@ -1906,7 +1946,7 @@ function renderOwnerDepositWaiting(c,count,onOpen){
  box.style.backgroundImage=artwork?'url("'+artwork+'")':'none';
  box.style.backgroundColor=preset?.background||'#fcf8ef';
  box.classList.toggle('deposit-waiting-dark',Boolean(preset?.dark));
- box.innerHTML='<div class="deposit-waiting-content"><div class="deposit-waiting-main"><svg class="deposit-hourglass-icon" viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#sablier"></use></svg><h2>Les dépôts ouvrent bientôt</h2><p>Vos invités pourront déposer leurs souvenirs dans</p><div class="deposit-countdown" role="timer" aria-label="Temps avant l’ouverture des dépôts"><div><strong data-wait-days></strong><span>jours</span></div><div><strong data-wait-hours></strong><span>heures</span></div><div><strong data-wait-minutes></strong><span>minutes</span></div></div><p class="deposit-opening-date">Ouverture le '+esc(fdate(c.usage.opens_at))+' à '+esc(new Date(opens).toLocaleTimeString('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'}))+'</p></div><div class="deposit-waiting-actions"><button type="button" class="btn primary" data-wait-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-wait-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger</button><button type="button" class="btn secondary" data-wait-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button></div><button type="button" class="btn secondary" data-wait-tips><i class="fa-solid fa-list-check" aria-hidden="true"></i> Conseils de préparation</button></div></div><dialog class="deposit-preparation-dialog" aria-labelledby="deposit-preparation-title" aria-describedby="deposit-preparation-intro"><button type="button" data-wait-close aria-label="Fermer les conseils">×</button><div class="preparation-heading"><i class="fa-solid fa-lightbulb" aria-hidden="true"></i><h2 id="deposit-preparation-title">Préparer votre capsule</h2><p id="deposit-preparation-intro">Trois conseils pour recevoir plus de souvenirs.</p></div><ol class="preparation-steps"><li><span class="preparation-number" aria-hidden="true">1</span><span class="preparation-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="7" cy="7" r="3"/><circle cx="15" cy="5" r="3"/><path d="M1 20v-3a6 6 0 0 1 12 0v3zm12-8a5 5 0 0 0-3-2 6 6 0 0 1 11 2zm4 3h-3v4h3v3l7-5-7-5z"/></svg></span><div><h3>Invitez aussi les absents</h3><p>Envoyez le lien aux proches absents : ils pourront aussi participer pendant les dépôts.</p></div></li><li><span class="preparation-number" aria-hidden="true">2</span><span class="preparation-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M4 1h10l6 6v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2zm10 1v6h5zM5 10h5v5H5zm1 1v3h3v-3zm6-1h5v5h-5zm1 1v3h3v-3zm-8 6h5v5H5zm1 1v3h3v-3zm6-1h2v2h-2zm3 0h2v3h-2zm-3 3h2v2h-2zm3 1h2v1h-2z"/></svg></span><div><h3>Rendez votre QR code visible</h3><p>Placez-le sur les tables, à l’entrée et près du livre d’or, bien visible et facile à scanner.</p></div></li><li><span class="preparation-number" aria-hidden="true">3</span><span class="preparation-icon"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M12 2a10 10 0 0 0-8 16l-2 5 6-2A10 10 0 1 0 12 2zm-5 9a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg></span><div><h3>Parlez-en pendant l’événement</h3><p>Faites un rappel oral ou dans votre groupe pour encourager chacun à laisser un souvenir.</p></div></li></ol><button type="button" class="btn primary preparation-confirm" data-wait-understood>J’ai compris</button></dialog>';
+ box.innerHTML='<div class="deposit-waiting-content"><div class="deposit-waiting-main"><svg class="deposit-hourglass-icon" viewBox="0 0 48 48" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#sablier"></use></svg><h2>Les dépôts ouvrent bientôt</h2><p>Vos invités pourront déposer leurs souvenirs dans</p><div class="deposit-countdown" role="timer" aria-label="Temps avant l’ouverture des dépôts"><div><strong data-wait-days></strong><span>jours</span></div><div><strong data-wait-hours></strong><span>heures</span></div><div><strong data-wait-minutes></strong><span>minutes</span></div></div><p class="deposit-opening-date">Ouverture le '+esc(fdate(c.usage.opens_at))+' à '+esc(new Date(opens).toLocaleTimeString('fr-FR',{timeZone:'Europe/Paris',hour:'2-digit',minute:'2-digit'}))+'</p></div><div class="deposit-waiting-actions"><button type="button" class="btn primary" data-wait-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-wait-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger</button><button type="button" class="btn secondary" data-wait-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button></div><button type="button" class="btn secondary" data-wait-tips><i class="fa-solid fa-list-check" aria-hidden="true"></i> Conseils de préparation</button></div></div>'+DEPOSIT_PREPARATION_HTML+'';
  box.querySelector('[data-wait-share]').onclick=()=>$("share-link").click();
  box.querySelector('[data-wait-download]').onclick=()=>$('download-print-card').click();
  box.querySelector('[data-wait-print]').onclick=()=>$('print-print-card').click();
@@ -2064,7 +2104,7 @@ async function initDashboard(){
  const updateDesigner=()=>{
    markDirty("qr");
    welcomeDesigner?.syncShared();
-   renderOwnerDepositWaiting(c,manifest.length,refreshMemories);
+   renderOwnerDepositWaiting(c,manifest.length,refreshMemories,manifest);
    const sample=document.querySelector('.studio-font-example');if(sample)sample.textContent=$('print-title').value||DEFAULT_CARD_TITLE;
    const select=$('studio-font-select');if(select){select.value=$('qr-font').value;if(sample)sample.className='studio-font-example qr-font-sample-'+select.value;}
    applyQrPreview(url.href,{...c,...collectQrCustomization(c)});
@@ -2112,7 +2152,7 @@ async function initDashboard(){
  async function refreshMemories(){
   if(refreshInProgress||ownerSessionEnded)return;refreshInProgress=true;
   const button=$("refresh-memories");button.disabled=true;show($("memory-status"),'Chargement des souvenirs…');
-  try{await renderOrganizerLifecycle(c);if(ownerSessionEnded)return;const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(ownerSessionEnded)return;if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);if(ownerSessionEnded)return;$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);renderOwnerDepositWaiting(c,manifest.length,refreshMemories);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
+  try{await renderOrganizerLifecycle(c);if(ownerSessionEnded)return;const{data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});if(ownerSessionEnded)return;if(error)throw error;manifest.splice(0,manifest.length,...(data||[]));await renderManifest(c,manifest);if(ownerSessionEnded)return;$("export-memories").disabled=exportingMemories||capsuleExpired(c)||!manifest.some(m=>m.is_available);$("memory-count").textContent=memoryCountLabel(manifest.length);nextCountdown(c,manifest,refreshMemories);renderOwnerDepositWaiting(c,manifest.length,refreshMemories,manifest);updateOwnerUnreadBadge(ownerUnreadCount(c,manifest));if(location.hash==='#messages')await markOwnerMessagesSeen(c,manifest);show($("memory-status"),'')}catch(e){show($("memory-status"),'Chargement impossible. Utilisez « Actualiser » pour réessayer.',false)}finally{button.disabled=false;refreshInProgress=false}
  }
  $("refresh-memories").addEventListener('click',refreshMemories);await refreshMemories();
  window.addEventListener('suite-capsule-rules-changed',async e=>{if(e.detail===c.id){const expired=capsuleExpired(c);await refreshMemories();if(expired&&!capsuleExpired(c))location.reload()}});
@@ -2123,7 +2163,7 @@ async function initDashboard(){
   badgeCheckInProgress=true;
   try{
    const {data,error}=await sb.rpc('owner_message_manifest',{p_capsule_id:c.id});
-   if(!error&&!ownerSessionEnded)updateOwnerUnreadBadge(ownerUnreadCount(c,data||[]));
+   if(!error&&!ownerSessionEnded){updateOwnerUnreadBadge(ownerUnreadCount(c,data||[]));if(!manifest.length&&data?.length&&document.querySelector('.is-deposits-open:not([hidden])'))await refreshMemories();}
   }catch{/* Retry on the next check; retain the current badge. */}
   finally{badgeCheckInProgress=false}
  }

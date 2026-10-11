@@ -162,3 +162,58 @@ body.organizer-layout-ready.owner-pinch-zoom .design-mobile-tabs{position:relati
 @media(max-width:760px){
 html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-behavior-y:auto}
 }
+
+/* Open deposit reception, using the capsule artwork and existing memory controls. */
+@media(max-width:760px){
+ .organizer-layout-ready .is-deposits-open>.capsule-lifecycle,
+ .organizer-layout-ready .is-deposits-open>.owner-dates{display:none!important}
+ .organizer-layout-ready .owner-deposit-open{height:calc(100dvh - var(--organizer-header-height,64px) - 88px - env(safe-area-inset-bottom,0px));min-height:0;box-sizing:border-box;padding:30px 26px clamp(48px,12vw,64px);border:1px solid #e4dccd;border-radius:18px;background-size:100% 100%;background-position:center;background-repeat:no-repeat;color:#302a25}
+ .owner-deposit-open[hidden]{display:none!important}
+ .deposit-open-content{height:100%;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:12px}
+ .deposit-open-heading{position:relative;text-align:center;padding-right:28px}
+ .deposit-open-badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:#355748}
+ .deposit-open-badge>i{font-size:7px}
+ .deposit-open-heading h2{font:600 clamp(25px,6.5vw,30px)/1.12 "Cormorant Garamond",serif;color:#690c29;margin:12px 0 6px}
+ .deposit-open-heading p{font-size:12px;line-height:1.4;margin:0}
+ .deposit-open-refresh{position:absolute;right:-6px;top:-8px;width:44px;height:44px;padding:0;background:transparent;border:0;border-radius:50%;color:inherit;cursor:pointer}
+ .deposit-open-main{min-height:0;overflow-y:auto;overscroll-behavior-y:contain}
+ .deposit-open-empty{display:flex;min-height:100%;box-sizing:border-box;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:16px 4px}
+ .deposit-open-empty>i{font-size:44px;color:#690c29}
+ .deposit-open-empty h3{font:600 24px/1.2 "Cormorant Garamond",serif;color:#690c29;margin:0}
+ .deposit-open-empty p{font-size:14px;line-height:1.5;margin:0;max-width:300px}
+ .deposit-open-summary{display:none;gap:8px;justify-content:space-between;margin:0 0 12px;font-size:12px;line-height:1.4}
+ .deposit-open-summary span{background:#fffdf7;color:#355748;padding:8px 10px;border-radius:10px}
+ .deposit-open-has-memories .deposit-open-empty{display:none}
+ .deposit-open-has-memories .deposit-open-summary{display:flex}
+ .deposit-open-gallery .owner-messages-hero{padding:0;margin:0 0 8px;background:transparent;border:0}
+ .deposit-open-gallery .owner-messages-hero>div:first-child{display:none}
+ .deposit-open-gallery .memories-section{background:transparent;padding:0;border:0;margin:0}
+ .deposit-open-gallery .section-title-row{display:none}
+ .deposit-open-gallery .memory-tools{flex-direction:row;flex-wrap:wrap;gap:6px;margin:8px 0}
+ .deposit-open-gallery .memory-tools .btn{flex:1;min-width:120px;min-height:44px;font-size:12px;padding:8px 6px}
+ .deposit-open-gallery .memory-tools #refresh-memories{display:none}
+ .deposit-open-gallery .memory-row{background:#fffdf7;color:#302a25;border:1px solid #e4dccd;border-radius:14px;padding:12px;box-shadow:none}
+ .deposit-open-gallery .memory-content img,.deposit-open-gallery .memory-content video{max-height:230px}
+ .deposit-open-gallery .memory-filters button{font-size:11px;background:#fffdf7;color:#690c29;border-color:#e4dccd}
+ .deposit-open-gallery .memory-filters button[aria-pressed=true]{background:#690c29;color:#fffdf7}
+ .owner-deposit-open:not(.deposit-open-has-memories) .deposit-open-gallery .owner-messages-hero,
+ .owner-deposit-open:not(.deposit-open-has-memories) .memory-filters,
+ .owner-deposit-open:not(.deposit-open-has-memories) .memory-tools,
+ .owner-deposit-open:not(.deposit-open-has-memories) #memory-list{display:none}
+ .deposit-open-actions{display:grid;gap:8px;align-self:end}
+ .deposit-open-actions .btn{width:100%;min-height:44px;margin:0;padding:10px 6px;font-size:13px;line-height:1.3;white-space:normal;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box}
+ .deposit-open-dark{color:#fff8eb!important}
+ .deposit-open-dark .deposit-open-heading h2,.deposit-open-dark .deposit-open-badge,
+ .deposit-open-dark .deposit-open-empty>i,.deposit-open-dark .deposit-open-empty h3{color:#fff8eb}
+ .deposit-open-dark #memory-status{color:#fff8eb}
+ .deposit-open-gallery .next-delivery{background:#fffdf7;color:#355748;font-size:12px;padding:10px;border-radius:10px}
+ .deposit-open-refresh:focus-visible{outline:2px solid currentColor;outline-offset:2px}
+}
+@media(max-width:760px) and (max-height:700px){
+ .organizer-layout-ready .owner-deposit-open{padding-top:18px;padding-left:20px;padding-right:20px;padding-bottom:40px}
+ .deposit-open-content{gap:8px}
+ .deposit-open-heading h2{font-size:24px;margin-top:8px}
+ .deposit-open-empty{gap:10px;padding:12px 4px}
+ .deposit-open-empty>i{font-size:32px}
+ .deposit-open-empty p{font-size:13px}
+}
