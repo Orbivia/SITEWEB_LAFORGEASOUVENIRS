@@ -3575,3 +3575,6 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 }
 
 @media(max-width:760px){.suite-brand img,.guest-compact .suite-brand img{width:126px;height:auto;max-height:52px;object-fit:contain}}
+
+/* Shared QR glyph in navigation inherits the active button color. */
+.suite-qr-icon{display:inline-block;width:20px;height:20px;vertical-align:middle;flex:none}
