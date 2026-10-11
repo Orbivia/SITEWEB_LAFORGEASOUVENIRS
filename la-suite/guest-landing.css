@@ -284,3 +284,12 @@ body[data-compose-dark=true] .guest-compose-footer img{filter:brightness(0) inve
 .guest-landing-ready[data-guest-view=compose] .submit-memory{min-height:46px}
 .guest-landing-ready[data-guest-view=compose] .guest-compose-footer{margin-top:auto;padding:12px 0 0;border:0!important;background:transparent!important}
 .guest-landing-ready[data-guest-view=compose] .guest-compose-footer img{width:125px;max-height:48px}
+
+/* Shared landmarks for welcome and deposit screens. */
+.guest-landing-ready[data-guest-view=home] .guest-home-content,.guest-landing-ready[data-guest-view=compose] #guest-message{padding-left:clamp(30px,8vw,52px);padding-right:clamp(30px,8vw,52px);padding-top:clamp(32px,6dvh,52px);padding-bottom:100px;position:relative;box-sizing:border-box;min-height:100dvh}
+.guest-landing-ready[data-guest-view=home] .guest-home-footer,.guest-landing-ready[data-guest-view=compose] .guest-compose-footer{position:absolute;bottom:30px;left:0;right:0;margin:0!important;padding:0!important;height:48px;display:flex;align-items:center;justify-content:center;border:0!important;background:transparent!important}
+.guest-landing-ready .guest-home-footer img,.guest-landing-ready .guest-compose-footer img{width:125px;height:auto;max-height:48px;object-fit:contain}
+.guest-landing-ready[data-guest-view=home] #guest-deposit,.guest-landing-ready[data-guest-view=compose] .submit-memory{width:100%;max-width:none;min-height:48px;border-radius:12px;margin-top:auto}
+.guest-landing-ready[data-guest-view=home] .guest-home-label{margin:0}
+.guest-landing-ready[data-guest-view=compose] .guest-compose-heading{margin:0 0 4px}
+@media(max-height:680px){.guest-landing-ready[data-guest-view=home] .guest-home-content,.guest-landing-ready[data-guest-view=compose] #guest-message{padding-top:24px;padding-bottom:88px}.guest-landing-ready[data-guest-view=home] .guest-home-footer,.guest-landing-ready[data-guest-view=compose] .guest-compose-footer{bottom:24px}}
