@@ -9,10 +9,7 @@
   const brand=header.querySelector('.suite-brand img');brand.src='assets/la-suite-logo.webp?v=20261010-forge-type';brand.alt='La Suite — Capsule temporelle';
   header.insertBefore(tabs,header.children[1]);
   new ResizeObserver(()=>document.body.style.setProperty('--organizer-header-height',Math.ceil(header.parentElement.getBoundingClientRect().height)+'px')).observe(header.parentElement);
-  const selector=document.querySelector('.workspace-selector');
-  if(!selector){const choose=document.createElement('button');choose.type='button';choose.className='organizer-capsule-selector';choose.innerHTML='Mes capsules <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>';choose.setAttribute('aria-haspopup','dialog');choose.setAttribute('aria-controls','workspace-capsules');choose.onclick=()=>$('workspace-open-capsules').click();header.insertBefore(choose,header.querySelector('.workspace-account-button'));}
-  if(selector){selector.classList.add('organizer-capsule-selector');const label=document.createElement('span');label.textContent='Mes capsules';selector.prepend(label);header.insertBefore(selector,header.querySelector('.workspace-account-button'));}
-  const settingsButton=$('owner-tab-settings');if(settingsButton){header.insertBefore(settingsButton,header.querySelector('.workspace-account-button'));settingsButton.hidden=false;}
+  document.querySelector('.workspace-selector')?.remove();
   const head=document.querySelector('.qr-designer-head');const subtitle=document.createElement('p');subtitle.textContent='Créez une carte QR et une page d’accueil qui vous ressemblent.';head.firstElementChild.append(subtitle);
   const edit=document.createElement('button');edit.id='organizer-modify';edit.type='button';edit.className='btn secondary organizer-modify';edit.setAttribute('aria-controls','organizer-editor-controls');controls.id='organizer-editor-controls';head.append(edit);
   const mobileLayout=matchMedia('(max-width:760px)'),tabsHome=document.createComment('workspace-navigation');tabs.before(tabsHome);
