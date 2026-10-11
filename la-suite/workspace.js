@@ -18,7 +18,7 @@
   if(data?.length!==1||data[0].id!==capsule.id)throw Error('La capsule a changé ou n’est plus disponible. Rouvrez la liste.');
  }
  window.SuiteWorkspace={deleteOwnedCapsule,async setup({sb,user,caps,access,selected,canLeave,prepareLeave,downloadCapsule,logout}){
-  let ended=false,accountBusy=false,deleteBusy=false,deleteTarget=null;
+  let ended=false,accountBusy=false,deleteBusy=false,downloadBusy=false,deleteTarget=null;
   document.body.classList.add('workspace-ready');
   // Reserve the device inset once; Android browser chrome must not resize the tabs.
   const insetProbe=document.createElement('div');insetProbe.className='workspace-safe-area-probe';document.body.append(insetProbe);
@@ -43,7 +43,7 @@
    }).join('')||'<p class="hint">Créez votre première capsule pour commencer.</p>';
   }
   let summaryLoading=false;
-  async function refreshSummaries(){if(ended||summaryLoading)return;summaryLoading=true;try{const{data,error}=await sb.rpc('owner_capsule_summary');if(error)throw error;if(ended)return;(data||[]).forEach(info=>summaries.set(info.id,info));render();$('workspace-selection-status').textContent=''}catch{if(!ended)$('workspace-selection-status').textContent='Les compteurs n’ont pas chargé. Fermez puis rouvrez cette fenêtre pour réessayer.'}finally{summaryLoading=false}}
+  async function refreshSummaries(){if(ended||summaryLoading||downloadBusy)return;summaryLoading=true;try{const{data,error}=await sb.rpc('owner_capsule_summary');if(error)throw error;if(ended)return;(data||[]).forEach(info=>summaries.set(info.id,info));render();$('workspace-selection-status').textContent=''}catch{if(!ended)$('workspace-selection-status').textContent='Les compteurs n’ont pas chargé. Fermez puis rouvrez cette fenêtre pour réessayer.'}finally{summaryLoading=false}}
   render();
   body.addEventListener('click',e=>{const link=e.target.closest('#workspace-mine a');if(link&&!canLeave()){e.preventDefault();$('workspace-selection-status').textContent='Enregistrez les modifications avant de changer de capsule.'}});
   choose.canClose=()=>true;account.canClose=()=>!accountBusy;deletion.canClose=()=>!deleteBusy;
@@ -51,11 +51,12 @@
   choose.addEventListener('close',()=>{accountButton.focus()});
   body.addEventListener('click',async e=>{
    const settings=e.target.closest('[data-capsule-download]'),remove=e.target.closest('[data-capsule-delete]');
-   if(!settings&&!remove||ended||deleteBusy)return;
+   if(!settings&&!remove||ended||deleteBusy||downloadBusy)return;
    const capsule=caps.find(c=>c.id===(settings?.dataset.capsuleDownload||remove?.dataset.capsuleDelete));if(!capsule)return;
    if(!canLeave()){$('workspace-selection-status').textContent='Patientez jusqu’à la fin de l’enregistrement.';return;}
    if(settings){
-    await downloadCapsule?.(capsule,settings,$('workspace-selection-status'));
+    downloadBusy=true;body.querySelectorAll('.workspace-capsule-actions button').forEach(button=>button.disabled=true);
+    try{await downloadCapsule?.(capsule,settings,$('workspace-selection-status'));}finally{downloadBusy=false;body.querySelectorAll('.workspace-capsule-actions button').forEach(button=>button.disabled=false);}
    }else{
     deleteTarget=capsule;$('workspace-delete-name').textContent=capsule.couple_name;
     $('workspace-delete-confirmation').value='';$('workspace-delete-status').textContent='';$('workspace-delete-submit').disabled=true;deletion.showModal();
