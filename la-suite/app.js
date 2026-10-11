@@ -1927,7 +1927,7 @@ async function initDashboard(){
  if(ownerSessionEnded)return;
  if(!qs.get("slug")&&caps.length){let last;try{last=localStorage.getItem('la_suite_last_'+u.id)}catch{}const chosen=caps.find(c=>c.slug===last)||caps[0];location.replace("dashboard.html?slug="+encodeURIComponent(chosen.slug)+location.hash);return;}
  const c=caps.find(x=>x.slug===qs.get("slug"));
- await window.SuiteWorkspace.setup({sb,user:u,caps,access,selected:c,canLeave:()=>!organizerDirty()&&!organizerState.saving,logout});
+ await window.SuiteWorkspace.setup({sb,user:u,caps,access,selected:c,canLeave:()=>!organizerDirty()&&!organizerState.saving,prepareLeave:()=>saveAll(),logout});
  if(ownerSessionEnded)return;
  if(!caps.length){$("dashboard-title").textContent="Mon espace";$("dashboard-content").innerHTML='<section class="workspace-empty"><h2>Votre première capsule</h2><p>Créez votre capsule, personnalisez votre carte et partagez-la avec vos invités.</p>'+ (access.can_create?'<a class="btn primary" href="create.html">Créer une capsule</a>':'<p>'+esc(access.reason||"Création momentanément indisponible.")+'</p>')+'</section>';return;}
  if(!c)return $("dashboard-content").innerHTML='<div class="notice">Capsule introuvable. Ouvrez « Mon compte », puis « Mes capsules » pour en choisir une autre.</div>';

@@ -589,3 +589,12 @@
  .workspace-ready .workspace-sheet .studio-sheet-body{padding-inline:16px}
  .workspace-ready #workspace-account-dialog .studio-sheet-body{padding-inline:16px}
 }
+
+/* Deletion is a centered confirmation, including on mobile. */
+.workspace-ready #workspace-delete-capsule{position:fixed!important;inset:0 0 var(--workspace-bottom,0px) 0!important;margin:auto!important;width:min(460px,calc(100% - 32px))!important;max-width:460px!important;height:fit-content!important;max-height:calc(var(--workspace-viewport-height,100dvh) - 32px)!important;border-radius:16px!important;padding:0!important;overflow-y:auto;overscroll-behavior:contain}
+.workspace-ready #workspace-delete-capsule .studio-sheet-head{position:static;padding:16px 16px 8px}
+.workspace-ready #workspace-delete-capsule .studio-sheet-head h2{font-size:20px}
+.workspace-ready #workspace-delete-capsule .studio-sheet-body{padding:8px 16px 20px}
+.workspace-ready #workspace-delete-capsule .studio-sheet-body>p{margin:0 0 16px}
+.workspace-ready #workspace-delete-status:not(:empty),.workspace-ready #workspace-selection-status:not(:empty){display:block;margin:0;padding:10px 12px;background:#f5f3ee;color:#302725}
+.workspace-ready #workspace-selection-status:not(:empty){margin-top:12px}

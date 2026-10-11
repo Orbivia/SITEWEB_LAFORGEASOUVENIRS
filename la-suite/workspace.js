@@ -14,7 +14,7 @@
   if(error)throw error;
   if(data?.length!==1||data[0].id!==capsule.id)throw Error('La capsule a changé ou n’est plus disponible. Rouvrez la liste.');
  }
- window.SuiteWorkspace={deleteOwnedCapsule,async setup({sb,user,caps,access,selected,canLeave,logout}){
+ window.SuiteWorkspace={deleteOwnedCapsule,async setup({sb,user,caps,access,selected,canLeave,prepareLeave,logout}){
   let ended=false,accountBusy=false,deleteBusy=false,deleteTarget=null;
   document.body.classList.add('workspace-ready');
   // Reserve the device inset once; Android browser chrome must not resize the tabs.
@@ -60,23 +60,29 @@
    }
   });
   deletion.querySelector('.studio-sheet-body').innerHTML='<p>La capsule <strong id="workspace-delete-name"></strong> et ses souvenirs seront supprimés. Son lien et son QR code ne fonctionneront plus. Cette action est définitive.</p><form id="workspace-delete-form"><label for="workspace-delete-confirmation">Recopiez le nom de la capsule pour confirmer</label><input id="workspace-delete-confirmation" autocomplete="off" required><p id="workspace-delete-status" class="status" role="status" aria-live="polite"></p><div class="workspace-delete-actions"><button id="workspace-delete-cancel" class="btn secondary" type="button">Annuler</button><button id="workspace-delete-submit" class="btn primary" type="submit" disabled>Supprimer</button></div></form>';
-  $('workspace-delete-confirmation').oninput=()=>{$('workspace-delete-submit').disabled=deleteBusy||$('workspace-delete-confirmation').value!==deleteTarget?.couple_name;};
+  $('workspace-delete-confirmation').oninput=()=>{$('workspace-delete-submit').disabled=deleteBusy||$('workspace-delete-confirmation').value.trim()!==deleteTarget?.couple_name;};
   const closeDeletion=()=>{if(!deleteBusy)deletion.close();};deletion.querySelector('.studio-close').onclick=closeDeletion;$('workspace-delete-cancel').onclick=closeDeletion;
   deletion.addEventListener('cancel',e=>{if(deleteBusy)e.preventDefault();});
   deletion.addEventListener('close',()=>{deleteTarget=null;choose.querySelector('[data-capsule-delete]')?.focus();});
   $('workspace-delete-form').onsubmit=async e=>{
-   e.preventDefault();if(ended||deleteBusy||!deleteTarget||!canLeave())return;
-   const target=deleteTarget,confirmation=$('workspace-delete-confirmation').value;
+   e.preventDefault();if(ended||deleteBusy||!deleteTarget)return;
+   const target=deleteTarget,confirmation=$('workspace-delete-confirmation').value.trim();
    if(confirmation!==target.couple_name)return;
    deleteBusy=true;deletion.querySelectorAll('button,input').forEach(el=>el.disabled=true);$('workspace-delete-status').textContent='Suppression…';
    try{
+    if(!canLeave()){
+     $('workspace-delete-status').textContent='Enregistrement des modifications…';
+     if(!prepareLeave||!await prepareLeave()||!canLeave())throw Error('Les modifications ne sont pas encore enregistrées. Réessayez après l’enregistrement.');
+    }
+    if(ended)return;
+    $('workspace-delete-status').textContent='Suppression…';
     await deleteOwnedCapsule(sb,user.id,target,confirmation);if(ended)return;
     caps.splice(caps.findIndex(c=>c.id===target.id),1);summaries.delete(target.id);
     if(target.slug===selected?.slug){try{localStorage.removeItem('la_suite_last_'+user.id)}catch{}location.replace(caps.length?'dashboard.html?slug='+encodeURIComponent(caps[0].slug):'dashboard.html');return;}
     deleteBusy=false;deletion.close();render();$('workspace-selection-status').textContent='La capsule a été supprimée.';
     try{const {data,error}=await sb.rpc('owner_capsule_access');if(!error&&data){access=data;$('workspace-create').hidden=!data.can_create;$('workspace-create-help').textContent=data.can_create?'':data.reason||'';}}catch{}
    }catch(error){if(!ended)$('workspace-delete-status').textContent='Suppression impossible : '+error.message;}
-   finally{deleteBusy=false;deletion.querySelectorAll('button,input').forEach(el=>el.disabled=false);$('workspace-delete-submit').disabled=$('workspace-delete-confirmation').value!==deleteTarget?.couple_name;}
+   finally{deleteBusy=false;deletion.querySelectorAll('button,input').forEach(el=>el.disabled=false);$('workspace-delete-submit').disabled=$('workspace-delete-confirmation').value.trim()!==deleteTarget?.couple_name;}
   };
   account.querySelector('.studio-sheet-body').innerHTML='<section class="workspace-account-section"><h3>Connexion</h3><p class="workspace-account-label">Adresse e-mail</p><div class="workspace-email"><span id="workspace-email-current"></span><button id="workspace-edit-email" aria-expanded="false" aria-controls="workspace-email-form" class="btn secondary" type="button">Modifier</button></div><form id="workspace-email-form" hidden><label for="workspace-email-new">Nouvelle adresse e-mail</label><input id="workspace-email-new" type="email" autocomplete="email" required maxlength="254"><p class="hint">Confirmez le changement via les e-mails reçus. Votre adresse actuelle reste utilisée jusqu’à confirmation.</p><button class="btn primary" type="submit">Confirmer le changement</button></form></section><section class="workspace-account-section workspace-security" aria-label="Sécurité"><button id="workspace-edit-password" aria-expanded="false" aria-controls="workspace-password-form" class="workspace-account-row" type="button"><i class="fa-solid fa-lock" aria-hidden="true"></i>Modifier mon mot de passe<i class="fa-solid fa-chevron-down" aria-hidden="true"></i></button><form id="workspace-password-form" hidden><label for="workspace-password-current">Mot de passe actuel</label><input id="workspace-password-current" type="password" autocomplete="current-password" required><label for="workspace-password-new">Nouveau mot de passe</label><input id="workspace-password-new" type="password" autocomplete="new-password" minlength="10" required><label for="workspace-password-confirm">Confirmer le nouveau mot de passe</label><input id="workspace-password-confirm" type="password" autocomplete="new-password" minlength="10" required><small>Au moins 10 caractères.</small><button class="btn primary" type="submit">Modifier mon mot de passe</button><a href="auth.html?mode=reset">Mot de passe oublié ?</a></form></section><p id="workspace-account-status" class="status" role="status" aria-live="polite"></p><button id="logout" class="workspace-account-row workspace-logout" type="button"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>Déconnexion</button>';
   const capsulesButton=document.createElement('button');capsulesButton.id='workspace-open-capsules';capsulesButton.type='button';capsulesButton.className='workspace-account-row';capsulesButton.setAttribute('aria-haspopup','dialog');capsulesButton.setAttribute('aria-controls',choose.id);capsulesButton.innerHTML='<i class="fa-solid fa-layer-group" aria-hidden="true"></i>Mes capsules<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';const capsulesSection=document.createElement('section');capsulesSection.className='workspace-account-section workspace-account-capsules';capsulesSection.innerHTML='<h3>Capsules</h3>';capsulesSection.append(capsulesButton);account.querySelector('.studio-sheet-body').prepend(capsulesSection);
