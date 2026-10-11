@@ -66,7 +66,7 @@
   $('workspace-delete-confirmation').oninput=()=>{$('workspace-delete-submit').disabled=deleteBusy||$('workspace-delete-confirmation').value.trim()!==deleteTarget?.couple_name;};
   const closeDeletion=()=>{if(!deleteBusy)deletion.close();};deletion.querySelector('.studio-close').onclick=closeDeletion;$('workspace-delete-cancel').onclick=closeDeletion;
   deletion.addEventListener('cancel',e=>{if(deleteBusy)e.preventDefault();});
-  deletion.addEventListener('close',()=>{deleteTarget=null;choose.querySelector('[data-capsule-delete]')?.focus();});
+  deletion.addEventListener('close',()=>{const targetId=deleteTarget?.id;deleteTarget=null;[...choose.querySelectorAll('[data-capsule-delete]')].find(button=>button.dataset.capsuleDelete===targetId)?.focus();});
   $('workspace-delete-form').onsubmit=async e=>{
    e.preventDefault();if(ended||deleteBusy||!deleteTarget)return;
    const target=deleteTarget,confirmation=$('workspace-delete-confirmation').value.trim();

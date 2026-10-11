@@ -132,3 +132,5 @@
 .guest-landing .guest-opening-date{font-size:13px;margin-top:20px;letter-spacing:.03em}
 .guest-load-error .guest-home-heading,.guest-load-error #guest-event-date,.guest-load-error .guest-home-divider,.guest-load-error .guest-opening,.guest-load-error .guest-greeting,.guest-load-error #guest-read-more,.guest-load-error .guest-home-prompt,.guest-load-error #guest-deposit,.guest-load-error .guest-home-types,.guest-load-error .guest-cover{display:none!important}
 .guest-load-error .guest-home-state{display:block!important;margin:auto 0;font-size:14px}
+
+.guest-home-types svg{fill:var(--home-accent);stroke:none}

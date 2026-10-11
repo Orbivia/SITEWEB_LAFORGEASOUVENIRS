@@ -3578,3 +3578,10 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 
 /* Shared QR glyph in navigation inherits the active button color. */
 .suite-qr-icon{display:inline-block;width:20px;height:20px;vertical-align:middle;flex:none}
+
+/* Dialog lists and long account values remain accessible on small screens. */
+.workspace-sheet[open]{display:flex;flex-direction:column;max-height:min(86dvh,calc(var(--workspace-viewport-height,100dvh) - 24px))}
+.workspace-sheet>.studio-sheet-head{flex:none}
+.workspace-sheet>.studio-sheet-body{min-height:0;overflow-y:auto;overscroll-behavior-y:contain}
+.workspace-email button,.workspace-capsule-row>img{flex:none}
+.workspace-account-row{overflow-wrap:anywhere}

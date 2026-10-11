@@ -427,3 +427,5 @@
 .visual-primary .visual-drawer [data-panel=details] .visual-qr-shapes button{height:auto;min-height:32px;padding:5px;line-height:1.4}
 
 .visual-primary .visual-themes .visual-import,.visual-primary[data-tool=theme] .visual-themes .visual-import{height:auto;min-height:44px;padding:6px 3px;line-height:1.4}
+
+.visual-card-qr>span svg{display:block;width:16px;height:16px;fill:currentColor}
