@@ -271,3 +271,18 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .memory-sort{margin-left:auto;max-width:130px;padding:9px 10px;min-height:40px;border:1px solid #e4dccd;border-radius:9px;background:#fffdf7;color:#690c29;font:500 11px Inter,sans-serif}
  .memory-upcoming-divider{display:flex;align-items:center;justify-content:center;gap:7px;flex:none;margin:0;padding:15px 0 10px;color:#776f65;font:400 10px/1.5 Inter,sans-serif;border-bottom:1px solid #e9e1d7}
 }
+
+/* Give the memory list the largest available area on phones. */
+@media(max-width:760px){
+ .organizer-layout-ready .owner-deposit-open.deposit-open-has-memories{padding:20px 20px 30px}
+ .deposit-open-has-memories .deposit-open-content{gap:10px}
+ .deposit-open-has-memories .deposit-open-heading h2{font-size:28px;margin:0 0 5px}
+ .deposit-open-has-memories .deposit-open-summary{margin-bottom:6px}
+ .organizer-layout-ready .deposit-open-gallery .owner-messages-hero{display:none!important}
+ .organizer-layout-ready .deposit-open-gallery .memory-filters{margin:0 0 6px;padding:2px;border-radius:9px}
+ .organizer-layout-ready .deposit-open-gallery .memory-filters button{min-height:44px;padding:4px 2px;border-radius:7px}
+ .organizer-layout-ready .deposit-open-gallery #memory-list{flex:1;min-height:0}
+ .organizer-layout-ready .deposit-open-gallery .memory-compact{min-height:58px;padding:7px 0}
+ .organizer-layout-ready .deposit-open-export #export-memories{min-height:44px;padding:8px;font-size:12px}
+ .memory-upcoming-divider{padding:10px 0}
+}
