@@ -392,3 +392,6 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
  .memory-section-heading .memory-upcoming-divider{padding-bottom:2px}
  .organizer-layout-ready .deposit-open-gallery .memory-compact{padding-block:5px;min-height:54px}
 }
+
+/* Keep the discovery heading focused on the memories. */
+.owner-deposit-open [data-open-until]{display:none!important}
