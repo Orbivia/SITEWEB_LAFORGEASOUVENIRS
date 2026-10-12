@@ -508,3 +508,7 @@ body[data-compose-dark=true] .guest-success-footer img{filter:brightness(0) inve
 .guest-landing[data-state=open] .guest-host-zone[data-content=media] .guest-cover{height:30dvh}
 .guest-landing[data-state=open] .guest-host-zone[data-content=empty]{height:18dvh;margin:4px 0}
 }
+
+/* Let the welcome media fill the central space, including portrait images. */
+.guest-landing[data-state=open] .guest-host-zone[data-content=media]{max-width:100%}
+.guest-landing[data-state=open] .guest-host-zone[data-content=media] .guest-cover{flex:1 1 0;width:100%;max-width:100%;height:auto;max-height:100%;min-height:0}
