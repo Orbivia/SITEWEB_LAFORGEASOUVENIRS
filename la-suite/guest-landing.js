@@ -41,7 +41,7 @@
   }}
   const editResize=new ResizeObserver(positionEdits);for(const {node} of edits)editResize.observe(node);
   new MutationObserver(positionEdits).observe(landing,{subtree:true,attributes:true,childList:true,characterData:true});
-  landing.addEventListener('load',positionEdits,true);landing.addEventListener('loadedmetadata',positionEdits,true);window.addEventListener('resize',positionEdits);window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='la-suite-guest-preview-scale')return;const scale=Number(event.data.scale);if(!Number.isFinite(scale)||scale<=0)return;editScale=Math.max(.25,Math.min(1,scale));editLayer.style.setProperty('--preview-edit-scale',String(1/editScale));positionEdits();});
+  landing.addEventListener('load',positionEdits,true);landing.addEventListener('loadedmetadata',positionEdits,true);window.addEventListener('resize',positionEdits);window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='la-suite-guest-preview-scale')return;const scale=Number(event.data.scale);if(!Number.isFinite(scale)||scale<=0)return;editScale=Math.max(.05,Math.min(1,scale));editLayer.style.setProperty('--preview-edit-scale',String(1/editScale));positionEdits();});
   document.addEventListener('click',event=>{
    const node=event.target.closest('#capsule-title,#guest-event-date,.guest-host-zone,#guest-read-more');if(!node||event.target.closest('[contenteditable=true]'))return;
    event.preventDefault();event.stopImmediatePropagation();editInline(node.id==='capsule-title'?'name':node.id==='guest-event-date'?'date':'intro');

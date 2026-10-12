@@ -1628,7 +1628,7 @@ function setupOwnerTabs(c,manifest){
  }
  const links=[...document.querySelectorAll("[data-owner-tab-link]")];
  const discoveryUnavailable=c.status==='draft';
- document.body.classList.toggle('owner-capsule-draft',discoveryUnavailable);const ownerNavigation=document.querySelector('.owner-tabs');if(ownerNavigation)ownerNavigation.hidden=discoveryUnavailable;
+ document.body.classList.toggle('owner-capsule-draft',discoveryUnavailable);const ownerNavigation=document.querySelector('.owner-tabs');if(ownerNavigation)ownerNavigation.hidden=true;document.body.classList.add('owner-no-tabs');
  for(const link of links.filter(link=>link.dataset.ownerTabLink==='messages')){
   link.hidden=discoveryUnavailable;
  }
@@ -1668,7 +1668,7 @@ function setupOwnerTabs(c,manifest){
  }));
  panels.forEach(panel=>{panel.id="owner-panel-"+panel.dataset.ownerPanel;panel.setAttribute("role",panel.dataset.ownerPanel==="settings"?"region":"tabpanel");panel.setAttribute("aria-labelledby","owner-tab-"+panel.dataset.ownerPanel)});
  window.addEventListener("hashchange",()=>activate(location.hash.slice(1),false));
- activate(location.hash.slice(1),false)
+ activate(location.hash.slice(1)||(c.status==='active'&&parisDay()>=c.wedding_date?'messages':'configuration'),false)
 }
 
 function setupQrCustomizerUi(){

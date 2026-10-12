@@ -436,3 +436,10 @@ body.owner-capsule-draft .welcome-visual-editor.visual-primary{max-height:calc(1
  body.organizer-layout-ready .deposit-waiting-main{min-height:0;overflow:auto}
  body.organizer-layout-ready .deposit-waiting-actions{flex:none}
 }
+
+body.owner-no-tabs .owner-tabs{display:none!important}
+body.owner-no-tabs{padding-bottom:0!important}
+@media(max-width:760px){
+ body.organizer-layout-ready.owner-no-tabs .welcome-visual-editor.visual-primary{max-height:calc(100svh - var(--organizer-header-height,65px) - 12px)}
+ body.organizer-layout-ready.owner-no-tabs .owner-deposit-waiting{height:calc(100svh - var(--organizer-header-height,64px) - 16px);max-height:calc(100svh - var(--organizer-header-height,64px) - 16px)}
+}
