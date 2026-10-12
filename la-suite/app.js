@@ -1264,7 +1264,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  ctx.fillStyle=dark?'#fffaf1':'#201c1a';ctx.font='400 44px Inter,Arial,sans-serif';if(c.welcome_config?.cardShowDate!==false)ctx.fillText(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'}),W/2,435);
  const dateText=new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
  const dateInkRight=W/2+ctx.measureText(dateText).width/2;
- drawQrDivider(ctx,{...o,color:accent},W/2,490);
+ if(c.welcome_config?.cardShowDate!==false)drawQrDivider(ctx,{...o,color:accent},W/2,490);
  const qsize=660,qx=Math.round((W-qsize)/2),qy=510;
  canvas.cardQrBox={x:qx,y:qy,width:qsize,height:qsize};
  const background=document.createElement("canvas");background.width=W;background.height=H;
