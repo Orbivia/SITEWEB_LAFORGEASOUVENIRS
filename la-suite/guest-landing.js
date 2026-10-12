@@ -3,7 +3,7 @@
  'use strict';
  const $=id=>document.getElementById(id),body=document.body,form=$('guest-message');
  if(!form)return;
- body.classList.add('guest-landing-ready');body.dataset.guestView='home';window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==window.parent||new URLSearchParams(location.search).get('preview')!=='1'||event.data?.type!=='la-suite-guest-preview-page')return;body.dataset.guestView=event.data.page==='compose'?'compose':'home';window.scrollTo(0,0);window.dispatchEvent(new Event('resize'));});
+ body.classList.add('guest-landing-ready');body.dataset.guestView='home';window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==window.parent||new URLSearchParams(location.search).get('preview')!=='1'||event.data?.type!=='la-suite-guest-preview-page')return;body.dataset.previewPage=event.data.page==='compose'?'compose':'home';body.dataset.guestView=body.dataset.previewPage;form.inert=body.dataset.previewPage==='compose';if(form.inert)form.hidden=false;window.scrollTo(0,0);window.dispatchEvent(new Event('resize'));});
  let currentState=null,countdownTimer=null,openingNotified=false;
  const main=document.querySelector('.guest-page'),hero=document.querySelector('.capsule-hero'),intro=$('intro-section');
  const landing=document.createElement('section');landing.id='guest-landing';landing.className='guest-landing';landing.setAttribute('aria-label','Accueil de la capsule');
@@ -138,7 +138,7 @@
   if(remaining.total===0&&!openingNotified){openingNotified=true;setTimeout(()=>window.dispatchEvent(new Event('la-suite-guest-boundary')),1000);}
  }
  function render(state){
-  if(form.hidden&&body.dataset.guestView==='compose')body.dataset.guestView='home';
+  if(body.dataset.previewPage){body.dataset.guestView=body.dataset.previewPage;form.inert=body.dataset.previewPage==='compose';if(form.inert)form.hidden=false;}else if(form.hidden&&body.dataset.guestView==='compose')body.dataset.guestView='home';
   landing.dataset.state=state.state;landing.dataset.countdown=String(state.state==='scheduled'&&Boolean(SuiteGuestCalendar.remaining(state.opens_at)));
   currentState=state;openingNotified=false;clearInterval(countdownTimer);updateCountdown();if(state.state==='scheduled')countdownTimer=setInterval(updateCountdown,1000);
   landing.querySelector('.guest-home-footer img').hidden=false;const o=window.SuiteWelcome.options(state.welcome_config),theme=window.SuiteDesign.styles.find(s=>s.id===o.style),dark=theme?.dark||false;

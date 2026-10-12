@@ -847,3 +847,6 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 
 /* The theme picker contains the agreed fixed styles only. */
 .visual-primary .visual-background-host{display:none!important}
+
+.visual-primary.visual-deposit-readonly[data-target=welcome] .visual-drawer{display:none!important}
+.visual-primary.visual-deposit-readonly[data-target=welcome] .visual-stage{grid-column:1/-1}
