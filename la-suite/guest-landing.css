@@ -481,3 +481,11 @@ body[data-compose-dark=true] .guest-success-footer img{filter:brightness(0) inve
 @media(max-height:650px){.guest-landing-ready .guest-home-footer,.guest-landing-ready .guest-compose-footer,.guest-landing-ready .guest-success-footer{height:30px!important;bottom:max(12px,env(safe-area-inset-bottom))!important}.guest-landing-ready .guest-home-footer img,.guest-landing-ready .guest-compose-footer img,.guest-landing-ready .guest-success-footer img{width:100px!important;max-height:30px!important}.guest-landing-ready[data-guest-view=home] .guest-home-content,.guest-landing-ready[data-guest-view=compose] #guest-message,.guest-landing-ready[data-guest-view=success] #guest-success{padding-bottom:calc(max(12px,env(safe-area-inset-bottom)) + 42px)}}
 .guest-landing-ready .guest-home-brand{display:flex;align-items:center;justify-content:center;height:100%}
 .guest-landing-ready .guest-home-footer img,.guest-landing-ready .guest-compose-footer img,.guest-landing-ready .guest-success-footer img{display:block}
+
+
+/* Text uses the same popup pattern as the other guest formats. */
+.guest-landing-ready .guest-text-launch[hidden]{display:none!important}
+.guest-text-launch span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;white-space:pre-wrap}
+.guest-landing-ready[data-guest-view=compose] .guest-text-dialog #guest-text-content,.guest-landing-ready[data-guest-view=compose] .guest-text-dialog #guest-message-field{height:auto;min-height:0}
+.guest-landing-ready[data-guest-view=compose] .guest-text-dialog #message_text{box-sizing:border-box;width:100%;height:clamp(120px,32dvh,280px)!important;min-height:120px!important;font-size:16px;line-height:1.5;resize:vertical}
+.guest-text-dialog .guest-message-counter{display:block;text-align:right;margin-top:6px}
