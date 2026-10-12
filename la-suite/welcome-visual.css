@@ -844,3 +844,6 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-preview-pages button{padding:7px 10px;border:1px solid #dce2d7;border-radius:9px;background:#fffefa;color:#355748;font-size:12px;cursor:pointer}
 .visual-preview-pages button[aria-pressed=true]{background:#355748;color:#fff;border-color:#355748}
 .owner-pinch-zoom .visual-primary .visual-stage{overflow:visible}
+
+/* The theme picker contains the agreed fixed styles only. */
+.visual-primary .visual-background-host{display:none!important}
