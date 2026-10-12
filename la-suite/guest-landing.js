@@ -3,7 +3,8 @@
  'use strict';
  const $=id=>document.getElementById(id),body=document.body,form=$('guest-message');
  if(!form)return;
- body.classList.add('guest-landing-ready');body.dataset.guestView='home';window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==window.parent||new URLSearchParams(location.search).get('preview')!=='1'||event.data?.type!=='la-suite-guest-preview-page')return;body.dataset.previewPage=event.data.page==='compose'?'compose':'home';body.dataset.guestView=body.dataset.previewPage;form.inert=body.dataset.previewPage==='compose';if(form.inert)form.hidden=false;window.scrollTo(0,0);window.dispatchEvent(new Event('resize'));});
+ body.classList.add('guest-landing-ready');body.dataset.guestView='home';const welcomeEditor=new URLSearchParams(location.search).get('editor')==='1'&&window.parent!==window;
+
  let currentState=null,countdownTimer=null,openingNotified=false;
  const main=document.querySelector('.guest-page'),hero=document.querySelector('.capsule-hero'),intro=$('intro-section');
  const landing=document.createElement('section');landing.id='guest-landing';landing.className='guest-landing';landing.setAttribute('aria-label','Accueil de la capsule');
@@ -51,9 +52,9 @@
 
  for(const [type,label] of [['image','Photo'],['video','Vidéo'],['audio','Audio'],['text','Texte']]){
   const b=document.createElement('button');b.type='button';b.dataset.landingType=type;b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+icons[type]+'</svg><span>'+label+'</span>';b.hidden=true;
-  b.onclick=()=>{body.dataset.guestView='compose';form.querySelector('[data-memory-type="'+type+'"]').click();window.scrollTo(0,0);};types.append(b);
+  b.onclick=()=>{if(welcomeEditor)return;body.dataset.guestView='compose';form.querySelector('[data-memory-type="'+type+'"]').click();window.scrollTo(0,0);};types.append(b);
  }
- $('guest-deposit').onclick=()=>{body.dataset.guestView='compose';window.scrollTo(0,0);form.querySelector('[data-memory-type]:not([hidden])')?.focus({preventScroll:true});};
+ $('guest-deposit').onclick=()=>{if(welcomeEditor)return;body.dataset.guestView='compose';window.scrollTo(0,0);form.querySelector('[data-memory-type]:not([hidden])')?.focus({preventScroll:true});};
  const composeHeading=document.createElement('header');composeHeading.className='guest-compose-heading';composeHeading.innerHTML='<h2>Votre souvenir</h2><p></p>';form.prepend(composeHeading);const signature=form.querySelector('.guest-signature'),delivery=form.querySelector('.guest-personalization');signature.after(delivery);
  const submission=document.createElement('div');submission.className='guest-submit-fields';signature.before(submission);submission.append(signature,delivery,form.querySelector('.submit-memory'));
  const composer=document.createElement('div');composer.className='guest-composer-body';form.querySelector('.memory-type-choices').after(composer);for(const id of ['capture-choices','file-help','upload-panel','video-panel','audio-panel','photo-panel','media-preview','capture-status','guest-text-content','guest-extras']){const node=$(id);if(node)composer.append(node);}
@@ -138,7 +139,7 @@
   if(remaining.total===0&&!openingNotified){openingNotified=true;setTimeout(()=>window.dispatchEvent(new Event('la-suite-guest-boundary')),1000);}
  }
  function render(state){
-  if(body.dataset.previewPage){body.dataset.guestView=body.dataset.previewPage;form.inert=body.dataset.previewPage==='compose';if(form.inert)form.hidden=false;}else if(form.hidden&&body.dataset.guestView==='compose')body.dataset.guestView='home';
+  if(welcomeEditor)body.dataset.guestView='home';else if(form.hidden&&body.dataset.guestView==='compose')body.dataset.guestView='home';
   landing.dataset.state=state.state;landing.dataset.countdown=String(state.state==='scheduled'&&Boolean(SuiteGuestCalendar.remaining(state.opens_at)));
   currentState=state;openingNotified=false;clearInterval(countdownTimer);updateCountdown();if(state.state==='scheduled')countdownTimer=setInterval(updateCountdown,1000);
   landing.querySelector('.guest-home-footer img').hidden=false;const o=window.SuiteWelcome.options(state.welcome_config),theme=window.SuiteDesign.styles.find(s=>s.id===o.style),dark=theme?.dark||false;

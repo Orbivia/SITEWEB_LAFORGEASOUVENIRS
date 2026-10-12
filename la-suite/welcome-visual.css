@@ -855,3 +855,5 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-card-fullscreen{position:absolute;right:8px;bottom:8px;z-index:20;display:grid;place-items:center;width:36px;height:36px;min-height:36px;padding:8px;border:0;border-radius:10px;background:#fffdf7;color:#27352e;box-shadow:0 3px 12px #0002;cursor:pointer}
 .visual-card-fullscreen[hidden]{display:none!important}
 .visual-card-fullscreen svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+
+.visual-primary.visual-fullscreen-fallback{position:fixed!important;inset:0!important;width:100vw!important;height:100svh!important;max-height:100svh!important;z-index:1000;background:#fffdf8}

@@ -723,3 +723,6 @@ body.guest-sending #guest-message{visibility:hidden}
 #delivery-dialog #delivery-date-wrap{margin:0}
 
 .guest-home-label{display:none!important}
+
+body.guest-preview-editor{overflow:hidden}
+body.guest-preview-editor #guest-deposit,body.guest-preview-editor .guest-home-types{pointer-events:none}
