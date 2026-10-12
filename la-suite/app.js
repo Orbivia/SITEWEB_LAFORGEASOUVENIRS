@@ -474,6 +474,16 @@ function guestIdentity(){
  guestIdentities.set(key,id);try{localStorage.setItem(key,id)}catch{}
  return id;
 }
+let guestLimitDeadlines={text:0,media:0},guestLimitCheck=null;
+function guestWaitSeconds(type=guestType){return Math.max(0,Math.ceil((guestLimitDeadlines[type==='text'?'text':'media']-Date.now())/1000));}
+function notifyGuestLimits(){window.dispatchEvent(new Event('la-suite-guest-limits'));}
+async function refreshGuestLimits(){
+ if(guestIsPreview)return true;const token=qs.get('t')||qs.get('token');if(!token)return false;
+ if(guestLimitCheck)return guestLimitCheck;
+ guestLimitCheck=(async()=>{try{const data=await guestInvoke({action:'get_guest_limits',guest_token:token,file_size:selectedMedia?.file?.size||0});guestLimitDeadlines={text:Date.now()+Math.max(0,Number(data.text_retry_after_seconds)||0)*1000,media:Date.now()+Math.max(0,Number(data.media_retry_after_seconds)||0)*1000};notifyGuestLimits();return true;}catch{return false}finally{guestLimitCheck=null}})();return guestLimitCheck;
+}
+window.SuiteGuestLimits={refresh:refreshGuestLimits,remaining:guestWaitSeconds};
+setInterval(()=>{if(guestLimitDeadlines.text>Date.now()||guestLimitDeadlines.media>Date.now()){notifyGuestLimits();}else if(guestLimitDeadlines.text||guestLimitDeadlines.media){guestLimitDeadlines={text:0,media:0};notifyGuestLimits();refreshGuestLimits();}},1000);
 async function guestInvoke(body){
  if(guestIsPreview){
   if(!guestPreviewState)throw Error('Ouvrez cet aperçu depuis votre espace organisateur.');
@@ -481,7 +491,7 @@ async function guestInvoke(body){
   if(body.action==='get_intro')return {signed_url:guestPreviewState.preview_intro_url,media_type:guestPreviewState.preview_intro_type};
   throw Error('Mode aperçu : aucun souvenir ne peut être envoyé.');
  }
- if(["init_media","submit_text"].includes(body.action))body={...body,guest_id:guestIdentity()};
+ if(["init_media","submit_text","get_guest_limits"].includes(body.action))body={...body,guest_id:guestIdentity()};
  const r=await sb.functions.invoke("guest-upload",{body});
  if(r.error||r.data?.error){
   let message=r.data?.error;
@@ -557,7 +567,7 @@ async function acceptGuestFile(file,type,duration,interruption){
   if(version!==guestSelectionVersion)return;
   if(file.size>GUEST_LIMITS[type])throw new Error("Ce souvenir dépasse la taille autorisée.");
   if(normalizedType!==file.type&&type!=="image")file=new File([file],file.name,{type:normalizedType});
-  preview(file,type);selectedMedia.duration=duration;showCapture(interruption||"Prêt à envoyer.",!interruption);
+  preview(file,type);selectedMedia.duration=duration;refreshGuestLimits();showCapture(interruption||"Prêt à envoyer.",!interruption);
  }catch(error){if(version===guestSelectionVersion)showCapture(error.message,false)}
  finally{if(version===guestSelectionVersion)$("guest-message").querySelector('[type="submit"]').disabled=false}
 }
@@ -684,7 +694,7 @@ async function initCapsule(){
   $("organizer-intro").pause();
   $("guest-message").hidden=true;$("guest-retry").hidden=true;$("guest-state").textContent="Chargement de la capsule…";
   try{
-   guestState=await guestInvoke({action:"get_status",guest_token:token});
+   guestState=await guestInvoke({action:"get_status",guest_token:token});await refreshGuestLimits();
    window.SuiteWelcome.apply(guestState.welcome_config);
    $("capsule-title").textContent=guestState.couple_name;$("capsule-title").closest(".capsule-hero").classList.toggle("guest-long-name",String(guestState.couple_name||"").length>24);$("capsule-welcome").textContent=SuiteGuestCalendar.welcomeAvailable(guestState)&&!guestState.has_intro?guestState.welcome_message||"":"";
    $("capsule-welcome").hidden=!$("capsule-welcome").textContent;$("intro-section").hidden=!$("capsule-welcome").textContent;
@@ -722,7 +732,7 @@ async function initCapsule(){
   $("guest-state").scrollIntoView({behavior:"smooth",block:"start"});
  });
  $("guest-message").addEventListener("submit",async e=>{
-  e.preventDefault();if(guestBusy)return;
+  e.preventDefault();if(guestBusy)return;await refreshGuestLimits();if(guestBusy)return;if(guestWaitSeconds()>0){notifyGuestLimits();return;}
   const name=$("guest_name").value.trim(),text=$("message_text").value.trim(),instant=$("deliver-now").checked,date=$("delivery_date").value,status=$("status");
   if(!name){show(status,"Indiquez votre prénom ou votre signature pour envoyer ce souvenir.",false);$("guest_name").focus();return;}
   if(name.length>30){show(status,"Limitez votre prénom ou votre signature à 30 caractères.",false);$("guest_name").focus();return;}
@@ -755,8 +765,8 @@ async function initCapsule(){
    }
    $("guest-success-date").textContent=instant?"Merci pour votre souvenir !":"Il restera secret jusqu’au "+fdate(date)+".";
    e.target.reset();resetPreview();guestTransaction=null;$("guest-message").hidden=true;$("guest-success").hidden=false;$("guest-success").focus();$("guest-success").scrollIntoView({behavior:"smooth",block:"center"});
-  }catch(error){show(status,error.message,false);button.querySelector("span").textContent="Réessayer l’envoi"}
-  finally{guestBusy=false;fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;if(!$("guest-success").hidden)button.querySelector("span").textContent="Envoyer mon souvenir"}
+  }catch(error){if(/trop vite|beaucoup de|Patientez|20 petits mots|200 Mo ou 20/i.test(error.message)){await refreshGuestLimits();show(status,guestWaitSeconds()>0?"":error.message,false);notifyGuestLimits();}else show(status,error.message,false);button.querySelector("span").textContent="Réessayer l’envoi"}
+  finally{guestBusy=false;fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;refreshGuestLimits();if(!$("guest-success").hidden)button.querySelector("span").textContent="Envoyer mon souvenir"}
  });
 }
 
