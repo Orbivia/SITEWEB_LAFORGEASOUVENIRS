@@ -522,4 +522,5 @@ body[data-compose-dark=true] .guest-success-footer img{filter:brightness(0) inve
 .guest-preview-edit:focus-visible{outline:3px solid #365748;outline-offset:3px}
 
 /* Leave extra clearance inside the personalization preview frame. */
-.guest-preview-editor .guest-home-footer{bottom:max(32px,env(safe-area-inset-bottom))!important}
+.guest-landing-ready.guest-preview-editor[data-guest-view=home] .guest-home-footer{bottom:max(40px,env(safe-area-inset-bottom))!important}
+.guest-landing-ready.guest-preview-editor[data-guest-view=home] .guest-home-content{padding-bottom:calc(max(40px,env(safe-area-inset-bottom)) + 48px)}
