@@ -363,7 +363,6 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
 
 /* Show only complete memory rows at the scroll viewport edges. */
 @media(max-width:760px){
- .deposit-open-gallery .memory-row-clipped{visibility:hidden;pointer-events:none}
  .organizer-layout-ready .deposit-open-gallery .memory-row{scroll-snap-align:start}
  .organizer-layout-ready .deposit-open-gallery #memory-list{scroll-snap-type:y proximity}
  .deposit-open-has-memories .deposit-open-summary{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:0;padding:6px 4px 8px;text-align:center;font-size:10px}
@@ -462,6 +461,5 @@ body.owner-no-tabs{padding-bottom:0!important}
  .owner-deposit-open .deposit-open-brand{position:absolute;bottom:18px;left:var(--capsule-safe-inline);right:var(--capsule-safe-inline);height:var(--capsule-logo-height);pointer-events:none}
  .owner-deposit-open .deposit-open-content{overflow:hidden}
  .deposit-open-gallery #memory-list{padding-bottom:12px!important;scroll-padding-bottom:12px}
- .deposit-open-gallery .memory-row-clipped{visibility:visible;pointer-events:auto}
  .memory-reader-date{white-space:normal;overflow-wrap:anywhere;line-height:1.5}
 }
