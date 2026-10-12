@@ -81,7 +81,7 @@ async function startRecorder(kind){
  try{
   if(!activeStream)await prepareRecorder(kind);
   if(generation!==recorderGeneration||!activeStream)return;
-  guestSelectionVersion++;resetPreview();guestTransaction=null;
+  guestSelectionVersion++;guestTransaction=null;
   $("guest-message").querySelector('[type="submit"]').disabled=true;showCapture("Préparez-vous…");
   if(!await countdown($(kind==="video"?"video-countdown":"audio-countdown"),()=>generation===recorderGeneration&&Boolean(activeStream)))return;
   if(generation!==recorderGeneration||!activeStream)return;
@@ -556,7 +556,7 @@ function guestMediaDuration(file){
  });
 }
 async function acceptGuestFile(file,type,duration,interruption){
- const version=++guestSelectionVersion;resetPreview();guestTransaction=null;
+ const version=++guestSelectionVersion;guestTransaction=null;
  if(!file)return;
  try{
   $("guest-message").querySelector('[type="submit"]').disabled=true;showCapture("Préparation…");

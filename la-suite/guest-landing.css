@@ -645,3 +645,15 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-capture-dialog[data-type=audio] .audio-recorder{position:relative;height:42px;min-height:42px;box-sizing:border-box}
 .guest-capture-dialog[data-type=audio] .audio-recorder .record-countdown{position:absolute;inset:0;margin:0;display:grid;place-items:center}
 .guest-capture-dialog .recorder-actions button[hidden]{display:none!important}
+
+/* Clear recording hierarchy, with reserved space to avoid layout changes. */
+.guest-capture-dialog .recorder-actions{grid-template-columns:1fr;grid-template-rows:44px 72px 28px;gap:10px;justify-items:center;margin:0}
+.guest-capture-dialog .recorder-actions button:not([hidden]){grid-column:1;grid-row:2}
+.guest-record-elapsed{grid-column:1;grid-row:1;text-align:center;font-size:20px;align-self:center}
+.guest-record-remaining{grid-column:1;grid-row:3;text-align:center;font-size:14px}
+.guest-capture-dialog .recorder-actions:not([data-recording=true])>.guest-record-elapsed,
+.guest-capture-dialog .recorder-actions:not([data-recording=true])>.guest-record-remaining{visibility:hidden}
+.guest-capture-dialog[data-replacing=true] #media-preview{display:none!important}
+.guest-capture-dialog[data-type=audio] .audio-recorder{height:28px;min-height:28px;padding:0}
+.guest-landing-ready .guest-capture-dialog[open][data-type=audio]{height:280px}
+.guest-landing-ready .guest-capture-dialog[open][data-type=video]{height:500px}
