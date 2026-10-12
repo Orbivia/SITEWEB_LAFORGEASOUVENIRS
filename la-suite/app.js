@@ -784,8 +784,19 @@ function uploadIntro(c){
  if(!organizerState.intro)return Promise.resolve(true);
  introSavePending=performIntroSave(c).finally(()=>introSavePending=null);return introSavePending;
 }
+async function optimizeIntroPhoto(file){
+ const image=new Image(),url=URL.createObjectURL(file);
+ try{
+  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error("Cette image ne peut pas être lue."));image.src=url});
+  const scale=Math.min(1,2048/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));canvas.getContext("2d").drawImage(image,0,0,canvas.width,canvas.height);
+  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/webp",0.88));
+  if(!blob)throw Error("Impossible de préparer cette image.");
+  if(scale===1&&blob.size>=file.size&&file.size<=10000000)return file;
+  return new File([blob],blob.type==="image/webp"?"accueil.webp":"accueil.png",{type:blob.type});
+ }finally{URL.revokeObjectURL(url)}
+}
 async function performIntroSave(c){
- const kind=$("intro-kind").value,f=$("intro-file")?.files?.[0],s=$("intro-status"),button=$("upload-intro");
+ const kind=$("intro-kind").value,s=$("intro-status"),button=$("upload-intro");let f=$("intro-file")?.files?.[0];
  const text=$("intro-text").value.trim();
  if(kind==="text"&&!text){show(s,"Écrivez votre message d’accueil.",false);return false}
  let path=null,introFinalized=false;
@@ -797,6 +808,7 @@ async function performIntroSave(c){
    else{
     const allowed=kind==="image"?["image/jpeg","image/png","image/webp"]:["video/mp4","video/quicktime","video/webm"];
     if(!allowed.includes(f.type))throw new Error(kind==="image"?"Choisissez une image JPG, PNG ou WebP.":"Choisissez une vidéo MP4, MOV ou WebM.");
+    if(kind==="image"){show(s,"Préparation de l’image…");f=await optimizeIntroPhoto(f)}
     if(f.size>(kind==="image"?10000000:50000000))throw new Error(kind==="image"?"L’image dépasse 10 Mo.":"La vidéo dépasse 50 Mo.");
     if(kind==="video"){const duration=await videoDuration(f);if(!Number.isFinite(duration)||duration>12.05)throw new Error("La vidéo doit durer 12 secondes maximum.")}
     show(s,"Envoi du message d’accueil…");
