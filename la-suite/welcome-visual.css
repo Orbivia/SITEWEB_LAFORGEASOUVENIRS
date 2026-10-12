@@ -812,3 +812,13 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 /* Preview media and logo sit directly on the selected artwork. */
 .visual-primary .visual-page footer{border:0!important;box-shadow:none;background:transparent!important}
 .visual-primary .visual-media{border:0!important;background:transparent!important;box-shadow:none}
+
+/* Keep the welcome submit action outside the content that scrolls above the keyboard. */
+.visual-intro-popup[open]{display:flex;flex-direction:column;overflow:hidden}
+.visual-intro-popup>header{flex:none;position:static;margin-top:0;padding-top:0}
+.visual-intro-popup>.visual-popup-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:12px}
+.visual-intro-popup>.visual-welcome-done{flex:none;position:relative;margin-top:12px;min-height:44px}
+@media(max-width:760px){
+.visual-intro-popup[open]{height:var(--popup-height,calc(100dvh - 24px))}
+.visual-primary .visual-intro-popup .visual-intro-host #intro-text{height:clamp(80px,calc(var(--popup-height,100dvh) * .28),180px);min-height:80px}
+}
