@@ -885,3 +885,6 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-primary .visual-themes .visual-theme-motif,.visual-primary .visual-themes img,.visual-primary[data-tool=theme] .visual-themes .visual-theme-motif,.visual-primary[data-tool=theme] .visual-themes img{width:clamp(18px,calc(var(--visual-choice-height) - 8px),28px);height:clamp(18px,calc(var(--visual-choice-height) - 8px),28px);flex-basis:clamp(18px,calc(var(--visual-choice-height) - 8px),28px)}
 .visual-primary .visual-font-samples button{font-size:clamp(15px,calc(var(--visual-choice-height) * .4),22px)}
 .visual-primary .visual-themes .visual-import{min-height:0;height:100%;padding:3px 4px}
+
+/* Keep each typography sample complete within its available width. */
+.visual-primary .visual-font-samples span{flex-shrink:0;text-overflow:clip;white-space:nowrap;overflow:visible;box-sizing:border-box}
