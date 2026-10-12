@@ -558,3 +558,15 @@ body.guest-landing-ready[data-guest-view=home] .guest-home-content,body.guest-la
 .guest-deposit-dialog[data-recording=true] #capture-choices,.guest-deposit-dialog[data-recording=true] #file-help{display:none}
 .guest-deposit-dialog[data-ready=true] .media-panel{display:none!important}
 .guest-deposit-dialog .guest-media-done:disabled{opacity:.5;cursor:default}
+
+/* Media selection, preview and confirmation fit within one dialog page. */
+.guest-deposit-dialog:not(.guest-text-dialog)>.guest-media-dialog-body{overflow:hidden}
+.guest-deposit-dialog #remove-media,.guest-deposit-dialog .preview-actions,.guest-deposit-dialog #capture-status:not(.err){display:none!important}
+.guest-deposit-dialog #capture-status.err{flex:none;margin:0;padding:8px 10px;font-size:13px;max-height:72px;overflow:auto}
+.guest-deposit-dialog[data-ready=true] #file-help{display:none}
+.guest-deposit-dialog[data-ready=true] #media-preview{display:flex;flex-direction:column;flex:1 1 0;min-height:0;height:auto;padding:0;background:transparent;border:0;overflow:hidden}
+.guest-deposit-dialog[data-ready=true] #preview-image,.guest-deposit-dialog[data-ready=true] #preview-video{flex:1 1 0;width:100%;height:0;min-height:0;max-height:100%;object-fit:contain}
+.guest-deposit-dialog #video-panel.active{display:flex;flex-direction:column;flex:1 1 0;min-height:0;gap:8px;overflow:hidden}
+.guest-deposit-dialog #video-panel.active .recorder-stage{flex:1 1 0;min-height:0;overflow:hidden}
+.guest-deposit-dialog #video-panel.active #live-video{width:100%;height:100%;max-height:100%;object-fit:contain}
+.guest-deposit-dialog #video-panel.active .recorder-actions{flex:none;margin:0}
