@@ -83,6 +83,7 @@ async function startRecorder(kind){
   if(generation!==recorderGeneration||!activeStream)return;
   guestSelectionVersion++;guestTransaction=null;
   $("guest-message").querySelector('[type="submit"]').disabled=true;showCapture("Préparez-vous…");
+  $("prepare-"+kind).hidden=true;$("stop-"+kind).hidden=false;$("stop-"+kind).disabled=true;renderRecordingTimer(kind,Date.now(),kind==="video"?60:180);
   if(!await countdown($(kind==="video"?"video-countdown":"audio-countdown"),()=>generation===recorderGeneration&&Boolean(activeStream)))return;
   if(generation!==recorderGeneration||!activeStream)return;
   const chunks=[],mime=bestMime(kind),options={audioBitsPerSecond:64000},stream=activeStream;
@@ -105,7 +106,7 @@ async function startRecorder(kind){
    }
   };
   current.start(500);
-  $("start-"+kind).hidden=true;$("stop-"+kind).hidden=false;
+  $("start-"+kind).hidden=true;$("stop-"+kind).hidden=false;$("stop-"+kind).disabled=false;
   renderRecordingTimer(kind,started,limit);
   showCapture("Enregistrement…");
   if(kind==="audio")$("audio-indicator").textContent="Enregistrement en cours";
@@ -117,7 +118,7 @@ async function startRecorder(kind){
  }catch(error){
   if(generation!==recorderGeneration)return;
   stopRecorder();stopStream();$(kind+"-countdown").hidden=true;$(kind+"-timer").hidden=true;
-  $("prepare-"+kind).hidden=false;$("start-"+kind).hidden=true;$("stop-"+kind).hidden=true;
+  $("prepare-"+kind).hidden=false;$("start-"+kind).hidden=true;$("stop-"+kind).hidden=true;$("stop-"+kind).disabled=false;
   $("guest-message").querySelector('[type="submit"]').disabled=false;throw error;
  }finally{if(generation===recorderGeneration){recorderPreparing=false;$("start-"+kind).disabled=false}}
 }
