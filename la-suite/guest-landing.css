@@ -688,3 +688,19 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-reveal-action i:last-child{margin-left:auto;margin-right:12px}
 .guest-reveal-action i:first-child{margin-left:auto}
 @media(max-height:650px){.guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-reveal-card{min-height:104px;padding:8px;grid-template-columns:66px minmax(0,1fr)}.guest-reveal-envelope{width:66px;height:60px}.guest-reveal-action{min-height:28px}}
+
+/* The date selector is a compact companion to the envelope card. */
+.guest-landing-ready #delivery-dialog.guest-deposit-dialog[open]{height:auto;top:calc(var(--deposit-dialog-top,12px) + var(--deposit-dialog-height,500px)/2);transform:translate(-50%,-50%);padding:20px;background:#fffdf8;border:1px solid #b3935733;box-shadow:0 16px 60px #30230c33}
+#delivery-dialog>.guest-dialog-body{flex:0 1 auto;overflow:auto!important;padding:0}
+#delivery-dialog .guest-dialog-head{align-items:center;gap:12px;margin-bottom:14px}
+#delivery-dialog #delivery-dialog-title{font:400 26px/1.2 Georgia,serif;color:#785c2c;margin:0}
+#delivery-dialog .guest-dialog-close{display:grid;place-items:center;width:36px;height:36px;min-height:36px;flex:none;padding:0;border:1px solid #b3935733;border-radius:50%;background:transparent;font-size:24px;color:#574a36}
+#delivery-options>p:first-child{font-size:13px;line-height:1.45;color:#716957;margin:0 0 16px}
+#delivery-dialog .delivery-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}
+#delivery-dialog .delivery-choices button{min-height:48px;padding:12px 8px;border:1px solid #b3935755;border-radius:12px;background:#fffdf8;color:#514632;font:500 14px/1.2 Inter,sans-serif;box-shadow:none}
+#delivery-dialog .delivery-choices button.active{background:#f4e8cc;border-color:#aa8236;color:#785419;box-shadow:inset 0 0 0 1px #aa8236}
+#delivery-dialog .delivery-choices button[data-delivery=custom]{grid-column:1/-1;border-style:dashed}
+#delivery-dialog #delivery-date-wrap{margin:16px 0 0}
+#delivery-dialog #delivery_date{width:100%;box-sizing:border-box;min-height:48px;font-size:16px;border:1px solid #b3935755;border-radius:10px;background:white}
+#delivery-dialog #delivery-help{margin:10px 0 0;font-size:12px}
+#delivery-dialog>#delivery-done:not([hidden]){margin-top:16px;min-height:44px;border-radius:12px;background:#9d792e}

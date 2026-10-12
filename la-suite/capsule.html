@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Serif+Display&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@500;600;700&family=Parisienne&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="styles.css?v=20261011-guestwelcome2">
-<link rel="stylesheet" href="guest-landing.css?v=20261012-envelope-date1">
+<link rel="stylesheet" href="guest-landing.css?v=20261012-date-dialog1">
 <style>
 body.guest-loading{background:#fffdf8!important}
 .guest-loading-logo{display:none}
@@ -110,9 +110,9 @@ body.guest-loading{background:#fffdf8!important}
  <div id="status" class="status" role="status" aria-live="polite"></div>
 </form>
  <dialog id="delivery-dialog" class="guest-dialog" aria-labelledby="delivery-dialog-title">
- <div class="guest-dialog-head"><h2 id="delivery-dialog-title">Choisissez le moment de la surprise</h2><button type="button" class="guest-dialog-close" aria-label="Fermer le choix de date">×</button></div>
+ <div class="guest-dialog-head"><h2 id="delivery-dialog-title">À ouvrir quand ?</h2><button type="button" class="guest-dialog-close" aria-label="Fermer le choix de date">×</button></div>
  <div id="delivery-options" class="guest-dialog-body">
-  <p>Pour un anniversaire, dans quelques mois… Une date future garde votre souvenir secret jusqu’au jour choisi.</p>
+  <p>Gardez votre souvenir secret jusqu’au jour choisi.</p>
   <div class="delivery-choices" role="group" aria-label="Date de dévoilement">
    <button type="button" data-delivery="now" class="active" aria-pressed="true">Maintenant</button>
    <button type="button" data-delivery="1" aria-pressed="false">Dans 1 mois</button>
@@ -147,8 +147,8 @@ body.guest-loading{background:#fffdf8!important}
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
 <script src="capsule-design.js?v=20261010-previewfix1"></script><script src="welcome-ui.js?v=20261010-brandicons1"></script>
-<script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261012-envelope-date1"></script>
-<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261012-envelope-date1"></script>
+<script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261012-date-dialog1"></script>
+<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261012-date-dialog1"></script>
 </body></html>
 
 
