@@ -49,7 +49,10 @@
   choose.canClose=()=>true;account.canClose=()=>!accountBusy;deletion.canClose=()=>!deleteBusy;
   choose.querySelector('.studio-close').onclick=()=>choose.close();
   choose.addEventListener('close',()=>{accountButton.focus()});
-  let settingsTarget=null;
+  let settingsTarget=null,dateBusy=false;
+  settingsDialog.canClose=()=>!dateBusy&&!downloadBusy;
+  settingsDialog.addEventListener("cancel",event=>{if(!settingsDialog.canClose())event.preventDefault();});
+  settingsDialog.querySelector(".studio-close").onclick=()=>{if(settingsDialog.canClose())settingsDialog.close();};
   body.addEventListener('click',e=>{
    const button=e.target.closest('[data-capsule-settings]');if(!button)return;
    settingsTarget=caps.find(c=>c.id===button.dataset.capsuleSettings);if(!settingsTarget)return;
@@ -57,21 +60,21 @@
    settingsDialog.querySelector('.studio-sheet-body').innerHTML='<p><strong>'+esc(c.couple_name)+'</strong></p><form data-settings-date><label for="workspace-event-date">Date de l’événement</label><div class="workspace-date-row"><input id="workspace-event-date" type="date" required value="'+esc(c.wedding_date)+'" '+(locked?'disabled':'')+'><button class="btn primary" type="submit" '+(locked?'disabled':'')+'>Changer la date</button></div></form><hr><button class="btn secondary" type="button" data-capsule-download="'+esc(c.id)+'" '+(c.status==='active'?'':'disabled')+'>Télécharger les souvenirs ouverts</button><button class="btn secondary" type="button" data-capsule-delete="'+esc(c.id)+'">Supprimer la capsule</button><p data-settings-status class="status" role="status"></p>';
    settingsDialog.showModal();
    settingsDialog.querySelector('form').onsubmit=async event=>{
-    event.preventDefault();if(locked)return;if(!canLeave()){settingsDialog.querySelector('[data-settings-status]').textContent='Enregistrez vos modifications avant de changer la date.';return;}
+    event.preventDefault();if(locked||dateBusy||downloadBusy||ended)return;if(!canLeave()){settingsDialog.querySelector('[data-settings-status]').textContent='Enregistrez vos modifications avant de changer la date.';return;}
     const date=$('workspace-event-date').value;if(!date)return;if(c.status==='draft'&&date<=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris'}).format(new Date())){settingsDialog.querySelector('[data-settings-status]').textContent='Choisissez une date future.';return;}
-    const status=settingsDialog.querySelector('[data-settings-status]'),submit=settingsDialog.querySelector('[type=submit]');submit.disabled=true;
-    try{const{data,error}=await sb.from('capsules').update({wedding_date:date}).eq('id',c.id).eq('owner_id',user.id).select('id,wedding_date').single();if(error)throw error;c.wedding_date=data.wedding_date;render();status.textContent='Date enregistrée.';if(c.id===selected?.id)location.reload();}catch(error){status.textContent='Impossible de changer la date : '+error.message;}finally{submit.disabled=false;}
+    const status=settingsDialog.querySelector('[data-settings-status]'),submit=settingsDialog.querySelector('[type=submit]');dateBusy=true;settingsDialog.querySelectorAll('button,input').forEach(el=>el.disabled=true);
+    try{const{data,error}=await sb.from('capsules').update({wedding_date:date}).eq('id',c.id).eq('owner_id',user.id).select('id,wedding_date').single();if(error)throw error;c.wedding_date=data.wedding_date;render();status.textContent='Date enregistrée.';if(c.id===selected?.id)location.reload();}catch(error){status.textContent='Impossible de changer la date : '+error.message;}finally{dateBusy=false;settingsDialog.querySelectorAll('button,input').forEach(el=>el.disabled=false);settingsDialog.querySelector('[data-capsule-download]').disabled=c.status!=='active';}
    };
   });
   const capsuleAction=async e=>{
    const settings=e.target.closest('[data-capsule-download]'),remove=e.target.closest('[data-capsule-delete]');
-   if(!settings&&!remove||ended||deleteBusy||downloadBusy)return;
+   if(!settings&&!remove||ended||deleteBusy||downloadBusy||dateBusy)return;
    const capsule=caps.find(c=>c.id===(settings?.dataset.capsuleDownload||remove?.dataset.capsuleDelete));if(!capsule)return;
-   if(!canLeave()){$('workspace-selection-status').textContent='Patientez jusqu’à la fin de l’enregistrement.';return;}
+   if(!canLeave()){(settingsDialog.open?settingsDialog.querySelector('[data-settings-status]'):$('workspace-selection-status')).textContent='Patientez jusqu’à la fin de l’enregistrement.';return;}
    if(settings){
     if(capsule.status!=='active')return;
     downloadBusy=true;body.querySelectorAll('.workspace-capsule-actions button').forEach(button=>button.disabled=true);
-    try{await downloadCapsule?.(capsule,settings,$('workspace-selection-status'));}finally{downloadBusy=false;body.querySelectorAll('.workspace-capsule-actions button').forEach(button=>button.disabled=false);}
+    try{await downloadCapsule?.(capsule,settings,settingsDialog.open?settingsDialog.querySelector('[data-settings-status]'):$('workspace-selection-status'));}finally{downloadBusy=false;body.querySelectorAll('.workspace-capsule-actions button').forEach(button=>button.disabled=false);}
    }else{
     deleteTarget=capsule;$('workspace-delete-name').textContent=capsule.couple_name;
     $('workspace-delete-confirmation').value='';$('workspace-delete-status').textContent='';$('workspace-delete-submit').disabled=true;deletion.showModal();
@@ -82,7 +85,7 @@
   $('workspace-delete-confirmation').oninput=()=>{$('workspace-delete-submit').disabled=deleteBusy||$('workspace-delete-confirmation').value.trim()!==deleteTarget?.couple_name;};
   const closeDeletion=()=>{if(!deleteBusy)deletion.close();};deletion.querySelector('.studio-close').onclick=closeDeletion;$('workspace-delete-cancel').onclick=closeDeletion;
   deletion.addEventListener('cancel',e=>{if(deleteBusy)e.preventDefault();});
-  deletion.addEventListener('close',()=>{const targetId=deleteTarget?.id;deleteTarget=null;[...choose.querySelectorAll('[data-capsule-delete]')].find(button=>button.dataset.capsuleDelete===targetId)?.focus();});
+  deletion.addEventListener('close',()=>{const targetId=deleteTarget?.id;deleteTarget=null;[...choose.querySelectorAll('[data-capsule-settings]')].find(button=>button.dataset.capsuleSettings===targetId)?.focus();});
   $('workspace-delete-form').onsubmit=async e=>{
    e.preventDefault();if(ended||deleteBusy||!deleteTarget)return;
    const target=deleteTarget,confirmation=$('workspace-delete-confirmation').value.trim();
@@ -98,7 +101,7 @@
     await deleteOwnedCapsule(sb,user.id,target,confirmation);if(ended)return;
     caps.splice(caps.findIndex(c=>c.id===target.id),1);summaries.delete(target.id);
     if(target.slug===selected?.slug){try{localStorage.removeItem('la_suite_last_'+user.id)}catch{}location.replace(caps.length?'dashboard.html?slug='+encodeURIComponent(caps[0].slug):'dashboard.html');return;}
-    deleteBusy=false;deletion.close();render();$('workspace-selection-status').textContent='La capsule a été supprimée.';
+    deleteBusy=false;deletion.close();settingsDialog.close();render();$('workspace-selection-status').textContent='La capsule a été supprimée.';
     try{const {data,error}=await sb.rpc('owner_capsule_access');if(!error&&data){access=data;$('workspace-create').hidden=!data.can_create;$('workspace-create-help').textContent=data.can_create?'':data.reason||'';}}catch{}
    }catch(error){if(!ended)$('workspace-delete-status').textContent='Suppression impossible : '+error.message;}
    finally{deleteBusy=false;deletion.querySelectorAll('button,input').forEach(el=>el.disabled=false);$('workspace-delete-submit').disabled=$('workspace-delete-confirmation').value.trim()!==deleteTarget?.couple_name;}

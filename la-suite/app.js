@@ -1787,10 +1787,8 @@ function setupWholeMemoryRows(){
    frame=requestAnimationFrame(()=>{
     frame=null;
     const compact=Boolean(list.closest('.owner-deposit-open:not([hidden])'))&&matchMedia('(max-width:760px)').matches;
-    const bounds=list.getBoundingClientRect();
     hint.hidden=!compact||list.scrollHeight<=list.clientHeight+2||list.scrollTop+list.clientHeight>=list.scrollHeight-8;
     for(const card of list.querySelectorAll('.memory-row')){
-     const rect=card.getBoundingClientRect();
      card.classList.remove('memory-row-clipped');
     }
    });
