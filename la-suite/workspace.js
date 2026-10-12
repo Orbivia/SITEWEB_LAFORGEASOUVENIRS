@@ -54,7 +54,7 @@
    const button=e.target.closest('[data-capsule-settings]');if(!button)return;
    settingsTarget=caps.find(c=>c.id===button.dataset.capsuleSettings);if(!settingsTarget)return;
    const c=settingsTarget,locked=c.status==='active'&&c.guest_rules_version===1;
-   settingsDialog.querySelector('.studio-sheet-body').innerHTML='<p><strong>'+esc(c.couple_name)+'</strong></p><form data-settings-date><label for="workspace-event-date">Date de l’événement</label><div class="workspace-date-row"><input id="workspace-event-date" type="date" required value="'+esc(c.wedding_date)+'" '+(locked?'disabled':'')+'><button class="btn primary" type="submit" '+(locked?'disabled':'')+'>Changer la date</button></div></form><hr><button class="btn secondary" type="button" data-capsule-download="'+esc(c.id)+'">Télécharger les souvenirs ouverts</button><button class="btn secondary" type="button" data-capsule-delete="'+esc(c.id)+'">Supprimer la capsule</button><p data-settings-status class="status" role="status"></p>';
+   settingsDialog.querySelector('.studio-sheet-body').innerHTML='<p><strong>'+esc(c.couple_name)+'</strong></p><form data-settings-date><label for="workspace-event-date">Date de l’événement</label><div class="workspace-date-row"><input id="workspace-event-date" type="date" required value="'+esc(c.wedding_date)+'" '+(locked?'disabled':'')+'><button class="btn primary" type="submit" '+(locked?'disabled':'')+'>Changer la date</button></div></form><hr><button class="btn secondary" type="button" data-capsule-download="'+esc(c.id)+'" '+(c.status==='active'?'':'disabled')+'>Télécharger les souvenirs ouverts</button><button class="btn secondary" type="button" data-capsule-delete="'+esc(c.id)+'">Supprimer la capsule</button><p data-settings-status class="status" role="status"></p>';
    settingsDialog.showModal();
    settingsDialog.querySelector('form').onsubmit=async event=>{
     event.preventDefault();if(locked)return;if(!canLeave()){settingsDialog.querySelector('[data-settings-status]').textContent='Enregistrez vos modifications avant de changer la date.';return;}
@@ -69,6 +69,7 @@
    const capsule=caps.find(c=>c.id===(settings?.dataset.capsuleDownload||remove?.dataset.capsuleDelete));if(!capsule)return;
    if(!canLeave()){$('workspace-selection-status').textContent='Patientez jusqu’à la fin de l’enregistrement.';return;}
    if(settings){
+    if(capsule.status!=='active')return;
     downloadBusy=true;body.querySelectorAll('.workspace-capsule-actions button').forEach(button=>button.disabled=true);
     try{await downloadCapsule?.(capsule,settings,$('workspace-selection-status'));}finally{downloadBusy=false;body.querySelectorAll('.workspace-capsule-actions button').forEach(button=>button.disabled=false);}
    }else{
