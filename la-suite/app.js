@@ -910,19 +910,9 @@ function qrOptions(c){
   showInitials:matchMedia("(max-width:760px)").matches?Boolean((c.qr_initials??defaultInitials(c.couple_name)).trim()):c.qr_show_initials!==false
  }
 }
-function qrFontFamily(key){
- if(key==="heritage")return"Georgia";if(key==="literary")return"Palatino";if(key==="friendly")return"Trebuchet MS";if(key==="clear")return"Verdana";
- if(key==="classic")return"Playfair Display";
- if(key==="modern")return"Inter";
- if(key==="romantic")return"Great Vibes";
- if(key==="editorial")return"DM Serif Display";
- if(key==="refined")return"Libre Baskerville";
- if(key==="contemporary")return"Montserrat";
- if(key==="signature")return"Parisienne";
- return"Cormorant Garamond";
+function qrFontFamily(key){return {"elegant": "Cormorant Garamond", "classic": "Playfair Display", "modern": "Quicksand", "romantic": "Great Vibes", "editorial": "Abril Fatface", "refined": "Cinzel", "contemporary": "Oswald", "signature": "Caveat", "heritage": "Pacifico", "literary": "Amatic SC", "friendly": "Josefin Sans", "clear": "Special Elite"}[key]||"Cormorant Garamond";
 }
-function qrFontWeight(key){
- return ["romantic","signature","editorial"].includes(key)?"400":key==="classic"?"600":"700";
+function qrFontWeight(key){return {"elegant": "700", "classic": "600", "modern": "700", "romantic": "400", "editorial": "400", "refined": "600", "contemporary": "600", "signature": "700", "heritage": "400", "literary": "700", "friendly": "600", "clear": "400"}[key]||"700";
 }
 function collectQrCustomization(c){
  return {
