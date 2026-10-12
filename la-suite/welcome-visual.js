@@ -100,7 +100,7 @@
   function keyboardOpen(){return editingLayout&&editingLayout.viewportHeight-(window.visualViewport?.height||innerHeight)>100;}
   function revealEditingField(){
    if((window.visualViewport?.scale||1)>1.01)return;
-   if(!editingLayout)return;if(!keyboardOpen()){keyboardLift=0;studio.style.transform='';return;}if(!editable(document.activeElement))return;
+   if(document.activeElement?.closest('.visual-settings-popup'))return;if(!editingLayout)return;if(!keyboardOpen()){keyboardLift=0;studio.style.transform='';return;}if(!editable(document.activeElement))return;
    const view=window.visualViewport,bottom=(view?.offsetTop||0)+(view?.height||innerHeight)-16,box=document.activeElement.getBoundingClientRect();
    const overflow=box.bottom-bottom;
    if(overflow>0){keyboardLift+=Math.min(overflow,Math.max(0,box.top-(view?.offsetTop||0)-16));studio.style.transform='translateY(-'+keyboardLift+'px)';}
@@ -126,14 +126,33 @@
    studio.style.setProperty('--visual-preview-height',previewHeight+'px');fitPanel();
   }
   const previewResize=new ResizeObserver(()=>requestAnimationFrame(fitPreview));previewResize.observe(studio.querySelector('.visual-stage'));previewResize.observe(studio.querySelector('.visual-drawer'));previewResize.observe(studio);window.addEventListener('resize',()=>requestAnimationFrame(fitPreview));window.visualViewport?.addEventListener('resize',()=>requestAnimationFrame(fitPreview));
-  studio.addEventListener('focusin',e=>{if(!editable(e.target))return;studio.classList.add('visual-editing');if(matchMedia('(max-width:760px)').matches&&!editingLayout){editingLayout={viewportHeight:window.visualViewport?.height||innerHeight};if(target==='welcome'){page.style.height=page.offsetHeight+'px';page.style.minHeight=page.style.height;page.style.overflow='hidden';}}requestAnimationFrame(revealEditingField)});
+  studio.addEventListener('focusin',e=>{if(e.target.closest('.visual-settings-popup')){releaseEditingLayout();requestAnimationFrame(fitSettingsPopup);return;}if(!editable(e.target))return;studio.classList.add('visual-editing');if(matchMedia('(max-width:760px)').matches&&!editingLayout){editingLayout={viewportHeight:window.visualViewport?.height||innerHeight};if(target==='welcome'){page.style.height=page.offsetHeight+'px';page.style.minHeight=page.style.height;page.style.overflow='hidden';}}requestAnimationFrame(revealEditingField)});
   studio.addEventListener('focusout',()=>requestAnimationFrame(()=>{if(editable(document.activeElement))return;if(!keyboardOpen())releaseEditingLayout();fitPreview()}));
   window.visualViewport?.addEventListener('scroll',()=>requestAnimationFrame(revealEditingField));
 
   const drawer=studio.querySelector('.visual-drawer-toggle');
   function expanded(){studio.dataset.panelOpen='true';studio.querySelector('.visual-drawer').hidden=false;$('visual-settings').hidden=false;drawer.setAttribute('aria-expanded','true');requestAnimationFrame(fitPreview)}
   const settingsPopups=new Map();
-  function openSettingsPopup(name){let popup=settingsPopups.get(name);if(!popup){const panel=studio.querySelector('[data-panel="'+name+'"]');popup=document.createElement('dialog');popup.className='visual-settings-popup';popup.setAttribute('aria-label',name==='intro'?'Contenu d’accueil':'Date de l’événement');const heading=document.createElement('header');const title=document.createElement('h2');title.textContent=name==='intro'?'Votre accueil':'Date de l’événement';const close=document.createElement('button');close.type='button';close.className='visual-popup-close';close.setAttribute('aria-label','Fermer');close.textContent='×';close.onclick=()=>popup.close();heading.append(title,close);popup.append(heading,panel);studio.append(popup);settingsPopups.set(name,popup);popup.addEventListener('close',()=>{panel.hidden=true;context.scheduleSave();requestAnimationFrame(fitPreview)});popup.addEventListener('click',e=>{if(e.target!==popup)return;const box=popup.getBoundingClientRect();if(e.clientX<box.left||e.clientX>box.right||e.clientY<box.top||e.clientY>box.bottom)popup.close();});}for(const other of settingsPopups.values())if(other!==popup&&other.open)other.close();studio.dataset.panelOpen='false';studio.querySelector('.visual-drawer').hidden=true;$('visual-settings').hidden=true;popup.querySelector('[data-panel]').hidden=false;if(!popup.open)popup.showModal();}
+  function fitSettingsPopup(){
+   for(const popup of settingsPopups.values()){
+    if(!popup.open)continue;
+    const view=window.visualViewport;
+    if(!matchMedia('(max-width:760px)').matches||(view?.scale||1)>1.01){popup.style.removeProperty('--popup-top');popup.style.removeProperty('--popup-height');continue;}
+    const height=view?.height||innerHeight,offset=view?.offsetTop||0,gap=12;
+    popup.style.setProperty('--popup-height',Math.max(1,height-gap*2)+'px');
+    popup.style.setProperty('--popup-top',offset+Math.max(gap,(height-popup.offsetHeight)/2)+'px');
+    const field=document.activeElement;
+    if(!popup.contains(field)||!field.matches('input,textarea,[contenteditable]'))continue;
+    const box=field.getBoundingClientRect(),bounds=popup.getBoundingClientRect(),header=popup.querySelector('header');
+    const top=bounds.top+(header?.offsetHeight||0)+gap,bottom=Math.min(bounds.bottom,offset+height-gap)-gap;
+    if(box.bottom>bottom)popup.scrollTop+=box.bottom-bottom;
+    if(box.top<top&&box.height<=bottom-top)popup.scrollTop-=top-box.top;
+   }
+  }
+  const schedulePopupFit=()=>requestAnimationFrame(fitSettingsPopup);
+  window.addEventListener('resize',schedulePopupFit);window.visualViewport?.addEventListener('resize',schedulePopupFit);window.visualViewport?.addEventListener('scroll',schedulePopupFit);
+
+  function openSettingsPopup(name){let popup=settingsPopups.get(name);if(!popup){const panel=studio.querySelector('[data-panel="'+name+'"]');popup=document.createElement('dialog');popup.className='visual-settings-popup';popup.setAttribute('aria-label',name==='intro'?'Contenu d’accueil':'Date de l’événement');const heading=document.createElement('header');const title=document.createElement('h2');title.textContent=name==='intro'?'Votre accueil':'Date de l’événement';const close=document.createElement('button');close.type='button';close.className='visual-popup-close';close.setAttribute('aria-label','Fermer');close.textContent='×';close.onclick=()=>popup.close();heading.append(title,close);popup.append(heading,panel);studio.append(popup);settingsPopups.set(name,popup);popup.addEventListener('close',()=>{panel.hidden=true;context.scheduleSave();requestAnimationFrame(fitPreview)});popup.addEventListener('click',e=>{if(e.target!==popup)return;const box=popup.getBoundingClientRect();if(e.clientX<box.left||e.clientX>box.right||e.clientY<box.top||e.clientY>box.bottom)popup.close();});}for(const other of settingsPopups.values())if(other!==popup&&other.open)other.close();studio.dataset.panelOpen='false';studio.querySelector('.visual-drawer').hidden=true;$('visual-settings').hidden=true;popup.querySelector('[data-panel]').hidden=false;if(!popup.open)popup.showModal();requestAnimationFrame(fitSettingsPopup);}
   function tab(name){if(name==='options')name=target==='card'?'details':'intro';if(name==='intro'||name==='date'){openSettingsPopup(name);return;}const key=['details','intro','date'].includes(name)?'options':name;activeTool=key;expanded(true);studio.dataset.tool=key;studio.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===name;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1});studio.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);const viewport=$('visual-settings');viewport.scrollTop=0;requestAnimationFrame(fitPreview);studio.querySelectorAll('[data-tool]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.tool===key));b.setAttribute('aria-expanded',String(b.dataset.tool===key))});}
   studio.querySelectorAll('[data-tool]').forEach(b=>{b.setAttribute('aria-controls','visual-settings');b.onclick=()=>tab(b.dataset.tool)});
   function tabKeys(buttons,key){buttons.forEach((b,i)=>b.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowRight'?1:buttons.length-1))%buttons.length];next.click();next.focus()}))}
@@ -202,6 +221,7 @@
   return {...designer,syncShared(){designer.syncShared();render()},close(){designer.close()}};
  };
 })();
+
 
 
 

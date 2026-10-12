@@ -792,3 +792,11 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-primary .visual-settings-popup .visual-intro-host #intro-text-field label{font-size:14px}
 .visual-primary .visual-settings-popup .visual-intro-host #intro-text{font-size:16px;line-height:1.5;min-height:clamp(120px,30dvh,240px);padding:12px;resize:vertical}
 .visual-primary .visual-settings-popup .visual-intro-host #intro-text-field .field-help{font-size:12px}
+
+
+/* Size the settings dialog against the visible area above the mobile keyboard. */
+@media(max-width:760px){
+.visual-settings-popup[open]{position:fixed;inset:auto;top:var(--popup-top,12px);left:50%;transform:translateX(-50%);margin:0;max-height:var(--popup-height,calc(100dvh - 24px));overscroll-behavior:contain;scroll-padding-block:76px 12px}
+.visual-settings-popup>header{position:sticky;top:-20px;z-index:1;background:#fffdf8;padding-block:8px;margin-top:-8px}
+.visual-primary .visual-settings-popup .visual-intro-host #intro-text{min-height:100px;height:clamp(100px,calc(var(--popup-height,100dvh) * .35),220px);resize:none}
+}
