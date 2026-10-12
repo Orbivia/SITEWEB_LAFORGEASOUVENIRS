@@ -800,3 +800,9 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-settings-popup>header{position:sticky;top:-20px;z-index:1;background:#fffdf8;padding-block:8px;margin-top:-8px}
 .visual-primary .visual-settings-popup .visual-intro-host #intro-text{min-height:100px;height:clamp(100px,calc(var(--popup-height,100dvh) * .35),220px);resize:none}
 }
+
+
+/* Personalization displays the actual guest document at phone scale. */
+.visual-primary .visual-live-fit>.visual-page{visibility:hidden;pointer-events:none}
+.visual-live-preview{position:absolute;inset:0 auto auto 0;display:block;border:0;max-width:none;background:transparent;transform-origin:top left}
+.visual-settings-popup #visual-live-name{display:block;box-sizing:border-box;width:100%;min-height:44px;margin-top:8px;padding:10px;font-size:16px}

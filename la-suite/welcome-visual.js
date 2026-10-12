@@ -82,9 +82,27 @@
     if(!mediaButton.hidden){const src=file?(mediaUrl=URL.createObjectURL(file)):existing?.src;if(src){const media=document.createElement(kind==='image'?'img':'video');media.src=src;media.alt='Votre accueil';if(kind==='video'){media.muted=true;media.playsInline=true;media.preload='metadata'}mediaButton.append(media)}}
    }
    const hasText=kind==='text'&&Boolean($('intro-text').value.trim()),hasMedia=['image','video'].includes(kind)&&Boolean(mediaButton.firstElementChild?.getAttribute('src'));mediaButton.hidden=!hasMedia;introContent.dataset.content=hasMedia?'media':hasText?'text':'empty';hostLabel.hidden=!hasText;emptyWelcome.hidden=hasText||hasMedia;studio.querySelector('.visual-message').hidden=kind!=='text'||(!hasText&&document.activeElement!==studio.querySelector('.visual-message'));introEdit.style.top=hasText?'8px':'50%';introEdit.style.transform=hasText?'none':'translateY(-50%)';
-   qrRender();requestAnimationFrame(fitPreview);
+   qrRender();syncLivePreview();requestAnimationFrame(fitPreview);
   }
   const page=studio.querySelector('.visual-page'),fit=document.createElement('div');fit.className='visual-fit';page.before(fit);fit.append(page);
+  const liveFrame=document.createElement('iframe');liveFrame.className='visual-live-preview';liveFrame.title='Accueil invité — rendu réel';fit.append(liveFrame);fit.classList.add('visual-live-fit');let liveReady=false,liveSnapshot='',liveTimer=null;
+  function syncLivePreview(){
+   if(!liveReady||target!=='welcome')return;
+   clearTimeout(liveTimer);liveTimer=setTimeout(()=>{
+    const kind=$('intro-kind').value,url=['image','video'].includes(kind)?mediaButton.firstElementChild?.getAttribute('src')||null:null;
+    if(['image','video'].includes(kind)&&c.intro_path&&!url&&!$('intro-file').files?.length)return;
+    const snapshot={couple_name:$('capsule-name').value||c.couple_name,wedding_date:$('capsule-date').value,welcome_message:kind==='none'?'':$('intro-text').value,welcome_config:designer.collect(),effective_plan:c.plan||'premium',delivery_before:c.usage?.delivery_before||new Date(Date.now()+900*86400000).toISOString(),has_intro:Boolean(url),preview_intro_url:url,preview_intro_type:kind};
+    const key=JSON.stringify(snapshot);if(key===liveSnapshot)return;liveSnapshot=key;liveFrame.contentWindow.postMessage({type:'la-suite-guest-preview',capsule:snapshot},location.origin);
+   },100);
+  }
+  window.addEventListener('message',event=>{
+   if(event.origin!==location.origin||event.source!==liveFrame.contentWindow||!studio.isConnected)return;
+   if(event.data?.type==='la-suite-guest-preview-ready'){liveReady=true;liveSnapshot='';syncLivePreview();}
+   if(event.data?.type==='la-suite-guest-edit'){
+    if(event.data.field==='intro')tab('intro');else if(event.data.field==='date')editDate();else if(event.data.field==='name')openLiveName();
+   }
+  });
+
   function fitPanel(){
    const drawer=studio.querySelector('.visual-drawer'),settings=$('visual-settings');if(drawer.hidden)return;
    const available=Math.max(1,drawer.clientHeight-studio.querySelector('.visual-tools').offsetHeight-8);
@@ -122,7 +140,7 @@
    const limit=parseFloat(getComputedStyle(studio).maxHeight),fixed=[...studio.children].filter(el=>el.matches('.visual-head,.visual-targets,.visual-actions,.visual-status,.visual-retry')&&!el.hidden&&getComputedStyle(el).position!=='absolute').reduce((sum,el)=>sum+el.offsetHeight,2);
    const available=Math.max(1,limit-fixed),width=Math.max(1,stage.clientWidth-8),card=studio.querySelector('.visual-card');
    const cardWidth=Math.min(width,available*1181/1772,420);card.style.width=cardWidth+'px';let previewHeight=cardWidth*1772/1181;
-   if(target==='welcome'){const height=Math.max(page.offsetHeight,page.scrollHeight),scale=Math.min(1,width/340,available/height);fit.style.width=340*scale+'px';fit.style.height=height*scale+'px';page.style.transform='scale('+scale+')';previewHeight=height*scale;}
+   if(target==='welcome'){const mobile=matchMedia('(max-width:760px)').matches,frameWidth=mobile?innerWidth:390,height=mobile?innerHeight:844,scale=Math.min(1,width/frameWidth,available/height);fit.style.width=frameWidth*scale+'px';fit.style.height=height*scale+'px';liveFrame.style.width=frameWidth+'px';liveFrame.style.height=height+'px';liveFrame.style.transform='scale('+scale+')';previewHeight=height*scale;}
    studio.style.setProperty('--visual-preview-height',previewHeight+'px');fitPanel();
   }
   const previewResize=new ResizeObserver(()=>requestAnimationFrame(fitPreview));previewResize.observe(studio.querySelector('.visual-stage'));previewResize.observe(studio.querySelector('.visual-drawer'));previewResize.observe(studio);window.addEventListener('resize',()=>requestAnimationFrame(fitPreview));window.visualViewport?.addEventListener('resize',()=>requestAnimationFrame(fitPreview));
@@ -133,6 +151,10 @@
   const drawer=studio.querySelector('.visual-drawer-toggle');
   function expanded(){studio.dataset.panelOpen='true';studio.querySelector('.visual-drawer').hidden=false;$('visual-settings').hidden=false;drawer.setAttribute('aria-expanded','true');requestAnimationFrame(fitPreview)}
   const settingsPopups=new Map();
+  const liveName=document.createElement('dialog');liveName.className='visual-settings-popup';liveName.setAttribute('aria-labelledby','visual-live-name-title');liveName.innerHTML='<header><h2 id="visual-live-name-title">Nom de la capsule</h2><button type="button" class="visual-popup-close" aria-label="Fermer">×</button></header><label for="visual-live-name">Nom affiché</label><input id="visual-live-name" maxlength="50" type="text">';studio.append(liveName);settingsPopups.set('name',liveName);
+  function openLiveName(){const source=$('capsule-name');if(source.disabled)return;for(const popup of settingsPopups.values())if(popup.open)popup.close();liveName.querySelector('input').value=source.value;liveName.showModal();liveName.querySelector('input').focus();requestAnimationFrame(fitSettingsPopup);}
+  liveName.querySelector('button').onclick=()=>liveName.close();liveName.querySelector('input').addEventListener('input',event=>{$('capsule-name').value=event.target.value;dispatch('capsule-name','input');context.markDirty('settings');context.scheduleSave();render()});liveName.addEventListener('close',()=>{context.scheduleSave();requestAnimationFrame(fitPreview)});
+
   function fitSettingsPopup(){
    for(const popup of settingsPopups.values()){
     if(!popup.open)continue;
@@ -157,7 +179,7 @@
   studio.querySelectorAll('[data-tool]').forEach(b=>{b.setAttribute('aria-controls','visual-settings');b.onclick=()=>tab(b.dataset.tool)});
   function tabKeys(buttons,key){buttons.forEach((b,i)=>b.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowRight'?1:buttons.length-1))%buttons.length];next.click();next.focus()}))}
   const tabs=[...studio.querySelectorAll('[data-tab]')];tabs.forEach(b=>{b.onclick=()=>tab(b.dataset.tab);b.id='visual-tab-'+b.dataset.tab;const panel=studio.querySelector('[data-panel="'+b.dataset.tab+'"]');panel.id='visual-panel-'+b.dataset.tab;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',b.id);b.setAttribute('aria-controls',panel.id)});tabKeys(tabs);
-  function selectTarget(value){document.activeElement?.blur();releaseEditingLayout();target=value;studio.dataset.target=value;$('visual-card').hidden=value!=='card';$('visual-welcome').hidden=value!=='welcome';studio.querySelector('.visual-fit').hidden=value!=='welcome';studio.querySelectorAll('[data-target]').forEach(b=>{const selected=b.dataset.target===value;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1});tab(activeTool||'theme');render()}
+  function selectTarget(value){document.activeElement?.blur();releaseEditingLayout();target=value;if(value==='welcome'&&!liveFrame.getAttribute('src'))liveFrame.src=new URL('capsule.html?preview=1&editor=1',location.href).href;studio.dataset.target=value;$('visual-card').hidden=value!=='card';$('visual-welcome').hidden=value!=='welcome';studio.querySelector('.visual-fit').hidden=value!=='welcome';studio.querySelectorAll('[data-target]').forEach(b=>{const selected=b.dataset.target===value;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1});tab(activeTool||'theme');render()}
   const targetTabs=[...studio.querySelectorAll('[data-target]')];targetTabs.forEach(b=>b.onclick=()=>selectTarget(b.dataset.target));tabKeys(targetTabs);
   window.SuiteDesign.styles.forEach((s,index)=>{const b=document.createElement('button');b.type='button';b.dataset.style=s.id;const motif=document.createElement('span');motif.className='visual-theme-motif';motif.setAttribute('aria-hidden','true');motif.style.backgroundImage='url("'+window.SuiteDesign.artwork(s.id)+'")';const name=document.createElement('span');name.textContent=s.name;b.append(motif,name);b.onclick=()=>{document.querySelector('[data-qr-style="'+s.id+'"]')?.click();render()};studio.querySelector('.visual-themes').append(b);});{const importButton=document.createElement('button');importButton.type='button';importButton.className='visual-import';importButton.innerHTML='<img src="assets/themes/previews/importer.webp" alt=""><span>Importer un fond</span>';importButton.onclick=()=>$('design-file').click();studio.querySelector('.visual-themes').append(importButton)}
   studio.querySelectorAll('[data-show-date]').forEach(el=>el.onchange=()=>{visibility.cardShowDate=el.checked;visibility.welcomeShowDate=el.checked;context.markDirty('welcome');dispatch('qr-style');context.scheduleSave();render()});
@@ -221,6 +243,7 @@
   return {...designer,syncShared(){designer.syncShared();render()},close(){designer.close()}};
  };
 })();
+
 
 
 

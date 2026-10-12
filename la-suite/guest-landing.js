@@ -16,6 +16,13 @@
  const hostLabel=document.createElement('p');hostLabel.className='guest-host-label';hostLabel.textContent='Le mot de votre hôte';greeting.prepend(hostLabel);
  const icons={image:'<path fill-rule="evenodd" d="M8 3h8l2 3h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3Zm4 6a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z"/>',video:'<rect x="1" y="5" width="14" height="14" rx="3"/><path d="m17 9 6-4v14l-6-4z"/>',audio:'<rect x="8" y="1" width="8" height="14" rx="4"/><path d="M4 10a1 1 0 0 1 2 0v2a6 6 0 0 0 12 0v-2a1 1 0 0 1 2 0v2a8 8 0 0 1-7 8v2h4v2H7v-2h4v-2a8 8 0 0 1-7-8Z"/>',text:'<path fill-rule="evenodd" d="M4 1h10v6h6v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2Zm2 10v2h10v-2Zm0 5v2h10v-2Zm0 4v1h6v-1Z"/><path d="m16 1 4 4h-4Z"/>'};
  const types=landing.querySelector('.guest-home-types');
+ if(new URLSearchParams(location.search).get('editor')==='1'&&window.parent!==window){
+  document.addEventListener('click',event=>{
+   const node=event.target.closest('#capsule-title,#guest-event-date,.guest-host-zone,#guest-read-more');if(!node)return;
+   event.preventDefault();event.stopImmediatePropagation();window.parent.postMessage({type:'la-suite-guest-edit',field:node.id==='capsule-title'?'name':node.id==='guest-event-date'?'date':'intro'},location.origin);
+  },true);
+ }
+
  for(const [type,label] of [['image','Photo'],['video','Vidéo'],['audio','Audio'],['text','Texte']]){
   const b=document.createElement('button');b.type='button';b.dataset.landingType=type;b.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+icons[type]+'</svg><span>'+label+'</span>';b.hidden=true;
   b.onclick=()=>{body.dataset.guestView='compose';form.querySelector('[data-memory-type="'+type+'"]').click();window.scrollTo(0,0);};types.append(b);
@@ -89,5 +96,6 @@
  window.addEventListener('resize',syncMedia);
  window.addEventListener('pagehide',()=>clearInterval(countdownTimer));window.SuiteGuestLanding={render,syncMedia,fail(){body.classList.remove('guest-loading');body.classList.add('guest-load-error');body.dataset.guestView='home';}};
 })();
+
 
 
