@@ -1292,7 +1292,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const explanationBottom=Math.min(1540,logoTop-32);
  const textBox={x:contentInset,y:1220,width:W-contentInset*2,height:150};
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
- const fixedBottom=drawPrintTextBox(ctx,o.explanation,{...textBox,height:135},{size:44,family:'"'+ff+'", serif',weight:'400',maxLines:3,minSize:34,onOverflow:()=>issues.push('print-explanation')});
+ const fixedBottom=drawPrintTextBox(ctx,o.explanation,{...textBox,height:135},{size:44,family:'Inter,Arial,sans-serif',weight:'400',maxLines:3,minSize:34,onOverflow:()=>issues.push('print-explanation')});
  textInk['print-explanation']=ctx.lastTextBounds;
  const noteY=fixedBottom+26;
  ctx.fillStyle=accent;

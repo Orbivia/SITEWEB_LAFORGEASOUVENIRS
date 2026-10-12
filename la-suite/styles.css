@@ -2057,8 +2057,8 @@ html:has(body.workspace-ready.studio-ready){scroll-padding-bottom:calc(90px + va
 .guest-compact[data-welcome-style] #message_text{background:var(--welcome-paper);border-color:#84704c30;border-radius:min(var(--welcome-radius),12px)}
 .guest-compact[data-welcome-style=minimal] .guest-date-feature .delivery-summary{background:var(--guest-accent);border-color:var(--guest-accent);box-shadow:none}
 .guest-compact[data-welcome-style=minimal] .delivery-caption,.guest-compact[data-welcome-style=minimal] .delivery-invitation,.guest-compact[data-welcome-style=minimal] .delivery-summary strong{color:var(--welcome-contrast)}
-.guest-compact[data-welcome-style] .capsule-hero h1,.guest-compact[data-welcome-style] .welcome-mini-name{font-family:var(--welcome-font);font-weight:var(--welcome-weight);color:var(--welcome-readable);letter-spacing:normal}
-.guest-compact[data-welcome-style] .guest-date-feature .delivery-summary strong{font-family:var(--welcome-font);font-weight:var(--welcome-weight);color:var(--welcome-readable);letter-spacing:normal}
+.guest-compact[data-welcome-style] #capsule-title,.guest-compact[data-welcome-style] .welcome-mini-name{font-family:var(--welcome-font);font-weight:var(--welcome-weight);color:var(--welcome-readable);letter-spacing:normal}
+.guest-compact[data-welcome-style] .guest-date-feature .delivery-summary strong{font-family:Inter,Arial,sans-serif;font-weight:600;color:var(--welcome-readable);letter-spacing:normal}
 .guest-compact[data-welcome-style=minimal] .guest-date-feature .delivery-summary strong{color:var(--welcome-contrast)}
 .guest-compact[data-welcome-style] .submit-memory{background:var(--guest-accent);border-color:var(--guest-accent);color:var(--welcome-contrast)}
 .guest-compact[data-welcome-style] .memory-type.active{color:var(--welcome-readable);background:var(--welcome-date)}
@@ -2223,7 +2223,7 @@ a.workspace-capsule-summary:hover{border-color:#c2a777;background:#fffcf5}
 .welcome-mini-preview.guest-compact .guest-form,.welcome-gallery-preview.guest-compact .guest-form{padding:10px;margin:0}
 .welcome-mini-preview.guest-compact .delivery-invitation,.welcome-gallery-preview.guest-compact .delivery-invitation{font-size:6px;margin:5px 0}
 .welcome-mini-preview.guest-compact .guest-date-art,.welcome-gallery-preview.guest-compact .guest-date-art{width:80px;height:60px}
-.guest-compact[data-welcome-style] [data-welcome-title]{font-family:var(--welcome-font);font-weight:var(--welcome-weight)}
+.guest-compact[data-welcome-style] [data-welcome-title]{font-family:Inter,Arial,sans-serif;font-weight:500}
 .welcome-style-grid button[aria-pressed=true]::before{content:'';position:absolute;right:10px;top:7px;width:5px;height:9px;border:solid white;border-width:0 2px 2px 0;transform:rotate(45deg);z-index:1}
 .print-download-dialog{width:min(520px,calc(100% - 24px));max-height:calc(var(--workspace-viewport-height,100dvh) - 24px)}
 .print-format-choices{display:grid;gap:10px;margin-bottom:16px}
