@@ -596,3 +596,6 @@ body.guest-sending #guest-message{visibility:hidden}
 
 /* Limits are enforced during acceptance; only errors need a message. */
 .guest-deposit-dialog #file-help{display:none!important}
+
+.guest-deposit-dialog .media-choice[hidden]{display:none!important}
+.guest-deposit-dialog .media-choices:has(>.media-choice[hidden]){grid-template-columns:minmax(0,1fr)}
