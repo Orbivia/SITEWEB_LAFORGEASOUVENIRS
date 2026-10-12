@@ -678,8 +678,9 @@ async function initCapsule(){
  }else if(!configured||!token){$("guest-state").textContent="Lien de capsule invalide.";window.SuiteGuestLanding?.fail();return}
  initGuestControls();chooseGuestType("text");
  let refreshing=false,refreshVersion=0,boundaryTimer=null;
+ async function welcomeWithin(promise,delay){let timeout;try{return await Promise.race([promise,new Promise(resolve=>{timeout=setTimeout(()=>resolve(null),delay)})])}finally{clearTimeout(timeout)}}
  async function refreshGuestState(){
-  if(refreshing)return;refreshing=true;const version=++refreshVersion;
+  if(refreshing)return;refreshing=true;const version=++refreshVersion;if(document.body.dataset.guestView==='home')document.body.classList.add('guest-loading');
   $("organizer-intro").pause();
   $("guest-message").hidden=true;$("guest-retry").hidden=true;$("guest-state").textContent="Chargement de la capsule…";
   try{
@@ -689,13 +690,20 @@ async function initCapsule(){
    $("capsule-welcome").hidden=!$("capsule-welcome").textContent;$("intro-section").hidden=!$("capsule-welcome").textContent;
    $('guest-welcome-open').hidden=!$('capsule-welcome').textContent;
    $("organizer-intro").hidden=true;$("organizer-intro-image").hidden=true;
-   renderGuestState(guestState);
    clearTimeout(boundaryTimer);const next=[guestState.opens_at,guestState.closes_at,guestState.expires_at].map(Date.parse).filter(at=>Number.isFinite(at)&&at>Date.now()).sort((a,b)=>a-b)[0];
    if(!guestIsPreview&&next)boundaryTimer=setTimeout(()=>{if(!guestBusy)refreshGuestState();},Math.min(2147483647,Math.max(100,next-Date.now()+100)));
    if(guestIsPreview)$('guest-state').textContent='Mode aperçu · Aucun souvenir ne sera envoyé.';
-   if(guestState.has_intro&&SuiteGuestCalendar.welcomeAvailable(guestState))guestInvoke({action:"get_intro",guest_token:token}).then(r=>{
-    if(version===refreshVersion&&r.signed_url){const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;media.hidden=false;$("intro-section").hidden=false;$('guest-welcome-open').hidden=false;window.SuiteGuestLanding?.syncMedia()}
-   }).catch(()=>{});
+   if(guestState.has_intro&&SuiteGuestCalendar.welcomeAvailable(guestState)){
+    try{
+     const r=await welcomeWithin(guestInvoke({action:"get_intro",guest_token:token}),4000);
+     if(version===refreshVersion&&r?.signed_url){
+      const media=$(r.media_type==="image"?"organizer-intro-image":"organizer-intro");media.src=r.signed_url;
+      const ready=r.media_type!=="image"||await welcomeWithin(media.decode().then(()=>true,()=>false),3000);
+      if(ready&&version===refreshVersion){media.hidden=false;$("intro-section").hidden=false;$('guest-welcome-open').hidden=false}
+     }
+    }catch{}
+   }
+   renderGuestState(guestState);
   }catch(error){$("guest-state").textContent=error.message;$("guest-retry").hidden=false;window.SuiteGuestLanding?.fail()}
   finally{refreshing=false}
  }
@@ -2325,5 +2333,6 @@ async function initDashboard(){
 initAuth();initCreate();initCapsule();initDashboard();
 window.addEventListener("beforeunload",stopStream);
 })();
+
 
 
