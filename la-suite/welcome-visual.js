@@ -112,7 +112,7 @@
    const available=Math.max(1,drawer.clientHeight-studio.querySelector('.visual-tools').offsetHeight-8);
    const panel=settings.querySelector('[data-panel]:not([hidden])');if(!panel)return;
    const list=panel.querySelector('.visual-themes:not([hidden]),.visual-colors:not([hidden]),.visual-font-samples:not([hidden])'),count=list?.children.length||1,extra=list?[...panel.children].filter(el=>el!==list&&!el.hidden).reduce((sum,el)=>sum+el.offsetHeight,0):0;
-   studio.style.setProperty('--visual-choice-height',Math.max(44,(available-extra-8)/count-3)+'px');
+   const listHeight=Math.max(1,available-extra-8);studio.style.setProperty('--visual-choice-height',Math.max(1,listHeight/count-3)+'px');studio.style.setProperty('--visual-choice-count',String(count));studio.style.setProperty('--visual-choice-list-height',listHeight+'px');
    panel.style.transform='none';panel.style.width='100%';studio.dataset.tightPanel=String(available<300);studio.style.setProperty('--visual-panel-content-height',available+'px');
    if(panel.dataset.panel==='details'){const rows=[...panel.querySelectorAll(':scope > label')].reduce((sum,el)=>sum+el.getBoundingClientRect().height,0),headings=[...panel.querySelectorAll('.visual-qr-label')].reduce((sum,el)=>sum+el.getBoundingClientRect().height,0);studio.style.setProperty('--visual-qr-choice-height',Math.max(32,(available-rows-headings-32)/6)+'px');}
 

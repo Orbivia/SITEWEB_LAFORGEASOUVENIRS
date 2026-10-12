@@ -875,3 +875,13 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 /* Identical visible pencil badges on QR and welcome previews. */
 .visual-card-overlays .visual-text-pen,.visual-card-qr>span,.visual-card-date .visual-date-pen{width:24px;height:24px;min-height:24px;padding:5px;box-sizing:border-box;border-radius:50%;background:#fffdf7;color:#355748;box-shadow:0 2px 6px #20372e26}
 .visual-card-qr>span svg,.visual-card-date .visual-date-pen svg{width:14px;height:14px}
+
+/* Choices use all available height rather than growing a scrolling list. */
+.visual-primary:is([data-tool=theme],[data-tool=color],[data-tool=font]) #visual-settings{overflow:hidden;scrollbar-gutter:auto;scroll-snap-type:none}
+.visual-primary:is([data-tool=theme],[data-tool=color],[data-tool=font]) .visual-drawer{overflow:hidden}
+.visual-primary .visual-themes,.visual-primary .visual-colors,.visual-primary .visual-font-samples{display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(var(--visual-choice-count,8),minmax(0,1fr));grid-auto-rows:auto;gap:3px;height:var(--visual-choice-list-height);max-height:var(--visual-choice-list-height);padding:0;margin:0;box-sizing:border-box;overflow:hidden}
+.visual-primary .visual-themes[hidden],.visual-primary .visual-colors[hidden],.visual-primary .visual-font-samples[hidden]{display:none!important}
+.visual-primary .visual-drawer .visual-themes button,.visual-primary[data-tool=theme] .visual-drawer .visual-themes button,.visual-primary .visual-colors button,.visual-primary .visual-custom-color,.visual-primary .visual-font-samples button{height:100%;min-height:0;width:100%;min-width:0;box-sizing:border-box;padding:3px 4px;line-height:1.2;margin:0;overflow:hidden}
+.visual-primary .visual-themes .visual-theme-motif,.visual-primary .visual-themes img,.visual-primary[data-tool=theme] .visual-themes .visual-theme-motif,.visual-primary[data-tool=theme] .visual-themes img{width:clamp(18px,calc(var(--visual-choice-height) - 8px),28px);height:clamp(18px,calc(var(--visual-choice-height) - 8px),28px);flex-basis:clamp(18px,calc(var(--visual-choice-height) - 8px),28px)}
+.visual-primary .visual-font-samples button{font-size:clamp(15px,calc(var(--visual-choice-height) * .4),22px)}
+.visual-primary .visual-themes .visual-import{min-height:0;height:100%;padding:3px 4px}
