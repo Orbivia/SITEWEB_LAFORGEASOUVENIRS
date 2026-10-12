@@ -1877,6 +1877,7 @@ async function renderManifest(c,manifest){
   if(loadMedia){if(memoryMediaObserver){pendingMediaUrls.set(article,loadMedia);memoryMediaObserver.observe(article)}else loadMedia();}
  }
  applyMemoryFilter();
+ if(!list.dataset.initialPositioned){list.dataset.initialPositioned='true';requestAnimationFrame(()=>{list.scrollTop=0;list.updateWholeRows?.();});}
 }
 
 function memoryWasRead(id){return window.SuiteMemoryState.wasRead(id)}

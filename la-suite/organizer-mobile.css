@@ -364,7 +364,7 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
 /* Show only complete memory rows at the scroll viewport edges. */
 @media(max-width:760px){
  .organizer-layout-ready .deposit-open-gallery .memory-row{scroll-snap-align:start}
- .organizer-layout-ready .deposit-open-gallery #memory-list{scroll-snap-type:y proximity}
+ .organizer-layout-ready .deposit-open-gallery #memory-list{scroll-snap-type:none}
  .deposit-open-has-memories .deposit-open-summary{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:0;padding:6px 4px 8px;text-align:center;font-size:10px}
  .deposit-open-summary>span{display:flex!important;align-items:center;justify-content:center;gap:5px;background:transparent!important;padding:0 5px!important;color:#302a25!important;white-space:nowrap;min-width:0}
  .deposit-open-summary>span+span{border-left:1px solid #ded5c6}
@@ -463,3 +463,6 @@ body.owner-no-tabs{padding-bottom:0!important}
  .deposit-open-gallery #memory-list{padding-bottom:12px!important;scroll-padding-bottom:12px}
  .memory-reader-date{white-space:normal;overflow-wrap:anywhere;line-height:1.5}
 }
+
+/* Section headings must remain visible above the first row on arrival. */
+.organizer-layout-ready .deposit-open-gallery #memory-list{overflow-anchor:none;scroll-snap-type:none}
