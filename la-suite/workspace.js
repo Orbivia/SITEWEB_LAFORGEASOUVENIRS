@@ -28,7 +28,7 @@
   const accountButton=document.createElement('button');accountButton.id='workspace-account';accountButton.className='workspace-account-button';accountButton.type='button';accountButton.setAttribute('aria-label','Mon compte');accountButton.setAttribute('aria-haspopup','dialog');accountButton.innerHTML='<i class="fa-solid fa-user" aria-hidden="true"></i><span>Mon compte</span>';header.append(accountButton);
   const title=$('dashboard-title');
   if(!selected)title.textContent='Mon espace';
-  const choose=sheet('workspace-capsules','Mes capsules'),account=sheet('workspace-account-dialog','Mon compte'),deletion=sheet('workspace-delete-capsule','Supprimer la capsule ?');
+  const choose=sheet('workspace-capsules','Mes capsules'),account=sheet('workspace-account-dialog','Mon compte'),deletion=sheet('workspace-delete-capsule','Supprimer la capsule ?'),settingsDialog=sheet('workspace-capsule-settings','Paramètres de la capsule');
   accountButton.setAttribute('aria-controls',account.id);
   const body=choose.querySelector('.studio-sheet-body');body.innerHTML='<div id="workspace-mine"><div id="workspace-capsule-list"></div><a id="workspace-create" class="btn primary" href="create.html"><i class="fa-solid fa-plus" aria-hidden="true"></i>Créer une capsule</a><p id="workspace-create-help" class="hint"></p></div><p id="workspace-selection-status" class="status" role="status"></p>';
   $('workspace-create').hidden=!access.can_create;$('workspace-create-help').textContent=access.can_create?'':access.reason||'';
@@ -39,7 +39,7 @@
   function render(){
    $('workspace-capsule-list').innerHTML=caps.map(c=>{
     const info=summaries.get(c.id),state=info?.state||(c.status==='active'?'scheduled':'draft'),current=c.slug===selected?.slug,artwork=window.SuiteDesign.artwork(c.qr_style||'minimal',{background:window.SuiteDesign.background(c)})||window.SuiteDesign.thumbnail(c.qr_style||'minimal');
-    return '<div class="workspace-capsule-entry"><a class="workspace-capsule-row" href="dashboard.html?slug='+encodeURIComponent(c.slug)+'" '+(current?'aria-current="true"':'')+'><img class="workspace-capsule-preview" src="'+esc(artwork)+'" alt=""><span><strong>'+esc(c.couple_name)+'</strong><small class="workspace-plan">'+esc(planNames[window.SuiteDesign.effectivePlan(c)]||'Premium')+'</small><small>'+esc(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR'))+'</small><small class="workspace-state" data-state="'+esc(state)+'">'+esc(states[state]||'Indisponible')+'</small><small class="workspace-discovery">'+(info?Number(info.available_count)+' à découvrir · '+Number(info.locked_count)+' programmé'+(Number(info.locked_count)>1?'s':''):'Chargement des souvenirs…')+'</small></span></a><div class="workspace-capsule-actions"><button type="button" data-capsule-download="'+esc(c.id)+'" aria-label="Télécharger les souvenirs ouverts de '+esc(c.couple_name)+'" title="Télécharger les souvenirs ouverts">'+downloadIcon+'</button><button type="button" data-capsule-delete="'+esc(c.id)+'" aria-label="Supprimer '+esc(c.couple_name)+'" title="Supprimer">'+trash+'</button></div></div>';
+    return '<div class="workspace-capsule-entry"><a class="workspace-capsule-row" href="dashboard.html?slug='+encodeURIComponent(c.slug)+'" '+(current?'aria-current="true"':'')+'><img class="workspace-capsule-preview" src="'+esc(artwork)+'" alt=""><span><strong>'+esc(c.couple_name)+'</strong><small class="workspace-plan">'+esc(planNames[window.SuiteDesign.effectivePlan(c)]||'Premium')+'</small><small>'+esc(new Date(c.wedding_date+'T12:00:00').toLocaleDateString('fr-FR'))+'</small><small class="workspace-state" data-state="'+esc(state)+'">'+esc(states[state]||'Indisponible')+'</small><small class="workspace-discovery">'+(info?Number(info.available_count)+' à découvrir · '+Number(info.locked_count)+' programmé'+(Number(info.locked_count)>1?'s':''):'Chargement des souvenirs…')+'</small></span></a><div class="workspace-capsule-actions"><button type="button" data-capsule-settings="'+esc(c.id)+'" aria-label="Paramètres de '+esc(c.couple_name)+'" title="Paramètres"><i class="fa-solid fa-gear" aria-hidden="true"></i></button></div></div>';
    }).join('')||'<p class="hint">Créez votre première capsule pour commencer.</p>';
   }
   let summaryLoading=false;
@@ -49,7 +49,21 @@
   choose.canClose=()=>true;account.canClose=()=>!accountBusy;deletion.canClose=()=>!deleteBusy;
   choose.querySelector('.studio-close').onclick=()=>choose.close();
   choose.addEventListener('close',()=>{accountButton.focus()});
-  body.addEventListener('click',async e=>{
+  let settingsTarget=null;
+  body.addEventListener('click',e=>{
+   const button=e.target.closest('[data-capsule-settings]');if(!button)return;
+   settingsTarget=caps.find(c=>c.id===button.dataset.capsuleSettings);if(!settingsTarget)return;
+   const c=settingsTarget,locked=c.status==='active'&&c.guest_rules_version===1;
+   settingsDialog.querySelector('.studio-sheet-body').innerHTML='<p><strong>'+esc(c.couple_name)+'</strong></p><form data-settings-date><label for="workspace-event-date">Date de l’événement</label><input id="workspace-event-date" type="date" required value="'+esc(c.wedding_date)+'" '+(locked?'disabled':'')+'><p class="hint">'+(locked?'La date est verrouillée après activation.':'La date reste accessible même si elle est masquée sur la fiche.')+'</p><button class="btn primary" type="submit" '+(locked?'disabled':'')+'>Changer la date</button></form><hr><button class="btn secondary" type="button" data-capsule-download="'+esc(c.id)+'">Télécharger les souvenirs ouverts</button><button class="btn secondary" type="button" data-capsule-delete="'+esc(c.id)+'">Supprimer la capsule</button><p data-settings-status class="status" role="status"></p>';
+   settingsDialog.showModal();
+   settingsDialog.querySelector('form').onsubmit=async event=>{
+    event.preventDefault();if(locked)return;if(!canLeave()){settingsDialog.querySelector('[data-settings-status]').textContent='Enregistrez vos modifications avant de changer la date.';return;}
+    const date=$('workspace-event-date').value;if(!date)return;if(c.status==='draft'&&date<=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris'}).format(new Date())){settingsDialog.querySelector('[data-settings-status]').textContent='Choisissez une date future.';return;}
+    const status=settingsDialog.querySelector('[data-settings-status]'),submit=settingsDialog.querySelector('[type=submit]');submit.disabled=true;
+    try{const{data,error}=await sb.from('capsules').update({wedding_date:date}).eq('id',c.id).eq('owner_id',user.id).select('id,wedding_date').single();if(error)throw error;c.wedding_date=data.wedding_date;render();status.textContent='Date enregistrée.';if(c.id===selected?.id)location.reload();}catch(error){status.textContent='Impossible de changer la date : '+error.message;}finally{submit.disabled=false;}
+   };
+  });
+  const capsuleAction=async e=>{
    const settings=e.target.closest('[data-capsule-download]'),remove=e.target.closest('[data-capsule-delete]');
    if(!settings&&!remove||ended||deleteBusy||downloadBusy)return;
    const capsule=caps.find(c=>c.id===(settings?.dataset.capsuleDownload||remove?.dataset.capsuleDelete));if(!capsule)return;
@@ -61,7 +75,8 @@
     deleteTarget=capsule;$('workspace-delete-name').textContent=capsule.couple_name;
     $('workspace-delete-confirmation').value='';$('workspace-delete-status').textContent='';$('workspace-delete-submit').disabled=true;deletion.showModal();
    }
-  });
+  };
+  body.addEventListener('click',capsuleAction);settingsDialog.querySelector('.studio-sheet-body').addEventListener('click',capsuleAction);
   deletion.querySelector('.studio-sheet-body').innerHTML='<p>La capsule <strong id="workspace-delete-name"></strong> et ses souvenirs seront supprimés. Son lien et son QR code ne fonctionneront plus. Cette action est définitive.</p><form id="workspace-delete-form"><label for="workspace-delete-confirmation">Recopiez le nom de la capsule pour confirmer</label><input id="workspace-delete-confirmation" autocomplete="off" required><p id="workspace-delete-status" class="status" role="status" aria-live="polite"></p><div class="workspace-delete-actions"><button id="workspace-delete-cancel" class="btn secondary" type="button">Annuler</button><button id="workspace-delete-submit" class="btn primary" type="submit" disabled>Supprimer</button></div></form>';
   $('workspace-delete-confirmation').oninput=()=>{$('workspace-delete-submit').disabled=deleteBusy||$('workspace-delete-confirmation').value.trim()!==deleteTarget?.couple_name;};
   const closeDeletion=()=>{if(!deleteBusy)deletion.close();};deletion.querySelector('.studio-close').onclick=closeDeletion;$('workspace-delete-cancel').onclick=closeDeletion;
