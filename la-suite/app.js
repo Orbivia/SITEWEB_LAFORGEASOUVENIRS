@@ -749,7 +749,7 @@ async function initCapsule(){
   if(!guestTransaction||guestTransaction.key!==key)guestTransaction={key,requestId:crypto.randomUUID(),delivery:instant?new Date().toISOString():date};
   const transaction=guestTransaction,button=e.target.querySelector('[type="submit"]');
   const fields=[...e.target.querySelectorAll("input,textarea,button")],disabled=fields.map(f=>f.disabled);
-  guestBusy=true;fields.forEach(f=>f.disabled=true);button.querySelector("span").textContent="Envoi en cours…";$("upload-progress").value=0;
+  guestBusy=true;document.body.classList.add('guest-sending');fields.forEach(f=>f.disabled=true);button.querySelector("span").textContent="Envoi en cours…";$("upload-progress").value=0;
   try{
    show(status,"Préparation de l’envoi…");
    if(guestType==="text"){
@@ -764,9 +764,9 @@ async function initCapsule(){
     }
    }
    $("guest-success-date").textContent=instant?"Merci pour votre souvenir !":"Il restera secret jusqu’au "+fdate(date)+".";
-   e.target.reset();resetPreview();guestTransaction=null;$("guest-message").hidden=true;$("guest-success").hidden=false;$("guest-success").focus();$("guest-success").scrollIntoView({behavior:"smooth",block:"center"});
+   document.body.dataset.guestView="success";$("guest-message").hidden=true;e.target.reset();resetPreview();guestTransaction=null;$("guest-success").hidden=false;$("guest-success").focus();$("guest-success").scrollIntoView({behavior:"smooth",block:"center"});
   }catch(error){if(/trop vite|beaucoup de|Patientez|20 petits mots|200 Mo ou 20/i.test(error.message)){await refreshGuestLimits();show(status,guestWaitSeconds()>0?"":error.message,false);notifyGuestLimits();}else show(status,error.message,false);button.querySelector("span").textContent="Réessayer l’envoi"}
-  finally{guestBusy=false;fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;refreshGuestLimits();if(!$("guest-success").hidden)button.querySelector("span").textContent="Envoyer mon souvenir"}
+  finally{guestBusy=false;document.body.classList.remove('guest-sending');fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;refreshGuestLimits();if(!$("guest-success").hidden)button.querySelector("span").textContent="Envoyer mon souvenir"}
  });
 }
 

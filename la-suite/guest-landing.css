@@ -574,3 +574,11 @@ body.guest-landing-ready[data-guest-view=home] .guest-home-content,body.guest-la
 .guest-wait-notice{flex:none;margin:0;padding:8px 12px;border-radius:10px;background:var(--home-paper,#fffdf8);border:1px solid var(--home-accent,#8b2730);font:500 13px/1.4 Inter,sans-serif;color:var(--home-ink,#20392f)}
 .guest-wait-notice[hidden]{display:none!important}
 .submit-memory[aria-disabled=true]{opacity:.6;cursor:wait}
+
+/* Sending has its own stable surface; reset controls never flash before confirmation. */
+#guest-send-screen{display:none}
+body.guest-sending #guest-send-screen{position:fixed;inset:0;z-index:80;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--home-paper,#fffdf8);color:var(--home-ink,#20392f);font:500 18px/1.4 Inter,sans-serif}
+body.guest-sending #guest-message{visibility:hidden}
+.guest-send-spinner{width:36px;height:36px;border:3px solid #7773;border-top-color:var(--home-accent,#8b2730);border-radius:50%;animation:guest-send-spin 1s linear infinite}
+@keyframes guest-send-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.guest-send-spinner{animation:none}}
