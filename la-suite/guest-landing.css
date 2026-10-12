@@ -489,3 +489,22 @@ body[data-compose-dark=true] .guest-success-footer img{filter:brightness(0) inve
 .guest-landing-ready[data-guest-view=compose] .guest-text-dialog #guest-text-content,.guest-landing-ready[data-guest-view=compose] .guest-text-dialog #guest-message-field{height:auto;min-height:0}
 .guest-landing-ready[data-guest-view=compose] .guest-text-dialog #message_text{box-sizing:border-box;width:100%;height:clamp(120px,32dvh,280px)!important;min-height:120px!important;font-size:16px;line-height:1.5;resize:vertical}
 .guest-text-dialog .guest-message-counter{display:block;text-align:right;margin-top:6px}
+
+
+/* Group a minimal welcome, and reserve flexible space for the host's content. */
+.guest-landing[data-state=open]:has(.guest-host-zone[data-content=empty]) .guest-home-content{justify-content:center;gap:clamp(8px,1.8dvh,16px)}
+.guest-landing[data-state=open] .guest-host-zone[data-content=empty]{flex:0 1 auto;height:clamp(90px,24dvh,180px);margin:clamp(8px,2dvh,20px) 0;min-height:0}
+.guest-landing .guest-host-zone[data-content=empty] .guest-empty-illustration{height:100%;max-height:180px;width:min(280px,85%)}
+.guest-landing[data-state=open]:has(.guest-host-zone[data-content=empty]) #guest-deposit{margin-top:clamp(12px,2dvh,24px)}
+.guest-landing[data-state=open] .guest-host-zone[data-content=text]{justify-content:center}
+.guest-landing[data-state=open] .guest-host-zone[data-content=text] .guest-greeting{max-height:100%;padding:18px 12px;overflow:hidden}
+.guest-landing[data-state=open] .guest-host-zone[data-content=text] #capsule-welcome{-webkit-line-clamp:6;font-size:clamp(17px,2.6dvh,22px);line-height:1.45}
+.guest-landing[data-state=open] .guest-host-zone[data-content=media]{justify-content:center;gap:10px}
+.guest-landing[data-state=open] .guest-host-zone[data-content=media] .guest-cover{flex:0 1 auto;height:min(38dvh,320px);max-height:100%;min-height:0}
+.guest-landing[data-state=open] .guest-host-zone[data-content=media] .guest-greeting{flex:0 1 auto;max-height:72px}
+@media(max-height:650px){
+.guest-landing[data-state=open] .guest-host-zone[data-content=text] .guest-greeting{padding:12px 8px}
+.guest-landing[data-state=open] .guest-host-zone[data-content=text] #capsule-welcome{-webkit-line-clamp:3;font-size:17px}
+.guest-landing[data-state=open] .guest-host-zone[data-content=media] .guest-cover{height:30dvh}
+.guest-landing[data-state=open] .guest-host-zone[data-content=empty]{height:18dvh;margin:4px 0}
+}
