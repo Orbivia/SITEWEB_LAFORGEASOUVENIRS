@@ -671,3 +671,20 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-capture-dialog[data-type=audio] #audio-countdown{position:absolute;inset:0;margin:0;line-height:44px;font-size:36px;background:transparent}
 .guest-capture-dialog[data-type=audio] #audio-countdown[hidden]{display:none!important}
 .guest-capture-dialog[data-type=audio] .guest-record-elapsed{font-size:16px;line-height:1.4}
+
+/* Envelope card puts the future opening date at the heart of the deposit. */
+.guest-landing-ready[data-guest-view=compose] .guest-reveal-heading,
+.guest-landing-ready[data-guest-view=compose] .guest-reveal-secret,
+.guest-landing-ready[data-guest-view=compose] .guest-reveal-card .delivery-caption,
+.guest-landing-ready[data-guest-view=compose] .guest-reveal-card .delivery-edit,
+.guest-landing-ready[data-guest-view=compose] .guest-reveal-card .guest-date-pencil{display:none!important}
+.guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-personalization{padding:0!important;border:0;background:transparent}
+.guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-reveal-card{display:grid;grid-template-columns:86px minmax(0,1fr);grid-template-rows:auto auto auto auto;gap:3px 10px;align-items:center;height:auto;min-height:128px;padding:12px;border:1px solid color-mix(in srgb,var(--home-accent),transparent 55%);border-radius:14px;background:linear-gradient(125deg,#fffdf8,#f7efdf);color:var(--home-ink);box-shadow:0 3px 10px #77551d0a;text-align:left}
+.guest-reveal-envelope{grid-column:1;grid-row:1/4;width:86px;height:80px;object-fit:contain;transform:rotate(-8deg)}
+.guest-reveal-caption{grid-column:2;grid-row:1;font:400 14px/1.2 Georgia,serif}
+.guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-reveal-card #delivery-value{grid-column:2;grid-row:2;font:400 clamp(18px,5vw,24px)/1.15 Georgia,serif;color:var(--home-accent);white-space:normal;overflow-wrap:anywhere}
+.guest-reveal-tagline{grid-column:2;grid-row:3;font:400 11px/1.3 Inter,sans-serif}
+.guest-reveal-action{grid-column:1/-1;grid-row:4;display:flex;align-items:center;justify-content:center;gap:8px;min-height:32px;margin-top:5px;border:1px solid color-mix(in srgb,var(--home-accent),transparent 35%);border-radius:24px;font:500 12px/1.2 Inter,sans-serif;color:var(--home-accent)}
+.guest-reveal-action i:last-child{margin-left:auto;margin-right:12px}
+.guest-reveal-action i:first-child{margin-left:auto}
+@media(max-height:650px){.guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-reveal-card{min-height:104px;padding:8px;grid-template-columns:66px minmax(0,1fr)}.guest-reveal-envelope{width:66px;height:60px}.guest-reveal-action{min-height:28px}}
