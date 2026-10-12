@@ -414,3 +414,7 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
 .organizer-layout-ready .deposit-open-dark .memory-compact{border-bottom-color:#fff8eb40}
 .organizer-layout-ready .deposit-open-dark .memory-scroll-hint{color:#fff8eb}
 .organizer-layout-ready .deposit-open-dark .memory-section-heading,.organizer-layout-ready .deposit-open-dark .memory-section-heading h3{color:#fff8eb}
+
+body.owner-capsule-draft .owner-tabs{display:none!important}
+body.owner-capsule-draft{padding-bottom:0!important}
+body.owner-capsule-draft .welcome-visual-editor.visual-primary{max-height:calc(100dvh - var(--organizer-header-height,65px) - 12px)}

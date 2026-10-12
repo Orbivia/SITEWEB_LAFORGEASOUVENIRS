@@ -1628,6 +1628,7 @@ function setupOwnerTabs(c,manifest){
  }
  const links=[...document.querySelectorAll("[data-owner-tab-link]")];
  const discoveryUnavailable=c.status==='draft';
+ document.body.classList.toggle('owner-capsule-draft',discoveryUnavailable);const ownerNavigation=document.querySelector('.owner-tabs');if(ownerNavigation)ownerNavigation.hidden=discoveryUnavailable;
  for(const link of links.filter(link=>link.dataset.ownerTabLink==='messages')){
   link.hidden=discoveryUnavailable;
  }
@@ -2019,7 +2020,7 @@ function updateOwnerScreenScroll(){
  const editing=document.activeElement?.matches('input,textarea,select,[contenteditable]');
  let fits=false;
  if(frame&&!frame.hidden&&nav&&!editing&&matchMedia('(max-width:760px)').matches&&(window.visualViewport?.scale||1)<=1.01){
-  const rect=frame.getBoundingClientRect(),bottom=nav.getBoundingClientRect().top;
+  const rect=frame.getBoundingClientRect(),bottom=nav.hidden?(window.visualViewport?.height||innerHeight):nav.getBoundingClientRect().top;
   const panel=waiting||preparation,content=waiting?frame.querySelector('.deposit-waiting-content'):frame;
   fits=rect.top>=0&&rect.bottom<=bottom+1&&panel.getBoundingClientRect().bottom<=bottom+1&&frame.scrollHeight<=frame.clientHeight+1&&Boolean(content)&&content.scrollHeight<=frame.clientHeight;
  }
