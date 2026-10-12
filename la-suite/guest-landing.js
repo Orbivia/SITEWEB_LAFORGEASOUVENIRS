@@ -17,10 +17,20 @@
  const icons={image:'<path fill-rule="evenodd" d="M8 3h8l2 3h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h3Zm4 6a5 5 0 1 0 0 10 5 5 0 0 0 0-10Zm0 2a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z"/>',video:'<rect x="1" y="5" width="14" height="14" rx="3"/><path d="m17 9 6-4v14l-6-4z"/>',audio:'<rect x="8" y="1" width="8" height="14" rx="4"/><path d="M4 10a1 1 0 0 1 2 0v2a6 6 0 0 0 12 0v-2a1 1 0 0 1 2 0v2a8 8 0 0 1-7 8v2h4v2H7v-2h4v-2a8 8 0 0 1-7-8Z"/>',text:'<path fill-rule="evenodd" d="M4 1h10v6h6v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2Zm2 10v2h10v-2Zm0 5v2h10v-2Zm0 4v1h6v-1Z"/><path d="m16 1 4 4h-4Z"/>'};
  const types=landing.querySelector('.guest-home-types');
  if(new URLSearchParams(location.search).get('editor')==='1'&&window.parent!==window){
+  body.classList.add('guest-preview-editor');
+  const editLayer=document.createElement('div');editLayer.className='guest-preview-edit-layer';body.append(editLayer);
+  const editTargets=[['name','.guest-home-heading','Modifier le titre'],['date','#guest-event-date','Modifier la date'],['intro','.guest-host-zone','Modifier le contenu d’accueil']];
+  const edits=editTargets.map(([field,selector,label])=>{const button=document.createElement('button');button.type='button';button.className='guest-preview-edit';button.dataset.field=field;button.setAttribute('aria-label',label);button.title=label;button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6Z M14 5l5 5"/></svg>';button.onclick=()=>window.parent.postMessage({type:'la-suite-guest-edit',field},location.origin);editLayer.append(button);return{button,node:landing.querySelector(selector)};});
+  let editScale=1;
+  function positionEdits(){for(const {button,node} of edits){const box=node.getBoundingClientRect();button.hidden=!box.width||!box.height||body.dataset.guestView!=='home';button.style.left=Math.max(0,Math.min(innerWidth-40/editScale,box.right-20/editScale))+'px';button.style.top=Math.max(0,Math.min(innerHeight-40/editScale,box.top))+'px';}}
+  const editResize=new ResizeObserver(positionEdits);for(const {node} of edits)editResize.observe(node);
+  new MutationObserver(positionEdits).observe(landing,{subtree:true,attributes:true,childList:true,characterData:true});
+  window.addEventListener('resize',positionEdits);window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='la-suite-guest-preview-scale')return;const scale=Number(event.data.scale);if(!Number.isFinite(scale)||scale<=0)return;editScale=Math.max(.25,Math.min(1,scale));editLayer.style.setProperty('--preview-edit-scale',String(1/editScale));positionEdits();});
   document.addEventListener('click',event=>{
    const node=event.target.closest('#capsule-title,#guest-event-date,.guest-host-zone,#guest-read-more');if(!node)return;
    event.preventDefault();event.stopImmediatePropagation();window.parent.postMessage({type:'la-suite-guest-edit',field:node.id==='capsule-title'?'name':node.id==='guest-event-date'?'date':'intro'},location.origin);
   },true);
+  positionEdits();
  }
 
  for(const [type,label] of [['image','Photo'],['video','Vidéo'],['audio','Audio'],['text','Texte']]){
@@ -96,6 +106,7 @@
  window.addEventListener('resize',syncMedia);
  window.addEventListener('pagehide',()=>clearInterval(countdownTimer));window.SuiteGuestLanding={render,syncMedia,fail(){body.classList.remove('guest-loading');body.classList.add('guest-load-error');body.dataset.guestView='home';}};
 })();
+
 
 
 

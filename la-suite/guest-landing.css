@@ -512,3 +512,11 @@ body[data-compose-dark=true] .guest-success-footer img{filter:brightness(0) inve
 /* Let the welcome media fill the central space, including portrait images. */
 .guest-landing[data-state=open] .guest-host-zone[data-content=media]{max-width:100%}
 .guest-landing[data-state=open] .guest-host-zone[data-content=media] .guest-cover{flex:1 1 0;width:100%;max-width:100%;height:auto;max-height:100%;min-height:0}
+
+
+/* Editor controls overlay the real guest page without changing its layout. */
+.guest-preview-edit-layer{position:fixed;inset:0;z-index:100;pointer-events:none}
+.guest-preview-edit{position:absolute;display:grid;place-items:center;width:40px;height:40px;min-height:0;padding:10px;box-sizing:border-box;border:1px solid #36574845;border-radius:50%;background:#fffdf8;color:#365748;box-shadow:0 2px 8px #0002;pointer-events:auto;cursor:pointer;transform:scale(var(--preview-edit-scale,1));transform-origin:top left}
+.guest-preview-edit[hidden]{display:none!important}
+.guest-preview-edit svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.guest-preview-edit:focus-visible{outline:3px solid #365748;outline-offset:3px}
