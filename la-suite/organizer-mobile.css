@@ -424,3 +424,15 @@ body.owner-capsule-draft .welcome-visual-editor.visual-primary{max-height:calc(1
  body.organizer-layout-ready:not(.owner-pinch-zoom) .owner-tabs{top:calc(100svh - 64px - env(safe-area-inset-bottom,0px))!important;bottom:auto!important;height:calc(64px + env(safe-area-inset-bottom,0px))!important;transition:none!important;transform:none!important}
  body.organizer-layout-ready.owner-capsule-draft .welcome-visual-editor.visual-primary{max-height:calc(100svh - var(--organizer-header-height,65px) - 12px)}
 }
+
+/* One stable viewport governs the header, editor, waiting card and actions. */
+@media(max-width:760px){
+ body.organizer-layout-ready.owner-fixed-view{height:100svh;min-height:100svh;overflow:hidden!important}
+ body.organizer-layout-ready.owner-fixed-view .forge-style-header{position:sticky;top:0;flex:none;z-index:30}
+ body.organizer-layout-ready.owner-fixed-view main.dashboard-page{box-sizing:border-box;padding-top:8px!important;padding-bottom:0!important;overflow:hidden}
+ body.organizer-layout-ready .welcome-visual-editor.visual-primary{max-height:calc(100svh - var(--organizer-header-height,65px) - 76px - env(safe-area-inset-bottom,0px))}
+ body.organizer-layout-ready.owner-capsule-draft .welcome-visual-editor.visual-primary{max-height:calc(100svh - var(--organizer-header-height,65px) - 12px)}
+ body.organizer-layout-ready .owner-deposit-waiting{height:calc(100svh - var(--organizer-header-height,64px) - 80px - env(safe-area-inset-bottom,0px));min-height:0;max-height:calc(100svh - var(--organizer-header-height,64px) - 80px - env(safe-area-inset-bottom,0px));box-sizing:border-box}
+ body.organizer-layout-ready .deposit-waiting-main{min-height:0;overflow:auto}
+ body.organizer-layout-ready .deposit-waiting-actions{flex:none}
+}

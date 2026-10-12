@@ -2018,6 +2018,7 @@ function updateOwnerScreenScroll(){
  const frame=waiting?$('owner-deposit-waiting'):preparation?$('welcome-visual-editor'):null;
  const nav=document.querySelector('.owner-tabs');
  const editing=document.activeElement?.matches('input,textarea,select,[contenteditable]');
+ document.body.classList.toggle('owner-fixed-view',Boolean(waiting||preparation)&&!editing&&matchMedia('(max-width:760px)').matches);
  let fits=false;
  if(frame&&!frame.hidden&&nav&&!editing&&matchMedia('(max-width:760px)').matches&&(window.visualViewport?.scale||1)<=1.01){
   const rect=frame.getBoundingClientRect(),bottom=nav.hidden?(window.visualViewport?.height||innerHeight):nav.getBoundingClientRect().top;
