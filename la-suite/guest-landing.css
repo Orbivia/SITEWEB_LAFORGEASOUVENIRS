@@ -599,3 +599,12 @@ body.guest-sending #guest-message{visibility:hidden}
 
 .guest-deposit-dialog .media-choice[hidden]{display:none!important}
 .guest-deposit-dialog .media-choices:has(>.media-choice[hidden]){grid-template-columns:minmax(0,1fr)}
+
+/* Playback stays on the deposit card, separate from its edit action. */
+.guest-memory-card{position:relative;width:100%;height:100%;min-height:0;display:flex;align-items:center;justify-content:center}
+.guest-memory-card[hidden],.guest-memory-card>[hidden]{display:none!important}
+.guest-memory-card>.guest-media-video{width:100%;height:100%;min-height:0;object-fit:contain;border-radius:12px}
+.guest-memory-card>audio{width:calc(100% - 24px);max-width:100%}
+.guest-memory-card[data-ready=true]:is([data-type=audio],[data-type=video])>.guest-media-launch{position:absolute;inset:0;z-index:2;pointer-events:none;background:transparent;border:0}
+.guest-memory-card[data-ready=true]:is([data-type=audio],[data-type=video]) .guest-content-pencil{pointer-events:auto;cursor:pointer}
+.guest-memory-card>.guest-media-launch:focus-visible{outline:2px solid var(--home-accent);outline-offset:-3px}

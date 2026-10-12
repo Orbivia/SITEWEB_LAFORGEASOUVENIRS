@@ -515,7 +515,7 @@ function chooseGuestType(type){
  document.querySelectorAll("[data-memory-type]").forEach(b=>{const selected=b.dataset.memoryType===type;b.classList.toggle("active",selected);b.setAttribute("aria-pressed",String(selected))});
  $("capture-choices").hidden=type==="text";$("file-help").hidden=type==="text";
  const importButton=document.querySelector('[data-media-mode="upload"]');
- importButton.hidden=type==='audio';
+ importButton.hidden=type==='audio'||type==='video';
  importButton.querySelector('.media-action-label').textContent=type==="image"?"Choisir une photo":type==="audio"?"Choisir un audio":"Choisir une vidéo";
  importButton.querySelector('i').className=type==="image"?'fa-solid fa-images':type==="audio"?'fa-solid fa-microphone':'fa-solid fa-video';
  $('import-memory-help').textContent=type==='image'?'Depuis votre galerie':'Depuis vos fichiers';$("message_text").required=type==="text";
@@ -524,7 +524,7 @@ function chooseGuestType(type){
  const messageField=$('guest-message-field'),extras=$('guest-extras');
  (type==='text'?$('guest-text-content'):$('guest-extras-body')).prepend(messageField);extras.open=false;
  extras.hidden=true;if(type!=='text')$('message_text').value='';$('guest-limits').hidden=type==='text';
- const capture=$("capture-memory");capture.hidden=type==="image";capture.dataset.mediaMode=type==="image"?"photo":type;
+ const capture=$("capture-memory");capture.hidden=false;capture.dataset.mediaMode=type==="image"?"photo":type;
  capture.querySelector('.media-action-label').textContent=type==="image"?"Prendre une photo":type==="audio"?"M’enregistrer":"Me filmer";
  capture.querySelector('i').className=type==='image'?'fa-solid fa-camera':type==='audio'?'fa-solid fa-microphone':'fa-solid fa-video';
  $("media-file").accept=type==="image"?"image/jpeg,image/png,image/webp,image/heic,image/heif":type==="audio"?"audio/webm,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg":"video/mp4,video/quicktime,video/webm";
