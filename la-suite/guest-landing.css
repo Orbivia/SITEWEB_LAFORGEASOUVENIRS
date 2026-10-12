@@ -630,3 +630,18 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-capture-dialog .audio-recorder{background:transparent;border:0;padding:8px 0;min-height:0}
 .guest-capture-dialog .record-timer.inline{justify-content:center}
 .guest-capture-dialog[data-type=audio] #audio-panel.active{display:flex;flex-direction:column;align-items:center;padding:12px 0}
+
+/* Recorder geometry stays fixed; both clocks flank the round action. */
+.guest-landing-ready .guest-capture-dialog[open][data-type=audio]{height:240px}
+.guest-landing-ready .guest-capture-dialog[open][data-type=video]{height:440px}
+.guest-capture-dialog:is([data-type=audio],[data-type=video])>.guest-media-dialog-body{flex:1 1 auto;justify-content:center}
+.guest-capture-dialog .record-timer{display:none!important}
+.guest-capture-dialog .recorder-actions{display:grid;grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr);align-items:center;gap:16px;width:100%;margin:12px 0 4px}
+.guest-capture-dialog .recorder-actions button:not([hidden]){grid-column:2;grid-row:1}
+.guest-record-elapsed,.guest-record-remaining{font:600 18px/1.2 Inter,sans-serif;font-variant-numeric:tabular-nums;color:var(--home-ink);grid-row:1}
+.guest-record-elapsed{grid-column:1;text-align:right}
+.guest-record-remaining{grid-column:3;text-align:left;opacity:.65}
+.guest-capture-dialog[data-type=audio] #audio-panel.active{width:100%;box-sizing:border-box}
+.guest-capture-dialog[data-type=audio] .audio-recorder{position:relative;height:42px;min-height:42px;box-sizing:border-box}
+.guest-capture-dialog[data-type=audio] .audio-recorder .record-countdown{position:absolute;inset:0;margin:0;display:grid;place-items:center}
+.guest-capture-dialog .recorder-actions button[hidden]{display:none!important}
