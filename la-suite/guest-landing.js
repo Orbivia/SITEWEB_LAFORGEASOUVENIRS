@@ -32,11 +32,11 @@
   for(const {button} of edits)button.onclick=()=>editInline(button.dataset.field);
   let editScale=1;
   function positionEdits(){for(const {button,node} of edits){
-   let anchor=node;const content=button.dataset.field==='intro';if(content)anchor=([...node.querySelectorAll('#capsule-welcome,.guest-cover img,.guest-cover video,.guest-empty-welcome')].find(el=>!el.hidden&&el.getBoundingClientRect().height>0))||node;
+   let anchor=node;const content=button.dataset.field==='intro';if(content)anchor=([...node.querySelectorAll('#capsule-welcome,.guest-cover img,.guest-cover video,.guest-empty-illustration')].find(el=>!el.hidden&&el.getBoundingClientRect().height>0))||node;
    let box=anchor.getBoundingClientRect();
    if(anchor.matches('#capsule-title,#guest-event-date,#capsule-welcome')&&anchor.textContent.trim()){const range=document.createRange();range.selectNodeContents(anchor);const textBox=range.getBoundingClientRect();if(textBox.width&&textBox.height)box=textBox;}
    if(anchor.matches('img,video')){const naturalWidth=anchor.naturalWidth||anchor.videoWidth,naturalHeight=anchor.naturalHeight||anchor.videoHeight;if(naturalWidth&&naturalHeight&&getComputedStyle(anchor).objectFit==='contain'){const ratio=Math.min(box.width/naturalWidth,box.height/naturalHeight),width=naturalWidth*ratio,height=naturalHeight*ratio;box={left:box.left+(box.width-width)/2,right:box.left+(box.width+width)/2,top:box.top+(box.height-height)/2,width,height};}}
-   const size=24/editScale,gap=4/editScale;button.hidden=!box.width||!box.height||body.dataset.guestView!=='home';
+   const size=24/editScale,gap=4/editScale;button.style.width=size+'px';button.style.height=size+'px';button.style.padding=(5/editScale)+'px';button.style.transform='none';button.hidden=!box.width||!box.height||body.dataset.guestView!=='home';
    button.style.left=Math.max(0,Math.min(innerWidth-size-gap,content?box.right-size-gap:box.right+gap))+'px';button.style.top=Math.max(0,Math.min(innerHeight-size,content?box.top+gap:box.top+(box.height-size)/2))+'px';
   }}
   const editResize=new ResizeObserver(positionEdits);for(const {node} of edits)editResize.observe(node);
