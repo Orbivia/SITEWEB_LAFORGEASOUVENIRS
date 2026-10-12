@@ -710,3 +710,7 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-landing-ready[data-guest-view=compose] .guest-compose-heading,
 .guest-landing-ready[data-guest-view=compose] .guest-compose-heading h2,
 .guest-landing-ready[data-guest-view=compose] .guest-compose-heading p{background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+
+/* Stopwatch follows the solid icon style used by the format choices. */
+.guest-reveal-chrono{grid-column:1;grid-row:1/4;display:grid;place-items:center;width:72px;height:72px;border-radius:50%;background:color-mix(in srgb,var(--home-accent),transparent 90%);color:var(--home-accent);font-size:38px;justify-self:center}
+@media(max-height:650px){.guest-reveal-chrono{width:56px;height:56px;font-size:30px}}
