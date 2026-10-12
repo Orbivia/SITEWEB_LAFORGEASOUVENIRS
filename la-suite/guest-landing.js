@@ -92,7 +92,7 @@
  form.addEventListener('submit',()=>{if(nameDialog.open)nameDialog.close();},true);
  // Highlight missing required values together before native form validation.
  function markMissing(node,missing){node.classList.toggle('guest-required-missing',missing);node.setAttribute('aria-invalid',String(missing));}
- function highlightMissing(){const type=form.querySelector('[data-memory-type][aria-pressed=true]')?.dataset.memoryType;markMissing($('guest_name'),!$('guest_name').value.trim());markMissing(textLaunch,type==='text'&&!$('message_text').value.trim());markMissing(mediaCard,type!=='text'&&$('media-preview').hidden);markMissing($('delivery-summary'),!$('deliver-now').checked&&!$('delivery_date').value);}
+ function highlightMissing(){const type=form.querySelector('[data-memory-type][aria-pressed=true]')?.dataset.memoryType;if(nameDialog.open)markMissing($('guest_name'),!$('guest_name').value.trim());markMissing(textLaunch,type==='text'&&!$('message_text').value.trim());markMissing(mediaCard,type!=='text'&&$('media-preview').hidden);markMissing($('delivery-summary'),!$('deliver-now').checked&&!$('delivery_date').value);}
  form.querySelector('.submit-memory').addEventListener('click',highlightMissing);
  form.addEventListener('invalid',highlightMissing,true);
  $('guest_name').addEventListener('input',()=>{if($('guest_name').value.trim())markMissing($('guest_name'),false);});
