@@ -593,7 +593,6 @@ function initGuestControls(){
  document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy){setGuestMode(b.dataset.mediaMode);if(b.dataset.mediaMode==="upload")$("media-file").click();else if(b.dataset.mediaMode==="photo")$("photo-file").click();else if(["video","audio"].includes(b.dataset.mediaMode)){guestSelectionVersion++;resetPreview();guestTransaction=null;prepareRecorder(b.dataset.mediaMode).catch(error=>showCapture(captureError(error,b.dataset.mediaMode),false))}}}));
  $("media-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],guestType));
  $("photo-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],"image"));
- $("remove-media").addEventListener("click",()=>{guestSelectionVersion++;resetPreview();guestTransaction=null;$("media-file").value="";$("photo-file").value="";showCapture("")});
  for(const kind of ["video","audio"]){
   $("prepare-"+kind).addEventListener("click",()=>prepareRecorder(kind).catch(error=>showCapture(captureError(error,kind),false)));
   $("start-"+kind).addEventListener("click",()=>startRecorder(kind).catch(()=>showCapture("L’enregistrement n’a pas démarré. Réessayez ou choisissez un fichier.",false)));
