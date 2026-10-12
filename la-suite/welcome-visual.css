@@ -838,3 +838,9 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-primary .visual-stage{flex-direction:column;justify-content:flex-start;gap:8px}
 .visual-primary .visual-stage>.visual-help{flex:0 0 auto;align-self:stretch;width:100%;box-sizing:border-box;margin:0;text-align:center;font-size:12px;line-height:1.4;overflow-wrap:anywhere}
 .visual-primary .visual-stage>.visual-card,.visual-primary .visual-stage>.visual-fit{flex:0 0 auto}
+
+.visual-preview-pages{display:flex;flex:none;gap:6px;justify-content:center;width:100%}
+.visual-preview-pages[hidden]{display:none!important}
+.visual-preview-pages button{padding:7px 10px;border:1px solid #dce2d7;border-radius:9px;background:#fffefa;color:#355748;font-size:12px;cursor:pointer}
+.visual-preview-pages button[aria-pressed=true]{background:#355748;color:#fff;border-color:#355748}
+.owner-pinch-zoom .visual-primary .visual-stage{overflow:visible}

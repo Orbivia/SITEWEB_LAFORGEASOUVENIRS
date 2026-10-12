@@ -3,7 +3,7 @@
  'use strict';
  const $=id=>document.getElementById(id),body=document.body,form=$('guest-message');
  if(!form)return;
- body.classList.add('guest-landing-ready');body.dataset.guestView='home';
+ body.classList.add('guest-landing-ready');body.dataset.guestView='home';window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==window.parent||new URLSearchParams(location.search).get('preview')!=='1'||event.data?.type!=='la-suite-guest-preview-page')return;body.dataset.guestView=event.data.page==='compose'?'compose':'home';window.scrollTo(0,0);window.dispatchEvent(new Event('resize'));});
  let currentState=null,countdownTimer=null,openingNotified=false;
  const main=document.querySelector('.guest-page'),hero=document.querySelector('.capsule-hero'),intro=$('intro-section');
  const landing=document.createElement('section');landing.id='guest-landing';landing.className='guest-landing';landing.setAttribute('aria-label','Accueil de la capsule');
@@ -45,6 +45,7 @@
    const node=event.target.closest('#capsule-title,#guest-event-date,.guest-host-zone,#guest-read-more');if(!node||event.target.closest('[contenteditable=true]'))return;
    event.preventDefault();event.stopImmediatePropagation();editInline(node.id==='capsule-title'?'name':node.id==='guest-event-date'?'date':'intro');
   },true);
+  window.addEventListener('scroll',positionEdits,{passive:true});window.visualViewport?.addEventListener('resize',positionEdits);window.visualViewport?.addEventListener('scroll',positionEdits);
   document.fonts?.ready.then(positionEdits);positionEdits();
  }
 
