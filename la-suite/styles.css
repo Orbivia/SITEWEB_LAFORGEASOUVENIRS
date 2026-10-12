@@ -2520,3 +2520,5 @@ body.collection-ready main.dashboard-page{padding-left:0;max-width:1440px}
 .password-control input{width:100%;padding-right:48px;box-sizing:border-box}
 .password-toggle{position:absolute;right:4px;display:grid;place-items:center;width:40px;height:40px;border:0;background:transparent;color:var(--ink);cursor:pointer}
 [data-owner-tab-link][hidden]{display:none!important}
+
+.activation-terms{display:flex;align-items:flex-start;gap:10px;margin:18px 0;font-size:14px;line-height:1.5}.activation-terms input{flex:none;margin-top:4px;width:18px;height:18px}.activation-terms a{text-decoration:underline}
