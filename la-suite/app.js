@@ -530,7 +530,7 @@ function chooseGuestType(type){
  $("media-file").accept=type==="image"?"image/jpeg,image/png,image/webp,image/heic,image/heif":type==="audio"?"audio/webm,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg":"video/mp4,video/quicktime,video/webm";
  $("media-file").value="";$("photo-file").value="";
  $("file-help").textContent=type==="image"?"Photo · 10 Mo maximum.":type==="audio"?"Audio · 3 minutes et 20 Mo maximum.":"Vidéo · 1 minute et 50 Mo maximum.";
- setGuestMode(type==="text"?"text":type==="audio"?"audio":"upload");
+ setGuestMode(type==="text"?"text":["audio","video"].includes(type)?type:"upload");
 }
 async function optimizeGuestPhoto(file){
  if(!["image/jpeg","image/png","image/webp"].includes(file.type))return file;
@@ -595,7 +595,7 @@ function initGuestControls(){
  $("media-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],guestType));
  $("photo-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],"image"));
  for(const kind of ["video","audio"]){
-  $("prepare-"+kind).addEventListener("click",()=>prepareRecorder(kind).catch(error=>showCapture(captureError(error,kind),false)));
+  $("prepare-"+kind).addEventListener("click",()=>startRecorder(kind).catch(error=>showCapture(captureError(error,kind),false)));
   $("start-"+kind).addEventListener("click",()=>startRecorder(kind).catch(()=>showCapture("L’enregistrement n’a pas démarré. Réessayez ou choisissez un fichier.",false)));
   $("stop-"+kind).addEventListener("click",stopRecorder);
  }

@@ -619,3 +619,14 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-capture-dialog[data-ready=true] #media-preview{flex:none;height:auto}
 .guest-capture-dialog[data-ready=true] #preview-image,.guest-capture-dialog[data-ready=true] #preview-video{flex:none;height:auto;max-height:30dvh}
 .guest-capture-dialog #audio-panel.active{margin:0}
+
+/* One round record/stop action; permission is requested only on its first click. */
+.guest-capture-dialog:is([data-type=audio],[data-type=video]) #capture-choices,
+.guest-capture-dialog #start-audio,.guest-capture-dialog #start-video,
+.guest-capture-dialog #audio-indicator,.guest-capture-dialog .record-remaining{display:none!important}
+.guest-capture-dialog .recorder-actions{display:flex;justify-content:center;margin:12px 0 4px}
+.guest-capture-dialog .recorder-actions button:not([hidden]){display:grid;place-items:center;flex:none;width:72px;height:72px;min-height:72px;padding:0;border:0;border-radius:50%;background:#ad1730;color:white;box-shadow:0 4px 12px #ad173026;font-size:28px}
+.guest-capture-dialog .recorder-actions button:disabled{opacity:.5}
+.guest-capture-dialog .audio-recorder{background:transparent;border:0;padding:8px 0;min-height:0}
+.guest-capture-dialog .record-timer.inline{justify-content:center}
+.guest-capture-dialog[data-type=audio] #audio-panel.active{display:flex;flex-direction:column;align-items:center;padding:12px 0}

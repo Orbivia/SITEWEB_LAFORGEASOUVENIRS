@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Serif+Display&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@500;600;700&family=Parisienne&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="styles.css?v=20261011-guestwelcome2">
-<link rel="stylesheet" href="guest-landing.css?v=20261012-compact-capture1">
+<link rel="stylesheet" href="guest-landing.css?v=20261012-round-record1">
 <style>
 body.guest-loading{background:#fffdf8!important}
 .guest-loading-logo{display:none}
@@ -73,9 +73,9 @@ body.guest-loading{background:#fffdf8!important}
     <div id="video-timer" class="record-timer" role="timer" aria-label="Durée de la vidéo et temps restant" hidden><span class="record-dot" aria-hidden="true"></span><strong class="record-elapsed">00:00</strong><span class="record-remaining">01:00 restantes</span></div>
   </div>
   <div class="recorder-actions">
-    <button type="button" class="btn secondary" id="prepare-video">Activer la caméra</button>
+    <button type="button" class="btn secondary" id="prepare-video" aria-label="Enregistrer une vidéo"><i class="fa-solid fa-video" aria-hidden="true"></i></button>
     <button type="button" class="btn primary" id="start-video" hidden>Démarrer</button>
-    <button type="button" class="btn danger" id="stop-video" hidden>Arrêter</button>
+    <button type="button" class="btn danger" id="stop-video" aria-label="Terminer l’enregistrement" hidden><i class="fa-solid fa-stop" aria-hidden="true"></i></button>
   </div>
   <p class="recorder-limit-help">1 min maximum</p>
 </div>
@@ -86,9 +86,9 @@ body.guest-loading{background:#fffdf8!important}
     <div id="audio-timer" class="record-timer inline" role="timer" aria-label="Durée de l’audio et temps restant" hidden><span class="record-dot" aria-hidden="true"></span><strong class="record-elapsed">00:00</strong><span class="record-remaining">03:00 restantes</span></div>
   </div>
   <div class="recorder-actions">
-    <button type="button" class="btn secondary" id="prepare-audio">Activer le micro</button>
+    <button type="button" class="btn secondary" id="prepare-audio" aria-label="Enregistrer un audio"><i class="fa-solid fa-microphone" aria-hidden="true"></i></button>
     <button type="button" class="btn primary" id="start-audio" hidden>Démarrer</button>
-    <button type="button" class="btn danger" id="stop-audio" hidden>Arrêter</button>
+    <button type="button" class="btn danger" id="stop-audio" aria-label="Terminer l’enregistrement" hidden><i class="fa-solid fa-stop" aria-hidden="true"></i></button>
   </div>
   <p class="recorder-limit-help">3 min maximum</p>
 </div>
@@ -147,8 +147,8 @@ body.guest-loading{background:#fffdf8!important}
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
 <script src="capsule-design.js?v=20261010-previewfix1"></script><script src="welcome-ui.js?v=20261010-brandicons1"></script>
-<script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261012-compact-capture1"></script>
-<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261012-compact-capture1"></script>
+<script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261012-round-record1"></script>
+<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261012-round-record1"></script>
 </body></html>
 
 
