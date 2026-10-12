@@ -542,3 +542,19 @@ body.guest-landing-ready[data-guest-view=home] .guest-home-content,body.guest-la
 .guest-deposit-dialog>.guest-media-dialog-body,.guest-deposit-dialog>.guest-dialog-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:12px}
 .guest-deposit-dialog>.guest-media-done,.guest-deposit-dialog>#delivery-done{flex:none;width:100%;min-height:44px;margin:12px 0 0}
 .guest-landing-ready[data-guest-view=compose] .guest-text-dialog #message_text{height:clamp(80px,calc(var(--deposit-dialog-height,500px) * .4),240px)!important;min-height:80px!important;resize:none}
+
+/* Compact media controls leave room for preview and recorder actions. */
+.guest-deposit-dialog .guest-media-dialog-body>*{flex-shrink:0}
+.guest-deposit-dialog #capture-choices{gap:8px;margin:0}
+.guest-deposit-dialog .media-choice{min-height:68px;padding:10px 8px;gap:5px}
+.guest-deposit-dialog .media-choice small,.guest-deposit-dialog .recorder-limit-help,.guest-deposit-dialog .preview-title{display:none}
+.guest-deposit-dialog #file-help{margin:0;font-size:12px;line-height:1.4}
+.guest-deposit-dialog .media-preview{padding:8px;margin:0}
+.guest-deposit-dialog .media-preview img,.guest-deposit-dialog .media-preview video,.guest-deposit-dialog .recorder-stage video{height:auto;max-height:clamp(100px,calc(var(--deposit-dialog-height,500px) * .38),240px);object-fit:contain}
+.guest-deposit-dialog .recorder-stage{height:auto;min-height:0}
+.guest-deposit-dialog .audio-recorder{min-height:80px;padding:12px}
+.guest-deposit-dialog .recorder-actions{margin:8px 0;gap:8px}
+.guest-deposit-dialog .recorder-actions button{min-height:44px}
+.guest-deposit-dialog[data-recording=true] #capture-choices,.guest-deposit-dialog[data-recording=true] #file-help{display:none}
+.guest-deposit-dialog[data-ready=true] .media-panel{display:none!important}
+.guest-deposit-dialog .guest-media-done:disabled{opacity:.5;cursor:default}

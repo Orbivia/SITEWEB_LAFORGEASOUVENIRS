@@ -7,7 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=DM+Serif+Display&family=Great+Vibes&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Montserrat:wght@500;600;700&family=Parisienne&family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="styles.css?v=20261011-guestwelcome2">
-<link rel="stylesheet" href="guest-landing.css?v=20261012-deposit-dialog1">
+<link rel="stylesheet" href="guest-landing.css?v=20261012-compact-deposit1">
 <style>
 body.guest-loading{background:#fffdf8!important}
 .guest-loading-logo{display:none}
@@ -77,11 +77,11 @@ body.guest-loading{background:#fffdf8!important}
     <button type="button" class="btn primary" id="start-video" hidden>Démarrer</button>
     <button type="button" class="btn danger" id="stop-video" hidden>Arrêter</button>
   </div>
-  <p class="recorder-limit-help">1 minute maximum · arrêt automatique, puis aperçu avant envoi.</p>
+  <p class="recorder-limit-help">1 min maximum</p>
 </div>
 <div id="audio-panel" class="media-panel">
   <div class="audio-recorder">
-    <div id="audio-indicator" class="audio-indicator">Microphone prêt à être activé</div>
+    <div id="audio-indicator" class="audio-indicator">Micro prêt</div>
     <div id="audio-countdown" class="record-countdown inline" hidden></div>
     <div id="audio-timer" class="record-timer inline" role="timer" aria-label="Durée de l’audio et temps restant" hidden><span class="record-dot" aria-hidden="true"></span><strong class="record-elapsed">00:00</strong><span class="record-remaining">03:00 restantes</span></div>
   </div>
@@ -90,7 +90,7 @@ body.guest-loading{background:#fffdf8!important}
     <button type="button" class="btn primary" id="start-audio" hidden>Démarrer</button>
     <button type="button" class="btn danger" id="stop-audio" hidden>Arrêter</button>
   </div>
-  <p class="recorder-limit-help">3 minutes maximum · arrêt automatique, puis écoute avant envoi.</p>
+  <p class="recorder-limit-help">3 min maximum</p>
 </div>
 <div id="photo-panel" class="media-panel"><input id="photo-file" type="file" accept="image/*" capture="environment" hidden></div>
 <div id="media-preview" class="media-preview" hidden>
@@ -105,7 +105,7 @@ body.guest-loading{background:#fffdf8!important}
 
  <div id="capture-status" class="status" role="status" aria-live="polite"></div>
 
- <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre message</label><textarea id="message_text" maxlength="4000" rows="4" placeholder="Écrivez ce que vous aimeriez leur dire…"></textarea></div></div>
+ <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre message</label><textarea id="message_text" maxlength="1000" rows="4" placeholder="Écrivez ce que vous aimeriez leur dire…"></textarea></div></div>
  <details id="guest-extras" class="guest-extras" hidden><summary>Ajouter un petit mot <span class="optional">Facultatif</span></summary><div id="guest-extras-body"></div></details>
  <div class="field guest-signature"><label for="guest_name"><i class="fa-solid fa-user" aria-hidden="true"></i> Votre prénom <span class="optional">(obligatoire)</span></label><input id="guest_name" maxlength="30" autocomplete="given-name" required placeholder="Ex. Pierre, Mamie"></div>
  <button class="btn primary submit-memory" type="submit"><span>Envoyer mon souvenir</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
@@ -150,8 +150,8 @@ body.guest-loading{background:#fffdf8!important}
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
 <script src="capsule-design.js?v=20261010-previewfix1"></script><script src="welcome-ui.js?v=20261010-brandicons1"></script>
-<script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261012-deposit-dialog1"></script>
-<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261012-clean-welcome1"></script>
+<script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261012-compact-deposit1"></script>
+<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="app.js?v=20261012-compact-deposit1"></script>
 </body></html>
 
 

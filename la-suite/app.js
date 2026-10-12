@@ -70,7 +70,7 @@ async function prepareRecorder(kind){
   stream.getTracks().forEach(track=>track.addEventListener("ended",()=>{if(activeStream===stream)interruptCapture("La caméra ou le micro a été coupé. Vérifiez l’aperçu avant l’envoi.")},{once:true}));
   if(kind==="video"){$("live-video").srcObject=stream;$("prepare-video").hidden=true;$("start-video").hidden=false}
   else{$("audio-indicator").textContent="Microphone activé";$("prepare-audio").hidden=true;$("start-audio").hidden=false}
-  showCapture("Prêt. Appuyez sur Démarrer.");
+  showCapture("Prêt à enregistrer.");
  }catch(error){if(generation===recorderGeneration&&request===mediaRequestVersion)throw error}
  finally{if(generation===recorderGeneration&&request===mediaRequestVersion)button.disabled=false}
 }
@@ -82,7 +82,7 @@ async function startRecorder(kind){
   if(!activeStream)await prepareRecorder(kind);
   if(generation!==recorderGeneration||!activeStream)return;
   guestSelectionVersion++;resetPreview();guestTransaction=null;
-  $("guest-message").querySelector('[type="submit"]').disabled=true;showCapture("Préparez-vous à enregistrer…");
+  $("guest-message").querySelector('[type="submit"]').disabled=true;showCapture("Préparez-vous…");
   if(!await countdown($(kind==="video"?"video-countdown":"audio-countdown"),()=>generation===recorderGeneration&&Boolean(activeStream)))return;
   if(generation!==recorderGeneration||!activeStream)return;
   const chunks=[],mime=bestMime(kind),options={audioBitsPerSecond:64000},stream=activeStream;
@@ -107,7 +107,7 @@ async function startRecorder(kind){
   current.start(500);
   $("start-"+kind).hidden=true;$("stop-"+kind).hidden=false;
   renderRecordingTimer(kind,started,limit);
-  showCapture("Enregistrement en cours… Arrêtez quand vous avez terminé.");
+  showCapture("Enregistrement…");
   if(kind==="audio")$("audio-indicator").textContent="Enregistrement en cours";
   recorderStopTimer=setTimeout(()=>{if(recorder===current&&current.state==="recording")stopRecorder()},limit*1000);
   recorderTimer=setInterval(()=>{
@@ -497,7 +497,7 @@ function setGuestMode(mode){
  $(mode+"-panel")?.classList.add("active");
  document.querySelectorAll("[data-media-mode]").forEach(b=>b.classList.toggle("active",b.dataset.mediaMode===mode));
  ["video","audio"].forEach(k=>{$("prepare-"+k).disabled=false;$("start-"+k).disabled=false;$("prepare-"+k).hidden=false;$("start-"+k).hidden=true;$("stop-"+k).hidden=true;$(k+"-countdown").hidden=true;$(k+"-timer").hidden=true});
- $("audio-indicator").textContent="Microphone prêt à être activé";
+ $("audio-indicator").textContent="Micro prêt";
 }
 function chooseGuestType(type){
  guestType=type;guestSelectionVersion++;resetPreview();guestTransaction=null;
@@ -548,7 +548,7 @@ async function acceptGuestFile(file,type,duration,interruption){
  const version=++guestSelectionVersion;resetPreview();guestTransaction=null;
  if(!file)return;
  try{
-  $("guest-message").querySelector('[type="submit"]').disabled=true;showCapture("Préparation de votre souvenir…");
+  $("guest-message").querySelector('[type="submit"]').disabled=true;showCapture("Préparation…");
   if(file.size===0)throw new Error("Aucun enregistrement récupéré. Réactivez la caméra ou le micro et recommencez.");
   const normalizedType=file.type.split(";")[0];if(group(normalizedType)!==type)throw new Error("Choisissez un fichier correspondant au type de souvenir sélectionné.");
   if(file.size>GUEST_LIMITS[type])throw new Error(type==="image"?"La photo dépasse 10 Mo.":type==="audio"?"L’audio dépasse 20 Mo.":"La vidéo dépasse 50 Mo.");
@@ -557,7 +557,7 @@ async function acceptGuestFile(file,type,duration,interruption){
   if(version!==guestSelectionVersion)return;
   if(file.size>GUEST_LIMITS[type])throw new Error("Ce souvenir dépasse la taille autorisée.");
   if(normalizedType!==file.type&&type!=="image")file=new File([file],file.name,{type:normalizedType});
-  preview(file,type);selectedMedia.duration=duration;showCapture(interruption||"Votre souvenir est prêt.",!interruption);
+  preview(file,type);selectedMedia.duration=duration;showCapture(interruption||"Prêt à envoyer.",!interruption);
  }catch(error){if(version===guestSelectionVersion)showCapture(error.message,false)}
  finally{if(version===guestSelectionVersion)$("guest-message").querySelector('[type="submit"]').disabled=false}
 }
@@ -580,7 +580,7 @@ function updateDeliveryHelp(){
 function initGuestControls(){
  window.addEventListener("la-suite-guest-home",()=>interruptCapture("L’enregistrement a été arrêté. Votre aperçu reste disponible."));
  document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy&&b.dataset.memoryType!==guestType)chooseGuestType(b.dataset.memoryType)}));
- document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy){setGuestMode(b.dataset.mediaMode);if(b.dataset.mediaMode==="upload")$("media-file").click();else if(b.dataset.mediaMode==="photo")$("photo-file").click()}}));
+ document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy){setGuestMode(b.dataset.mediaMode);if(b.dataset.mediaMode==="upload")$("media-file").click();else if(b.dataset.mediaMode==="photo")$("photo-file").click();else if(["video","audio"].includes(b.dataset.mediaMode)){guestSelectionVersion++;resetPreview();guestTransaction=null;prepareRecorder(b.dataset.mediaMode).catch(error=>showCapture(captureError(error,b.dataset.mediaMode),false))}}}));
  $("media-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],guestType));
  $("photo-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],"image"));
  $("remove-media").addEventListener("click",()=>{guestSelectionVersion++;resetPreview();guestTransaction=null;$("media-file").value="";$("photo-file").value="";showCapture("")});
