@@ -686,7 +686,7 @@ async function initCapsule(){
   try{
    guestState=await guestInvoke({action:"get_status",guest_token:token});
    window.SuiteWelcome.apply(guestState.welcome_config);
-   $("capsule-title").textContent=guestState.couple_name;$("capsule-title").closest(".capsule-hero").classList.toggle("guest-long-name",String(guestState.couple_name||"").length>24);$("capsule-welcome").textContent=SuiteGuestCalendar.welcomeAvailable(guestState)?guestState.welcome_message||"":"";
+   $("capsule-title").textContent=guestState.couple_name;$("capsule-title").closest(".capsule-hero").classList.toggle("guest-long-name",String(guestState.couple_name||"").length>24);$("capsule-welcome").textContent=SuiteGuestCalendar.welcomeAvailable(guestState)&&!guestState.has_intro?guestState.welcome_message||"":"";
    $("capsule-welcome").hidden=!$("capsule-welcome").textContent;$("intro-section").hidden=!$("capsule-welcome").textContent;
    $('guest-welcome-open').hidden=!$('capsule-welcome').textContent;
    $("organizer-intro").hidden=true;$("organizer-intro-image").hidden=true;
@@ -819,7 +819,7 @@ async function performIntroSave(c){
     introFinalized=true;
    }
   }
-  const payload={intro_path:path,welcome_message:kind==="none"?null:text||null};
+  const payload={intro_path:path,welcome_message:kind==="text"?text||null:null};
   await updateOwnedCapsule(c,payload);
   Object.assign(c,payload);$("intro-file").value="";organizerState.intro=false;organizerState.error=false;await renderIntroPreview(c);renderIntroDraft(c);
   show(s,"");
