@@ -522,10 +522,16 @@ body[data-compose-dark=true] .guest-success-footer img{filter:brightness(0) inve
 .guest-preview-edit:focus-visible{outline:3px solid #365748;outline-offset:3px}
 
 /* Leave extra clearance inside the personalization preview frame. */
-.guest-landing-ready.guest-preview-editor[data-guest-view=home] .guest-home-footer{bottom:max(40px,env(safe-area-inset-bottom))!important}
-.guest-landing-ready.guest-preview-editor[data-guest-view=home] .guest-home-content{padding-bottom:calc(max(40px,env(safe-area-inset-bottom)) + 48px)}
+
+
 
 .guest-preview-editor [contenteditable=true]{outline:2px solid #355748;outline-offset:4px;cursor:text;white-space:pre-wrap;-webkit-user-select:text;user-select:text}
 .guest-preview-editor #capsule-welcome[contenteditable=true]{overflow:auto}
 
 .guest-landing-ready .guest-home-footer a,.guest-landing-ready .guest-compose-footer a,.guest-landing-ready .guest-success-footer a{display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer}
+
+/* Shared clearance keeps branding and fullscreen inside the decorative frame on every step. */
+body.guest-landing-ready{--guest-bottom-clearance:max(clamp(28px,4dvh,52px),calc(env(safe-area-inset-bottom) + 16px))}
+body.guest-landing-ready .guest-home-footer,body.guest-landing-ready .guest-compose-footer,body.guest-landing-ready .guest-success-footer{bottom:var(--guest-bottom-clearance)!important}
+body.guest-landing-ready>.guest-fullscreen{bottom:var(--guest-bottom-clearance)!important;right:max(clamp(20px,4vw,36px),env(safe-area-inset-right))!important}
+body.guest-landing-ready[data-guest-view=home] .guest-home-content,body.guest-landing-ready[data-guest-view=compose] #guest-message,body.guest-landing-ready[data-guest-view=success] #guest-success{padding-bottom:calc(var(--guest-bottom-clearance) + 52px)}
