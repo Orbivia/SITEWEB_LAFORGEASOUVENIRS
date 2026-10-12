@@ -785,3 +785,10 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 
 .visual-primary #visual-welcome .visual-capsule-label{color:var(--visual-ink)}
 .visual-primary #visual-welcome h1[data-field="capsule-name"],.visual-primary #visual-welcome .visual-event,.visual-primary #visual-welcome .visual-message{color:var(--guest-accent)!important}
+
+
+/* The welcome text can be edited inside the content settings popup. */
+.visual-primary[data-intro-kind=text] .visual-settings-popup .visual-intro-host #intro-text-field:not([hidden]){display:flex;flex-direction:column;gap:8px}
+.visual-primary .visual-settings-popup .visual-intro-host #intro-text-field label{font-size:14px}
+.visual-primary .visual-settings-popup .visual-intro-host #intro-text{font-size:16px;line-height:1.5;min-height:clamp(120px,30dvh,240px);padding:12px;resize:vertical}
+.visual-primary .visual-settings-popup .visual-intro-host #intro-text-field .field-help{font-size:12px}
