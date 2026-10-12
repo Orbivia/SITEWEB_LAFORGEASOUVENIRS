@@ -57,7 +57,7 @@
  function apply(value,root=document.body){
   const o=options(value),t=themes[o.style];Object.assign(root.dataset,{welcomeArtwork:String(Boolean(window.SuiteDesign.artwork(o.style,o))),welcomeStyle:o.style,welcomeFont:o.font,welcomeOrnament:o.ornament,welcomeTexture:o.texture,welcomeCorners:o.corners,welcomeIllustration:o.illustration});
   const vars={'guest-accent':o.color,'welcome-contrast':ink(o.color),'welcome-readable':ink(o.color)==='#FFFFFF'?o.color:'#514536','welcome-bg':t.bg,'welcome-paper':t.paper,'welcome-date':t.date,'welcome-pattern':patterns[t.pattern],'welcome-pattern-size':['stars','confetti'].includes(t.pattern)?'39px 41px':'auto','welcome-font':fonts[o.font][1],'welcome-weight':{"elegant": "700", "classic": "600", "modern": "700", "romantic": "400", "editorial": "400", "refined": "600", "contemporary": "600", "signature": "700", "heritage": "400", "literary": "700", "friendly": "600", "clear": "400"}[o.font],'welcome-radius':{rounded:'18px',soft:'8px',square:'2px'}[o.corners]};
-  const artwork=window.SuiteDesign.artwork(o.style,o);if(artwork){vars['welcome-pattern']='url("'+artwork+'")';vars['welcome-pattern-size']='cover';}
+  const artwork=window.SuiteDesign.artwork(o.style,o);if(artwork){vars['welcome-pattern']=window.SuiteDesign.logoBackground(o.style,o);vars['welcome-pattern-size']='cover';}
   root.style.backgroundPosition=o.welcomeX+'% '+o.welcomeY+'%';
   Object.entries(vars).forEach(([key,v])=>root.style.setProperty('--'+key,v));
   root.querySelectorAll('[data-welcome-title]').forEach(e=>e.textContent=o.title);

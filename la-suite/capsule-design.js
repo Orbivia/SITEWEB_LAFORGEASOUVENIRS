@@ -10,6 +10,11 @@
  function crops(c){return Object.fromEntries(['cardX','cardY','welcomeX','welcomeY'].map(key=>[key,position(c._designCrop?.[key]??c.welcome_config?.[key])]));}
  function fields(c){return {...(background(c)?{background:background(c)}:{}),...crops(c)};}
  function artwork(style,config={}){return style==='custom'?validBackground(config.background):styles.some(s=>s.id===style)?'assets/themes/backgrounds/'+style+'.webp?v=20261009-border1':null;}
+ function logoBackground(style,config={}){
+  const art=artwork(style,config);if(!art)return 'none';
+  const paper=styles.find(s=>s.id===style)?.background||'#ffffff';
+  return 'radial-gradient(ellipse 27% 7% at 50% 96%, '+paper+' 0%, '+paper+' 65%, transparent 100%),url("'+art+'")';
+ }
  function effectivePlan(c){return c.admin_plan_override||(['free_beta','legacy'].includes(c.activation_source)?'premium':c.plan);}
  function thumbnail(style){
   if(style==='custom')return 'assets/themes/previews/importer.webp';
@@ -74,5 +79,5 @@
   window.SuiteDesign.retireLegacyPreview=()=>{loadVersion++;ready=false;guest.remove();if(previewError){const status=$('design-upload-status');if(status)status.textContent='';previewError=false;}};
   return {refresh};
  }
- window.SuiteDesign={styles,colors,position,validBackground,background,fields,artwork,effectivePlan,thumbnail,mount,storage:null};
+ window.SuiteDesign={logoBackground,styles,colors,position,validBackground,background,fields,artwork,effectivePlan,thumbnail,mount,storage:null};
 })();
