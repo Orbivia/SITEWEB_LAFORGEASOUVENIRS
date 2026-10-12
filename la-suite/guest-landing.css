@@ -704,3 +704,9 @@ body.guest-sending #guest-message{visibility:hidden}
 #delivery-dialog #delivery_date{width:100%;box-sizing:border-box;min-height:48px;font-size:16px;border:1px solid #b3935755;border-radius:10px;background:white}
 #delivery-dialog #delivery-help{margin:10px 0 0;font-size:12px}
 #delivery-dialog>#delivery-done:not([hidden]){margin-top:16px;min-height:44px;border-radius:12px;background:#9d792e}
+
+/* The deposit header sits directly on the page, without an enclosing panel. */
+.guest-landing-ready[data-guest-view=compose] .memory-type-choices{background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+.guest-landing-ready[data-guest-view=compose] .guest-compose-heading,
+.guest-landing-ready[data-guest-view=compose] .guest-compose-heading h2,
+.guest-landing-ready[data-guest-view=compose] .guest-compose-heading p{background:none!important;border:0!important;border-radius:0!important;box-shadow:none!important}
