@@ -454,3 +454,14 @@ body.owner-no-tabs{padding-bottom:0!important}
  .deposit-open-gallery .memory-excerpt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere;white-space:normal;margin:5px 0 0;font:400 12px/1.4 Inter,Arial,sans-serif;color:inherit}
  .deposit-open-gallery .memory-compact{flex-shrink:0}
 }
+
+.deposit-open-brand{display:flex;justify-content:center;align-items:center;min-height:44px}
+.deposit-open-brand img{display:block;width:105px;height:var(--capsule-logo-height);object-fit:contain}
+@media(max-width:760px){
+ body.organizer-layout-ready.owner-fixed-view .owner-deposit-open.deposit-open-has-memories{position:relative;padding:var(--capsule-safe-top) var(--capsule-safe-inline) var(--capsule-safe-bottom)}
+ .owner-deposit-open .deposit-open-brand{position:absolute;bottom:18px;left:var(--capsule-safe-inline);right:var(--capsule-safe-inline);height:var(--capsule-logo-height);pointer-events:none}
+ .owner-deposit-open .deposit-open-content{overflow:hidden}
+ .deposit-open-gallery #memory-list{padding-bottom:12px!important;scroll-padding-bottom:12px}
+ .deposit-open-gallery .memory-row-clipped{visibility:visible;pointer-events:auto}
+ .memory-reader-date{white-space:normal;overflow-wrap:anywhere;line-height:1.5}
+}

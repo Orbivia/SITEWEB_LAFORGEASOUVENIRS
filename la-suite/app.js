@@ -1786,7 +1786,7 @@ function setupWholeMemoryRows(){
     hint.hidden=!compact||list.scrollHeight<=list.clientHeight+2||list.scrollTop+list.clientHeight>=list.scrollHeight-8;
     for(const card of list.querySelectorAll('.memory-row')){
      const rect=card.getBoundingClientRect();
-     card.classList.toggle('memory-row-clipped',compact&&(rect.top<bounds.top-1||rect.bottom>bounds.bottom+1));
+     card.classList.remove('memory-row-clipped');
     }
    });
   };
@@ -1901,7 +1901,7 @@ function setupCompactMemoryCard(article,item,available,depositedAt){
  const title=document.createElement('strong');title.textContent=item.guest_name||'Invité';
  const close=document.createElement('button');close.type='button';close.className='memory-reader-close';close.textContent='×';close.setAttribute('aria-label','Fermer le souvenir');
  const titleBlock=document.createElement('div');titleBlock.className='memory-reader-title';titleBlock.append(title);
- if(depositDate){const timestamp=document.createElement('p');timestamp.className='memory-reader-date';timestamp.textContent='Date de découverte choisie : '+fParis(item.delivery_at);titleBlock.append(timestamp);}
+ if(depositDate){const timestamp=document.createElement('p');timestamp.className='memory-reader-date';timestamp.textContent='Déposé le '+new Date(depositDate).toLocaleString('fr-FR',{timeZone:'Europe/Paris',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' · Découverte le '+fParis(item.delivery_at);titleBlock.append(timestamp);}
  heading.append(titleBlock,close);
  const readerTools=document.createElement('div');readerTools.className='memory-reader-tools';
  actions.querySelectorAll('.mini-link').forEach(button=>readerTools.append(button));
@@ -2049,7 +2049,7 @@ function renderOwnerDepositOpen(c,manifest){
  const hero=root.querySelector('.owner-messages-hero'),memories=root.querySelector('.memories-section');
  if(!active){const exportButton=$('export-memories');if(exportButton&&memories?.querySelector('.memory-tools'))memories.querySelector('.memory-tools').append(exportButton);if(frame.contains(hero))root.append(hero,memories);return}
  if(!frame.firstElementChild){
-  frame.innerHTML='<div class="deposit-open-content"><header class="deposit-open-heading"><span class="deposit-open-badge"><i class="fa-solid fa-circle" aria-hidden="true"></i> Dépôts ouverts</span><h2 data-open-title></h2><p data-open-until></p></header><div class="deposit-open-main"><div class="deposit-open-empty"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i><h3>Place aux souvenirs</h3><p>Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.</p></div><div class="deposit-open-summary" aria-live="polite"><span data-open-count></span><span data-open-available></span></div><div class="deposit-open-gallery"></div></div><div class="deposit-open-export"></div><footer class="deposit-open-actions"><button type="button" class="btn primary" data-open-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-open-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger</button><button type="button" class="btn secondary" data-open-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button></div><button type="button" class="btn secondary" data-open-tips><i class="fa-solid fa-list-check" aria-hidden="true"></i> Conseils de préparation</button></footer></div>'+DEPOSIT_PREPARATION_HTML;
+  frame.innerHTML='<div class="deposit-open-content"><header class="deposit-open-heading"><span class="deposit-open-badge"><i class="fa-solid fa-circle" aria-hidden="true"></i> Dépôts ouverts</span><h2 data-open-title></h2><p data-open-until></p></header><div class="deposit-open-main"><div class="deposit-open-empty"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i><h3>Place aux souvenirs</h3><p>Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.</p></div><div class="deposit-open-summary" aria-live="polite"><span data-open-count></span><span data-open-available></span></div><div class="deposit-open-gallery"></div></div><div class="deposit-open-export"></div><footer class="deposit-open-actions"><button type="button" class="btn primary" data-open-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-open-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger</button><button type="button" class="btn secondary" data-open-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button></div><button type="button" class="btn secondary" data-open-tips><i class="fa-solid fa-list-check" aria-hidden="true"></i> Conseils de préparation</button></footer><div class="deposit-open-brand"><img src="assets/la-suite-logo.webp?v=20261010-forge-type" alt="La Suite — capsule temporelle"></div></div>'+DEPOSIT_PREPARATION_HTML;
 
   frame.querySelector('[data-open-share]').onclick=()=>$('share-link').click();
   frame.querySelector('[data-open-download]').onclick=()=>$('download-print-card').click();

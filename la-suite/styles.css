@@ -2522,3 +2522,6 @@ body.collection-ready main.dashboard-page{padding-left:0;max-width:1440px}
 [data-owner-tab-link][hidden]{display:none!important}
 
 .activation-terms{display:flex;align-items:flex-start;gap:10px;margin:18px 0;font-size:14px;line-height:1.5}.activation-terms input{flex:none;margin-top:4px;width:18px;height:18px}.activation-terms a{text-decoration:underline}
+
+/* Shared safe area for themed screens: keep content away from artwork. */
+:root{--capsule-safe-inline:12%;--capsule-safe-top:28px;--capsule-safe-bottom:108px;--capsule-logo-height:44px}
