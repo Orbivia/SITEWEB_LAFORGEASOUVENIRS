@@ -85,7 +85,7 @@
    qrRender();syncLivePreview();requestAnimationFrame(fitPreview);
   }
   const page=studio.querySelector('.visual-page'),fit=document.createElement('div');fit.className='visual-fit';page.before(fit);fit.append(page);
-  const liveFrame=document.createElement('iframe');liveFrame.className='visual-live-preview';liveFrame.title='Accueil invité — rendu réel';fit.append(liveFrame);fit.classList.add('visual-live-fit');let liveReady=false,liveSnapshot='',liveTimer=null,inlineEditing=false;
+  const liveFrame=document.createElement('iframe');liveFrame.className='visual-live-preview';liveFrame.title='Accueil invité — rendu réel';fit.append(liveFrame);fit.classList.add('visual-live-fit');let liveReady=false,liveSnapshot='',liveTimer=null,inlineEditing=false,inlineBox=null,inlineLayout=null; 
   function syncLivePreview(){
    if(!liveReady||inlineEditing||target!=='welcome')return;
    clearTimeout(liveTimer);liveTimer=setTimeout(()=>{
@@ -98,9 +98,9 @@
   window.addEventListener('message',event=>{
    if(event.origin!==location.origin||event.source!==liveFrame.contentWindow||!studio.isConnected)return;
    if(event.data?.type==='la-suite-guest-preview-ready'){liveReady=true;liveSnapshot='';syncLivePreview();}
-   if(event.data?.type==='la-suite-guest-inline-start'){inlineEditing=true;clearTimeout(liveTimer);}
+   if(event.data?.type==='la-suite-guest-inline-start'){inlineEditing=true;inlineBox=event.data.box;inlineLayout={height:studio.style.height,maxHeight:studio.style.maxHeight};const height=studio.getBoundingClientRect().height;studio.style.height=height+'px';studio.style.maxHeight=height+'px';studio.classList.add('visual-editing');clearTimeout(liveTimer);requestAnimationFrame(revealInlineField);}
    if(event.data?.type==='la-suite-guest-inline-change'){const source=event.data.field==='name'?$('capsule-name'):event.data.field==='intro'?$('intro-text'):null;if(source&&!source.disabled){source.value=String(event.data.value||'').slice(0,source.maxLength>0?source.maxLength:5000);dispatch(source.id,'input');context.markDirty(event.data.field==='name'?'settings':'intro');context.scheduleSave();}}
-   if(event.data?.type==='la-suite-guest-inline-end'){inlineEditing=false;context.scheduleSave();render();}
+   if(event.data?.type==='la-suite-guest-inline-end'){inlineEditing=false;inlineBox=null;studio.style.transform='';if(inlineLayout){studio.style.height=inlineLayout.height;studio.style.maxHeight=inlineLayout.maxHeight;inlineLayout=null;}studio.classList.remove('visual-editing');context.scheduleSave();render();}
    if(event.data?.type==='la-suite-guest-edit'){
     if(event.data.field==='intro')tab('intro');else if(event.data.field==='date')editDate();else if(event.data.field==='name')openLiveName();
    }
@@ -119,6 +119,8 @@
   let editingLayout=null,keyboardLift=0;
   const editable=el=>el&&studio.contains(el)&&el.matches('[contenteditable],input:not([type=checkbox]):not([type=file]),textarea');
   function keyboardOpen(){return editingLayout&&editingLayout.viewportHeight-(window.visualViewport?.height||innerHeight)>100;}
+  function revealInlineField(){if(!inlineEditing||!inlineBox)return;const view=window.visualViewport;if((view?.scale||1)>1.01)return;studio.style.transform='';const frame=liveFrame.getBoundingClientRect(),scale=frame.height/parseFloat(liveFrame.style.height),top=frame.top+inlineBox.top*scale,bottom=frame.top+inlineBox.bottom*scale,visibleTop=(view?.offsetTop||0)+16,visibleBottom=(view?.offsetTop||0)+(view?.height||innerHeight)-16;const lift=Math.max(0,Math.min(bottom-visibleBottom,top-visibleTop));studio.style.transform=lift?'translateY(-'+lift+'px)':'';}
+  window.visualViewport?.addEventListener('scroll',()=>requestAnimationFrame(revealInlineField));
   function revealEditingField(){
    if((window.visualViewport?.scale||1)>1.01)return;
    if(document.activeElement?.closest('.visual-settings-popup'))return;if(!editingLayout)return;if(!keyboardOpen()){keyboardLift=0;studio.style.transform='';return;}if(!editable(document.activeElement))return;
@@ -136,7 +138,7 @@
    document.body.classList.toggle('owner-pinch-zoom',zoomed);
    return zoomed;
   }
-  function fitPreview(){if(inlineEditing){fitPanel();return;}if(stabilizePinchZoom())return;const stage=studio.querySelector('.visual-stage');if(!stage.clientWidth)return;
+  function fitPreview(){if(inlineEditing){fitPanel();requestAnimationFrame(revealInlineField);return;}if(stabilizePinchZoom())return;const stage=studio.querySelector('.visual-stage');if(!stage.clientWidth)return;
    if(editingLayout){if(editable(document.activeElement)||keyboardOpen()){fitPanel();requestAnimationFrame(revealEditingField);return;}releaseEditingLayout();}
 
    if(matchMedia('(max-width:760px)').matches){const nav=document.querySelector('.owner-tabs'),view=window.visualViewport,bottom=Math.min(view&&view.scale<=1.01?view.height+view.offsetTop:innerHeight,nav&&getComputedStyle(nav).position==='fixed'?nav.getBoundingClientRect().top:innerHeight);studio.style.setProperty('--visual-editor-height',Math.max(1,bottom-Math.max(0,studio.getBoundingClientRect().top)-8)+'px');}else studio.style.removeProperty('--visual-editor-height');
@@ -185,7 +187,7 @@
   studio.querySelectorAll('[data-tool]').forEach(b=>{b.setAttribute('aria-controls','visual-settings');b.onclick=()=>tab(b.dataset.tool)});
   function tabKeys(buttons,key){buttons.forEach((b,i)=>b.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','Home','End'].includes(e.key))return;e.preventDefault();const next=buttons[e.key==='Home'?0:e.key==='End'?buttons.length-1:(i+(e.key==='ArrowRight'?1:buttons.length-1))%buttons.length];next.click();next.focus()}))}
   const tabs=[...studio.querySelectorAll('[data-tab]')];tabs.forEach(b=>{b.onclick=()=>tab(b.dataset.tab);b.id='visual-tab-'+b.dataset.tab;const panel=studio.querySelector('[data-panel="'+b.dataset.tab+'"]');panel.id='visual-panel-'+b.dataset.tab;panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby',b.id);b.setAttribute('aria-controls',panel.id)});tabKeys(tabs);
-  function selectTarget(value){document.activeElement?.blur();releaseEditingLayout();target=value;if(value==='welcome'&&!liveFrame.getAttribute('src'))liveFrame.src=new URL('capsule.html?preview=1&editor=1&v=20261012-inline-welcome1',location.href).href;studio.dataset.target=value;$('visual-card').hidden=value!=='card';$('visual-welcome').hidden=value!=='welcome';studio.querySelector('.visual-fit').hidden=value!=='welcome';studio.querySelectorAll('[data-target]').forEach(b=>{const selected=b.dataset.target===value;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1});tab(activeTool||'theme');render()}
+  function selectTarget(value){document.activeElement?.blur();releaseEditingLayout();target=value;if(value==='welcome'&&!liveFrame.getAttribute('src'))liveFrame.src=new URL('capsule.html?preview=1&editor=1&v=20261012-inline-stable1',location.href).href;studio.dataset.target=value;$('visual-card').hidden=value!=='card';$('visual-welcome').hidden=value!=='welcome';studio.querySelector('.visual-fit').hidden=value!=='welcome';studio.querySelectorAll('[data-target]').forEach(b=>{const selected=b.dataset.target===value;b.setAttribute('aria-selected',String(selected));b.tabIndex=selected?0:-1});tab(activeTool||'theme');render()}
   const targetTabs=[...studio.querySelectorAll('[data-target]')];targetTabs.forEach(b=>b.onclick=()=>selectTarget(b.dataset.target));tabKeys(targetTabs);
   window.SuiteDesign.styles.forEach((s,index)=>{const b=document.createElement('button');b.type='button';b.dataset.style=s.id;const motif=document.createElement('span');motif.className='visual-theme-motif';motif.setAttribute('aria-hidden','true');motif.style.backgroundImage='url("'+window.SuiteDesign.artwork(s.id)+'")';const name=document.createElement('span');name.textContent=s.name;b.append(motif,name);b.onclick=()=>{document.querySelector('[data-qr-style="'+s.id+'"]')?.click();render()};studio.querySelector('.visual-themes').append(b);});{const importButton=document.createElement('button');importButton.type='button';importButton.className='visual-import';importButton.innerHTML='<img src="assets/themes/previews/importer.webp" alt=""><span>Importer un fond</span>';importButton.onclick=()=>$('design-file').click();studio.querySelector('.visual-themes').append(importButton)}
   studio.querySelectorAll('[data-show-date]').forEach(el=>el.onchange=()=>{visibility.cardShowDate=el.checked;visibility.welcomeShowDate=el.checked;context.markDirty('welcome');dispatch('qr-style');context.scheduleSave();render()});

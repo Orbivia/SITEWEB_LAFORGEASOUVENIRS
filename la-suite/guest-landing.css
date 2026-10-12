@@ -526,4 +526,4 @@ body[data-compose-dark=true] .guest-success-footer img{filter:brightness(0) inve
 .guest-landing-ready.guest-preview-editor[data-guest-view=home] .guest-home-content{padding-bottom:calc(max(40px,env(safe-area-inset-bottom)) + 48px)}
 
 .guest-preview-editor [contenteditable=true]{outline:2px solid #355748;outline-offset:4px;cursor:text;white-space:pre-wrap;-webkit-user-select:text;user-select:text}
-.guest-preview-editor #capsule-welcome[contenteditable=true]{display:block;-webkit-line-clamp:unset;overflow:auto;max-height:100%}
+.guest-preview-editor #capsule-welcome[contenteditable=true]{overflow:auto}
