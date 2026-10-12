@@ -728,3 +728,5 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-reveal-card #delivery-value{display:block;min-width:0;width:auto;max-width:none;overflow:visible;text-overflow:clip;font-size:clamp(18px,5.4vw,24px);line-height:1.25}
 #delivery-dialog .delivery-choices,#delivery-options>p:first-child{display:none!important}
 #delivery-dialog #delivery-date-wrap{margin:0}
+
+.guest-home-label{display:none!important}

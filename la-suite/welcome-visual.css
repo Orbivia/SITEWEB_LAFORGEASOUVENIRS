@@ -830,3 +830,6 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 
 .visual-primary[data-target=welcome][data-intro-kind=text] .visual-drawer .visual-intro-host #intro-text-field:not([hidden]){display:flex;flex-direction:column;gap:8px}
 .visual-primary[data-target=welcome] .visual-drawer #intro-text{font-size:16px;min-height:100px;width:100%;box-sizing:border-box}
+
+.visual-primary .visual-help{display:block;font-size:12px;line-height:1.4;margin:0 0 10px;color:#626b61}
+.visual-capsule-label{display:none!important}

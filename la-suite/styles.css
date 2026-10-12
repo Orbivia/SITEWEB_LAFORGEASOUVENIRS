@@ -2514,3 +2514,9 @@ body.collection-ready main.dashboard-page{padding-left:0;max-width:1440px}
 #visual-welcome .visual-deposit-preview{display:flex;justify-content:center;align-items:center;gap:20px;margin:22px 0 16px;padding:15px 10px;border-radius:30px;background:var(--guest-accent);color:var(--welcome-contrast,#fff);font:600 14px/1.4 Inter,sans-serif}
 
 #visual-welcome .visual-welcome-edit{display:none!important}
+
+.brand-icon svg{width:40px;height:40px;fill:currentColor}
+.password-control{position:relative;display:flex;align-items:center}
+.password-control input{width:100%;padding-right:48px;box-sizing:border-box}
+.password-toggle{position:absolute;right:4px;display:grid;place-items:center;width:40px;height:40px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+[data-owner-tab-link][hidden]{display:none!important}

@@ -35,7 +35,7 @@ function label(t){return t==="video"?"Vidéo":t==="audio"?"Audio":t==="image"?"I
 function icon(t){const name={video:"video",audio:"microphone",image:"camera",text:"comment"}[t]||"comment";return '<i class="fa-solid fa-'+name+'" aria-hidden="true"></i>'}
 function ext(m){m=m?.split(";")[0];return({"video/mp4":"mp4","video/quicktime":"mov","video/webm":"webm","audio/webm":"webm","audio/mpeg":"mp3","audio/wav":"wav","audio/x-wav":"wav","audio/mp4":"m4a","audio/ogg":"ogg","image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/heic":"heic","image/heif":"heif"})[m]||"bin"}
 function group(m){return m?.startsWith("video/")?"video":m?.startsWith("audio/")?"audio":m?.startsWith("image/")?"image":null}
-async function user(){if(!sb)return null;const{data}=await sb.auth.getUser();return data?.user||null}
+async function user(){if(!sb)return null;await sb.auth.getSession();const{data}=await sb.auth.getUser();return data?.user||null}
 async function capsuleAccess(){const{data,error}=await sb.rpc("owner_capsule_access");if(error||!data)throw error||new Error("Impossible de vérifier votre capsule. Réessayez.");return data}
 let mediaRequestVersion=0;
 function stopStream(){mediaRequestVersion++;if(activeStream){activeStream.getTracks().forEach(t=>t.stop());activeStream=null}}
@@ -164,6 +164,8 @@ function frenchAuthError(error){
  if(msg==="Les mots de passe ne correspondent pas."||msg==="Vérification du compte impossible. Réessayez.")return msg;
  return "Une erreur est survenue. Réessayez dans quelques instants.";
 }
+// Confirmation links may land on the configured site URL instead of the requested return page.
+if(sb&&document.querySelector('.principle-grid')&&(qs.has('code')||new URLSearchParams(location.hash.slice(1)).has('access_token'))){sb.auth.getSession().then(({data})=>{if(!data?.session)return;let draft=null;try{draft=JSON.parse(localStorage.getItem('la_suite_create_draft')||'null')}catch{}location.replace(draft?'create.html?resume=1':'dashboard.html');});}
 async function initAuth(){
  const form=$("auth-form");if(!form)return;
  const status=$("status"),submit=form.querySelector('[type="submit"]'),adminAccess=qs.get("next")==="admin";
@@ -173,6 +175,7 @@ async function initAuth(){
   const nav=document.querySelector(".suite-organizer-link");if(nav){nav.href="admin.html";nav.querySelector("span").textContent="Administration"}
   document.querySelector(".organizer-access-help").textContent="Utilisez votre compte habituel. Si vous avez oublié votre mot de passe, choisissez « Mot de passe oublié ».";
  }
+ for(const id of ['password','password-confirm']){const input=$(id),wrapper=document.createElement('div');wrapper.className='password-control';input.before(wrapper);wrapper.append(input);const toggle=document.createElement('button');toggle.type='button';toggle.className='password-toggle';toggle.setAttribute('aria-label','Afficher le mot de passe');toggle.setAttribute('aria-pressed','false');toggle.innerHTML='<i class="fa-solid fa-eye" aria-hidden="true"></i>';toggle.onclick=()=>{const visible=input.type==='password';input.type=visible?'text':'password';toggle.setAttribute('aria-pressed',String(visible));toggle.setAttribute('aria-label',visible?'Masquer le mot de passe':'Afficher le mot de passe');toggle.firstChild.className='fa-solid '+(visible?'fa-eye-slash':'fa-eye');};wrapper.append(toggle);}
  if(!configured)return show(status,"Le service de connexion est indisponible. Rechargez la page.",false);
  let mode=["signup","recovery","reset"].includes(qs.get("mode"))?qs.get("mode"):"login",pendingConfirmation=false,confirmationEmail="";
  function render(){
@@ -207,7 +210,7 @@ async function initAuth(){
  });
  $("resend-confirmation").addEventListener("click",async()=>{
   const button=$("resend-confirmation");button.disabled=true;
-  try{const{error}=await sb.auth.resend({type:"signup",email:confirmationEmail||$("email").value.trim(),options:{emailRedirectTo:new URL(authDestination(),location.href).href}});if(error)throw error;show(status,"Un nouveau lien de confirmation a été demandé. Vérifiez votre boîte mail et les indésirables.")}catch(e){show(status,frenchAuthError(e),false)}finally{button.disabled=false}
+  try{const{error}=await sb.auth.resend({type:"signup",email:confirmationEmail||$("email").value.trim(),options:{emailRedirectTo:new URL("auth.html?confirmed=1"+(qs.get("next")==="create"?"&next=create":qs.get("next")==="admin"?"&next=admin":""),location.href).href}});if(error)throw error;show(status,"Un nouveau lien de confirmation a été demandé. Vérifiez votre boîte mail et les indésirables.")}catch(e){show(status,frenchAuthError(e),false)}finally{button.disabled=false}
  });
  function chooseMode(next){if(submit.disabled||pendingConfirmation)return;mode=next;$("password").value="";$("password-confirm").value="";render();}
  document.querySelectorAll('[data-auth-mode]').forEach(b=>b.addEventListener('click',()=>chooseMode(b.dataset.authMode)));
@@ -240,7 +243,7 @@ async function initAuth(){
     location.href=await signedInDestination();return;
    }
    if(mode==="signup"){
-    result=await sb.auth.signUp({email,password,options:{emailRedirectTo:new URL(authDestination(),location.href).href}});
+    result=await sb.auth.signUp({email,password,options:{emailRedirectTo:new URL("auth.html?confirmed=1"+(qs.get("next")==="create"?"&next=create":qs.get("next")==="admin"?"&next=admin":""),location.href).href}});
     if(result.error)throw result.error;
     if(!result.data.session){
      pendingConfirmation=true;confirmationEmail=email;
@@ -404,6 +407,7 @@ async function initCreate(){
   }}catch(error){show(status,"Connexion interrompue. Votre préparation est conservée ; réessayez.",false);submit.disabled=false}
  }
  const pending=readDraft();
+ if(qs.get("resume")==="1"&&currentUser&&!pending){location.replace("dashboard.html");return;}
  if(currentUser){emailInput.value=currentUser.email;emailInput.readOnly=true}
  if(pending){$("couple").value=pending.couple;dateInput.value=pending.wedding;dateDisplay.value=frFromIso(pending.wedding);if(!currentUser)emailInput.value=pending.email}
  $("plan").value=PLAN_NAMES[qs.get("plan")]?qs.get("plan"):(pending?.plan||"premium");
@@ -1625,7 +1629,7 @@ function setupOwnerTabs(c,manifest){
  const links=[...document.querySelectorAll("[data-owner-tab-link]")];
  const discoveryUnavailable=c.status==='draft';
  for(const link of links.filter(link=>link.dataset.ownerTabLink==='messages')){
-  if(discoveryUnavailable){link.title='Validez votre capsule pour découvrir les souvenirs.';}
+  link.hidden=discoveryUnavailable;
  }
  const tabLinks=links.filter(link=>link.getAttribute("role")==="tab");
  const panels=[...document.querySelectorAll("[data-owner-panel]")];
