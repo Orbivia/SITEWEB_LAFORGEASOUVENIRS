@@ -527,3 +527,5 @@ body[data-compose-dark=true] .guest-success-footer img{filter:brightness(0) inve
 
 .guest-preview-editor [contenteditable=true]{outline:2px solid #355748;outline-offset:4px;cursor:text;white-space:pre-wrap;-webkit-user-select:text;user-select:text}
 .guest-preview-editor #capsule-welcome[contenteditable=true]{overflow:auto}
+
+.guest-landing-ready .guest-home-footer a,.guest-landing-ready .guest-compose-footer a,.guest-landing-ready .guest-success-footer a{display:flex;align-items:center;justify-content:center;pointer-events:auto;cursor:pointer}
