@@ -535,3 +535,10 @@ body.guest-landing-ready{--guest-bottom-clearance:max(clamp(28px,4dvh,52px),calc
 body.guest-landing-ready .guest-home-footer,body.guest-landing-ready .guest-compose-footer,body.guest-landing-ready .guest-success-footer{bottom:var(--guest-bottom-clearance)!important}
 body.guest-landing-ready>.guest-fullscreen{bottom:var(--guest-bottom-clearance)!important;right:max(clamp(20px,4vw,36px),env(safe-area-inset-right))!important}
 body.guest-landing-ready[data-guest-view=home] .guest-home-content,body.guest-landing-ready[data-guest-view=compose] #guest-message,body.guest-landing-ready[data-guest-view=success] #guest-success{padding-bottom:calc(var(--guest-bottom-clearance) + 52px)}
+
+/* Deposit editors share a fixed header/action and a scrolling body sized to the visible viewport. */
+.guest-landing-ready .guest-deposit-dialog[open]{position:fixed;inset:auto;top:var(--deposit-dialog-top,12px);left:50%;transform:translateX(-50%);margin:0;display:flex;flex-direction:column;box-sizing:border-box;width:min(480px,calc(100vw - 24px));height:var(--deposit-dialog-height,min(600px,calc(100dvh - 24px)));max-height:var(--deposit-dialog-height,calc(100dvh - 24px));overflow:hidden;padding:20px;border-radius:20px}
+.guest-deposit-dialog>header,.guest-deposit-dialog>.guest-dialog-head{flex:none;position:static;margin:0 0 12px;padding:0}
+.guest-deposit-dialog>.guest-media-dialog-body,.guest-deposit-dialog>.guest-dialog-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:12px}
+.guest-deposit-dialog>.guest-media-done,.guest-deposit-dialog>#delivery-done{flex:none;width:100%;min-height:44px;margin:12px 0 0}
+.guest-landing-ready[data-guest-view=compose] .guest-text-dialog #message_text{height:clamp(80px,calc(var(--deposit-dialog-height,500px) * .4),240px)!important;min-height:80px!important;resize:none}
