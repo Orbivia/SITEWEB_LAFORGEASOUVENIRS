@@ -657,3 +657,7 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-capture-dialog[data-type=audio] .audio-recorder{height:28px;min-height:28px;padding:0}
 .guest-landing-ready .guest-capture-dialog[open][data-type=audio]{height:280px}
 .guest-landing-ready .guest-capture-dialog[open][data-type=video]{height:500px}
+
+/* Missing required fields get a clear persistent accent until completed. */
+.guest-landing-ready[data-guest-view=compose] .guest-required-missing{outline:2px solid #ad1730!important;outline-offset:2px;border-color:#ad1730!important;box-shadow:0 0 0 4px #ad173018!important;border-radius:12px}
+.guest-landing-ready[data-guest-view=compose] input.guest-required-missing{background:#fff4f3!important}

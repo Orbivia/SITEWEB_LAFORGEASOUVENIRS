@@ -85,6 +85,16 @@
  let editorOpenTimer=null;
  for(const button of form.querySelectorAll('[data-memory-type]')){button.addEventListener('click',()=>{if(button.disabled||form.querySelector('.submit-memory').disabled)return;clearTimeout(editorOpenTimer);editorOpenTimer=setTimeout(async()=>{await window.SuiteGuestLimits?.refresh();showGuestWait();if(window.SuiteGuestLimits?.remaining()>0)return;const selected=form.querySelector('[data-memory-type][aria-pressed=true]')?.dataset.memoryType;if(selected!==button.dataset.memoryType)return;syncMediaLauncher();syncTextLauncher();if(selected==='text'){if(mediaDialog.open)mediaDialog.close();openTextDialog();}else{if(textDialog.open)textDialog.close();openMediaDialog();}},0);});new MutationObserver(syncTextLauncher).observe(button,{attributes:true,attributeFilter:['aria-pressed']});}
  $('message_text').addEventListener('input',syncTextLauncher);$('message_text').addEventListener('invalid',event=>{if(!textLaunch.hidden){event.preventDefault();openTextDialog();}});form.addEventListener('reset',()=>queueMicrotask(syncTextLauncher));syncTextLauncher();
+ // Highlight missing required values together before native form validation.
+ function markMissing(node,missing){node.classList.toggle('guest-required-missing',missing);node.setAttribute('aria-invalid',String(missing));}
+ function highlightMissing(){const type=form.querySelector('[data-memory-type][aria-pressed=true]')?.dataset.memoryType;markMissing($('guest_name'),!$('guest_name').value.trim());markMissing(textLaunch,type==='text'&&!$('message_text').value.trim());markMissing(mediaCard,type!=='text'&&$('media-preview').hidden);markMissing($('delivery-summary'),!$('deliver-now').checked&&!$('delivery_date').value);}
+ form.querySelector('.submit-memory').addEventListener('click',highlightMissing);
+ form.addEventListener('invalid',highlightMissing,true);
+ $('guest_name').addEventListener('input',()=>{if($('guest_name').value.trim())markMissing($('guest_name'),false);});
+ $('message_text').addEventListener('input',()=>{if($('message_text').value.trim())markMissing(textLaunch,false);});
+ new MutationObserver(()=>{if(!$('media-preview').hidden)markMissing(mediaCard,false);}).observe($('media-preview'),{attributes:true,attributeFilter:['hidden']});
+ new MutationObserver(()=>{if($('deliver-now').checked||$('delivery_date').value)markMissing($('delivery-summary'),false);}).observe($('delivery-value'),{subtree:true,childList:true,characterData:true});
+ form.addEventListener('reset',()=>{for(const node of form.querySelectorAll('.guest-required-missing'))markMissing(node,false);});
  const deliveryPopup=$('delivery-dialog');deliveryPopup.append($('delivery-done'));
  const depositDialogs=[textDialog,mediaDialog,deliveryPopup];
  function fitDepositDialogs(){const view=window.visualViewport;if((view?.scale||1)>1.01)return;const height=view?.height||innerHeight,offset=view?.offsetTop||0;for(const dialog of depositDialogs){if(!dialog.open)continue;dialog.style.setProperty('--deposit-dialog-height',Math.max(1,Math.min(560,height-24))+'px');dialog.style.setProperty('--deposit-dialog-top',offset+12+'px');}}
