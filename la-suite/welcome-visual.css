@@ -857,3 +857,12 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-card-fullscreen svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
 
 .visual-primary.visual-fullscreen-fallback{position:fixed!important;inset:0!important;width:100vw!important;height:100svh!important;max-height:100svh!important;z-index:1000;background:#fffdf8}
+
+/* Export actions belong under the preview; the settings list uses the full right column. */
+.visual-primary .visual-actions{grid-column:1!important;grid-row:4!important;min-width:0;padding:4px 8px 6px;margin:0}
+.visual-primary .visual-drawer,.visual-primary[data-tool=theme] .visual-drawer,.visual-primary[data-tool=color] .visual-drawer,.visual-primary[data-tool=font] .visual-drawer,.visual-primary[data-tool=options] .visual-drawer{grid-row:3/5!important;height:100%;max-height:none}
+.visual-primary .visual-status{grid-column:1/-1;grid-row:5}
+.visual-primary-ready .visual-primary .visual-actions .qr-preview-actions{grid-auto-flow:unset!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:4px!important;margin:0}
+.visual-primary-ready .visual-primary .visual-actions .qr-preview-actions .btn{min-height:44px!important;padding:6px 1px;font-size:10px!important;gap:3px;border-radius:9px;white-space:normal;text-align:center}
+.visual-primary .visual-actions .organizer-export-availability:empty{display:none}
+.visual-primary .visual-actions #review-activation{width:100%;white-space:normal}
