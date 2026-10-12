@@ -608,3 +608,14 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-memory-card[data-ready=true]:is([data-type=audio],[data-type=video])>.guest-media-launch{position:absolute;inset:0;z-index:2;pointer-events:none;background:transparent;border:0}
 .guest-memory-card[data-ready=true]:is([data-type=audio],[data-type=video]) .guest-content-pencil{pointer-events:auto;cursor:pointer}
 .guest-memory-card>.guest-media-launch:focus-visible{outline:2px solid var(--home-accent);outline-offset:-3px}
+
+/* Capture dialogs use their content height instead of an empty full-height sheet. */
+.guest-landing-ready .guest-capture-dialog[open]{height:auto;top:calc(var(--deposit-dialog-top,12px) + var(--deposit-dialog-height,500px)/2);transform:translate(-50%,-50%);padding:18px}
+.guest-capture-dialog>.guest-media-dialog-body{flex:0 1 auto;overflow-y:auto!important;display:flex;flex-direction:column;gap:12px}
+.guest-capture-dialog #capture-choices{margin:0}
+.guest-capture-dialog #video-panel.active{flex:none;overflow:visible}
+.guest-capture-dialog #video-panel.active .recorder-stage{flex:none;height:clamp(140px,30dvh,260px);max-height:calc(var(--deposit-dialog-height,500px) - 180px)}
+.guest-capture-dialog #video-panel.active .recorder-stage video{width:100%;height:100%;max-height:100%;object-fit:contain}
+.guest-capture-dialog[data-ready=true] #media-preview{flex:none;height:auto}
+.guest-capture-dialog[data-ready=true] #preview-image,.guest-capture-dialog[data-ready=true] #preview-video{flex:none;height:auto;max-height:30dvh}
+.guest-capture-dialog #audio-panel.active{margin:0}
