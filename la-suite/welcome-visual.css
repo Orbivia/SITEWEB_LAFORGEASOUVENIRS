@@ -828,3 +828,6 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-action-popup>header{flex:none;position:static;margin-top:0;padding-top:0}
 .visual-action-popup>.visual-popup-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:12px}
 .visual-action-popup>.visual-welcome-done{flex:none;margin-top:12px;min-height:44px}
+
+.visual-primary[data-target=welcome][data-intro-kind=text] .visual-drawer .visual-intro-host #intro-text-field:not([hidden]){display:flex;flex-direction:column;gap:8px}
+.visual-primary[data-target=welcome] .visual-drawer #intro-text{font-size:16px;min-height:100px;width:100%;box-sizing:border-box}

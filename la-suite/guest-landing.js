@@ -21,6 +21,14 @@
   const editLayer=document.createElement('div');editLayer.className='guest-preview-edit-layer';body.append(editLayer);
   const editTargets=[['name','#capsule-title','Modifier le titre'],['date','#guest-event-date','Modifier la date'],['intro','.guest-host-zone','Modifier le contenu d’accueil']];
   const edits=editTargets.map(([field,selector,label])=>{const button=document.createElement('button');button.type='button';button.className='guest-preview-edit';button.dataset.field=field;button.setAttribute('aria-label',label);button.title=label;button.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#modifier"></use></svg>';button.onclick=()=>window.parent.postMessage({type:'la-suite-guest-edit',field},location.origin);editLayer.append(button);return{button,node:landing.querySelector(selector)};});
+  function editInline(field){const node=field==='name'?$('capsule-title'):field==='intro'?$('capsule-welcome'):null;
+   if(node&&(field==='name'||!node.hidden&&node.textContent.trim())){node.contentEditable='true';node.setAttribute('role','textbox');node.setAttribute('aria-label',field==='name'?'Nom de la capsule':'Message d’accueil');node.focus();window.parent.postMessage({type:'la-suite-guest-inline-start'},location.origin);const range=document.createRange();range.selectNodeContents(node);range.collapse(false);const selection=getSelection();selection.removeAllRanges();selection.addRange(range);
+    node.oninput=()=>window.parent.postMessage({type:'la-suite-guest-inline-change',field,value:node.innerText},location.origin);
+    node.onblur=()=>{node.contentEditable='false';window.parent.postMessage({type:'la-suite-guest-inline-end'},location.origin)};
+    node.onkeydown=event=>{if(event.key==='Escape'||field==='name'&&event.key==='Enter'&&!event.isComposing){event.preventDefault();node.blur()}};
+   }else window.parent.postMessage({type:'la-suite-guest-edit',field},location.origin);
+  }
+  for(const {button} of edits)button.onclick=()=>editInline(button.dataset.field);
   let editScale=1;
   function positionEdits(){for(const {button,node} of edits){
    let anchor=node;const content=button.dataset.field==='intro';if(content)anchor=([...node.querySelectorAll('#capsule-welcome,.guest-cover img,.guest-cover video,.guest-empty-welcome')].find(el=>!el.hidden&&el.getBoundingClientRect().height>0))||node;
@@ -34,8 +42,8 @@
   new MutationObserver(positionEdits).observe(landing,{subtree:true,attributes:true,childList:true,characterData:true});
   landing.addEventListener('load',positionEdits,true);landing.addEventListener('loadedmetadata',positionEdits,true);window.addEventListener('resize',positionEdits);window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='la-suite-guest-preview-scale')return;const scale=Number(event.data.scale);if(!Number.isFinite(scale)||scale<=0)return;editScale=Math.max(.25,Math.min(1,scale));editLayer.style.setProperty('--preview-edit-scale',String(1/editScale));positionEdits();});
   document.addEventListener('click',event=>{
-   const node=event.target.closest('#capsule-title,#guest-event-date,.guest-host-zone,#guest-read-more');if(!node)return;
-   event.preventDefault();event.stopImmediatePropagation();window.parent.postMessage({type:'la-suite-guest-edit',field:node.id==='capsule-title'?'name':node.id==='guest-event-date'?'date':'intro'},location.origin);
+   const node=event.target.closest('#capsule-title,#guest-event-date,.guest-host-zone,#guest-read-more');if(!node||event.target.closest('[contenteditable=true]'))return;
+   event.preventDefault();event.stopImmediatePropagation();editInline(node.id==='capsule-title'?'name':node.id==='guest-event-date'?'date':'intro');
   },true);
   document.fonts?.ready.then(positionEdits);positionEdits();
  }
