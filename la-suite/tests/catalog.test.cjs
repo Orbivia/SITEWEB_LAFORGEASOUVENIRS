@@ -14,6 +14,12 @@ for(const file of fs.readdirSync(root).filter(f=>f.endsWith('.html'))){
  const html=fs.readFileSync(path.join(root,file),'utf8');
  const scripts=[...html.matchAll(/<script[^>]+src="([^"?]+)(?:\?[^\"]*)?"/g)].map(m=>m[1]);
  for(const script of scripts.filter(s=>!s.startsWith('http')))assert(fs.existsSync(path.join(root,script)),`${file}: missing ${script}`);
+ const styles=[...html.matchAll(/<link[^>]+href="([^"?]+\.css)(?:\?[^\"]*)?"/g)].map(m=>m[1]).filter(s=>!s.startsWith('http'));
+ for(const style of styles)assert(fs.existsSync(path.join(root,style)),`${file}: missing ${style}`);
+ if(['dashboard.html','capsule.html'].includes(file)){
+  assert(styles.indexOf('theme-layout.css')>styles.indexOf('styles.css'));
+  if(file==='capsule.html')assert(styles.indexOf('theme-layout.css')>styles.indexOf('guest-landing.css'));
+ }
  for(const consumer of ['welcome-ui.js','welcome-visual.js','app.js'])if(scripts.includes(consumer))assert(scripts.indexOf('typography.js')>=0&&scripts.indexOf('typography.js')<scripts.indexOf(consumer),`${file}: typography load order`);
  if(scripts.includes('app.js'))assert(scripts.indexOf('memory-reader.js')>=0&&scripts.indexOf('memory-reader.js')<scripts.indexOf('app.js'));
 }

@@ -25,9 +25,11 @@
   "suite-memory-state.js",
   "suite-shell.js",
   "supabase-config.js",
+  "theme-layout.css",
   "typography.js",
   "welcome-ui.js",
   "welcome-visual.css",
   "welcome-visual.js",
+  "workspace.css",
   "workspace.js"
 ]

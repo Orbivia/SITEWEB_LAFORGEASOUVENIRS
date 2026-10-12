@@ -1,0 +1,7 @@
+/* Shared reserved area and guest logo baseline. Load after page-specific styles. */
+:root{--capsule-safe-inline:12%;--capsule-safe-top:28px;--capsule-safe-bottom:108px;--capsule-logo-height:44px}
+/* Match the organizer reception logo baseline on every guest screen and live preview. */
+body.guest-landing-ready{--guest-bottom-clearance:max(18px,env(safe-area-inset-bottom));--capsule-logo-height:44px}
+body.guest-landing-ready .guest-home-footer,body.guest-landing-ready .guest-compose-footer,body.guest-landing-ready .guest-success-footer{position:fixed!important;top:calc(100svh - var(--guest-bottom-clearance) - var(--capsule-logo-height))!important;bottom:auto!important;left:50%!important;right:auto!important;transform:translateX(-50%);width:105px!important;height:var(--capsule-logo-height)!important;margin:0!important;padding:0!important}
+body.guest-landing-ready .guest-home-footer img,body.guest-landing-ready .guest-compose-footer img,body.guest-landing-ready .guest-success-footer img{width:105px!important;height:var(--capsule-logo-height)!important;max-height:var(--capsule-logo-height)!important;object-fit:contain}
+body.guest-landing-ready[data-guest-view=home] .guest-home-content,body.guest-landing-ready[data-guest-view=compose] #guest-message,body.guest-landing-ready[data-guest-view=success] #guest-success{padding-bottom:max(var(--capsule-safe-bottom,108px),calc(env(safe-area-inset-bottom) + 70px))}

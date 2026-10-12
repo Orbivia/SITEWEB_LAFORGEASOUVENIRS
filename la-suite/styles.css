@@ -2523,11 +2523,7 @@ body.collection-ready main.dashboard-page{padding-left:0;max-width:1440px}
 
 .activation-terms{display:flex;align-items:flex-start;gap:10px;margin:18px 0;font-size:14px;line-height:1.5}.activation-terms input{flex:none;margin-top:4px;width:18px;height:18px}.activation-terms a{text-decoration:underline}
 
-/* Shared safe area for themed screens: keep content away from artwork. */
-:root{--capsule-safe-inline:12%;--capsule-safe-top:28px;--capsule-safe-bottom:108px;--capsule-logo-height:44px}
 
-#workspace-capsule-settings .studio-sheet-body{display:grid;gap:14px}#workspace-capsule-settings form{display:grid;gap:10px}#workspace-capsule-settings input{width:100%;box-sizing:border-box}#workspace-capsule-settings hr{width:100%;border:0;border-top:1px solid var(--line)}
 
-#workspace-capsule-settings .workspace-date-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:stretch}#workspace-capsule-settings .workspace-date-row .btn{padding:10px 12px;white-space:normal;font-size:13px;max-width:130px}#workspace-capsule-settings .studio-sheet-body>p:first-child{margin:0}#workspace-capsule-settings .workspace-date-row input{min-width:0}
 
-.workspace-sheet .status:not(:empty){display:block;overflow-wrap:anywhere}
+#workspace-capsule-settings .studio-sheet-body{display:grid;gap:14px}

@@ -29,8 +29,10 @@ Les identifiants des typos restent stables : ils sont stockés dans `qr_font` et
 - `guest-landing.css` : accueil, dépôt et confirmation invités.
 - `welcome-visual.css` : studio de personnalisation et aperçus.
 - `admin.css` : administration.
+- `theme-layout.css` : marges communes et placement du logo invité ; chargé après les styles des pages.
+- `workspace.css` : contrôles des paramètres des capsules et messages d’état.
 
-Les feuilles historiques contiennent encore des ajustements successifs. Ne pas supprimer une règle simplement parce que son sélecteur réapparaît : les media queries et la spécificité peuvent changer son rôle. Le nettoyage de cette passe retire la logique de masquage des lignes devenue inutile ; la consolidation complète nécessite des captures de référence sur plusieurs dimensions.
+Les feuilles historiques contiennent encore des ajustements successifs. Ne pas supprimer une règle simplement parce que son sélecteur réapparaît : les media queries et la spécificité peuvent changer son rôle. Les passes de nettoyage retirent la logique de masquage des lignes devenue inutile et les anciennes dimensions/positions du logo remplacées par theme-layout.css ; la consolidation complète nécessite des captures de référence sur plusieurs dimensions.
 
 Les variables `--capsule-safe-inline`, `--capsule-safe-top`, `--capsule-safe-bottom` et `--capsule-logo-height` définissent les marges partagées. `logoBackground` conserve les motifs des coins et dégage le centre du bas. L'export canvas réalise le même principe. La hauteur stable (`svh`) convient aux pages fixes ; le viewport visuel reste utilisé pour les fenêtres avec clavier.
 
