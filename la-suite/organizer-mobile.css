@@ -418,3 +418,9 @@ html:has(body.organizer-layout-ready),body.organizer-layout-ready{overscroll-beh
 body.owner-capsule-draft .owner-tabs{display:none!important}
 body.owner-capsule-draft{padding-bottom:0!important}
 body.owner-capsule-draft .welcome-visual-editor.visual-primary{max-height:calc(100dvh - var(--organizer-header-height,65px) - 12px)}
+
+/* Browser address-bar changes must not move the organizer navigation. */
+@media(max-width:760px){
+ body.organizer-layout-ready:not(.owner-pinch-zoom) .owner-tabs{top:calc(100svh - 64px - env(safe-area-inset-bottom,0px))!important;bottom:auto!important;height:calc(64px + env(safe-area-inset-bottom,0px))!important;transition:none!important;transform:none!important}
+ body.organizer-layout-ready.owner-capsule-draft .welcome-visual-editor.visual-primary{max-height:calc(100svh - var(--organizer-header-height,65px) - 12px)}
+}
