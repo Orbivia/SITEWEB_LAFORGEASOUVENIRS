@@ -663,3 +663,11 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-landing-ready[data-guest-view=compose] input.guest-required-missing{background:#fff4f3!important}
 
 .guest-capture-dialog .recorder-actions button:disabled{opacity:1;cursor:wait}
+
+/* Audio countdown occupies its own reserved row and cannot overlap the clock. */
+.guest-landing-ready .guest-capture-dialog[open][data-type=audio]{height:320px}
+.guest-capture-dialog[data-type=audio] #audio-panel.active{gap:8px}
+.guest-capture-dialog[data-type=audio] .audio-recorder{flex:none;position:relative;width:100%;height:44px;min-height:44px;padding:0;margin:0}
+.guest-capture-dialog[data-type=audio] #audio-countdown{position:absolute;inset:0;margin:0;line-height:44px;font-size:36px;background:transparent}
+.guest-capture-dialog[data-type=audio] #audio-countdown[hidden]{display:none!important}
+.guest-capture-dialog[data-type=audio] .guest-record-elapsed{font-size:16px;line-height:1.4}
