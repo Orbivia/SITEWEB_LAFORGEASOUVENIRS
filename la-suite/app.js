@@ -619,7 +619,7 @@ function initGuestControls(){
  }
  $('guest-concept-open').addEventListener('click',()=>$('guest-concept-dialog').showModal());
  $('guest-welcome-open').addEventListener('click',()=>$('guest-welcome-dialog').showModal());
- $('delivery-summary').addEventListener('click',()=>{if(guestBusy)return;previousDelivery={choice:document.querySelector('[data-delivery].active')?.dataset.delivery||'now',date:$('delivery_date').value};$('delivery-dialog').showModal();chooseDelivery('custom');try{$('delivery_date').showPicker?.();}catch{} });
+ $('delivery-summary').addEventListener('click',()=>{if(guestBusy)return;previousDelivery={choice:$('deliver-now').checked?'now':'custom',date:$('delivery_date').value};$('delivery-dialog').showModal();chooseDelivery('custom');try{$('delivery_date').showPicker?.();}catch{} });
  $('delivery-done').addEventListener('click',()=>{if($('delivery_date').reportValidity())$('delivery-dialog').close()});
  $("delivery_date").addEventListener("change",()=>{deliveryTouched=true;guestTransaction=null;updateDeliveryHelp();if($("delivery_date").value&&$("delivery_date").validity.valid&&$("delivery-dialog").open)$("delivery-dialog").close();});
  $("delivery_date").min=parisDay();

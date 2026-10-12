@@ -676,18 +676,16 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-landing-ready[data-guest-view=compose] .guest-reveal-heading,
 .guest-landing-ready[data-guest-view=compose] .guest-reveal-secret,
 .guest-landing-ready[data-guest-view=compose] .guest-reveal-card .delivery-caption,
-.guest-landing-ready[data-guest-view=compose] .guest-reveal-card .delivery-edit,
-.guest-landing-ready[data-guest-view=compose] .guest-reveal-card .guest-date-pencil{display:none!important}
+.guest-landing-ready[data-guest-view=compose] .guest-reveal-card .delivery-edit{display:none!important}
 .guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-personalization{padding:0!important;border:0;background:transparent}
 .guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-reveal-card{display:grid;grid-template-columns:86px minmax(0,1fr);grid-template-rows:auto auto auto auto;gap:3px 10px;align-items:center;height:auto;min-height:128px;padding:12px;border:1px solid color-mix(in srgb,var(--home-accent),transparent 55%);border-radius:14px;background:linear-gradient(125deg,#fffdf8,#f7efdf);color:var(--home-ink);box-shadow:0 3px 10px #77551d0a;text-align:left}
-.guest-reveal-envelope{grid-column:1;grid-row:1/4;width:86px;height:80px;object-fit:contain;transform:rotate(-8deg)}
 .guest-reveal-caption{grid-column:2;grid-row:1;font:400 14px/1.2 Georgia,serif}
 .guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-reveal-card #delivery-value{grid-column:2;grid-row:2;font:400 clamp(18px,5vw,24px)/1.15 Georgia,serif;color:var(--home-accent);white-space:normal;overflow-wrap:anywhere}
 .guest-reveal-tagline{grid-column:2;grid-row:3;font:400 11px/1.3 Inter,sans-serif}
 .guest-reveal-action{grid-column:1/-1;grid-row:4;display:flex;align-items:center;justify-content:center;gap:8px;min-height:32px;margin-top:5px;border:1px solid color-mix(in srgb,var(--home-accent),transparent 35%);border-radius:24px;font:500 12px/1.2 Inter,sans-serif;color:var(--home-accent)}
 .guest-reveal-action i:last-child{margin-left:auto;margin-right:12px}
 .guest-reveal-action i:first-child{margin-left:auto}
-@media(max-height:650px){.guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-reveal-card{min-height:104px;padding:8px;grid-template-columns:66px minmax(0,1fr)}.guest-reveal-envelope{width:66px;height:60px}.guest-reveal-action{min-height:28px}}
+@media(max-height:650px){.guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-reveal-card{min-height:104px;padding:8px;grid-template-columns:66px minmax(0,1fr)}.guest-reveal-action{min-height:28px}}
 
 /* The date selector is a compact companion to the envelope card. */
 .guest-landing-ready #delivery-dialog.guest-deposit-dialog[open]{height:auto;top:calc(var(--deposit-dialog-top,12px) + var(--deposit-dialog-height,500px)/2);transform:translate(-50%,-50%);padding:20px;background:#fffdf8;border:1px solid #b3935733;box-shadow:0 16px 60px #30230c33}
@@ -696,10 +694,6 @@ body.guest-sending #guest-message{visibility:hidden}
 #delivery-dialog #delivery-dialog-title{font:400 26px/1.2 Georgia,serif;color:#785c2c;margin:0}
 #delivery-dialog .guest-dialog-close{display:grid;place-items:center;width:36px;height:36px;min-height:36px;flex:none;padding:0;border:1px solid #b3935733;border-radius:50%;background:transparent;font-size:24px;color:#574a36}
 #delivery-options>p:first-child{font-size:13px;line-height:1.45;color:#716957;margin:0 0 16px}
-#delivery-dialog .delivery-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}
-#delivery-dialog .delivery-choices button{min-height:48px;padding:12px 8px;border:1px solid #b3935755;border-radius:12px;background:#fffdf8;color:#514632;font:500 14px/1.2 Inter,sans-serif;box-shadow:none}
-#delivery-dialog .delivery-choices button.active{background:#f4e8cc;border-color:#aa8236;color:#785419;box-shadow:inset 0 0 0 1px #aa8236}
-#delivery-dialog .delivery-choices button[data-delivery=custom]{grid-column:1/-1;border-style:dashed}
 #delivery-dialog #delivery-date-wrap{margin:16px 0 0}
 #delivery-dialog #delivery_date{width:100%;box-sizing:border-box;min-height:48px;font-size:16px;border:1px solid #b3935755;border-radius:10px;background:white}
 #delivery-dialog #delivery-help{margin:10px 0 0;font-size:12px}
@@ -726,7 +720,6 @@ body.guest-sending #guest-message{visibility:hidden}
 /* Transparent header also removes the global sticky-header blur. */
 .guest-landing-ready[data-guest-view=compose] .guest-compose-heading{position:static!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
 .guest-landing-ready[data-guest-view=compose] .guest-submit-fields .guest-reveal-card #delivery-value{display:block;min-width:0;width:auto;max-width:none;overflow:visible;text-overflow:clip;font-size:clamp(18px,5.4vw,24px);line-height:1.25}
-#delivery-dialog .delivery-choices,#delivery-options>p:first-child{display:none!important}
 #delivery-dialog #delivery-date-wrap{margin:0}
 
 .guest-home-label{display:none!important}
