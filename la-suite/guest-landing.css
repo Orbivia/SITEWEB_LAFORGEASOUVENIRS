@@ -516,7 +516,10 @@ body[data-compose-dark=true] .guest-success-footer img{filter:brightness(0) inve
 
 /* Editor controls overlay the real guest page without changing its layout. */
 .guest-preview-edit-layer{position:fixed;inset:0;z-index:100;pointer-events:none}
-.guest-preview-edit{position:absolute;display:grid;place-items:center;width:40px;height:40px;min-height:0;padding:10px;box-sizing:border-box;border:1px solid #36574845;border-radius:50%;background:#fffdf8;color:#365748;box-shadow:0 2px 8px #0002;pointer-events:auto;cursor:pointer;transform:scale(var(--preview-edit-scale,1));transform-origin:top left}
+.guest-preview-edit{position:absolute;display:grid;place-items:center;width:24px;height:24px;min-height:0;padding:5px;box-sizing:border-box;border:0;border-radius:50%;background:#fffdf7;color:#355748;box-shadow:0 2px 6px #20372e26;pointer-events:auto;cursor:pointer;transform:scale(var(--preview-edit-scale,1));transform-origin:top left}
 .guest-preview-edit[hidden]{display:none!important}
-.guest-preview-edit svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.guest-preview-edit svg{width:100%;height:100%;fill:currentColor}
 .guest-preview-edit:focus-visible{outline:3px solid #365748;outline-offset:3px}
+
+/* Leave extra clearance inside the personalization preview frame. */
+.guest-preview-editor .guest-home-footer{bottom:max(32px,env(safe-area-inset-bottom))!important}

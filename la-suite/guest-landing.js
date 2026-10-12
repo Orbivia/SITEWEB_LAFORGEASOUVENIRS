@@ -19,10 +19,16 @@
  if(new URLSearchParams(location.search).get('editor')==='1'&&window.parent!==window){
   body.classList.add('guest-preview-editor');
   const editLayer=document.createElement('div');editLayer.className='guest-preview-edit-layer';body.append(editLayer);
-  const editTargets=[['name','.guest-home-heading','Modifier le titre'],['date','#guest-event-date','Modifier la date'],['intro','.guest-host-zone','Modifier le contenu d’accueil']];
-  const edits=editTargets.map(([field,selector,label])=>{const button=document.createElement('button');button.type='button';button.className='guest-preview-edit';button.dataset.field=field;button.setAttribute('aria-label',label);button.title=label;button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 5 5-12 12-6 1 1-6Z M14 5l5 5"/></svg>';button.onclick=()=>window.parent.postMessage({type:'la-suite-guest-edit',field},location.origin);editLayer.append(button);return{button,node:landing.querySelector(selector)};});
+  const editTargets=[['name','#capsule-title','Modifier le titre'],['date','#guest-event-date','Modifier la date'],['intro','.guest-host-zone','Modifier le contenu d’accueil']];
+  const edits=editTargets.map(([field,selector,label])=>{const button=document.createElement('button');button.type='button';button.className='guest-preview-edit';button.dataset.field=field;button.setAttribute('aria-label',label);button.title=label;button.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#modifier"></use></svg>';button.onclick=()=>window.parent.postMessage({type:'la-suite-guest-edit',field},location.origin);editLayer.append(button);return{button,node:landing.querySelector(selector)};});
   let editScale=1;
-  function positionEdits(){for(const {button,node} of edits){const box=node.getBoundingClientRect();button.hidden=!box.width||!box.height||body.dataset.guestView!=='home';button.style.left=Math.max(0,Math.min(innerWidth-40/editScale,box.right-20/editScale))+'px';button.style.top=Math.max(0,Math.min(innerHeight-40/editScale,box.top))+'px';}}
+  function positionEdits(){for(const {button,node} of edits){
+   let anchor=node;if(button.dataset.field==='intro')anchor=([...node.querySelectorAll('#capsule-welcome,.guest-cover,.guest-empty-welcome')].find(el=>!el.hidden&&el.getBoundingClientRect().height>0))||node;
+   let box=anchor.getBoundingClientRect();
+   if(anchor.matches('#capsule-title,#guest-event-date,#capsule-welcome')&&anchor.textContent.trim()){const range=document.createRange();range.selectNodeContents(anchor);const textBox=range.getBoundingClientRect();if(textBox.width&&textBox.height)box=textBox;}
+   const size=24/editScale,gap=4/editScale;button.hidden=!box.width||!box.height||body.dataset.guestView!=='home';
+   button.style.left=Math.max(0,Math.min(innerWidth-size-gap,box.right+gap))+'px';button.style.top=Math.max(0,Math.min(innerHeight-size,box.top+(box.height-size)/2))+'px';
+  }}
   const editResize=new ResizeObserver(positionEdits);for(const {node} of edits)editResize.observe(node);
   new MutationObserver(positionEdits).observe(landing,{subtree:true,attributes:true,childList:true,characterData:true});
   window.addEventListener('resize',positionEdits);window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==window.parent||event.data?.type!=='la-suite-guest-preview-scale')return;const scale=Number(event.data.scale);if(!Number.isFinite(scale)||scale<=0)return;editScale=Math.max(.25,Math.min(1,scale));editLayer.style.setProperty('--preview-edit-scale',String(1/editScale));positionEdits();});
@@ -30,7 +36,7 @@
    const node=event.target.closest('#capsule-title,#guest-event-date,.guest-host-zone,#guest-read-more');if(!node)return;
    event.preventDefault();event.stopImmediatePropagation();window.parent.postMessage({type:'la-suite-guest-edit',field:node.id==='capsule-title'?'name':node.id==='guest-event-date'?'date':'intro'},location.origin);
   },true);
-  positionEdits();
+  document.fonts?.ready.then(positionEdits);positionEdits();
  }
 
  for(const [type,label] of [['image','Photo'],['video','Vidéo'],['audio','Audio'],['text','Texte']]){
