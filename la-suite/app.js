@@ -1860,7 +1860,7 @@ async function renderManifest(c,manifest){
   article.dataset.deliveryAt=item.delivery_at||'';
   article.innerHTML='<div class="memory-icon">'+icon(item.media_type)+'</div><div class="memory-meta"><strong>'+esc(item.guest_name||"Invité")+'</strong><span>'+label(item.media_type)+' · découverte le '+esc(fdate(item.delivery_at))+'</span></div><div class="memory-actions"><span class="lock-badge '+(available?'open':'locked')+'">'+(expired?'Accès terminé':available?'Disponible':'<i class="fa-solid fa-lock" aria-hidden="true"></i> Verrouillé')+'</span></div><div class="memory-content"></div>';
   const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
-  if(available&&row?.message_text){const text=document.createElement('p');text.className='memory-text';text.textContent=row.message_text;content.append(text)}
+  if(available&&row?.message_text){const excerpt=document.createElement('p');excerpt.className='memory-excerpt';excerpt.textContent=row.message_text;article.querySelector('.memory-meta').append(excerpt);const text=document.createElement('p');text.className='memory-text';text.textContent=row.message_text;content.append(text)}
   if(available&&row?.media_path){
    const media=document.createElement(row.media_type==="image"?'img':row.media_type==='audio'?'audio':'video');media.className='memory-'+(row.media_type==='image'?'image':row.media_type);if(row.media_type==='image'){media.alt='Souvenir de '+(item.guest_name||'votre invité');media.loading='lazy';media.decoding='async'}else{media.controls=true;media.playsInline=true;media.preload='none'}
    const status=document.createElement('p');status.className='hint';status.setAttribute('role','status');
@@ -2006,10 +2006,11 @@ async function setupOfferServices(c){
 function updateOwnerScreenScroll(){
  const waiting=document.querySelector('.owner-panel.is-awaiting-deposits:not([hidden])');
  const preparation=document.querySelector('.owner-panel[data-owner-panel="configuration"]:not([hidden])');
+ const reception=document.querySelector('.owner-panel.is-deposits-open:not([hidden])');
  const frame=waiting?$('owner-deposit-waiting'):preparation?$('welcome-visual-editor'):null;
  const nav=document.querySelector('.owner-tabs');
  const editing=document.activeElement?.matches('input,textarea,select,[contenteditable]');
- document.body.classList.toggle('owner-fixed-view',Boolean(waiting||preparation)&&!editing&&matchMedia('(max-width:760px)').matches);
+ document.body.classList.toggle('owner-fixed-view',Boolean(waiting||preparation||reception)&&!editing&&matchMedia('(max-width:760px)').matches);
  let fits=false;
  if(frame&&!frame.hidden&&nav&&!editing&&matchMedia('(max-width:760px)').matches&&(window.visualViewport?.scale||1)<=1.01){
   const rect=frame.getBoundingClientRect(),bottom=nav.hidden?(window.visualViewport?.height||innerHeight):nav.getBoundingClientRect().top;
