@@ -714,3 +714,11 @@ body.guest-sending #guest-message{visibility:hidden}
 /* Stopwatch follows the solid icon style used by the format choices. */
 .guest-reveal-chrono{grid-column:1;grid-row:1/4;display:grid;place-items:center;width:72px;height:72px;border-radius:50%;background:color-mix(in srgb,var(--home-accent),transparent 90%);color:var(--home-accent);font-size:38px;justify-self:center}
 @media(max-height:650px){.guest-reveal-chrono{width:56px;height:56px;font-size:30px}}
+
+/* Signature is requested as the last step, with the send action above the keyboard. */
+.guest-landing-ready .guest-name-dialog[open]{height:auto;top:calc(var(--deposit-dialog-top,12px) + var(--deposit-dialog-height,500px)/2);transform:translate(-50%,-50%);background:#fffdf8}
+.guest-name-dialog>header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.guest-name-dialog h2{font:400 24px/1.2 Georgia,serif;margin:0;color:var(--home-accent)}
+.guest-name-dialog .guest-signature{margin:0}
+.guest-name-dialog #guest_name{width:100%;box-sizing:border-box;min-height:48px;font-size:16px}
+.guest-name-dialog>.guest-name-send{flex:none;width:100%;margin-top:16px;min-height:48px}
