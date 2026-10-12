@@ -4,7 +4,7 @@
  const $=id=>document.getElementById(id);
  const colors=['#8B2730','#6B5635','#52634D','#42556D','#9C6571','#2D2926','#3D7370','#946044','#74628B','#A16C28','#4C647D','#556246'];
  const colorNames=['Bordeaux','Doré','Sauge','Bleu ardoise','Rose poudré','Noir doux','Bleu lagon','Terracotta','Lavande','Miel','Bleu nuit','Olivier'];
- const fonts={elegant:['Élégante','"Cormorant Garamond",Georgia,serif'],classic:['Classique','"Playfair Display",Georgia,serif'],modern:['Moderne','Inter,Arial,sans-serif'],romantic:['Manuscrite','"Great Vibes",cursive'],editorial:['Éditoriale','"DM Serif Display",Georgia,serif'],refined:['Raffinée','"Libre Baskerville",Georgia,serif'],contemporary:['Contemporaine','Montserrat,Inter,sans-serif'],signature:['Signature','Parisienne,cursive']};
+ const fonts={elegant:['Élégante','"Cormorant Garamond",Georgia,serif'],classic:['Classique','"Playfair Display",Georgia,serif'],modern:['Moderne','Inter,Arial,sans-serif'],romantic:['Manuscrite','"Great Vibes",cursive'],editorial:['Éditoriale','"DM Serif Display",Georgia,serif'],refined:['Raffinée','"Libre Baskerville",Georgia,serif'],contemporary:['Contemporaine','Montserrat,Inter,sans-serif'],signature:['Signature','Parisienne,cursive'],heritage:['Patrimoine','Georgia,serif'],literary:['Littéraire','Palatino,"Palatino Linotype",serif'],friendly:['Conviviale','"Trebuchet MS",Arial,sans-serif'],clear:['Lisible','Verdana,Arial,sans-serif']};
  // All surfaces and illustrations are local, fixed presets. Saved settings never contain CSS or HTML.
  const themes={
   capsule:{name:'Capsule',bg:'#FBF8F2',paper:'#FFFAF4',date:'#FAE9D1',accent:'#8B2730',font:'elegant',art:'clock',pattern:'none'},

@@ -901,7 +901,7 @@ function qrOptions(c){
   title:cardDefault(c.print_title,"Laissez-nous un souvenir",c.couple_name||DEFAULT_CARD_TITLE).slice(0,42),
   note:cardDefault(c.print_note===OLD_CARD_NOTE?null:c.print_note,"Scannez ce code pour nous laisser un souvenir.",DEFAULT_CARD_NOTE,true).slice(0,120),
   explanation:defaultCardExplanation(capsulePlan(c)),
-  font:["elegant","classic","modern","romantic","editorial","refined","contemporary","signature"].includes(c.qr_font)?c.qr_font:"elegant",
+  font:["elegant","classic","modern","romantic","editorial","refined","contemporary","signature","heritage","literary","friendly","clear"].includes(c.qr_font)?c.qr_font:"elegant",
   style:Object.hasOwn(qrThemes,c.qr_style)?c.qr_style:"romantic",
   size:QR_LARGE_SIZE,
   showBrand:true,
@@ -911,6 +911,7 @@ function qrOptions(c){
  }
 }
 function qrFontFamily(key){
+ if(key==="heritage")return"Georgia";if(key==="literary")return"Palatino";if(key==="friendly")return"Trebuchet MS";if(key==="clear")return"Verdana";
  if(key==="classic")return"Playfair Display";
  if(key==="modern")return"Inter";
  if(key==="romantic")return"Great Vibes";
