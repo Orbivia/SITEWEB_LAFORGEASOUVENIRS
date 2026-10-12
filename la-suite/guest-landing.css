@@ -593,3 +593,6 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-media-launch[data-ready=true][data-type=audio] i{font-size:clamp(40px,8dvh,80px)}
 .guest-landing-ready[data-guest-view=compose] .guest-text-launch[data-ready=true]{padding:40px 18px 18px;align-items:stretch;justify-content:flex-start;text-align:left}
 .guest-landing-ready[data-guest-view=compose] .guest-text-launch[data-ready=true]>span{display:block;overflow:auto;white-space:pre-wrap;font-size:16px;line-height:1.5;opacity:1}
+
+/* Limits are enforced during acceptance; only errors need a message. */
+.guest-deposit-dialog #file-help{display:none!important}
