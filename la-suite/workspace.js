@@ -30,7 +30,7 @@
   if(!selected)title.textContent='Mon espace';
   const choose=sheet('workspace-capsules','Mes capsules'),account=sheet('workspace-account-dialog','Mon compte'),deletion=sheet('workspace-delete-capsule','Supprimer la capsule ?'),settingsDialog=sheet('workspace-capsule-settings','Paramètres de la capsule');
   accountButton.setAttribute('aria-controls',account.id);
-  const body=choose.querySelector('.studio-sheet-body');body.innerHTML='<div id="workspace-mine"><div id="workspace-capsule-list"></div><a id="workspace-create" class="btn primary" href="create.html"><i class="fa-solid fa-plus" aria-hidden="true"></i>Créer une capsule</a><p id="workspace-create-help" class="hint"></p></div><p id="workspace-selection-status" class="status" role="status"></p>';
+  const body=choose.querySelector('.studio-sheet-body');body.innerHTML='<div id="workspace-mine"><div id="workspace-capsule-list"></div><div class="workspace-create-actions"><a id="workspace-create" class="btn primary" href="create.html"><i class="fa-solid fa-plus" aria-hidden="true"></i>Créer une capsule</a><p id="workspace-create-help" class="hint"></p></div></div><p id="workspace-selection-status" class="status" role="status"></p>';
   $('workspace-create').hidden=!access.can_create;$('workspace-create-help').textContent=access.can_create?'':access.reason||'';
   const planNames={photo:'Essentiel',audio:'Plus',premium:'Premium'};
   const summaries=new Map(),states={draft:'En préparation',scheduled:'Prête à partager',open:'Dépôts ouverts',closed:'Dépôts terminés',full:'Stockage rempli',expired:'Conservation terminée',suspended:'Dépôts en pause',missing_date:'Date à compléter'};

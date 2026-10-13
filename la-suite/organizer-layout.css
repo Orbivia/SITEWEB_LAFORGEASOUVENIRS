@@ -612,3 +612,18 @@
 .owner-fullscreen:focus-visible{outline:2px solid #365748;outline-offset:-2px}
 
 .organizer-layout-ready .owner-tabs .owner-fullscreen>i{display:block;font-size:20px}
+
+
+/* Keep the capsule list scrollable while creation stays visible. */
+#workspace-capsules[open]{height:min(760px,86dvh);overflow:hidden}
+#workspace-capsules>.studio-sheet-body{display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden}
+#workspace-mine{display:flex;flex-direction:column;flex:1;min-height:0}
+#workspace-capsule-list{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;align-content:start;padding:2px}
+.workspace-create-actions{flex:none;padding-top:14px}
+.workspace-create-actions #workspace-create{display:flex;justify-content:center;margin:0}
+.workspace-create-actions #workspace-create[hidden]{display:none}
+.workspace-create-actions .hint:empty,#workspace-selection-status:empty{display:none}
+#workspace-selection-status{flex:none;margin:8px 0 0}
+.workspace-ready #workspace-capsules .workspace-capsule-entry{grid-template-columns:minmax(0,1fr) 52px}
+.workspace-ready #workspace-capsules .workspace-capsule-actions button{width:52px;height:52px;padding:12px}
+#workspace-capsules [data-capsule-settings] i{font-size:24px;line-height:1}

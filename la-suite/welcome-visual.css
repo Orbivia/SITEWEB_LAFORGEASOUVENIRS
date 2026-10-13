@@ -888,3 +888,21 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 
 /* Keep each typography sample complete within its available width. */
 .visual-primary .visual-font-samples span{flex-shrink:0;text-overflow:clip;white-space:nowrap;overflow:visible;box-sizing:border-box}
+
+
+/* Fullscreen displays only the selected card or guest preview. */
+.visual-preview-dialog{box-sizing:border-box;position:fixed;inset:12px;margin:auto;width:calc(100vw - 24px);height:calc(100dvh - 24px);max-width:none;max-height:none;padding:0;border:0;border-radius:16px;background:#f6f2ec;color:#302725;overflow:hidden}
+.visual-preview-dialog[open]{display:flex;flex-direction:column}
+.visual-preview-dialog:fullscreen{inset:0;width:100vw;height:100dvh;border-radius:0}
+.visual-preview-dialog::backdrop{background:#18130ecc}
+.visual-preview-surface>header{display:flex;justify-content:space-between;align-items:center;flex:none;padding:10px 14px;background:#fffdf8}
+.visual-preview-close{width:44px;height:44px;min-height:44px;border:1px solid #e5ded4;border-radius:10px;background:white;color:inherit;font-size:28px;cursor:pointer}
+.visual-preview-body{display:flex;align-items:center;justify-content:center;flex:1;min-height:0;min-width:0;overflow:hidden;padding:0}
+.visual-preview-body>.visual-preview-expanded{flex:none;margin:0!important;max-width:none!important;max-height:none!important}
+.visual-preview-body>.visual-card{aspect-ratio:1181/1772;height:auto!important}
+.visual-preview-body>.visual-fit{position:relative}
+.visual-card-fullscreen,.visual-welcome-fullscreen{position:absolute;right:8px;bottom:8px;z-index:110;display:grid;place-items:center;width:36px;height:36px;min-height:36px;padding:8px;border:0;border-radius:10px;background:#fffdf7;color:#27352e;box-shadow:0 3px 12px #0002;cursor:pointer}
+.visual-card-fullscreen svg,.visual-welcome-fullscreen svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+
+.visual-preview-surface{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;height:100%;background:#f6f2ec}
+.visual-preview-surface:fullscreen{width:100vw;height:100dvh}

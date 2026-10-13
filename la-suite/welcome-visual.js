@@ -86,7 +86,36 @@
   }
   const page=studio.querySelector('.visual-page'),fit=document.createElement('div');fit.className='visual-fit';page.before(fit);fit.append(page);
   const liveFrame=document.createElement('iframe');liveFrame.className='visual-live-preview';liveFrame.title='Accueil invité — rendu réel';fit.append(liveFrame);fit.classList.add('visual-live-fit');let liveReady=false,liveSnapshot='',liveTimer=null,inlineEditing=false,inlineBox=null,inlineLayout=null; 
-  const cardFullscreen=fullscreen.cloneNode(true);cardFullscreen.className='visual-card-fullscreen';cardFullscreen.setAttribute('aria-label','Afficher la fiche QR en plein écran');cardFullscreen.onclick=async event=>{event.stopPropagation();try{if(document.fullscreenElement)await document.exitFullscreen();else await document.documentElement.requestFullscreen();}catch{studio.classList.toggle('visual-fullscreen-fallback');}requestAnimationFrame(fitPreview);};$('visual-card').append(cardFullscreen);const welcomeFullscreen=cardFullscreen.cloneNode(true);welcomeFullscreen.className='visual-welcome-fullscreen';welcomeFullscreen.setAttribute('aria-label','Afficher l’accueil invité en plein écran');welcomeFullscreen.onclick=cardFullscreen.onclick;fit.append(welcomeFullscreen);
+
+  // Expand the selected preview alone, preserving its live content and controls.
+  const previewDialog=document.createElement('dialog');previewDialog.className='visual-preview-dialog';previewDialog.setAttribute('aria-label','Aperçu en plein écran');
+  previewDialog.innerHTML='<div class="visual-preview-surface"><header><strong>Aperçu</strong><button type="button" class="visual-preview-close" aria-label="Fermer le plein écran">×</button></header><div class="visual-preview-body"></div></div>';
+  studio.append(previewDialog);const previewSurface=previewDialog.querySelector('.visual-preview-surface');const previewBody=previewDialog.querySelector('.visual-preview-body');let expandedPreview=null,previewHome=null,previewNative=false,previewTrigger=null;
+  function fitExpandedPreview(){
+   if(!expandedPreview)return;const width=Math.max(1,previewBody.clientWidth-24),height=Math.max(1,previewBody.clientHeight-24);
+   if(expandedPreview===$('visual-card')){expandedPreview.style.width=Math.min(width,height*1181/1772)+'px';}
+   else{const frameWidth=390,frameHeight=844,scale=Math.min(width/frameWidth,height/frameHeight);
+    fit.style.width=frameWidth*scale+'px';fit.style.height=frameHeight*scale+'px';liveFrame.style.width=frameWidth+'px';liveFrame.style.height=frameHeight+'px';liveFrame.style.transform='scale('+scale+')';
+    if(liveReady)liveFrame.contentWindow.postMessage({type:'la-suite-guest-preview-scale',scale},location.origin);
+   }
+  }
+  async function openPreview(element,trigger){
+   if(previewDialog.open){previewDialog.close();return;}
+   if(!element)return;expandedPreview=element;previewTrigger=trigger;previewHome=document.createComment('expanded-preview-home');element.before(previewHome);previewBody.append(element);element.classList.add('visual-preview-expanded');
+   previewDialog.querySelector('strong').textContent=element===$('visual-card')?'Votre fiche QR':'Accueil invités';previewDialog.showModal();fitExpandedPreview();
+   if(document.fullscreenEnabled&&previewSurface.requestFullscreen){try{await previewSurface.requestFullscreen();previewNative=true;}catch{/* The isolated dialog remains available when native fullscreen is unsupported. */}}
+   if(!previewDialog.open&&document.fullscreenElement===previewSurface)document.exitFullscreen().catch(()=>{});requestAnimationFrame(fitExpandedPreview);
+  }
+  previewDialog.querySelector('.visual-preview-close').onclick=()=>previewDialog.close();
+  previewDialog.addEventListener('close',()=>{
+   if(document.fullscreenElement===previewSurface)document.exitFullscreen().catch(()=>{});
+   previewNative=false;if(expandedPreview){expandedPreview.classList.remove('visual-preview-expanded');previewHome.replaceWith(expandedPreview);}expandedPreview=null;previewHome=null;previewTrigger?.focus({preventScroll:true});requestAnimationFrame(fitPreview);
+  });
+  document.addEventListener('fullscreenchange',()=>{if(previewDialog.open&&previewNative&&document.fullscreenElement!==previewSurface)previewDialog.close();else if(previewDialog.open)requestAnimationFrame(fitExpandedPreview);});
+  fullscreen.hidden=false;fullscreen.setAttribute('aria-label','Agrandir l’aperçu sélectionné');fullscreen.onclick=()=>openPreview(target==='welcome'?fit:$('visual-card'),fullscreen);
+  const cardFullscreen=fullscreen.cloneNode(true);cardFullscreen.className='visual-card-fullscreen';cardFullscreen.setAttribute('aria-label','Afficher la fiche QR en plein écran');cardFullscreen.onclick=event=>{event.stopPropagation();openPreview($('visual-card'),cardFullscreen);};$('visual-card').append(cardFullscreen);
+  const welcomeFullscreen=cardFullscreen.cloneNode(true);welcomeFullscreen.className='visual-welcome-fullscreen';welcomeFullscreen.setAttribute('aria-label','Afficher l’accueil invité en plein écran');welcomeFullscreen.onclick=event=>{event.stopPropagation();openPreview(fit,welcomeFullscreen);};fit.append(welcomeFullscreen);
+
   function syncLivePreview(){
    if(!liveReady||inlineEditing||target!=='welcome')return;
    clearTimeout(liveTimer);liveTimer=setTimeout(()=>{
@@ -152,7 +181,7 @@
    return zoomed;
   }
   function stableViewportHeight(){const measure=document.createElement('div');measure.style.cssText='position:fixed;visibility:hidden;pointer-events:none;height:100svh;width:0;top:0';document.body.append(measure);const height=measure.getBoundingClientRect().height;measure.remove();return height||innerHeight;}
-  function fitPreview(){if(inlineEditing){fitPanel();requestAnimationFrame(revealInlineField);return;}if(stabilizePinchZoom())return;const stage=studio.querySelector('.visual-stage');if(!stage.clientWidth)return;
+  function fitPreview(){if(previewDialog.open){fitExpandedPreview();return;}if(inlineEditing){fitPanel();requestAnimationFrame(revealInlineField);return;}if(stabilizePinchZoom())return;const stage=studio.querySelector('.visual-stage');if(!stage.clientWidth)return;
    if(editingLayout){if(editable(document.activeElement)||keyboardOpen()){fitPanel();requestAnimationFrame(revealEditingField);return;}releaseEditingLayout();}
 
    if(matchMedia('(max-width:760px)').matches){const nav=document.querySelector('.owner-tabs'),view=window.visualViewport,bottom=Math.min(stableViewportHeight(),nav&&!nav.hidden&&getComputedStyle(nav).position==='fixed'?nav.getBoundingClientRect().top:stableViewportHeight());studio.style.setProperty('--visual-editor-height',Math.max(1,bottom-Math.max(0,studio.getBoundingClientRect().top)-8)+'px');}else studio.style.removeProperty('--visual-editor-height');
