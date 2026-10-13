@@ -2201,7 +2201,7 @@ async function initDashboard(){
  setupOfferServices(c);
  if(qs.get("payment")==="cancel")show($("activation-status"),"Paiement annulé. Votre préparation est conservée ; vous pouvez réessayer.",false);
  if(qs.get("payment")==="return"&&c.status!=="active"){
-  const note=document.createElement("p");note.className="notice";note.setAttribute("role","status");note.textContent="Confirmation du paiement en cours. Votre capsule s’activera après confirmation par Stripe.";stage.prepend(note);
+  const note=document.createElement("p");note.className="notice status show";note.setAttribute("role","status");note.textContent="Confirmation du paiement en cours. Votre capsule s’activera après confirmation par Stripe.";stage.prepend(note);
   let attempts=0;const timer=setInterval(async()=>{if(ownerSessionEnded||++attempts>20){clearInterval(timer);if(!ownerSessionEnded){note.textContent='La confirmation prend plus de temps que prévu. Actualisez pour vérifier l’activation de votre capsule.';const retry=document.createElement('button');retry.type='button';retry.className='btn secondary';retry.textContent='Vérifier l’activation';retry.onclick=()=>location.reload();note.append(document.createElement('br'),retry);}return;}try{const {data}=await sb.from("capsules").select("status").eq("id",c.id).maybeSingle();if(data?.status==="active"){clearInterval(timer);location.replace("dashboard.html?slug="+encodeURIComponent(c.slug)+"&activated=1");}}catch{}},3000);
  }
  $("export-memories").addEventListener("click",()=>exportOpenedMemories(c));
