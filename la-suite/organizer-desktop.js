@@ -17,6 +17,7 @@
  if(!window.SuiteWelcome?.setup)return;
  const wide=matchMedia('(min-width:761px)'),original=window.SuiteWelcome.setup,$=id=>document.getElementById(id);
  let current=null,mounted=null,frame=0;
+ const text=(node,value)=>{if(node.textContent!==value)node.textContent=value;};
  function mount(context,studio){
   const c=context.capsule,owned=[],moves=[];
   const overview=document.createElement('section');overview.className='pc-capsule-overview';overview.setAttribute('aria-label','Votre capsule');
@@ -35,12 +36,12 @@
   studio.classList.add('pc-workspace');
   function sync(){
    if(!wide.matches||!studio.isConnected)return;
-   name.textContent=$('capsule-name')?.value||c.couple_name;
+   text(name,$('capsule-name')?.value||c.couple_name);
    const plan=window.SuiteDesign.effectivePlan(c),date=$('capsule-date')?.value||c.wedding_date;
    const formatted=/^\d{4}-\d{2}-\d{2}$/.test(date)?new Date(date+'T12:00:00').toLocaleDateString('fr-FR'):'';
-   facts.textContent=formatted+' · '+({photo:'Essentiel',audio:'Plus',premium:'Premium'}[plan]||plan);
+   text(facts,formatted+' · '+({photo:'Essentiel',audio:'Plus',premium:'Premium'}[plan]||plan));
    const usage=c.usage;
-   state.textContent=({draft:'En préparation',scheduled:'Prête à partager',open:'Dépôts ouverts',closed:'Dépôts terminés',full:'Stockage rempli',expired:'Conservation terminée',suspended:'Dépôts en pause'}[c.status==='draft'?'draft':usage?.state]||'Capsule active')+(usage?.quota_bytes?' · '+new Intl.NumberFormat('fr-FR',{maximumFractionDigits:1}).format((usage.used_bytes||0)/1e9)+' / '+usage.quota_bytes/1e9+' Go':'');
+   text(state,({draft:'En préparation',scheduled:'Prête à partager',open:'Dépôts ouverts',closed:'Dépôts terminés',full:'Stockage rempli',expired:'Conservation terminée',suspended:'Dépôts en pause'}[c.status==='draft'?'draft':usage?.state]||'Capsule active')+(usage?.quota_bytes?' · '+new Intl.NumberFormat('fr-FR',{maximumFractionDigits:1}).format((usage.used_bytes||0)/1e9)+' / '+usage.quota_bytes/1e9+' Go':''));
    const active=document.querySelector('[data-owner-panel=messages]')&&!document.querySelector('[data-owner-panel=messages]').hidden;
    for(const b of navigation.children){b.hidden=b.dataset.panel==='messages'&&c.status!=='active';b.setAttribute('aria-current',(b.dataset.panel==='messages')===Boolean(active)?'page':'false');}
    // Size to the available viewport, leaving a small-screen fallback instead of clipping actions.
