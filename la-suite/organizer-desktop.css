@@ -5,6 +5,7 @@
  .visual-primary-ready .dashboard-page{width:100%;max-width:1640px;margin-inline:auto;padding:22px 32px 48px;box-sizing:border-box;overflow:visible}
  .pc-capsule-overview{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 24px;margin-bottom:20px;border:1px solid #e6ddd0;border-radius:16px;background:#fffdf8;color:#27392f}
  .pc-capsule-identity{min-width:0}.pc-capsule-identity h1{margin:0 0 6px;font:600 28px/1.15 'Cormorant Garamond',serif;overflow-wrap:anywhere}.pc-capsule-facts{font:400 14px/1.5 Inter,sans-serif;color:#625c51}
+ .pc-capsule-calendar{margin:6px 0 0;font:400 12px/1.5 Inter,sans-serif;color:#746b60}
  .pc-owner-navigation{display:flex;gap:8px}.pc-owner-navigation [aria-current=page]{background:#365748;border-color:#365748;color:#fff}
  .pc-capsule-state{display:grid;gap:7px;text-align:right;font:400 13px/1.4 Inter,sans-serif}.pc-state{font-weight:600}.pc-storage{color:#746b60}
  .welcome-visual-editor.visual-primary.pc-workspace,.welcome-visual-editor.visual-primary.pc-workspace[data-panel-open=true]{display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,.95fr);grid-template-rows:auto auto;gap:20px;height:auto;min-height:0;max-height:none;overflow:visible;padding:20px;border-radius:16px;align-items:start;width:100%;max-width:none!important;margin:0}
@@ -32,6 +33,7 @@
  .pc-workspace .visual-themes button,.pc-workspace[data-tool=theme] .visual-themes button{display:flex;flex-direction:column;align-items:center;justify-content:center;height:auto;min-height:76px;padding:8px;font:400 12px/1.4 Inter,sans-serif;gap:5px;white-space:normal;overflow:visible;min-width:0}
  .pc-workspace .visual-themes .visual-theme-motif,.pc-workspace .visual-themes img,.pc-workspace[data-tool=theme] .visual-themes .visual-theme-motif{width:36px;height:36px;flex:none;border-radius:7px}
  .pc-workspace .visual-themes button>span:last-child{white-space:normal;overflow:visible;text-overflow:clip;text-align:center;width:auto;max-width:100%}
+ .pc-workspace .visual-themes .visual-import img{width:36px!important;height:36px!important;max-width:36px;object-fit:contain}.pc-workspace .visual-themes .visual-import span{display:block!important;font:400 12px/1.4 Inter,sans-serif;white-space:normal;overflow:visible}
  .pc-workspace .visual-colors{grid-template-columns:repeat(4,minmax(0,1fr))}
  .pc-workspace .visual-colors button,.pc-workspace .visual-custom-color{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:7px;box-sizing:border-box;width:100%;height:auto!important;min-height:72px;padding:8px;font:400 12px/1.4 Inter,sans-serif;overflow:visible;border:1px solid #e8ded1;border-radius:8px;background:#fff}
  .pc-workspace .visual-swatch-dot{display:block!important;width:26px!important;height:26px!important;min-width:26px;flex:none!important;border:1px solid #0002;border-radius:50%;background:var(--swatch-color)!important}.pc-workspace .visual-rainbow-dot{display:grid;place-items:center;width:26px;height:26px;flex:none}
