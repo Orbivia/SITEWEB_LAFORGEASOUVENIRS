@@ -132,6 +132,10 @@ const PLAN_PRICES={photo:990,audio:1490,premium:2490};
 const money=cents=>(cents/100).toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
 function customizationHeading(icon,title){return `<div class="customization-heading"><img src="assets/customization/${icon}.webp" alt="" width="48" height="48"><h3>${title}</h3></div>`;}
 async function openCheckout(c){
+ // Match the server's paid-activation rule using the Paris calendar day.
+ const dayParts=Object.fromEntries(new Intl.DateTimeFormat("fr-FR",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).filter(part=>["year","month","day"].includes(part.type)).map(part=>[part.type,part.value]));
+ const today=dayParts.year+"-"+dayParts.month+"-"+dayParts.day;
+ if(c.wedding_date<=today)throw new Error(c.wedding_date<today?"La date de votre événement est passée. Modifiez-la pour choisir une date à partir de demain, puis réessayez.":"L’activation payante doit être effectuée avant le jour de l’événement. Choisissez une date à partir de demain, puis réessayez.");
  const {data,error}=await sb.functions.invoke("suite-billing",{body:{action:"checkout",capsule_id:c.id,plan:c.plan}});
  if(error||!data?.url)throw new Error(data?.error||"Le paiement est momentanément indisponible. Votre préparation est conservée.");
  const target=new URL(data.url);if(target.protocol!=="https:"||target.hostname!=="checkout.stripe.com")throw new Error("Lien de paiement invalide.");
