@@ -64,8 +64,11 @@ async function prepareRecorder(kind){
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder)throw new Error("Enregistrement indisponible");
  stopStream();const generation=recorderGeneration,request=mediaRequestVersion,button=$("prepare-"+kind);button.disabled=true;
  try{
-  const stream=await navigator.mediaDevices.getUserMedia(kind==="video"?{video:{facingMode:"user",width:{ideal:1280},height:{ideal:720}},audio:true}:{audio:true});
+  const stream=await navigator.mediaDevices.getUserMedia(kind==="video"?{video:{facingMode:"user",width:{ideal:1280,max:1280},height:{ideal:720,max:720},frameRate:{ideal:30,max:30}},audio:{channelCount:{ideal:1},echoCancellation:true,noiseSuppression:true}}:{audio:{channelCount:{ideal:1},echoCancellation:true,noiseSuppression:true}});
   if(generation!==recorderGeneration||request!==mediaRequestVersion||document.visibilityState==="hidden"){stream.getTracks().forEach(t=>t.stop());return}
+  // Verify actual settings when a browser ignores capture constraints.
+  const videoSettings=stream.getVideoTracks()[0]?.getSettings();
+  if(videoSettings&&(videoSettings.width>1280||videoSettings.height>720||videoSettings.frameRate>30.1)){stream.getTracks().forEach(t=>t.stop());throw new Error("Ce téléphone ne permet pas l’enregistrement HD limité. Essayez un autre navigateur.");}
   activeStream=stream;
   stream.getTracks().forEach(track=>track.addEventListener("ended",()=>{if(activeStream===stream)interruptCapture("La caméra ou le micro a été coupé. Vérifiez l’aperçu avant l’envoi.")},{once:true}));
   if(kind==="video"){$("live-video").srcObject=stream;$("prepare-video").hidden=true;$("start-video").hidden=false}
@@ -538,17 +541,29 @@ function chooseGuestType(type){
  setGuestMode(type==="text"?"text":["audio","video"].includes(type)?type:"upload");
 }
 async function optimizeGuestPhoto(file){
- if(!["image/jpeg","image/png","image/webp"].includes(file.type))return file;
+ // HEIC/HEIF must also decode and optimize; never pass through originals.
  const img=new Image(),url=URL.createObjectURL(file);
  try{
-  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error("Cette image ne peut pas être lue. Choisissez une autre photo."));img.src=url});
+  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=()=>reject(new Error("Cette image ne peut pas être convertie sur ce téléphone. Choisissez une version JPEG ou prenez une photo."));img.src=url});
   const scale=Math.min(1,2048/Math.max(img.naturalWidth,img.naturalHeight));
   const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(img.naturalWidth*scale));canvas.height=Math.max(1,Math.round(img.naturalHeight*scale));
   const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(img,0,0,canvas.width,canvas.height);
-  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",0.88));
+  let blob;
+  for(const quality of [0.88,0.84,0.80,0.76,0.72]){blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/jpeg",quality));if(blob&&blob.size<=1500000)break;}
+  if(blob?.size>1500000)throw new Error("Cette photo reste trop volumineuse. Choisissez une version JPEG plus légère.");
   if(!blob)throw new Error("Impossible de préparer cette photo.");
   return new File([blob],"souvenir.jpg",{type:"image/jpeg"});
  }finally{URL.revokeObjectURL(url)}
+}
+// Validate encoded video dimensions, including portrait orientation.
+function validateVideoDimensions(file){
+ return new Promise((resolve,reject)=>{
+  const video=document.createElement("video"),url=URL.createObjectURL(file);let finished=false;
+  const timeout=setTimeout(()=>finish(new Error("Impossible de vérifier la qualité vidéo. Réessayez.")),10000);
+  function finish(error){if(finished)return;finished=true;clearTimeout(timeout);video.onloadedmetadata=null;video.onerror=null;video.removeAttribute("src");video.load();URL.revokeObjectURL(url);error?reject(error):resolve();}
+  video.onloadedmetadata=()=>{const long=Math.max(video.videoWidth,video.videoHeight),short=Math.min(video.videoWidth,video.videoHeight);finish(!short||long>1280||short>720?new Error("La vidéo doit être en HD 720p maximum (1280 × 720, ou portrait)."):null);};
+  video.onerror=()=>finish(new Error("Cette vidéo ne peut pas être vérifiée. Essayez un autre format."));video.preload="metadata";video.src=url;
+ });
 }
 function guestMediaDuration(file){
  return new Promise((resolve,reject)=>{
@@ -570,6 +585,8 @@ async function acceptGuestFile(file,type,duration,interruption){
   if(file.size>GUEST_LIMITS[type])throw new Error(type==="image"?"La photo dépasse 10 Mo.":type==="audio"?"L’audio dépasse 20 Mo.":"La vidéo dépasse 50 Mo.");
   if(type==="image")file=await optimizeGuestPhoto(file);
   else{duration=duration||await guestMediaDuration(file);if(duration>(type==="video"?60.1:180.1))throw new Error(type==="video"?"Choisissez une vidéo d’une minute maximum.":"Choisissez un audio de 3 minutes maximum.")}
+  if(version!==guestSelectionVersion)return;
+  if(type==="video")await validateVideoDimensions(file);
   if(version!==guestSelectionVersion)return;
   if(file.size>GUEST_LIMITS[type])throw new Error("Ce souvenir dépasse la taille autorisée.");
   if(normalizedType!==file.type&&type!=="image")file=new File([file],file.name,{type:normalizedType});
@@ -799,17 +816,8 @@ function uploadIntro(c){
  if(!organizerState.intro)return Promise.resolve(true);
  introSavePending=performIntroSave(c).finally(()=>introSavePending=null);return introSavePending;
 }
-async function optimizeIntroPhoto(file){
- const image=new Image(),url=URL.createObjectURL(file);
- try{
-  await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=()=>reject(Error("Cette image ne peut pas être lue."));image.src=url});
-  const scale=Math.min(1,2048/Math.max(image.naturalWidth,image.naturalHeight)),canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));canvas.getContext("2d").drawImage(image,0,0,canvas.width,canvas.height);
-  const blob=await new Promise(resolve=>canvas.toBlob(resolve,"image/webp",0.88));
-  if(!blob)throw Error("Impossible de préparer cette image.");
-  if(scale===1&&blob.size>=file.size&&file.size<=10000000)return file;
-  return new File([blob],blob.type==="image/webp"?"accueil.webp":"accueil.png",{type:blob.type});
- }finally{URL.revokeObjectURL(url)}
-}
+// Same image policy for guest and welcome photos.
+async function optimizeIntroPhoto(file){return optimizeGuestPhoto(file)}
 async function performIntroSave(c){
  const kind=$("intro-kind").value,s=$("intro-status"),button=$("upload-intro");let f=$("intro-file")?.files?.[0];
  const text=$("intro-text").value.trim();
@@ -825,7 +833,7 @@ async function performIntroSave(c){
     if(!allowed.includes(f.type))throw new Error(kind==="image"?"Choisissez une image JPG, PNG ou WebP.":"Choisissez une vidéo MP4, MOV ou WebM.");
     if(kind==="image"){show(s,"Préparation de l’image…");f=await optimizeIntroPhoto(f)}
     if(f.size>(kind==="image"?10000000:50000000))throw new Error(kind==="image"?"L’image dépasse 10 Mo.":"La vidéo dépasse 50 Mo.");
-    if(kind==="video"){const duration=await videoDuration(f);if(!Number.isFinite(duration)||duration>12.05)throw new Error("La vidéo doit durer 12 secondes maximum.")}
+    if(kind==="video"){await validateVideoDimensions(f);const duration=await videoDuration(f);if(!Number.isFinite(duration)||duration>12.05)throw new Error("La vidéo doit durer 12 secondes maximum.")}
     show(s,"Envoi du message d’accueil…");
     const prepared=await guestInvoke({action:"init_intro",capsule_id:c.id,file_type:f.type,file_size:f.size});
     path=prepared.path;
