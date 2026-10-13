@@ -60,4 +60,8 @@
  @media(max-width:1100px){.pc-capsule-identity{gap:8px}.pc-capsule-state{font-size:11px}body.visual-primary-ready main.dashboard-page{padding-inline:12px!important}.welcome-visual-editor.visual-primary.pc-workspace{gap:8px 12px;padding:10px 12px}.pc-workspace .visual-themes,.pc-workspace[data-tool=theme] .visual-themes{grid-template-columns:repeat(3,minmax(0,1fr))}}
  @media(max-width:900px){.pc-capsule-identity{flex-direction:column;gap:2px}.pc-capsule-state{max-width:130px;white-space:normal;text-align:right}.pc-capsule-identity strong{font-size:18px}.welcome-visual-editor.visual-primary.pc-workspace{grid-template-columns:minmax(0,1fr) 300px;gap:8px}.pc-workspace .visual-colors{grid-template-columns:repeat(3,minmax(0,1fr))}}
  @media(any-pointer:coarse){.pc-button{min-height:40px}.pc-workspace .visual-tools button{min-height:44px}}
+
+ /* Allow theme names to wrap instead of inheriting the compact drawer's nowrap rule. */
+ .visual-primary.pc-workspace .visual-drawer .visual-themes button{flex-direction:column;align-items:center;min-width:0;box-sizing:border-box}
+ .visual-primary.pc-workspace .visual-drawer .visual-themes span:not(.visual-theme-motif){white-space:normal;overflow-wrap:anywhere;max-width:100%;min-width:0;flex:none;width:100%;box-sizing:border-box;text-align:center;justify-content:center}
 }
