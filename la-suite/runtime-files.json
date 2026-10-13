@@ -31,5 +31,7 @@
   "welcome-visual.css",
   "welcome-visual.js",
   "workspace.css",
-  "workspace.js"
+  "workspace.js",
+  "organizer-desktop.css",
+  "organizer-desktop.js"
 ]
