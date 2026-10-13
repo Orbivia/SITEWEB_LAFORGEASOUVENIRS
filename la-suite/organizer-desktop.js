@@ -34,12 +34,12 @@
    if(control.type==='date'){control.min=source.min;control.max=source.max;}
    labelField(title,control,parent);bindings.push({source,control});
    on(control,control.tagName==='SELECT'||['checkbox','date'].includes(control.type)?'change':'input',()=>{
-    if(source.disabled)return;if(control.type==='checkbox')source.checked=control.checked;else source.value=control.value;
+    if(source.disabled)return;if(control.type==='number'&&!control.value)return;if(control.type==='checkbox')source.checked=control.checked;else source.value=control.value;if(control.type==='number')control.value=source.value;
     if(source.id==='print-note'){$('print-note-visible').checked=Boolean(control.value.trim());}
     if(source.id==='qr-initials-input'){$('qr-show-initials').checked=Boolean(control.value.trim());fire($('qr-show-initials'),'change');}
     fire(source,control.tagName==='SELECT'||control.type==='checkbox'?'change':'input');if(control.type==='date'){fire(source,'change');window.SuiteOrganizerLayout?.syncDate?.();}
     context.scheduleSave();sync();
-   });return control;
+   });if(control.tagName!=='SELECT'&&!['checkbox','date'].includes(control.type))on(control,'change',()=>{if(source.disabled)return;fire(source,'change');context.scheduleSave();});return control;
   };
   const overview=element('section','pc-capsule-overview');overview.setAttribute('aria-label','Votre capsule');
   const identity=element('div','pc-capsule-identity'),name=element('h1'),facts=element('div','pc-capsule-facts'),state=element('span','pc-state'),storage=element('span','pc-storage');
@@ -50,7 +50,7 @@
   const column=element('div','pc-preview-column');studio.append(column);owned.push(column);
   for(const node of [studio.querySelector('.visual-targets'),studio.querySelector('.visual-stage'),studio.querySelector('.visual-actions')]){const home=document.createComment('PC placement');node.before(home);moves.push({node,home});column.append(node);}
   const drawer=studio.querySelector('.visual-drawer'),content=element('div','pc-content-controls');drawer.append(content);owned.push(content);
-  const common=group('Votre capsule',content);proxy($('capsule-name'),'Nom de la capsule',common);proxy($('capsule-date'),'Date de l’événement',common,'date');
+  const common=group('Votre capsule',content);proxy($('capsule-name'),'Nom de la capsule',common);const eventDate=proxy($('organizer-event-date')||$('capsule-date'),'Date de l’événement · JJ/MM/AAAA',common);eventDate.placeholder='JJ/MM/AAAA';common.append(button('Choisir dans le calendrier',()=>{if($('capsule-date').disabled)return;try{$('capsule-date').showPicker();}catch{eventDate.focus();}}));
   const dateNote=element('p','pc-hint','La date verrouillée se modifie dans les paramètres de la capsule.');common.append(dateNote);
   proxy(studio.querySelector('[data-show-date]'),'Afficher la date sur la fiche et l’accueil',common,'checkbox');
   const card=group('Contenu de la fiche QR',content);proxy($('print-title'),'Titre de la fiche',card);proxy($('print-note'),'Message sous le QR',card);proxy($('qr-initials-input'),'Initiales du QR · 4 caractères',card);
