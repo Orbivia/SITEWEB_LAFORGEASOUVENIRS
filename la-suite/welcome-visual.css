@@ -906,3 +906,39 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 
 .visual-preview-surface{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;height:100%;background:#f6f2ec}
 .visual-preview-surface:fullscreen{width:100vw;height:100dvh}
+
+
+/* Desktop-only organizer layout. The validated mobile cascade is unchanged. */
+@media(min-width:761px){
+ .visual-primary-ready .dashboard-page{width:100%;max-width:1440px;margin-inline:auto;padding-inline:24px;box-sizing:border-box}
+ .welcome-visual-editor.visual-primary,.welcome-visual-editor.visual-primary[data-panel-open=true]{display:grid;grid-template-columns:minmax(0,1fr) 320px;grid-template-rows:auto auto minmax(0,1fr) auto auto;gap:0;height:calc(100dvh - var(--organizer-header-height,80px) - 48px);min-height:460px;max-height:none;overflow:hidden;border-radius:16px}
+ .visual-primary .visual-head{grid-column:1/-1;grid-row:1;padding:14px 20px}
+ .visual-primary .visual-targets{grid-column:1;grid-row:2;padding:8px 16px}
+ .visual-primary .visual-targets button{min-height:44px;font-size:14px}
+ .visual-primary .visual-stage{grid-column:1;grid-row:3;min-height:0;min-width:0;height:100%;box-sizing:border-box;align-items:center;justify-content:center;padding:12px 20px;overflow:hidden}
+ .visual-primary .visual-stage>.visual-help{flex:none;font-size:13px;line-height:1.4}
+ .visual-primary .visual-drawer,.visual-primary[data-tool] .visual-drawer{grid-column:2;grid-row:2/5!important;display:flex;flex-direction:column;width:auto;height:auto;min-height:0;max-height:none;align-self:stretch;overflow:hidden;border-left:1px solid #e5ded4;border-radius:0;background:#fffdf8}
+ .visual-primary .visual-drawer[hidden]{display:none!important}
+ .visual-primary .visual-popover-head{flex:none;position:static;padding:8px 12px}
+ .visual-primary .visual-tools{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-flow:row;flex:none;width:100%;height:auto;box-sizing:border-box;padding:10px;gap:6px}
+ .visual-primary .visual-tools button{height:auto;min-height:56px;padding:8px 4px;font-size:12px}
+ .visual-primary .visual-tools span{font-size:12px}
+ .visual-primary #visual-settings,.visual-primary:is([data-tool=theme],[data-tool=color],[data-tool=font]) #visual-settings{flex:1;min-height:0;height:auto;max-height:none;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;scroll-snap-type:none;padding:10px}
+ .visual-primary #visual-settings[hidden]{display:none!important}
+ .visual-primary .visual-drawer section,.visual-primary[data-tool=theme] .visual-drawer section{height:auto;max-height:none;padding:0}
+ .visual-primary .visual-themes,.visual-primary .visual-colors,.visual-primary .visual-font-samples{height:auto!important;max-height:none!important;grid-template-rows:none;grid-auto-rows:auto;gap:10px;overflow:visible;padding:0}
+ .visual-primary .visual-themes,.visual-primary[data-tool=theme] .visual-themes{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .visual-primary .visual-drawer .visual-themes button,.visual-primary[data-tool=theme] .visual-drawer .visual-themes button,.visual-primary .visual-themes .visual-import{height:auto;min-height:76px;padding:10px;gap:8px;font-size:13px;line-height:1.35;flex-direction:column;justify-content:center}
+ .visual-primary .visual-themes .visual-theme-motif,.visual-primary .visual-themes img,.visual-primary[data-tool=theme] .visual-themes .visual-theme-motif,.visual-primary[data-tool=theme] .visual-themes img{width:40px;height:40px;flex-basis:40px}
+ .visual-primary .visual-colors{grid-template-columns:repeat(4,minmax(0,1fr));justify-content:stretch}
+ .visual-primary .visual-colors button,.visual-primary .visual-custom-color{width:100%;height:52px;min-height:52px;padding:8px}
+ .visual-primary .visual-font-samples{grid-template-columns:minmax(0,1fr)}
+ .visual-primary .visual-font-samples button{height:auto;min-height:64px;padding:10px;font-size:22px!important}
+ .visual-primary .visual-font-samples span{white-space:normal;overflow-wrap:anywhere}
+ .visual-primary .visual-actions{grid-column:1!important;grid-row:4!important;padding:12px 20px}
+ .visual-primary-ready .visual-primary .visual-actions .qr-preview-actions{gap:10px!important}
+ .visual-primary-ready .visual-primary .visual-actions .qr-preview-actions .btn{min-height:44px!important;font-size:14px!important;padding:10px 12px;white-space:normal}
+ .visual-primary .visual-status{grid-column:1/-1;grid-row:5;margin:0;padding:0 20px}
+ .visual-primary .visual-status:empty{display:none}
+ .workspace-ready #workspace-capsules{position:fixed;inset:0!important;margin:auto!important;max-width:min(720px,calc(100vw - 48px));width:720px;border-radius:18px}
+}

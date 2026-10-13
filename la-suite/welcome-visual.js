@@ -149,6 +149,7 @@
   document.fonts?.ready.then(()=>requestAnimationFrame(fitFontSamples));
   document.fonts?.addEventListener('loadingdone',()=>requestAnimationFrame(fitFontSamples));
   function fitPanel(){
+   if(matchMedia('(min-width:761px)').matches)return; // Desktop settings use a bounded scrolling column.
    const drawer=studio.querySelector('.visual-drawer'),settings=$('visual-settings');if(drawer.hidden)return;
    const available=Math.max(1,drawer.clientHeight-studio.querySelector('.visual-tools').offsetHeight-8);
    const panel=settings.querySelector('[data-panel]:not([hidden])');if(!panel)return;
@@ -186,7 +187,7 @@
 
    if(matchMedia('(max-width:760px)').matches){const nav=document.querySelector('.owner-tabs'),view=window.visualViewport,bottom=Math.min(stableViewportHeight(),nav&&!nav.hidden&&getComputedStyle(nav).position==='fixed'?nav.getBoundingClientRect().top:stableViewportHeight());studio.style.setProperty('--visual-editor-height',Math.max(1,bottom-Math.max(0,studio.getBoundingClientRect().top)-8)+'px');}else studio.style.removeProperty('--visual-editor-height');
    const limit=parseFloat(getComputedStyle(studio).maxHeight),fixed=[...studio.children].filter(el=>el.matches('.visual-head,.visual-targets,.visual-actions,.visual-status,.visual-retry')&&!el.hidden&&getComputedStyle(el).position!=='absolute').reduce((sum,el)=>sum+el.offsetHeight,2);
-   const help=studio.querySelector('.visual-help'),helpHeight=help&&getComputedStyle(help).display!=='none'?help.offsetHeight+8:0;const available=Math.max(1,limit-fixed-helpHeight),width=Math.max(1,stage.clientWidth-8),card=studio.querySelector('.visual-card');
+   const help=studio.querySelector('.visual-help'),helpHeight=help&&getComputedStyle(help).display!=='none'?help.offsetHeight+8:0;const available=matchMedia('(min-width:761px)').matches?Math.max(1,stage.clientHeight-helpHeight-16):Math.max(1,limit-fixed-helpHeight),width=Math.max(1,stage.clientWidth-8),card=studio.querySelector('.visual-card');
    const cardWidth=Math.min(width,available*1181/1772,420);card.style.width=cardWidth+'px';let previewHeight=cardWidth*1772/1181;
    if(target==='welcome'){const mobile=matchMedia('(max-width:760px)').matches,frameWidth=mobile?document.documentElement.clientWidth:390,height=mobile?Math.round(stableViewportHeight()):844,stageStyle=getComputedStyle(stage),stageWidth=Math.max(1,stage.clientWidth-parseFloat(stageStyle.paddingLeft)-parseFloat(stageStyle.paddingRight)),stageHeight=Math.max(1,stage.clientHeight-parseFloat(stageStyle.paddingTop)-parseFloat(stageStyle.paddingBottom)),scale=Math.min(1,stageWidth/frameWidth,stageHeight/height);fit.style.width=frameWidth*scale+'px';fit.style.height=height*scale+'px';liveFrame.style.width=frameWidth+'px';liveFrame.style.height=height+'px';liveFrame.style.transform='scale('+scale+')';previewHeight=height*scale;if(liveReady)liveFrame.contentWindow.postMessage({type:'la-suite-guest-preview-scale',scale},location.origin);}
    studio.style.setProperty('--visual-preview-height',previewHeight+'px');fitPanel();
