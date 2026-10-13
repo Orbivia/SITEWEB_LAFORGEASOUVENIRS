@@ -4,6 +4,8 @@
 .guest-landing-ready[data-guest-view=home] .guest-page{width:min(1080px,100%);max-width:1080px;min-height:100svh;padding:16px;margin:auto;display:flex;align-items:center;box-sizing:border-box}
 
 .guest-landing-ready:not([data-guest-view=home]) #guest-landing{display:none!important}
+.guest-landing-ready:not([data-guest-view=compose]) #guest-message{display:none!important}
+.guest-landing-ready:not([data-guest-view=success]) #guest-success{display:none!important}
 .guest-landing{--home-paper:#fffdf8;--home-ink:#292724;--home-accent:#8b2730;position:relative;width:100%;min-width:0;display:grid;background:var(--home-paper);color:var(--home-ink);border-radius:22px;overflow:hidden;box-shadow:0 8px 40px #241b1510;isolation:isolate}
 .guest-landing:before{content:'';position:absolute;inset:0;z-index:-1;background-image:var(--home-art);background-size:100% 100%;background-position:center;pointer-events:none}
 .guest-home-content{padding:30px 60px;display:flex;flex-direction:column;align-items:center;gap:12px;min-width:0;background:var(--home-paper)}
