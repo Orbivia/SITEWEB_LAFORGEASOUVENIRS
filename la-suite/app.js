@@ -1413,7 +1413,7 @@ function saveQrCustomization(c,url,silent=false){
    Object.assign(c,payload);applyQrPreview(url,{...c,...collectQrCustomization(c)});
    if(JSON.stringify(payload)===JSON.stringify(collectQrCustomization(c)))organizerState.qr=false;
    organizerState.error=false;show($("qr-status"),silent?"":"Carte enregistrée.");return true;
-  }catch(e){organizerState.qr=true;organizerState.error=true;show($("qr-status"),"Impossible d’enregistrer la carte : "+e.message,false);return false}
+  }catch(e){organizerState.qr=true;organizerState.error=true;const message="Impossible d’enregistrer la carte : "+e.message;show($("qr-status"),message,false);show($("organizer-save-error"),message,false);return false}
   finally{organizerState.saving--;saveIndicator()}
  };
  qrSaveQueue=qrSaveQueue.then(run,run);return qrSaveQueue;
