@@ -389,8 +389,8 @@ async function initCreate(){
    slug:slugify(d.couple)+"-"+rid(),
    couple_name:d.couple,
    wedding_date:d.wedding,
-   qr_style:"fleurs",qr_font:"elegant",qr_color:"#95677e",
-   welcome_config:{style:"fleurs",font:"elegant",color:"#95677e"},
+   qr_style:"nuit-etoilee",qr_font:"elegant",qr_color:"#b68c39",
+   welcome_config:{style:"nuit-etoilee",font:"elegant",color:"#b68c39"},
    welcome_message:null,
    unlock_date:null
   }).select("id,slug,guest_token").single();
