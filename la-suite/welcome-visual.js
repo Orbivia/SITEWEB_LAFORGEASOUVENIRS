@@ -297,7 +297,7 @@
   lifetime.onDestroy(()=>{if(mediaUrl){URL.revokeObjectURL(mediaUrl);mediaUrl=null}});
   lifetime.onDestroy(()=>{if(expandedPreview&&previewHome?.parentNode)previewHome.replaceWith(expandedPreview);expandedPreview=null;previewHome=null;if(document.fullscreenElement===previewSurface)document.exitFullscreen().catch(()=>{});previewDialog.close()});
   lifetime.onDestroy(()=>designer.destroy?.());
-  const editor={...designer,syncShared(){if(!lifetime.destroyed){designer.syncShared();render()}},close(){if(!lifetime.destroyed)designer.close()},destroy(){lifetime.destroy();if(activeEditor===editor)activeEditor=null}};
+  const editor={...designer,editDate(onClose){if(lifetime.destroyed)return;editDate();if(onClose)settingsPopups.get('date').addEventListener('close',onClose,{once:true});},syncShared(){if(!lifetime.destroyed){designer.syncShared();render()}},close(){if(!lifetime.destroyed)designer.close()},destroy(){lifetime.destroy();if(activeEditor===editor)activeEditor=null}};
   activeEditor=editor;return editor;
  };
 })();

@@ -920,3 +920,9 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 /* Separate date and QR pencils without covering QR modules. */
 .visual-card-overlays .visual-card-qr>span{right:-32px;top:50%;transform:translateY(-50%)}
 .visual-card-overlays .visual-card-date .visual-date-pen{top:50%;transform:translate(-2px,-50%)}
+
+/* Compact activation summary with a separate editable event date. */
+#activation-dialog .activation-event-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0}
+#activation-dialog .activation-event-row>div{display:flex;flex-direction:column;gap:4px}
+#activation-dialog .activation-event-row span{font-size:13px;color:#756b61}
+#activation-dialog .activation-event-row .btn{width:auto;min-height:44px;padding:8px 12px;font-size:14px}
