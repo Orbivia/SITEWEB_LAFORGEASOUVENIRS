@@ -121,7 +121,7 @@
    clearTimeout(liveTimer);liveTimer=setTimeout(()=>{
     const kind=$('intro-kind').value,url=['image','video'].includes(kind)?mediaButton.firstElementChild?.getAttribute('src')||null:null;
     if(['image','video'].includes(kind)&&c.intro_path&&!url&&!$('intro-file').files?.length)return;
-    const snapshot={couple_name:$('capsule-name').value||c.couple_name,wedding_date:$('capsule-date').value,welcome_message:kind==='none'?'':$('intro-text').value,welcome_config:designer.collect(),effective_plan:c.plan||'premium',delivery_before:c.usage?.delivery_before||new Date(Date.now()+900*86400000).toISOString(),has_intro:Boolean(url),preview_intro_url:url,preview_intro_type:kind};
+    const snapshot={couple_name:$('capsule-name').value||c.couple_name,wedding_date:$('capsule-date').value,welcome_message:kind==='none'?'':$('intro-text').value,welcome_config:designer.collect(),effective_plan:window.SuiteDesign.effectivePlan(c)||'premium',delivery_before:c.usage?.delivery_before||new Date(Date.now()+900*86400000).toISOString(),has_intro:Boolean(url),preview_intro_url:url,preview_intro_type:kind};
     const key=JSON.stringify(snapshot);if(key===liveSnapshot)return;liveSnapshot=key;liveFrame.contentWindow.postMessage({type:'la-suite-guest-preview',capsule:snapshot},location.origin);
    },100);
   }
