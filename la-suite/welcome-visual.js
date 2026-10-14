@@ -265,7 +265,7 @@
   const font=studio.querySelector('[data-font]');[...$('welcome-font').options].forEach(o=>font.add(o.cloneNode(true)));font.onchange=()=>{$('qr-font').value=font.value;dispatch('qr-font');render()};[...font.options].forEach(option=>{const b=document.createElement('button');b.type='button';b.dataset.fontSample=option.value;const sample=document.createElement('span');sample.style.fontFamily=fontFamilies[option.value];sample.textContent='Nos souvenirs';b.setAttribute('aria-label',fontFamilies[option.value].split(',')[0].replaceAll('"',''));b.append(sample);b.onclick=()=>{font.value=option.value;font.onchange()};studio.querySelector('.visual-font-samples').append(b)});
   studio.querySelector('[data-initials]').oninput=e=>{$('qr-initials-input').value=e.target.value;$('qr-show-initials').checked=Boolean(e.target.value.trim());dispatch('qr-initials-input','input');dispatch('qr-show-initials');render()};
   studio.querySelector('[data-event-date]').onchange=e=>{const source=$('capsule-date');if(source.disabled)return;source.value=e.target.value;dispatch('capsule-date','input');dispatch('capsule-date');window.SuiteOrganizerLayout.syncDate?.();render()};
-  function editDate(){tab('date');studio.querySelector('[data-show-date]').focus();}dateButton.onclick=editDate;studio.querySelector('[data-date]').onclick=editDate;
+  function editDate({activation=false}={}){tab('date');const toggle=studio.querySelector('[data-show-date]'),label=toggle.closest('label');label.hidden=activation;label.style.display=activation?'none':'';const field=studio.querySelector('[data-event-date]');if(activation){if(!field.disabled)field.focus();}else toggle.focus();}dateButton.onclick=editDate;studio.querySelector('[data-date]').onclick=editDate;
 
   mediaButton.onclick=()=>{tab('intro');$('choose-intro-file').click()};
   studio.querySelector('[data-edit-intro]').onclick=()=>tab('intro');
@@ -300,7 +300,7 @@
   lifetime.onDestroy(()=>{if(mediaUrl){URL.revokeObjectURL(mediaUrl);mediaUrl=null}});
   lifetime.onDestroy(()=>{if(expandedPreview&&previewHome?.parentNode)previewHome.replaceWith(expandedPreview);expandedPreview=null;previewHome=null;if(document.fullscreenElement===previewSurface)document.exitFullscreen().catch(()=>{});previewDialog.close()});
   lifetime.onDestroy(()=>designer.destroy?.());
-  const editor={...designer,editDate(onClose){if(lifetime.destroyed)return;editDate();if(onClose)settingsPopups.get('date').addEventListener('close',onClose,{once:true});},syncShared(){if(!lifetime.destroyed){designer.syncShared();render()}},close(){if(!lifetime.destroyed)designer.close()},destroy(){lifetime.destroy();if(activeEditor===editor)activeEditor=null}};
+  const editor={...designer,editDate(onClose,options={}){if(lifetime.destroyed)return;editDate(options);if(onClose)settingsPopups.get('date').addEventListener('close',onClose,{once:true});},syncShared(){if(!lifetime.destroyed){designer.syncShared();render()}},close(){if(!lifetime.destroyed)designer.close()},destroy(){lifetime.destroy();if(activeEditor===editor)activeEditor=null}};
   activeEditor=editor;return editor;
  };
 })();
