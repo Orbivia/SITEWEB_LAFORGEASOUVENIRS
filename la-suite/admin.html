@@ -1,9 +1,9 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Administration — La Suite</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"><link rel="stylesheet" href="styles.css?v=20261012-css1"><link rel="stylesheet" href="admin.css?v=20261011-adminfr1"></head>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"><link rel="stylesheet" href="styles.css?v=20261012-css1"><link rel="stylesheet" href="admin.css?v=20261014-admin-capacity2"></head>
 <body class="admin-console" data-admin-view="overview"><header class="admin-console-header"><a class="admin-console-brand" href="admin.html"><img src="assets/la-suite-logo.webp?v=20261010-forge-type" alt="La Suite"><span>Administration</span></a><button id="admin-logout" class="btn secondary" type="button" hidden>Déconnexion</button></header><main class="admin-console-main"><section id="admin-access" class="admin-card"><div class="eyebrow">Administration privée</div><h1>Administration</h1><p id="access-message" role="status">Vérification de votre accès…</p><div id="admin-auth" class="admin-actions" hidden><a class="btn primary" href="auth.html?next=admin">Me connecter</a><a id="admin-signup" class="btn secondary" href="auth.html?mode=signup&amp;next=admin" hidden>Créer mon compte administrateur</a></div></section>
 <div id="admin-content" hidden>
- <div class="admin-console-heading"><div><div class="eyebrow">Gestion du service</div><h1>Administration</h1></div></div>
+ <div class="admin-console-heading"><h1>Administration</h1></div>
  <nav class="admin-console-tabs" aria-label="Sections de l’administration">
   <button type="button" data-admin-view="overview" aria-controls="panel-overview" aria-selected="true">Vue d’ensemble</button>
   <button type="button" data-admin-view="capsules" aria-controls="panel-capsules" aria-selected="false">Capsules</button>
@@ -11,7 +11,7 @@
  </nav>
  <p id="admin-status" class="status" role="status" aria-live="polite"></p>
  <section id="panel-overview">
-  <div id="admin-stats" class="admin-stats"></div>
+  <div id="admin-stats" class="admin-stats"></div><section id="admin-service-usage" class="admin-service-usage" aria-label="Capacité Supabase"></section><div id="admin-alerts" class="admin-alerts" role="status" hidden></div>
   <section class="admin-console-panel"><div class="admin-section-heading"><div><h2>Évolution des offres achetées</h2><p id="admin-sales-description" class="hint">Achats confirmés sur la période sélectionnée.</p></div><label class="admin-search" for="admin-sales-period">Période<select id="admin-sales-period"><option value="all">Depuis toujours</option><option value="1">Ce mois-ci</option><option value="3">Les 3 derniers mois</option><option value="6">Les 6 derniers mois</option><option value="12" selected>Les 12 derniers mois</option></select></label></div><div id="admin-sales-totals" class="admin-sales-totals"></div><div id="admin-sales-chart"></div></section>
 
  </section>
@@ -22,7 +22,7 @@
    <section class="admin-console-panel"><h2>Mot de passe</h2><form id="admin-password-form"><div class="field"><label for="admin-current-password">Mot de passe actuel</label><input id="admin-current-password" type="password" autocomplete="current-password" required></div><div class="field"><label for="admin-new-password">Nouveau mot de passe</label><input id="admin-new-password" type="password" autocomplete="new-password" minlength="10" required></div><div class="field"><label for="admin-confirm-password">Confirmer le nouveau mot de passe</label><input id="admin-confirm-password" type="password" autocomplete="new-password" minlength="10" required></div><small>Au moins 10 caractères.</small><button type="submit" class="btn primary">Changer mon mot de passe</button><a href="auth.html?mode=reset&amp;next=admin">Mot de passe oublié ?</a><p id="admin-password-status" class="status" role="status" aria-live="polite"></p></form></section>
   </div></section>
   <section id="panel-service" class="admin-console-panel"><h2>Achats de capsules</h2><div id="offer-services"></div></section>
-  <section id="panel-backups" class="admin-console-panel"><div class="admin-section-heading"><h2>Sauvegardes</h2><button id="backup-all" class="btn primary" type="button">Sauvegarder toutes les capsules</button></div><div id="backup-cards" class="admin-list"></div><input id="archive-input" type="file" accept=".lasuite" hidden></section>
+  <section id="panel-backups" class="admin-console-panel"><div class="admin-section-heading"><div><h2>Sauvegardes manuelles</h2><p class="hint">Lancez une sauvegarde, puis téléchargez l’archive pour la conserver sur votre ordinateur. Aucune sauvegarde automatique.</p></div><button id="backup-all" class="btn primary" type="button">Sauvegarder toutes les capsules</button></div><div id="backup-cards" class="admin-list"></div><input id="archive-input" type="file" accept=".lasuite" hidden></section>
  </section>
 </div>
 
@@ -30,4 +30,4 @@
 <dialog id="confirm-dialog" class="admin-dialog"><h2 id="confirm-title"></h2><p id="confirm-text"></p><div class="admin-actions"><button id="confirm-yes" class="btn primary" type="button">Confirmer</button><button id="confirm-no" class="btn secondary" type="button">Annuler</button></div></dialog>
 
 
-</main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script><script src="supabase-config.js"></script><script src="backup-archive.js?v=20261008-admin6"></script><script src="admin.js?v=20261011-adminfr1"></script></body></html>
+</main><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0"></script><script src="supabase-config.js"></script><script src="backup-archive.js?v=20261008-admin6"></script><script src="admin.js?v=20261014-admin-capacity2"></script></body></html>

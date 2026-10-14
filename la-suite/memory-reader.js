@@ -11,6 +11,14 @@ function mount(article,item,available,depositedAt,{fParis,fdate,memoryWasRead,ma
  const mediaType={image:['fa-image','Photo'],video:['fa-video','Vidéo'],audio:['fa-microphone','Audio'],text:['fa-comment-dots','Petit mot']}[item.media_type]||['fa-comment-dots','Petit mot'];
  const typeBadge=()=>'<span class="memory-type-badge" title="'+mediaType[1]+'"><i class="fa-solid '+mediaType[0]+'" aria-hidden="true"></i></span>';
  const updateReadState=()=>{const read=memoryWasRead(item.id);article.classList.toggle('memory-unread',available&&!read);article.classList.toggle('memory-read',available&&read);stateIcon.innerHTML='<i class="fa-solid '+(read?'fa-envelope-open':'fa-envelope')+'" aria-hidden="true"></i>'+typeBadge();stateIcon.setAttribute('aria-label',(read?'Souvenir lu':'Souvenir non lu')+' · '+mediaType[1]);};
+ if(!available&&Number.isFinite(Date.parse(item.delivery_at))){
+  const countdown=document.createElement('small');countdown.className='memory-row-countdown';countdown.dataset.memoryCountdown=item.delivery_at;
+  const time=window.SuiteMemoryState.countdown(item.delivery_at);
+  countdown.textContent=time.remaining?'Dans '+time.text:'Ouverture en cours…';
+  countdown.title='Ouverture le '+fParis(item.delivery_at);
+  article.querySelector('.memory-meta').append(countdown);
+ }
+
  if(!available){stateIcon.innerHTML='<i class="fa-solid fa-envelope" aria-hidden="true"></i><i class="fa-solid fa-lock memory-envelope-lock" aria-hidden="true"></i>'+typeBadge();stateIcon.setAttribute('aria-label','Souvenir verrouillé · '+mediaType[1]);const badge=article.querySelector('.lock-badge');if(badge){badge.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i>';badge.setAttribute('aria-label','Ouverture le '+fdate(item.delivery_at));badge.title='Ouverture le '+fdate(item.delivery_at);}return;}
  updateReadState();
  article.querySelector('.lock-badge')?.remove();

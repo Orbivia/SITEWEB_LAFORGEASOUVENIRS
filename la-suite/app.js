@@ -1606,9 +1606,17 @@ function nextCountdown(c,manifest,onReady){
 }
 
 let memoryFilter="all",memoryOpeningTimer=null;
+function updateLockedMemoryCountdowns(){
+ for(const timer of document.querySelectorAll('#memory-list [data-memory-countdown]')){
+  const date=timer.dataset.memoryCountdown;
+  const {remaining,text}=window.SuiteMemoryState.countdown(date);
+  timer.textContent=remaining?'Dans '+text:'Ouverture en cours…';
+  timer.title='Ouverture le '+fParis(date);
+ }
+}
 function updateOpeningCountdown(divider,date){
  clearInterval(memoryOpeningTimer);
- const tick=()=>{if(ownerSessionEnded||!divider.isConnected){clearInterval(memoryOpeningTimer);return;}const {remaining,text:time}=window.SuiteMemoryState.countdown(date);divider.innerHTML='<i class="fa-regular fa-clock" aria-hidden="true"></i><span>Dans <strong>'+time+'</strong></span>';divider.title='Ouverture le '+fParis(date);if(!remaining){divider.textContent='Ouverture en cours…';clearInterval(memoryOpeningTimer);}};
+ const tick=()=>{updateLockedMemoryCountdowns();if(ownerSessionEnded||!divider.isConnected){clearInterval(memoryOpeningTimer);return;}const {remaining,text:time}=window.SuiteMemoryState.countdown(date);divider.innerHTML='<i class="fa-regular fa-clock" aria-hidden="true"></i><span>Dans <strong>'+time+'</strong></span>';divider.title='Ouverture le '+fParis(date);if(!remaining){divider.textContent='Ouverture en cours…';}};
  tick();memoryOpeningTimer=setInterval(tick,1000);
 }
 function setupWholeMemoryRows(){

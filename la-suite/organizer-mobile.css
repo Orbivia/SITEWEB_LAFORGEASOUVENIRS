@@ -489,3 +489,13 @@ body.owner-no-tabs{padding-bottom:0!important}
 @media(max-width:760px){
  body.organizer-layout-ready.owner-fixed-view .owner-deposit-open.deposit-open-has-memories{padding-bottom:12px!important}
 }
+
+/* Vos souvenirs: full phone width after removing the decorative frame. */
+@media(max-width:760px){
+ body.organizer-layout-ready main.dashboard-page:has([data-owner-panel="messages"]:not([hidden]) .owner-deposit-open:not([hidden])){width:100%;max-width:100%;margin-inline:0;padding-inline:0!important}
+ body.organizer-layout-ready.owner-fixed-view .owner-deposit-open.deposit-open-has-memories,
+ body.organizer-layout-ready .owner-deposit-open.deposit-open-has-memories{padding-left:0!important;padding-right:0!important;--capsule-safe-inline:0px}
+ .deposit-open-has-memories .deposit-open-summary,.organizer-layout-ready .deposit-open-gallery #memory-list{padding-inline:0}
+ .organizer-layout-ready .deposit-open-gallery .memory-meta .memory-row-countdown{white-space:normal;font:500 11px/1.4 Inter,sans-serif}
+}
+.memory-row-countdown{display:block;margin-top:3px;font-size:12px;font-variant-numeric:tabular-nums;color:#690c29}
