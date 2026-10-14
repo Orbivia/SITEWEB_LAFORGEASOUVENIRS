@@ -33,5 +33,7 @@
   "workspace.css",
   "workspace.js",
   "organizer-desktop.css",
-  "organizer-desktop.js"
+  "organizer-desktop.js",
+  "a-propos.html",
+  "account-preferences.css"
 ]

@@ -118,6 +118,44 @@
   capsulesButton.innerHTML='<i class="fa-solid fa-layer-group" aria-hidden="true"></i><span>Mes capsules</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';
   $('logout').innerHTML='<i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i><span>Se déconnecter</span>';
   const accountMenu=document.createElement('div');accountMenu.className='workspace-account-menu';accountMenu.append(capsulesButton,emailButton,$('workspace-edit-password'));
+  const notifications=sheet('workspace-email-preferences','Préférences e-mail');
+  const notificationsButton=document.createElement('button');notificationsButton.id='workspace-open-email-preferences';notificationsButton.type='button';notificationsButton.className='workspace-account-row';notificationsButton.setAttribute('aria-haspopup','dialog');notificationsButton.setAttribute('aria-controls',notifications.id);notificationsButton.innerHTML='<i class="fa-solid fa-bell" aria-hidden="true"></i><span>Préférences e-mail</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';
+  const aboutLink=document.createElement('a');aboutLink.id='workspace-about';aboutLink.className='workspace-account-row';aboutLink.href='a-propos.html';aboutLink.innerHTML='<i class="fa-solid fa-circle-info" aria-hidden="true"></i><span>À propos</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';
+  accountMenu.append(notificationsButton,aboutLink);
+  aboutLink.onclick=event=>{if(accountBusy||!canLeave()){event.preventDefault();report('Patientez jusqu’à la fin de l’enregistrement.',true)}};
+  let notificationBusy=false,notificationLoad=0;
+  const notificationBody=notifications.querySelector('.studio-sheet-body');
+  notificationBody.innerHTML='<p class="hint">Choisissez les capsules pour lesquelles recevoir les récapitulatifs de souvenirs et les rappels avant la fin de conservation.</p><div id="workspace-email-choices"></div><p id="workspace-email-status" class="status show" role="status" aria-live="polite"></p><p class="hint">Ces préférences ne concernent pas les e-mails nécessaires à la connexion et à la sécurité du compte.</p>';
+  const notificationStatus=$('workspace-email-status'),notificationChoices=$('workspace-email-choices');
+  function notificationReport(text,error=false){notificationStatus.textContent=text;notificationStatus.className='status show '+(error?'err':'ok');}
+  function setNotificationBusy(value){notificationBusy=value;notifications.querySelectorAll('button,input').forEach(el=>el.disabled=value);}
+  notifications.canClose=()=>!notificationBusy;
+  notifications.querySelector('.studio-close').onclick=()=>{if(!notificationBusy)notifications.close()};
+  notifications.addEventListener('cancel',event=>{if(notificationBusy)event.preventDefault()});
+  notifications.addEventListener('close',()=>{notificationLoad++;if(!ended&&account.open)notificationsButton.focus()});
+  notificationsButton.onclick=async()=>{
+   if(ended||accountBusy||notificationBusy)return;
+   if(!canLeave()){report('Patientez jusqu’à la fin de l’enregistrement.',true);return;}
+   const load=++notificationLoad;notificationChoices.replaceChildren();notificationReport('Chargement des préférences…');notifications.showModal();
+   try{
+    const {data,error}=await sb.from('capsules').select('id,couple_name,notify_by_email').eq('owner_id',user.id).order('created_at',{ascending:false});
+    if(ended||load!==notificationLoad)return;if(error)throw error;
+    notificationChoices.innerHTML=(data||[]).map(c=>'<label class="workspace-email-choice"><span><strong>'+esc(c.couple_name)+'</strong><small>'+(c.notify_by_email!==false?'E-mails activés':'E-mails désactivés')+'</small></span><input type="checkbox" data-email-capsule="'+esc(c.id)+'" '+(c.notify_by_email!==false?'checked':'')+'></label>').join('');
+    notificationReport(data?.length?'Enregistrement automatique après chaque modification.':'Vous pourrez choisir vos notifications après la création d’une capsule.');
+   }catch{if(!ended&&load===notificationLoad)notificationReport('Les préférences n’ont pas chargé. Fermez puis rouvrez cette fenêtre pour réessayer.',true)}
+  };
+  notificationChoices.addEventListener('change',async event=>{
+   const input=event.target.closest('input[data-email-capsule]');if(!input||ended||notificationBusy)return;
+   const id=input.dataset.emailCapsule,value=input.checked;setNotificationBusy(true);notificationReport('Enregistrement…');
+   try{
+    const {data,error}=await sb.from('capsules').update({notify_by_email:value}).eq('id',id).eq('owner_id',user.id).select('id,notify_by_email').single();
+    if(ended)return;if(error)throw error;if(data?.id!==id||data.notify_by_email!==value)throw Error('Préférence non enregistrée');
+    const capsule=caps.find(c=>c.id===id);if(capsule)capsule.notify_by_email=value;
+    if(selected?.id===id){selected.notify_by_email=value;if($('capsule-notify'))$('capsule-notify').checked=value;}
+    input.closest('label').querySelector('small').textContent=value?'E-mails activés':'E-mails désactivés';notificationReport('Préférence enregistrée.');
+   }catch{if(!ended){input.checked=!value;notificationReport('La modification n’a pas été enregistrée. Réessayez.',true)}}
+   finally{if(!ended)setNotificationBusy(false)}
+  });
   const accountViews=document.createElement('div');accountViews.className='workspace-account-views';accountViews.hidden=true;
   const accountBack=document.createElement('button');accountBack.type='button';accountBack.className='workspace-account-back';accountBack.innerHTML='<i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Mon compte';accountViews.append(accountBack,$('workspace-email-form'),$('workspace-password-form'));
   const accountStatus=$('workspace-account-status'),accountLogout=$('logout');
@@ -146,7 +184,7 @@
    const {error}=await sb.auth.updateUser({password});if(error)throw error;if(!ended){e.target.reset();showAccountView(null);$('workspace-edit-password').focus();report('Votre mot de passe a été modifié.');}
   }catch(e){if(!ended)report('Modification impossible : '+e.message,true)}finally{busy(false)}};
   $('logout').onclick=async()=>{if(accountBusy)return report('Patientez jusqu’à la fin de l’opération.',true);await logout();};
-  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==user.id){ended=true;choose.close();account.close();deletion.close();queueMicrotask(()=>{choose.replaceChildren();account.replaceChildren();deletion.replaceChildren()});document.querySelectorAll('.owner-tabs').forEach(n=>n.remove());}else if(event==='USER_UPDATED'&&session?.user?.email){currentEmail=session.user.email;$('workspace-email-current').textContent=currentEmail;}});
+  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==user.id){ended=true;notificationLoad++;notifications.close();choose.close();account.close();deletion.close();queueMicrotask(()=>{choose.replaceChildren();account.replaceChildren();deletion.replaceChildren();notifications.replaceChildren()});document.querySelectorAll('.owner-tabs').forEach(n=>n.remove());}else if(event==='USER_UPDATED'&&session?.user?.email){currentEmail=session.user.email;$('workspace-email-current').textContent=currentEmail;}});
   // Follow the visual viewport while Android browser bars expand/collapse.
   const viewport=window.visualViewport;let frame;
   function align(){cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(ended)return;const visible=window.visualViewport,zoomed=visible&&Math.abs(visible.scale-1)>.05;const gap=visible&&!zoomed?Math.max(0,innerHeight-visible.height-visible.offsetTop):0;document.documentElement.style.setProperty('--workspace-bottom',gap+'px');document.documentElement.style.setProperty('--workspace-viewport-height',(visible&&!zoomed?visible.height:innerHeight)+'px');document.body.classList.toggle('workspace-keyboard',!!visible&&!zoomed&&innerHeight-visible.height>150);if(account.open&&account.contains(document.activeElement)&&document.activeElement.matches('input'))document.activeElement.scrollIntoView({block:'nearest'});});}
