@@ -908,3 +908,11 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-preview-surface:fullscreen{width:100vw;height:100dvh}
 
 
+
+/* QR information uses the same dialog as event dates and welcome content. */
+.visual-settings-popup [data-panel=details]>label{display:flex;flex-direction:column;gap:8px;margin:0 0 18px;font:500 14px/1.4 Inter,sans-serif}
+.visual-settings-popup [data-initials]{width:100%;box-sizing:border-box;min-height:44px;padding:10px;border:1px solid #ddd7cd;border-radius:10px;font:16px Inter,sans-serif}
+.visual-settings-popup .visual-qr-row{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.visual-settings-popup .visual-qr-label{width:auto;font:500 14px/1.4 Inter,sans-serif}
+.visual-settings-popup .visual-qr-shapes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.visual-settings-popup .visual-qr-shapes button{min-height:48px;height:auto;padding:8px 4px;font-size:13px}
