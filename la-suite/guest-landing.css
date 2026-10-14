@@ -718,3 +718,9 @@ body.guest-sending #guest-message{visibility:hidden}
 
 body.guest-preview-editor{overflow:hidden}
 body.guest-preview-editor #guest-deposit,body.guest-preview-editor .guest-home-types{pointer-events:none}
+
+/* Bound long names and unbroken words inside the welcome layout. */
+.guest-landing .capsule-hero h1{min-width:0;max-width:100%;box-sizing:border-box;overflow-wrap:anywhere;white-space:normal;line-height:1.2;max-height:3.6em;overflow:hidden}
+.guest-preview-editor #capsule-title[contenteditable=true]{display:block;overflow:auto;overflow-wrap:anywhere;white-space:pre-wrap}
+.guest-landing #guest-event-date{max-width:100%;overflow-wrap:anywhere}
+.guest-landing .guest-host-zone,.guest-landing .guest-greeting{min-width:0;max-width:100%;box-sizing:border-box}

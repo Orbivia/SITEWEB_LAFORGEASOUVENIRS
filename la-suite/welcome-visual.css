@@ -926,3 +926,8 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 #activation-dialog .activation-event-row>div{display:flex;flex-direction:column;gap:4px}
 #activation-dialog .activation-event-row span{font-size:13px;color:#756b61}
 #activation-dialog .activation-event-row .btn{width:auto;min-height:44px;padding:8px 12px;font-size:14px}
+
+/* Editable fields stay inside their allocated preview boxes. */
+.visual-card-overlays .visual-card-text:focus{min-height:0;max-height:100%;box-sizing:border-box;overflow:auto;overflow-wrap:anywhere}
+#visual-welcome [data-field=capsule-name]{max-width:100%;max-height:3.6em;line-height:1.2;overflow:auto;overflow-wrap:anywhere;box-sizing:border-box}
+#visual-welcome [data-field=welcome-date-title]{min-width:0;max-width:100%;overflow-wrap:anywhere}
