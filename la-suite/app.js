@@ -1689,7 +1689,7 @@ async function renderManifest(c,manifest){
    actions.append(download);content.append(media,status);loadMedia=renew;
   }else if(available&&!row){content.textContent='Ce souvenir n’a pas pu être chargé. Actualisez la liste.'}
   if(!available){const placeholder=document.createElement('p');placeholder.className='memory-locked-preview';placeholder.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i><span>La surprise vous attend</span>';content.append(placeholder)}
-  if(matchMedia('(max-width:760px)').matches&&c.status==='active'&&c.usage?.state==='open')window.SuiteMemoryReader.mount(article,item,available,row?.created_at,{fParis,fdate,memoryWasRead,markMemoryRead,applyMemoryFilter});
+  if(matchMedia('(max-width:760px)').matches&&c.status==='active'&&['open','full','closed'].includes(c.usage?.state))window.SuiteMemoryReader.mount(article,item,available,row?.created_at,{fParis,fdate,memoryWasRead,markMemoryRead,applyMemoryFilter});
   list.append(article);
   if(loadMedia){if(memoryMediaObserver){pendingMediaUrls.set(article,loadMedia);memoryMediaObserver.observe(article)}else loadMedia();}
  }
@@ -1824,7 +1824,7 @@ const DEPOSIT_PREPARATION_HTML="<dialog class=\"deposit-preparation-dialog\" ari
 function renderOwnerDepositOpen(c,manifest){
  const root=document.querySelector('[data-owner-panel="messages"]'),frame=$('owner-deposit-open');
  if(!root||!frame)return;
- const active=matchMedia('(max-width:760px)').matches&&c.status==='active'&&c.usage?.state==='open';
+ const active=matchMedia('(max-width:760px)').matches&&c.status==='active'&&['open','full','closed'].includes(c.usage?.state);
  root.classList.toggle('is-deposits-open',active);frame.hidden=!active;
  const hero=root.querySelector('.owner-messages-hero'),memories=root.querySelector('.memories-section');
  if(!active){const exportButton=$('export-memories');if(exportButton&&memories?.querySelector('.memory-tools'))memories.querySelector('.memory-tools').append(exportButton);if(frame.contains(hero))root.append(hero,memories);return}
@@ -1844,12 +1844,15 @@ function renderOwnerDepositOpen(c,manifest){
   frame.querySelector('[data-wait-understood]').onclick=()=>dialog.close();
   dialog.addEventListener('close',()=>frame.querySelector('[data-open-tips]').focus());
  }
+ const badge=frame.querySelector('.deposit-open-badge');badge.textContent=c.usage.state==='closed'?'Dépôts terminés':c.usage.state==='full'?'Stockage rempli':'Dépôts ouverts';
+ frame.querySelector('[data-open-share]').hidden=c.usage.state==='closed';
+ const emptyMessage=frame.querySelector('.deposit-open-empty p');if(emptyMessage)emptyMessage.textContent=c.usage.state==='closed'?'Les dépôts sont terminés. Vos souvenirs restent accessibles selon leur date d’ouverture.':'Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.';
  const count=manifest.length,available=manifest.filter(m=>m.is_available).length;
  frame.classList.toggle('deposit-open-has-memories',count>0);
  frame.classList.toggle('deposit-open-all-available',count>0&&available===count);
  const exportSlot=frame.querySelector('.deposit-open-export'),exportButton=$('export-memories');
  if(exportSlot&&exportButton)(count?exportSlot:memories.querySelector('.memory-tools')).append(exportButton);
- frame.querySelector('[data-open-title]').textContent=count?'Vos souvenirs':'Les dépôts sont ouverts';
+ frame.querySelector('[data-open-title]').textContent=count?'Vos souvenirs':c.usage.state==='closed'?'Vos souvenirs':'Les dépôts sont ouverts';
  frame.querySelector('[data-open-until]').textContent=c.usage.closes_at?'Jusqu’au '+fParis(new Date(new Date(c.usage.closes_at).getTime()-1000).toISOString())+' · heure de Paris':'';
  frame.querySelector('[data-open-count]').textContent=memoryCountLabel(count);
  const availableLabel=frame.querySelector('[data-open-available]');if(availableLabel)availableLabel.textContent=available+' disponible'+(available>1?'s':'')+' maintenant';
