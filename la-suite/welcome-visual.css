@@ -916,3 +916,7 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-settings-popup .visual-qr-label{width:auto;font:500 14px/1.4 Inter,sans-serif}
 .visual-settings-popup .visual-qr-shapes{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .visual-settings-popup .visual-qr-shapes button{min-height:48px;height:auto;padding:8px 4px;font-size:13px}
+
+/* Separate date and QR pencils without covering QR modules. */
+.visual-card-overlays .visual-card-qr>span{right:-32px;top:50%;transform:translateY(-50%)}
+.visual-card-overlays .visual-card-date .visual-date-pen{top:50%;transform:translate(-2px,-50%)}
