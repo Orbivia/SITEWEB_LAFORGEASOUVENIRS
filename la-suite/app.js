@@ -2152,7 +2152,8 @@ async function initDashboard(){
  if(adminError)return $('dashboard-content').innerHTML='<p class="status show err">Vérification du compte impossible. Rechargez la page.</p>';
  if(adminMember===true)return location.replace('admin.html'+location.hash);
 
- sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;ownerDownloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));$('organizer-guest-preview')?.close();$('welcome-editor')?.close();$('print-download-dialog')?.close();$('organizer-card-preview-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
+ let welcomeDesigner=null;
+ sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;ownerDownloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));welcomeDesigner?.destroy();$('organizer-guest-preview')?.close();$('welcome-editor')?.close();$('print-download-dialog')?.close();$('organizer-card-preview-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
  const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
  const{data:caps,error}=await sb.from("capsules").select("id,owner_id,slug,status,plan,admin_plan_override,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,welcome_config,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(ownerSessionEnded)return;
@@ -2210,7 +2211,7 @@ async function initDashboard(){
  setupOwnerTabs(c,manifest||[]);
  applyQrPreview(url.href,c);
  const liveIds=["print-title","print-note","print-explanation","qr-initials-input","qr-color","qr-font","qr-style","qr-show-initials"];
- let qrSaveTimer=null,autoSaveTimer=null,saveAllPending=null,welcomeDesigner=null;
+ let qrSaveTimer=null,autoSaveTimer=null,saveAllPending=null;
  function saveAll(){
   if(ownerSessionEnded||!$("save-organizer"))return Promise.resolve(false);
   if(saveAllPending)return saveAllPending;

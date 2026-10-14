@@ -69,6 +69,7 @@
  }
  function miniMarkup(){return '<span class="capsule-hero"><span><span class="guest-capsule-label">La capsule de</span><strong class="welcome-mini-name">Justine &amp; Pierre</strong></span></span><span class="guest-form"><span class="guest-date-feature"><span class="delivery-summary"><span class="delivery-caption" data-welcome-date-title>Quand l’ouvrir ?</span><span class="delivery-invitation">Choisissez le moment de la surprise</span><strong>Maintenant</strong><span class="delivery-edit">Modifier ›</span></span></span><span class="welcome-mini-formats"><span>Petit mot</span><span>Photo</span><span>Audio</span><span>Vidéo</span></span><span class="welcome-mini-message"><span>Votre petit mot</span><span class="welcome-mini-lines">Écrivez ce que vous aimeriez leur dire…</span></span><span class="welcome-mini-signature">Votre prénom · facultatif</span><span class="submit-memory">Envoyer mon souvenir →</span></span>'}
  function setup({capsule:c,markDirty,scheduleSave,saveAll}){
+  const lifetime=window.SuiteEditorLifetime.create();
   const o=options(c.welcome_config),dialog=document.createElement('dialog');dialog.id='welcome-editor';dialog.className='studio-sheet welcome-editor';dialog.setAttribute('aria-labelledby','welcome-editor-title');
   // Preview fragments intentionally use no form controls or IDs: they sit inside native buttons.
   const mini=miniMarkup();
@@ -88,7 +89,7 @@
   Object.entries(themes).forEach(([key,t])=>{const button=document.createElement('button');button.type='button';button.dataset.welcomeStyle=key;button.innerHTML='<span class="welcome-style-sample"><span class="welcome-gallery-device"><span class="guest-compact welcome-gallery-preview">'+mini+'</span></span></span><strong></strong>';button.lastElementChild.textContent=t.name;apply({style:key,color:t.accent,font:t.font},button.querySelector('.welcome-gallery-preview'));dialog.querySelector('.welcome-style-grid').append(button)});
   colors.forEach((value,i)=>{const button=document.createElement('button');button.type='button';button.dataset.welcomeColor=value;button.style.setProperty('--swatch',value);button.setAttribute('aria-label',colorNames[i]);button.onclick=()=>{color=value;changed()};dialog.querySelector('.welcome-colors').append(button)});
   function collect(){const sharedStyle=$('qr-style')?.value,sharedFont=$('qr-font')?.value,sharedColor=$('qr-color')?.value;return options({...c.welcome_config,...window.SuiteDesign.fields(c),style:window.SuiteDesign.styles.some(s=>s.id===sharedStyle)||sharedStyle==='custom'?sharedStyle:style,color:sharedColor||color,...Object.fromEntries(Object.entries(fields).map(([key,id])=>[key,$(id).value])),font:sharedFont||$('welcome-font').value})}
-  function render(){
+  function render(){if(lifetime.destroyed)return;
    const value=collect(),name=$('capsule-name')?.value.trim()||c.couple_name;apply(value,dialog.querySelector('.welcome-mini-preview'));dialog.querySelector('.welcome-mini-name').textContent=name;
    $('welcome-ornament').disabled=value.illustration==='none';dialog.querySelectorAll('button[data-welcome-style]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.welcomeStyle===style)));dialog.querySelectorAll('[data-welcome-color]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.welcomeColor===color)));
    $('welcome-custom-color').value=color;$('welcome-color-value').textContent=color;
@@ -97,13 +98,13 @@
   }
   function changed(){markDirty('welcome');render();scheduleSave()}
   dialog.querySelectorAll('button[data-welcome-style]').forEach(b=>b.onclick=()=>{style=b.dataset.welcomeStyle;const t=themes[style];color=t.accent;$('welcome-font').value=t.font;$('welcome-illustration').value=t.art;changed()});
-  Object.values(fields).forEach(id=>$(id).addEventListener($(id).tagName==='INPUT'?'input':'change',changed));$('welcome-custom-color').oninput=()=>{color=hex($('welcome-custom-color').value);changed()};
+  Object.values(fields).forEach(id=>lifetime.listen($(id),$(id).tagName==='INPUT'?'input':'change',changed));$('welcome-custom-color').oninput=()=>{color=hex($('welcome-custom-color').value);changed()};
   function tab(name,focus=false){dialog.querySelectorAll('[data-welcome-tab]').forEach(button=>{const selected=button.dataset.welcomeTab===name;button.setAttribute('aria-selected',String(selected));button.tabIndex=selected?0:-1;$('welcome-panel-'+button.dataset.welcomeTab).hidden=!selected;if(selected&&focus)button.focus()});dialog.querySelector('.studio-config-scroll').scrollTop=0}
   const tabs=[...dialog.querySelectorAll('[data-welcome-tab]')];tabs.forEach((b,i)=>{b.onclick=()=>tab(b.dataset.welcomeTab);b.onkeydown=e=>{let next;if(e.key==='ArrowRight')next=(i+1)%tabs.length;if(e.key==='ArrowLeft')next=(i+tabs.length-1)%tabs.length;if(e.key==='Home')next=0;if(e.key==='End')next=tabs.length-1;if(next!==undefined){e.preventDefault();tab(tabs[next].dataset.welcomeTab,true)}}});
-  $('customize-welcome').onclick=()=>{$('welcome-content-fields').append(document.querySelector('.intro-video-panel'));render();dialog.showModal()};dialog.querySelector('.studio-close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>{$('organizer-welcome').insertBefore(document.querySelector('.intro-video-panel'),summary);if($('customize-welcome')?.isConnected)$('customize-welcome').focus()});
-  $('welcome-expand-preview').onclick=()=>$('open-guest-link').click();$('organizer-guest-preview').addEventListener('close',()=>{if(dialog.open)$('welcome-expand-preview').focus()});
+  $('customize-welcome').onclick=()=>{$('welcome-content-fields').append(document.querySelector('.intro-video-panel'));render();dialog.showModal()};dialog.querySelector('.studio-close').onclick=()=>dialog.close();lifetime.listen(dialog,'close',()=>{$('organizer-welcome').insertBefore(document.querySelector('.intro-video-panel'),summary);if($('customize-welcome')?.isConnected)$('customize-welcome').focus()});
+  $('welcome-expand-preview').onclick=()=>$('open-guest-link').click();lifetime.listen($('organizer-guest-preview'),'close',()=>{if(dialog.open)$('welcome-expand-preview').focus()});
   $('welcome-done').onclick=async()=>{const button=$('welcome-done');button.disabled=true;try{if(await saveAll()){dialog.close();$('welcome-design-status').textContent=''}else{$('welcome-design-status').textContent=$('organizer-save-error').textContent||$('intro-status').textContent||'Enregistrement incomplet. Réessayez.'}}finally{button.disabled=false}};
-  tab('content');render();window.SuiteWelcome.collectShared=collect;return {collect,syncShared:render,close:()=>dialog.close()};
+  tab('content');render();window.SuiteWelcome.collectShared=collect;lifetime.onDestroy(()=>{dialog.close();dialog.remove();if(window.SuiteWelcome.collectShared===collect)delete window.SuiteWelcome.collectShared});return {collect,syncShared:render,close:()=>dialog.close(),destroy:()=>lifetime.destroy()};
  }
  window.SuiteWelcome={options,apply,setup};
 })();
