@@ -735,3 +735,28 @@ justify-content:center}
  .organizer-layout-ready .owner-deposit-open.deposit-open-has-memories{padding:16px 12px;max-width:none;border:0;border-radius:0;background-image:none!important}
  .organizer-layout-ready .deposit-open-gallery #memory-list{padding-inline:0}
 }
+
+/* PC editor review: keep helper text outside the measured preview surface. */
+@media(min-width:761px){
+ body.visual-primary-ready main.dashboard-page{max-width:1600px!important}
+ .welcome-visual-editor.visual-primary.pc-workspace,
+ .welcome-visual-editor.visual-primary.pc-workspace[data-panel-open=true]{grid-template-columns:minmax(0,1fr) minmax(320px,520px);gap:10px 24px}
+ .pc-preview-column{grid-template-rows:44px auto minmax(0,1fr) auto;gap:8px}
+ .pc-preview-column>.visual-help{display:block;position:static;margin:0;text-align:center;font:400 12px/1.5 Inter,sans-serif;color:#746b60}
+ .pc-preview-column .visual-stage{grid-row:3!important;padding:4px!important;justify-content:center;overflow:hidden}
+ .pc-preview-column .visual-actions{grid-row:4!important}
+ .pc-workspace .visual-head h2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .pc-workspace .visual-save-state{flex:none}
+ .pc-workspace .visual-drawer{align-self:start;height:auto!important;max-height:100%!important}
+ .visual-primary.pc-workspace .visual-drawer .visual-rainbow-dot{display:grid!important;place-items:center;width:26px!important;height:26px!important;min-width:26px!important;max-width:26px!important;aspect-ratio:1;flex:0 0 26px!important;transform:none;border-radius:50%;box-sizing:border-box}
+ .visual-primary-ready .pc-workspace .visual-actions .qr-preview-actions .btn{min-height:44px!important;max-width:220px;padding:10px 14px!important;border:1px solid #dfd5ca!important;border-radius:9px;box-sizing:border-box}
+ .visual-primary-ready .pc-workspace .visual-actions .qr-preview-actions .btn:not(.primary){background:#fffdf9!important;color:#650f25!important}
+ .pc-preview-column .visual-targets{max-width:520px}
+ .pc-workspace .visual-font-samples button{min-height:64px}
+ .pc-workspace .visual-themes button{min-height:72px}
+}
+@media(min-width:761px) and (max-width:1100px){
+ .welcome-visual-editor.visual-primary.pc-workspace,
+ .welcome-visual-editor.visual-primary.pc-workspace[data-panel-open=true]{grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:8px 14px}
+ .pc-preview-column>.visual-help{font-size:11px}
+}
