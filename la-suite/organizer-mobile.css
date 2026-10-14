@@ -466,3 +466,10 @@ body.owner-no-tabs{padding-bottom:0!important}
 
 /* Section headings must remain visible above the first row on arrival. */
 .organizer-layout-ready .deposit-open-gallery #memory-list{overflow-anchor:none;scroll-snap-type:none}
+
+/* Vos souvenirs: remove decorative margins on compact screens. */
+@media(max-width:760px){
+.organizer-layout-ready .owner-deposit-open.deposit-open-has-memories{padding:12px 10px;border:0;border-radius:0;background-image:none!important}
+.organizer-layout-ready .deposit-open-gallery #memory-list{padding-inline:0}
+.deposit-open-has-memories .deposit-open-content{gap:8px}
+}

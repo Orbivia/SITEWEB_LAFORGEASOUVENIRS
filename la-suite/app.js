@@ -1707,7 +1707,7 @@ async function renderManifest(c,manifest){
    actions.append(download);content.append(media,status);loadMedia=renew;
   }else if(available&&!row){content.textContent='Ce souvenir n’a pas pu être chargé. Actualisez la liste.'}
   if(!available){const placeholder=document.createElement('p');placeholder.className='memory-locked-preview';placeholder.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i><span>La surprise vous attend</span>';content.append(placeholder)}
-  if(matchMedia('(max-width:760px)').matches&&c.status==='active'&&['open','full','closed'].includes(c.usage?.state))window.SuiteMemoryReader.mount(article,item,available,row?.created_at,{fParis,fdate,memoryWasRead,markMemoryRead,applyMemoryFilter});
+  if(c.status==='active'&&['open','full','closed'].includes(c.usage?.state))window.SuiteMemoryReader.mount(article,item,available,row?.created_at,{fParis,fdate,memoryWasRead,markMemoryRead,applyMemoryFilter});
   list.append(article);
   if(loadMedia){if(memoryMediaObserver){pendingMediaUrls.set(article,loadMedia);memoryMediaObserver.observe(article)}else loadMedia();}
  }
@@ -1842,7 +1842,7 @@ const DEPOSIT_PREPARATION_HTML="<dialog class=\"deposit-preparation-dialog\" ari
 function renderOwnerDepositOpen(c,manifest){
  const root=document.querySelector('[data-owner-panel="messages"]'),frame=$('owner-deposit-open');
  if(!root||!frame)return;
- const active=matchMedia('(max-width:760px)').matches&&c.status==='active'&&['open','full','closed'].includes(c.usage?.state);
+ const active=c.status==='active'&&['open','full','closed'].includes(c.usage?.state);
  root.classList.toggle('is-deposits-open',active);frame.hidden=!active;
  const hero=root.querySelector('.owner-messages-hero'),memories=root.querySelector('.memories-section');
  if(!active){const exportButton=$('export-memories');if(exportButton&&memories?.querySelector('.memory-tools'))memories.querySelector('.memory-tools').append(exportButton);if(frame.contains(hero))root.append(hero,memories);return}
@@ -1879,8 +1879,8 @@ function renderOwnerDepositOpen(c,manifest){
  applyMemoryFilter();
  const config={...c.welcome_config,...window.SuiteDesign.fields(c)},style=$('qr-style')?.value||config.style||c.qr_style||'fond-blanc';
  const preset=window.SuiteDesign.styles.find(s=>s.id===style),art=window.SuiteDesign.artwork(style,config);
- frame.style.backgroundImage=window.SuiteDesign.logoBackground(style,config);frame.style.backgroundColor=preset?.background||'#fcf8ef';
- frame.classList.toggle('deposit-open-dark',Boolean(preset?.dark));
+ frame.style.backgroundImage=count?'none':window.SuiteDesign.logoBackground(style,config);frame.style.backgroundColor=count?'#fffdf9':preset?.background||'#fcf8ef';
+ frame.classList.toggle('deposit-open-dark',!count&&Boolean(preset?.dark));
 }
 
 let ownerWaitingTimer=null;
