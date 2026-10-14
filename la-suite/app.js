@@ -5,6 +5,24 @@ let guestPreviewState=null;
 const cfg=window.LA_SUITE_CONFIG||{};
 const configured=Boolean(cfg.SUPABASE_URL&&cfg.SUPABASE_ANON_KEY&&window.supabase);
 const sb=configured?window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY):null;
+if(sb){
+ let nativeState=null,registered='',syncing=false;
+ const syncNative=async()=>{
+  if(!window.LaSuiteAndroid||syncing)return;syncing=true;
+  try{
+   const {data}=await sb.auth.getSession(),session=data.session;
+   window.LaSuiteAndroid.notificationOwner(session?.user?.id||'');
+   if(!session||!nativeState?.configured||!nativeState.token){registered='';return;}
+   const key=JSON.stringify([session.user.id,nativeState.installation,nativeState.token,nativeState.permission,nativeState.received,nativeState.revealed]);if(key===registered)return;
+   const {error}=await sb.rpc('register_android_device',{p_device:nativeState.installation,p_token:nativeState.token,p_received:Boolean(nativeState.permission&&nativeState.received),p_revealed:Boolean(nativeState.permission&&nativeState.revealed)});
+   if(!error)registered=key;
+  }finally{syncing=false}
+ };
+ window.addEventListener('la-suite-native-notifications',event=>{nativeState=event.detail;syncNative().catch(()=>{});});
+ sb.auth.onAuthStateChange(()=>{registered='';setTimeout(()=>syncNative().catch(()=>{}),0)});
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')window.LaSuiteAndroid?.notificationState();});
+}
+
 let selectedMedia=null,activeStream=null,recorder=null;
 const organizerState={qr:false,intro:false,welcome:false,settings:false,saving:0,error:false};
 let qrSaveQueue=Promise.resolve(),introSavePending=null,introPreviewUrl=null,countdownTimer=null;
