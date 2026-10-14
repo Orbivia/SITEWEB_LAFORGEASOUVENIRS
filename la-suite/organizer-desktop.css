@@ -760,3 +760,39 @@ justify-content:center}
  .welcome-visual-editor.visual-primary.pc-workspace[data-panel-open=true]{grid-template-columns:minmax(0,1fr) minmax(280px,.8fr);gap:8px 14px}
  .pc-preview-column>.visual-help{font-size:11px}
 }
+
+/* Larger PC configuration controls; compact/mobile layouts remain unchanged. */
+@media(min-width:761px){
+ .welcome-visual-editor.visual-primary.pc-workspace,
+ .welcome-visual-editor.visual-primary.pc-workspace[data-panel-open=true]{grid-template-columns:minmax(0,1fr) minmax(300px,1fr);gap:12px 24px}
+ .pc-workspace .visual-drawer,.pc-workspace[data-tool] .visual-drawer,.pc-workspace .visual-drawer[hidden]{padding:16px}
+ .pc-workspace .visual-tools{gap:8px;padding-bottom:12px}
+ .pc-workspace .visual-tools button{min-height:60px;font-size:16px;padding:8px}
+ .pc-workspace .visual-tools span{font-size:15px}
+ .pc-workspace .visual-tools button>i,.pc-workspace .visual-tools button>strong{font-size:26px}
+ .pc-workspace .visual-themes,.pc-workspace[data-tool=theme] .visual-themes,.pc-workspace .visual-colors,.pc-workspace .visual-font-samples{gap:12px}
+ .visual-primary.pc-workspace .visual-drawer .visual-themes button{min-height:108px;padding:12px;font-size:15px;gap:8px}
+ .pc-workspace .visual-themes .visual-theme-motif,.pc-workspace .visual-themes img,.pc-workspace[data-tool=theme] .visual-themes .visual-theme-motif{width:58px;height:58px}
+ .pc-workspace .visual-themes .visual-import img{width:58px!important;height:58px!important;max-width:58px}
+ .pc-workspace .visual-colors button,.pc-workspace .visual-custom-color{min-height:100px;padding:12px;gap:10px}
+ .pc-workspace .visual-colors span,.pc-workspace .visual-custom-color small{font-size:15px}
+ .pc-workspace .visual-swatch-dot{width:38px!important;height:38px!important;min-width:38px}
+ .visual-primary.pc-workspace .visual-drawer .visual-rainbow-dot{width:38px!important;height:38px!important;min-width:38px!important;max-width:38px!important;flex-basis:38px!important}
+ .pc-workspace .visual-font-samples button{min-height:88px;font-size:26px!important;padding:14px}
+ .pc-workspace .visual-color-editor label{font-size:14px;gap:6px}
+ .pc-workspace .visual-color-editor input{height:42px;font-size:16px}
+ .pc-workspace .visual-color-matrix button{height:34px;min-height:34px}
+ .pc-workspace .visual-color-editor [data-color-back]{min-height:42px;font-size:14px}
+}
+@media(min-width:1200px){
+ body.visual-primary-ready main.dashboard-page{max-width:1840px!important}
+ .welcome-visual-editor.visual-primary.pc-workspace,
+ .welcome-visual-editor.visual-primary.pc-workspace[data-panel-open=true]{grid-template-columns:minmax(0,1fr) minmax(460px,1.05fr);gap:12px 32px}
+ .pc-workspace .visual-drawer,.pc-workspace[data-tool] .visual-drawer,.pc-workspace .visual-drawer[hidden]{padding:20px}
+ .pc-workspace .visual-tools button{min-height:68px}
+ .visual-primary.pc-workspace .visual-drawer .visual-themes button{min-height:126px;font-size:16px}
+ .pc-workspace .visual-themes .visual-theme-motif,.pc-workspace .visual-themes img,.pc-workspace[data-tool=theme] .visual-themes .visual-theme-motif{width:70px;height:70px}
+ .pc-workspace .visual-themes .visual-import img{width:70px!important;height:70px!important;max-width:70px}
+ .pc-workspace .visual-colors button,.pc-workspace .visual-custom-color{min-height:112px}
+ .pc-workspace .visual-font-samples button{min-height:104px;font-size:28px!important}
+}
