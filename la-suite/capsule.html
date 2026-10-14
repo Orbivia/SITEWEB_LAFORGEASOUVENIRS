@@ -103,7 +103,7 @@ body.guest-loading{background:#fffdf8!important}
 
  <div id="capture-status" class="status" role="status" aria-live="polite"></div>
 
- <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre message</label><textarea id="message_text" maxlength="1000" rows="4" placeholder="Écrivez ce que vous aimeriez leur dire…"></textarea></div></div>
+ <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre message</label><textarea id="message_text" minlength="10" maxlength="1000" rows="4" placeholder="Votre petit mot (10 caractères minimum)…"></textarea></div></div>
  <details id="guest-extras" class="guest-extras" hidden><summary>Ajouter un petit mot <span class="optional">Facultatif</span></summary><div id="guest-extras-body"></div></details>
  <div class="field guest-signature"><label for="guest_name"><i class="fa-solid fa-user" aria-hidden="true"></i> Votre prénom <span class="optional">(obligatoire)</span></label><input id="guest_name" maxlength="30" autocomplete="given-name" required placeholder="Ex. Pierre, Mamie"></div>
  <button class="btn primary submit-memory" type="submit"><span>Envoyer mon souvenir</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
@@ -142,5 +142,5 @@ body.guest-loading{background:#fffdf8!important}
 <script src="https://cdn.jsdelivr.net/npm/tus-js-client@4.3.1/dist/tus.min.js"></script>
 <script src="capsule-design.js?v=20261012-theme-logo-safe1"></script><script src="typography.js?v=20261012-cleanup1"></script><script src="welcome-ui.js?v=20261012-cleanup1"></script>
 <script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261014-field-bounds1"></script>
-<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="memory-reader.js?v=20261012-cleanup1"></script><script src="card-artwork.js?v=20261014-modules1"></script><script src="app.js?v=20261014-modules1"></script>
+<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="memory-reader.js?v=20261012-cleanup1"></script><script src="card-artwork.js?v=20261014-modules1"></script><script src="app.js?v=20261014-small-note1"></script>
 </body></html>

@@ -550,7 +550,8 @@ function chooseGuestType(type){
  importButton.querySelector('i').className=type==="image"?'fa-solid fa-images':type==="audio"?'fa-solid fa-microphone':'fa-solid fa-video';
  $('import-memory-help').textContent=type==='image'?'Depuis votre galerie':'Depuis vos fichiers';$("message_text").required=type==="text";
  $("message-label").innerHTML=type==="text"?"Votre message":'Un petit mot <span class="optional">(facultatif)</span>';
- $("message_text").placeholder=type==="text"?"Écrivez ce que vous aimeriez leur dire…":"Quelques mots pour accompagner votre souvenir…";
+ $("message_text").minLength=type==="text"?10:0;
+ $("message_text").placeholder=type==="text"?"Votre petit mot (10 caractères minimum)…":"Quelques mots pour accompagner votre souvenir…";
  const messageField=$('guest-message-field'),extras=$('guest-extras');
  (type==='text'?$('guest-text-content'):$('guest-extras-body')).prepend(messageField);extras.open=false;
  extras.hidden=true;if(type!=='text')$('message_text').value='';$('guest-limits').hidden=type==='text';
@@ -782,7 +783,7 @@ async function initCapsule(){
   if(name.length>30){show(status,"Limitez votre prénom ou votre signature à 30 caractères.",false);$("guest_name").focus();return;}
   if(recorder?.state==="recording"||recorderPreparing)return showCapture("Terminez votre enregistrement avant l’envoi.",false);
   if(guestType!=="text"&&!selectedMedia)return showCapture("Ajoutez votre souvenir, ou choisissez « Petit mot ».",false);
-  if(guestType==="text"&&!text)return show(status,"Écrivez votre petit mot.",false);
+  if(guestType==="text"&&Array.from(text).length<10){show(status,"Votre petit mot doit contenir au moins 10 caractères.",false);$("message_text").focus();return;}
   if(!instant&&(!date||date<$("delivery_date").min||date>$("delivery_date").max))return show(status,"Choisissez une date entre aujourd’hui et le "+fdate($("delivery_date").max)+".",false);
   if(guestIsPreview){
    $('guest-success').querySelector('h2').textContent='Aperçu de la confirmation';
@@ -1693,7 +1694,7 @@ async function renderManifest(c,manifest){
   article.dataset.deliveryAt=item.delivery_at||'';
   article.innerHTML='<div class="memory-icon">'+icon(item.media_type)+'</div><div class="memory-meta"><strong>'+esc(item.guest_name||"Invité")+'</strong><span>'+label(item.media_type)+' · découverte le '+esc(fdate(item.delivery_at))+'</span></div><div class="memory-actions"><span class="lock-badge '+(available?'open':'locked')+'">'+(expired?'Accès terminé':available?'Disponible':'<i class="fa-solid fa-lock" aria-hidden="true"></i> Verrouillé')+'</span></div><div class="memory-content"></div>';
   const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
-  if(available&&row?.message_text){const excerpt=document.createElement('p');excerpt.className='memory-excerpt';excerpt.textContent=row.message_text;article.querySelector('.memory-meta').append(excerpt);const text=document.createElement('p');text.className='memory-text';text.textContent=row.message_text;content.append(text)}
+  if(available&&row?.message_text){const text=document.createElement('p');text.className='memory-text';text.textContent=row.message_text;content.append(text)}
   if(available&&row?.media_path){
    const media=document.createElement(row.media_type==="image"?'img':row.media_type==='audio'?'audio':'video');media.className='memory-'+(row.media_type==='image'?'image':row.media_type);if(row.media_type==='image'){media.alt='Souvenir de '+(item.guest_name||'votre invité');media.loading='lazy';media.decoding='async'}else{media.controls=true;media.playsInline=true;media.preload='none'}
    const status=document.createElement('p');status.className='hint';status.setAttribute('role','status');
