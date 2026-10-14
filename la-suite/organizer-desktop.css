@@ -747,7 +747,7 @@ justify-content:center}
  .pc-preview-column .visual-actions{grid-row:4!important}
  .pc-workspace .visual-head h2{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
  .pc-workspace .visual-save-state{flex:none}
- .pc-workspace .visual-drawer{align-self:start;height:auto!important;max-height:100%!important}
+ .pc-workspace .visual-drawer,.pc-workspace[data-tool] .visual-drawer,.pc-workspace .visual-drawer[hidden]{align-self:start;height:auto!important;max-height:100%!important}
  .visual-primary.pc-workspace .visual-drawer .visual-rainbow-dot{display:grid!important;place-items:center;width:26px!important;height:26px!important;min-width:26px!important;max-width:26px!important;aspect-ratio:1;flex:0 0 26px!important;transform:none;border-radius:50%;box-sizing:border-box}
  .visual-primary-ready .pc-workspace .visual-actions .qr-preview-actions .btn{min-height:44px!important;max-width:220px;padding:10px 14px!important;border:1px solid #dfd5ca!important;border-radius:9px;box-sizing:border-box}
  .visual-primary-ready .pc-workspace .visual-actions .qr-preview-actions .btn:not(.primary){background:#fffdf9!important;color:#650f25!important}
