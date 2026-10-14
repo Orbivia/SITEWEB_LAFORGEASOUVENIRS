@@ -473,3 +473,13 @@ body.owner-no-tabs{padding-bottom:0!important}
 .organizer-layout-ready .deposit-open-gallery #memory-list{padding-inline:0}
 .deposit-open-has-memories .deposit-open-content{gap:8px}
 }
+
+/* Type badge and hidden list contents. */
+@media(max-width:760px){
+ .deposit-open-gallery .memory-compact .memory-icon{position:relative;overflow:visible}
+ .deposit-open-gallery .memory-type-badge{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fffdf9;color:#650f25;border:1px solid #e4dccd;font-size:10px;line-height:1}
+ .deposit-open-gallery .memory-type-badge i{font-size:inherit}
+ .deposit-open-gallery .memory-envelope-lock{top:-3px;bottom:auto;right:-3px}
+ .deposit-open-gallery .memory-compact>.memory-content{display:none!important}
+ .memory-reader:not([open]){display:none!important}
+}

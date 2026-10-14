@@ -1629,12 +1629,12 @@ function setupWholeMemoryRows(){
  }
  list.updateWholeRows();
 }
-function applyMemoryFilter(){
+function applyMemoryFilter({preserveOrder=false}={}){
  const cards=[...document.querySelectorAll('#memory-list .memory-row')];
  if(document.querySelector('.owner-deposit-open:not([hidden])'))memoryFilter="all";
  for(const card of cards)card.hidden=memoryFilter!=="all"&&!card.classList.contains(memoryFilter);
  const list=$('memory-list');
- if(document.querySelector('.owner-deposit-open:not([hidden])')&&list){
+ if(document.querySelector('.owner-deposit-open:not([hidden])')&&list&&!preserveOrder){
  const rank=window.SuiteMemoryState.rank;
  cards.sort(window.SuiteMemoryState.compare);
  clearInterval(memoryOpeningTimer);

@@ -796,3 +796,14 @@ justify-content:center}
  .pc-workspace .visual-colors button,.pc-workspace .visual-custom-color{min-height:112px}
  .pc-workspace .visual-font-samples button{min-height:104px;font-size:28px!important}
 }
+
+@media(min-width:761px){
+ .deposit-open-gallery .memory-compact .memory-icon{position:relative;overflow:visible}
+ .deposit-open-gallery .memory-type-badge{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:#fffdf9;color:#650f25;border:1px solid #e4dccd;font-size:10px;line-height:1}
+ .deposit-open-gallery .memory-type-badge i{font-size:inherit}
+ .deposit-open-gallery .memory-envelope-lock{top:-3px;bottom:auto;right:-3px}
+ .deposit-open-gallery .memory-compact>.memory-content{display:none!important}
+ .memory-reader:not([open]){display:none!important}
+
+.deposit-open-gallery .memory-type-badge{width:20px;height:20px;font-size:11px}
+}

@@ -8,8 +8,10 @@ function mount(article,item,available,depositedAt,{fParis,fdate,memoryWasRead,ma
  if(typeLabel)typeLabel.textContent='Découverte le '+fParis(item.delivery_at);
  article.dataset.memoryId=item.id;
  const stateIcon=article.querySelector('.memory-icon');
- const updateReadState=()=>{const read=memoryWasRead(item.id);article.classList.toggle('memory-unread',available&&!read);article.classList.toggle('memory-read',available&&read);stateIcon.innerHTML='<i class="fa-solid '+(read?'fa-envelope-open':'fa-envelope')+'" aria-hidden="true"></i>';stateIcon.setAttribute('aria-label',read?'Souvenir lu':'Souvenir non lu');};
- if(!available){stateIcon.innerHTML='<i class="fa-solid fa-envelope" aria-hidden="true"></i><i class="fa-solid fa-lock memory-envelope-lock" aria-hidden="true"></i>';stateIcon.setAttribute('aria-label','Souvenir verrouillé');const badge=article.querySelector('.lock-badge');if(badge){badge.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i>';badge.setAttribute('aria-label','Ouverture le '+fdate(item.delivery_at));badge.title='Ouverture le '+fdate(item.delivery_at);}return;}
+ const mediaType={image:['fa-image','Photo'],video:['fa-video','Vidéo'],audio:['fa-microphone','Audio'],text:['fa-pen','Petit mot']}[item.media_type]||['fa-pen','Petit mot'];
+ const typeBadge=()=>'<span class="memory-type-badge" title="'+mediaType[1]+'"><i class="fa-solid '+mediaType[0]+'" aria-hidden="true"></i></span>';
+ const updateReadState=()=>{const read=memoryWasRead(item.id);article.classList.toggle('memory-unread',available&&!read);article.classList.toggle('memory-read',available&&read);stateIcon.innerHTML='<i class="fa-solid '+(read?'fa-envelope-open':'fa-envelope')+'" aria-hidden="true"></i>'+typeBadge();stateIcon.setAttribute('aria-label',(read?'Souvenir lu':'Souvenir non lu')+' · '+mediaType[1]);};
+ if(!available){stateIcon.innerHTML='<i class="fa-solid fa-envelope" aria-hidden="true"></i><i class="fa-solid fa-lock memory-envelope-lock" aria-hidden="true"></i>'+typeBadge();stateIcon.setAttribute('aria-label','Souvenir verrouillé · '+mediaType[1]);const badge=article.querySelector('.lock-badge');if(badge){badge.innerHTML='<i class="fa-solid fa-lock" aria-hidden="true"></i>';badge.setAttribute('aria-label','Ouverture le '+fdate(item.delivery_at));badge.title='Ouverture le '+fdate(item.delivery_at);}return;}
  updateReadState();
  article.querySelector('.lock-badge')?.remove();
  const content=article.querySelector('.memory-content'),actions=article.querySelector('.memory-actions');
@@ -23,13 +25,16 @@ function mount(article,item,available,depositedAt,{fParis,fdate,memoryWasRead,ma
  heading.append(titleBlock,close);
  const readerTools=document.createElement('div');readerTools.className='memory-reader-tools';
  actions.querySelectorAll('.mini-link').forEach(button=>readerTools.append(button));
- dialog.append(heading,readerTools);article.append(dialog);
+ dialog.append(heading,content,readerTools);article.append(dialog);
  const open=document.createElement('button');open.type='button';open.className='memory-read-button';
  open.innerHTML='<i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';
  open.setAttribute('aria-label',(({image:'Voir la photo',video:'Voir la vidéo',audio:'Écouter'})[item.media_type]||'Lire le message')+' de '+(item.guest_name||'votre invité'));
- open.onclick=()=>{dialog.insertBefore(content,readerTools);document.body.append(dialog);dialog.showModal();markMemoryRead(item.id);updateReadState();applyMemoryFilter();article.refreshMemoryMedia?.()};
+ let readingPosition=null;
+ const capturePosition=()=>{const nodes=[];for(let node=article.parentElement;node;node=node.parentElement)nodes.push({node,top:node.scrollTop,left:node.scrollLeft});return {nodes,x:window.scrollX,y:window.scrollY};};
+ const restorePosition=()=>{if(!readingPosition)return;for(const {node,top,left} of readingPosition.nodes){node.scrollTop=top;node.scrollLeft=left;}window.scrollTo(readingPosition.x,readingPosition.y);};
+ open.onclick=()=>{readingPosition=capturePosition();document.body.append(dialog);dialog.showModal();markMemoryRead(item.id);updateReadState();applyMemoryFilter({preserveOrder:true});article.refreshMemoryMedia?.()};
  close.onclick=()=>dialog.close();
- dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(content,dialog);open.focus();document.dispatchEvent(new Event('suite-memory-reader-closed'))});
+ dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(dialog);open.focus({preventScroll:true});restorePosition();requestAnimationFrame(restorePosition);document.dispatchEvent(new Event('suite-memory-reader-closed'))});
  actions.append(open);
  article.classList.add('memory-row-clickable');article.tabIndex=0;article.setAttribute('role','button');article.setAttribute('aria-label',open.getAttribute('aria-label'));
  article.addEventListener('click',event=>{if(event.target.closest('button,a,dialog'))return;open.click()});
