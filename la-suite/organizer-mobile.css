@@ -483,3 +483,9 @@ body.owner-no-tabs{padding-bottom:0!important}
  .deposit-open-gallery .memory-compact>.memory-content{display:none!important}
  .memory-reader:not([open]){display:none!important}
 }
+
+/* Discovery keeps the available height for the memory list. */
+.owner-deposit-open .deposit-open-brand{display:none!important}
+@media(max-width:760px){
+ body.organizer-layout-ready.owner-fixed-view .owner-deposit-open.deposit-open-has-memories{padding-bottom:12px!important}
+}
