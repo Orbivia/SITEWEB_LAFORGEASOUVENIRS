@@ -621,7 +621,7 @@ async function acceptGuestFile(file,type,duration,interruption){
    const prepared=await SuiteVideoImport.prepare(file,percent=>{
     if(version!==guestSelectionVersion)return;
     preparationStatus.style.setProperty("--video-progress",percent+"%");
-    showCapture(percent===0?"Lecture de votre vidéo… Gardez cette fenêtre ouverte.":"Préparation de votre vidéo… "+percent+" % · Gardez cette fenêtre ouverte.");
+    showCapture(percent===0?"Lecture de votre vidéo…\nGardez cette fenêtre ouverte.":"Préparation de votre vidéo… "+percent+" %\nGardez cette fenêtre ouverte.");
    },retry=>{
     if(version!==guestSelectionVersion)return;
     showCapture("Votre navigateur demande un appui pour démarrer la conversion.");

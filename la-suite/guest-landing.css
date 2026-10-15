@@ -625,8 +625,8 @@ body.guest-sending #guest-message{visibility:hidden}
 
 /* Recorder geometry stays fixed; both clocks flank the round action. */
 .guest-landing-ready .guest-capture-dialog[open][data-type=audio]{height:240px}
-.guest-landing-ready .guest-capture-dialog[open][data-type=video]{height:440px}
-.guest-capture-dialog:is([data-type=audio],[data-type=video])>.guest-media-dialog-body{flex:1 1 auto;justify-content:center}
+
+.guest-capture-dialog[data-type=audio]>.guest-media-dialog-body{flex:1 1 auto;justify-content:center}
 .guest-capture-dialog .record-timer{display:none!important}
 .guest-capture-dialog .recorder-actions{display:grid;grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr);align-items:center;gap:16px;width:100%;margin:12px 0 4px}
 .guest-capture-dialog .recorder-actions button:not([hidden]){grid-column:2;grid-row:1}
@@ -648,7 +648,7 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-capture-dialog[data-replacing=true] #media-preview{display:none!important}
 .guest-capture-dialog[data-type=audio] .audio-recorder{height:28px;min-height:28px;padding:0}
 .guest-landing-ready .guest-capture-dialog[open][data-type=audio]{height:280px}
-.guest-landing-ready .guest-capture-dialog[open][data-type=video]{height:500px}
+
 
 /* Missing required fields get a clear persistent accent until completed. */
 .guest-landing-ready[data-guest-view=compose] .guest-required-missing{outline:2px solid #ad1730!important;outline-offset:2px;border-color:#ad1730!important;box-shadow:0 0 0 4px #ad173018!important;border-radius:12px}
@@ -729,3 +729,20 @@ body.guest-preview-editor #guest-deposit,body.guest-preview-editor .guest-home-t
 .guest-deposit-dialog #capture-status[data-preparing=true]:not(.err){display:block!important;flex:none;position:relative;margin:8px 0 0;padding:14px 14px 20px;overflow:hidden;border-radius:12px;background:var(--home-paper,#fffdf9);color:var(--home-ink,#302725);font-size:14px;line-height:1.5}
 .guest-deposit-dialog #capture-status[data-preparing=true]:not(.err)::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:var(--video-progress,0%);background:var(--home-accent,#8c173b);transition:width .2s linear}
 .guest-deposit-dialog #capture-status[data-preparing=true] button{display:block;width:100%;margin-top:12px}
+
+/* Photo/video editors share one compact surface and predictable playback geometry. */
+.guest-deposit-dialog #capture-status[data-preparing=true]{white-space:pre-line}
+.guest-landing-ready .guest-capture-dialog[open][data-type=video]{height:auto}
+.guest-capture-dialog:is([data-type=image],[data-type=video])>.guest-media-dialog-body{flex:0 1 auto;justify-content:flex-start;gap:16px}
+.guest-capture-dialog>header{align-items:center;border:0;padding:0 0 14px;margin:0;border-bottom:1px solid color-mix(in srgb,var(--home-accent,#8b2730),transparent 80%)}
+.guest-capture-dialog .guest-media-close{display:grid;place-items:center;flex:none;width:38px;height:38px;min-height:38px;padding:0;border:1px solid color-mix(in srgb,var(--home-accent,#8b2730),transparent 75%);border-radius:50%;background:transparent;font-size:26px;line-height:1}
+.guest-capture-dialog>.guest-media-dialog-body{padding-top:16px}
+.guest-capture-dialog:is([data-type=image],[data-type=video]) #capture-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.guest-capture-dialog:is([data-type=image],[data-type=video]) .media-choice{min-height:100px;padding:14px 10px;border-radius:16px;gap:10px}
+.guest-capture-dialog:is([data-type=image],[data-type=video]) .media-action-label{font-size:14px;line-height:1.3}
+.guest-memory-card[data-ready=true][data-type=video]{height:clamp(180px,30svh,300px);min-height:180px;flex:none;border-radius:14px;overflow:hidden;background:#141414}
+.guest-memory-card[data-ready=true][data-type=video]>.guest-media-video{display:block;position:relative;z-index:1;width:100%;height:100%;min-height:180px;max-height:none;object-fit:contain;pointer-events:auto;background:#141414}
+.guest-memory-card[data-ready=true][data-type=video]>.guest-media-launch{z-index:2}
+.guest-memory-card[data-ready=true][data-type=video] .guest-content-pencil{top:8px;right:8px;width:34px;height:34px;padding:8px}
+.guest-video-playback-error{margin:8px 0 0;padding:12px;border-radius:12px;background:#fff0ee;color:#8b2132;font:500 13px/1.5 Inter,sans-serif}
+.guest-video-playback-error[hidden]{display:none!important}
