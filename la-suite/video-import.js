@@ -1,0 +1,121 @@
+/* Local, bounded video conversion. No upload, microphone or external dependency. */
+(() => {
+ 'use strict';
+ let active = null;
+ const INPUT_LIMIT = 500 * 1024 * 1024, OUTPUT_LIMIT = 50 * 1024 * 1024;
+ const unsupported = () => new Error('Ce navigateur ne peut pas convertir cette vidéo. Ouvrez la page dans Chrome ou Safari, ou choisissez une autre vidéo.');
+ const cancelled = () => new DOMException('Préparation annulée. Choisissez à nouveau votre vidéo.', 'AbortError');
+ function cancel() { active?.abort(); }
+ function fit(width, height) {
+  if (!(width > 0 && height > 0)) throw unsupported();
+  const ratio = Math.min(1, 1280 / Math.max(width, height), 720 / Math.min(width, height));
+  return { width: Math.max(2, Math.floor(width * ratio / 2) * 2), height: Math.max(2, Math.floor(height * ratio / 2) * 2) };
+ }
+ async function prepare(file, onProgress = () => {}) {
+  cancel();
+  if (!file?.size || file.size > INPUT_LIMIT) throw new Error('Choisissez une vidéo de 500 Mo maximum.');
+  const controller = new AbortController(), signal = controller.signal;
+  active = controller;
+  const video = document.createElement('video'), canvas = document.createElement('canvas');
+  const Audio = window.AudioContext || window.webkitAudioContext;
+  let context, source, destination, stream, recorder, url, frame, timer, bytes = 0;
+  const listeners = [];
+  const listen = (target, event, handler) => { target.addEventListener(event, handler); listeners.push(() => target.removeEventListener(event, handler)); };
+  const check = () => { if (signal.aborted) throw cancelled(); };
+  const waitFor = (event, timeout = 15000) => new Promise((resolve, reject) => {
+   let clock;
+   const finish = error => { clearTimeout(clock); video.removeEventListener(event, success); video.removeEventListener('error', failure); signal.removeEventListener('abort', abort); error ? reject(error) : resolve(); };
+   const success = () => finish(), failure = () => finish(unsupported()), abort = () => finish(cancelled());
+   video.addEventListener(event, success, { once: true }); video.addEventListener('error', failure, { once: true }); signal.addEventListener('abort', abort, { once: true });
+   clock = setTimeout(() => finish(new Error('La vidéo ne peut pas être lue sur ce téléphone. Essayez une autre vidéo ou un autre navigateur.')), timeout);
+   if (signal.aborted) abort();
+  });
+  try {
+   if (!window.MediaRecorder || !canvas.captureStream || !Audio) throw unsupported();
+   // Start audio while still in the file-selection gesture. Sound goes only to the encoded file.
+   context = new Audio();
+   const resumed = context.resume();
+   // Handle an early rejection even while metadata is loading.
+   resumed.catch(() => {});
+   video.playsInline = true; video.preload = 'auto'; video.loop = false;
+   url = URL.createObjectURL(file);
+   onProgress(0);
+   const metadata = waitFor('loadedmetadata'); video.src = url; await metadata; check();
+   if (!Number.isFinite(video.duration) || video.duration <= 0) throw unsupported();
+   if (video.duration > 60.1) throw new Error('Choisissez une vidéo d’une minute maximum.');
+   const size = fit(video.videoWidth, video.videoHeight);
+   canvas.width = size.width; canvas.height = size.height;
+   if (video.readyState < 2) await waitFor('loadeddata');
+   check();
+   // A suspended audio graph must never produce a silently muted souvenir.
+   await Promise.race([resumed, new Promise((_, reject) => {
+    timer = setTimeout(() => reject(unsupported()), 5000);
+   })]); clearTimeout(timer);
+   if (context.state !== 'running') throw unsupported();
+   source = context.createMediaElementSource(video);
+   destination = context.createMediaStreamDestination(); source.connect(destination);
+   const ctx = canvas.getContext('2d', { alpha: false });
+   if (!ctx) throw unsupported();
+   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+   stream = canvas.captureStream(30);
+   for (const track of destination.stream.getAudioTracks()) stream.addTrack(track);
+   const mime = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp8,opus', 'video/webm'].find(type => MediaRecorder.isTypeSupported(type));
+   if (!mime) throw unsupported();
+   recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1500000, audioBitsPerSecond: 64000 });
+   const chunks = [];
+   const encoded = new Promise((resolve, reject) => {
+    let done = false, watchdog;
+    const finish = error => {
+     if (done) return; done = true; clearTimeout(watchdog);
+     signal.removeEventListener('abort', abort);
+     if (error) { reject(error); if (recorder.state !== 'inactive') recorder.stop(); }
+     else resolve();
+    };
+    const abort = () => finish(cancelled());
+    signal.addEventListener('abort', abort, { once: true });
+    listen(recorder, 'dataavailable', event => {
+     if (done || !event.data.size) return;
+     bytes += event.data.size;
+     if (bytes > OUTPUT_LIMIT) finish(new Error('Cette vidéo reste trop volumineuse après conversion. Choisissez une vidéo plus courte.'));
+     else chunks.push(event.data);
+    });
+    listen(recorder, 'error', () => finish(unsupported()));
+    listen(recorder, 'stop', () => finish());
+    listen(video, 'error', () => finish(unsupported()));
+    listen(video, 'ended', () => { if (recorder.state !== 'inactive') recorder.stop(); });
+    listen(document, 'visibilitychange', () => { if (document.hidden) controller.abort(); });
+    watchdog = setTimeout(() => finish(new Error('La conversion a été interrompue. Gardez cette page ouverte et réessayez.')), Math.max(30000, video.duration * 1000 + 30000));
+    const draw = () => {
+     if (done || signal.aborted) return;
+     try { ctx.drawImage(video, 0, 0, canvas.width, canvas.height); onProgress(Math.min(99, Math.floor(video.currentTime / video.duration * 100))); }
+     catch { finish(unsupported()); return; }
+     frame = requestAnimationFrame(draw);
+    };
+    try {
+     recorder.start(500); draw();
+     video.play().catch(() => finish(unsupported()));
+    } catch { finish(unsupported()); }
+   });
+   await encoded; check();
+   if (video.currentTime < video.duration - 0.25) throw new Error('La conversion est incomplète. Réessayez en gardant la page ouverte.');
+   const type = recorder.mimeType.split(';')[0];
+   const output = new File(chunks, 'souvenir.' + (type === 'video/mp4' ? 'mp4' : 'webm'), { type });
+   if (!output.size || output.size > OUTPUT_LIMIT) throw unsupported();
+   onProgress(100);
+   return { file: output, duration: video.duration };
+  } finally {
+   clearTimeout(timer); cancelAnimationFrame(frame);
+   for (const remove of listeners) remove();
+   if (recorder && recorder.state !== 'inactive') { try { recorder.stop(); } catch {} }
+   video.pause(); video.removeAttribute('src'); video.load();
+   for (const track of stream?.getTracks() || []) track.stop();
+   for (const track of destination?.stream.getTracks() || []) track.stop();
+   source?.disconnect(); destination?.disconnect();
+   if (context) { try { await context.close(); } catch {} }
+   if (url) URL.revokeObjectURL(url);
+   canvas.width = canvas.height = 0;
+   if (active === controller) active = null;
+  }
+ }
+ window.SuiteVideoImport = Object.freeze({ prepare, cancel, fit, inputLimit: INPUT_LIMIT });
+})();

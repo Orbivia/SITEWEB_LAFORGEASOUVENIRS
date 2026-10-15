@@ -532,6 +532,7 @@ async function guestInvoke(body){
  return r.data;
 }
 function setGuestMode(mode){
+ window.SuiteVideoImport?.cancel();
  const wasCapturing=recorderPreparing||recorder?.state==="recording";recorderGeneration++;recorderPreparing=false;stopRecorder();stopStream();showCapture("");
  if(wasCapturing&&!guestBusy)$("guest-message").querySelector('[type="submit"]').disabled=false;
  document.querySelectorAll(".media-panel").forEach(p=>p.classList.remove("active"));
@@ -541,6 +542,7 @@ function setGuestMode(mode){
  $("audio-indicator").textContent="Micro prêt";
 }
 function chooseGuestType(type){
+ window.SuiteVideoImport?.cancel();
  guestType=type;guestSelectionVersion++;resetPreview();guestTransaction=null;
  if(!guestBusy)$("guest-message").querySelector('[type="submit"]').disabled=false;show($("status"),"");
  document.querySelectorAll("[data-memory-type]").forEach(b=>{const selected=b.dataset.memoryType===type;b.classList.toggle("active",selected);b.setAttribute("aria-pressed",String(selected))});
@@ -559,9 +561,9 @@ function chooseGuestType(type){
  const capture=$("capture-memory");capture.hidden=false;capture.dataset.mediaMode=type==="image"?"photo":type;
  capture.querySelector('.media-action-label').textContent=type==="image"?"Prendre une photo":type==="audio"?"M’enregistrer":"Me filmer";
  capture.querySelector('i').className=type==='image'?'fa-solid fa-camera':type==='audio'?'fa-solid fa-microphone':'fa-solid fa-video';
- $("media-file").accept=type==="image"?"image/jpeg,image/png,image/webp,image/heic,image/heif":type==="audio"?"audio/webm,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg":"video/mp4,video/quicktime,video/webm";
+ $("media-file").accept=type==="image"?"image/jpeg,image/png,image/webp,image/heic,image/heif":type==="audio"?"audio/webm,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg":"video/*,.mp4,.mov,.m4v,.webm,.ogv,.mkv,.avi";
  $("media-file").value="";$("photo-file").value="";
- $("file-help").textContent=type==="image"?"Photo · 10 Mo maximum.":type==="audio"?"Audio · 3 minutes et 20 Mo maximum.":"Vidéo · 1 minute, 50 Mo et HD 720p maximum.";
+ $("file-help").textContent=type==="image"?"Photo · 10 Mo maximum.":type==="audio"?"Audio · 3 minutes et 20 Mo maximum.":"Vidéo · 1 minute maximum. Conversion automatique en HD 720p.";
  setGuestMode(type==="text"?"text":type==="audio"?type:"upload");
 }
 async function optimizeGuestPhoto(file){
@@ -601,19 +603,29 @@ function guestMediaDuration(file){
 }
 async function acceptGuestFile(file,type,duration,interruption){
  const version=++guestSelectionVersion;guestTransaction=null;
+ window.SuiteVideoImport?.cancel();
  if(!file)return;
  try{
   $("guest-message").querySelector('[type="submit"]').disabled=true;showCapture("Préparation…");
   if(file.size===0)throw new Error("Aucun enregistrement récupéré. Réactivez la caméra ou le micro et recommencez.");
-  const normalizedType=file.type.split(";")[0];if(group(normalizedType)!==type)throw new Error("Choisissez un fichier correspondant au type de souvenir sélectionné.");
-  if(file.size>GUEST_LIMITS[type])throw new Error(type==="image"?"La photo dépasse 10 Mo.":type==="audio"?"L’audio dépasse 20 Mo.":"La vidéo dépasse 50 Mo.");
-  if(type==="image")file=await optimizeGuestPhoto(file);
+  const normalizedType=file.type.split(";")[0];
+  const videoImport=type==="video"&&!duration;
+  const videoCandidate=videoImport&&(normalizedType.startsWith("video/")||(!normalizedType||normalizedType==="application/octet-stream")&&/\.(mp4|mov|m4v|webm|ogv|mkv|avi)$/i.test(file.name));
+  if(group(normalizedType)!==type&&!videoCandidate)throw new Error("Choisissez un fichier correspondant au type de souvenir sélectionné.");
+  const inputLimit=videoImport?500*1024*1024:GUEST_LIMITS[type];
+  if(file.size>inputLimit)throw new Error(type==="image"?"La photo dépasse 10 Mo.":type==="audio"?"L’audio dépasse 20 Mo.":videoImport?"Choisissez une vidéo de 500 Mo maximum.":"La vidéo dépasse 50 Mo.");
+  if(videoImport){
+   if(!window.SuiteVideoImport)throw new Error("Rechargez la page pour préparer votre vidéo.");
+   const prepared=await SuiteVideoImport.prepare(file,percent=>{if(version===guestSelectionVersion)showCapture("Préparation de votre vidéo… "+percent+" % · Gardez cette fenêtre ouverte.");});
+   file=prepared.file;duration=prepared.duration;
+  }else if(type==="image")file=await optimizeGuestPhoto(file);
   else{duration=duration||await guestMediaDuration(file);if(duration>(type==="video"?60.1:180.1))throw new Error(type==="video"?"Choisissez une vidéo d’une minute maximum.":"Choisissez un audio de 3 minutes maximum.")}
   if(version!==guestSelectionVersion)return;
   if(type==="video")await validateVideoDimensions(file);
   if(version!==guestSelectionVersion)return;
   if(file.size>GUEST_LIMITS[type])throw new Error("Ce souvenir dépasse la taille autorisée.");
-  if(normalizedType!==file.type&&type!=="image")file=new File([file],file.name,{type:normalizedType});
+  const preparedType=file.type.split(";")[0];
+  if(preparedType!==file.type&&type!=="image")file=new File([file],file.name,{type:preparedType});
   preview(file,type);selectedMedia.duration=duration;refreshGuestLimits();showCapture(interruption||"Prêt à envoyer.",!interruption);
  }catch(error){if(version===guestSelectionVersion)showCapture(error.message,false)}
  finally{if(version===guestSelectionVersion)$("guest-message").querySelector('[type="submit"]').disabled=false}
@@ -635,7 +647,7 @@ function updateDeliveryHelp(){
  $('delivery-value').textContent=$('deliver-now').checked?'Maintenant':$('delivery_date').value?fdate($('delivery_date').value):'Choisir une date';
 }
 function initGuestControls(){
- window.addEventListener("la-suite-guest-home",()=>interruptCapture("L’enregistrement a été arrêté. Votre aperçu reste disponible."));
+ window.addEventListener("la-suite-guest-home",()=>{window.SuiteVideoImport?.cancel();interruptCapture("L’enregistrement a été arrêté. Votre aperçu reste disponible.");});
  document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy&&b.dataset.memoryType!==guestType)chooseGuestType(b.dataset.memoryType)}));
  document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy){setGuestMode(b.dataset.mediaMode);if(b.dataset.mediaMode==="upload")$("media-file").click();else if(b.dataset.mediaMode==="photo")$("photo-file").click();else if(["video","audio"].includes(b.dataset.mediaMode)){guestSelectionVersion++;resetPreview();guestTransaction=null;prepareRecorder(b.dataset.mediaMode).catch(error=>showCapture(captureError(error,b.dataset.mediaMode),false))}}}));
  $("media-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],guestType));
