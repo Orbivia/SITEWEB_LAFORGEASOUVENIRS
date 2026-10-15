@@ -11,7 +11,7 @@
   const ratio = Math.min(1, 1280 / Math.max(width, height), 720 / Math.min(width, height));
   return { width: Math.max(2, Math.floor(width * ratio / 2) * 2), height: Math.max(2, Math.floor(height * ratio / 2) * 2) };
  }
- async function prepare(file, onProgress = () => {}) {
+ async function prepare(file, onProgress = () => {}, onPlaybackBlocked) {
   cancel();
   if (!file?.size || file.size > INPUT_LIMIT) throw new Error('Choisissez une vidéo de 500 Mo maximum.');
   const controller = new AbortController(), signal = controller.signal;
@@ -38,6 +38,10 @@
    // Handle an early rejection even while metadata is loading.
    resumed.catch(() => {});
    video.playsInline = true; video.preload = 'auto'; video.loop = false;
+   // Some mobile browsers do not decode a detached media element reliably.
+   video.setAttribute('aria-hidden', 'true');
+   video.style.cssText = 'position:fixed;left:-10000px;top:0;width:2px;height:2px;pointer-events:none';
+   document.body.append(video);
    url = URL.createObjectURL(file);
    onProgress(0);
    const metadata = waitFor('loadedmetadata'); video.src = url; await metadata; check();
@@ -48,10 +52,8 @@
    if (video.readyState < 2) await waitFor('loadeddata');
    check();
    // A suspended audio graph must never produce a silently muted souvenir.
-   await Promise.race([resumed, new Promise((_, reject) => {
-    timer = setTimeout(() => reject(unsupported()), 5000);
-   })]); clearTimeout(timer);
-   if (context.state !== 'running') throw unsupported();
+   // If autoplay is blocked, resume both audio and video from a real button click.
+   if (context.state !== 'running' && !onPlaybackBlocked) throw unsupported();
    source = context.createMediaElementSource(video);
    destination = context.createMediaStreamDestination(); source.connect(destination);
    const ctx = canvas.getContext('2d', { alpha: false });
@@ -85,16 +87,39 @@
     listen(video, 'ended', () => { if (recorder.state !== 'inactive') recorder.stop(); });
     listen(document, 'visibilitychange', () => { if (document.hidden) controller.abort(); });
     watchdog = setTimeout(() => finish(new Error('La conversion a été interrompue. Gardez cette page ouverte et réessayez.')), Math.max(30000, video.duration * 1000 + 30000));
+    let lastProgress = -1;
     const draw = () => {
      if (done || signal.aborted) return;
-     try { ctx.drawImage(video, 0, 0, canvas.width, canvas.height); onProgress(Math.min(99, Math.floor(video.currentTime / video.duration * 100))); }
+     try {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const progress = Math.min(99, Math.floor(video.currentTime / video.duration * 100));
+      if (progress !== lastProgress) { lastProgress = progress; onProgress(progress); }
+     }
      catch { finish(unsupported()); return; }
      frame = requestAnimationFrame(draw);
     };
-    try {
-     recorder.start(500); draw();
-     video.play().catch(() => finish(unsupported()));
-    } catch { finish(unsupported()); }
+    let prompted = false, starting = false;
+    const startPlayback = () => {
+     if (done || signal.aborted || starting) return;
+     starting = true;
+     // Invoke both calls synchronously so a retry retains user activation.
+     const audioReady = context.resume(), playing = video.play();
+     Promise.race([Promise.all([audioReady, playing]), new Promise((_, reject) => {
+      timer = setTimeout(() => reject(unsupported()), 5000);
+     })]).then(() => {
+      clearTimeout(timer); starting = false;
+      if (done || signal.aborted) return;
+      if (context.state !== 'running') throw unsupported();
+      recorder.start(500); draw();
+     }).catch(error => {
+      clearTimeout(timer); starting = false; video.pause();
+      if (done || signal.aborted) return;
+      if (!prompted && onPlaybackBlocked && (error.name === 'NotAllowedError' || context.state !== 'running')) {
+       prompted = true; onPlaybackBlocked(startPlayback);
+      } else finish(unsupported());
+     });
+    };
+    try { startPlayback(); } catch { finish(unsupported()); }
    });
    await encoded; check();
    if (video.currentTime < video.duration - 0.25) throw new Error('La conversion est incomplète. Réessayez en gardant la page ouverte.');
@@ -107,7 +132,7 @@
    clearTimeout(timer); cancelAnimationFrame(frame);
    for (const remove of listeners) remove();
    if (recorder && recorder.state !== 'inactive') { try { recorder.stop(); } catch {} }
-   video.pause(); video.removeAttribute('src'); video.load();
+   video.pause(); video.removeAttribute('src'); video.load(); video.remove();
    for (const track of stream?.getTracks() || []) track.stop();
    for (const track of destination?.stream.getTracks() || []) track.stop();
    source?.disconnect(); destination?.disconnect();

@@ -605,6 +605,8 @@ async function acceptGuestFile(file,type,duration,interruption){
  const version=++guestSelectionVersion;guestTransaction=null;
  window.SuiteVideoImport?.cancel();
  if(!file)return;
+ const preparationStatus=$("capture-status");
+ preparationStatus.dataset.preparing="true";preparationStatus.setAttribute("role","status");preparationStatus.setAttribute("aria-live","polite");
  try{
   $("guest-message").querySelector('[type="submit"]').disabled=true;showCapture("Préparation…");
   if(file.size===0)throw new Error("Aucun enregistrement récupéré. Réactivez la caméra ou le micro et recommencez.");
@@ -616,7 +618,17 @@ async function acceptGuestFile(file,type,duration,interruption){
   if(file.size>inputLimit)throw new Error(type==="image"?"La photo dépasse 10 Mo.":type==="audio"?"L’audio dépasse 20 Mo.":videoImport?"Choisissez une vidéo de 500 Mo maximum.":"La vidéo dépasse 50 Mo.");
   if(videoImport){
    if(!window.SuiteVideoImport)throw new Error("Rechargez la page pour préparer votre vidéo.");
-   const prepared=await SuiteVideoImport.prepare(file,percent=>{if(version===guestSelectionVersion)showCapture("Préparation de votre vidéo… "+percent+" % · Gardez cette fenêtre ouverte.");});
+   const prepared=await SuiteVideoImport.prepare(file,percent=>{
+    if(version!==guestSelectionVersion)return;
+    preparationStatus.style.setProperty("--video-progress",percent+"%");
+    showCapture(percent===0?"Lecture de votre vidéo… Gardez cette fenêtre ouverte.":"Préparation de votre vidéo… "+percent+" % · Gardez cette fenêtre ouverte.");
+   },retry=>{
+    if(version!==guestSelectionVersion)return;
+    showCapture("Votre navigateur demande un appui pour démarrer la conversion.");
+    const start=document.createElement("button");start.type="button";start.className="btn primary";start.textContent="Démarrer la préparation";
+    start.onclick=()=>{start.disabled=true;retry();};
+    preparationStatus.append(start);
+   });
    file=prepared.file;duration=prepared.duration;
   }else if(type==="image")file=await optimizeGuestPhoto(file);
   else{duration=duration||await guestMediaDuration(file);if(duration>(type==="video"?60.1:180.1))throw new Error(type==="video"?"Choisissez une vidéo d’une minute maximum.":"Choisissez un audio de 3 minutes maximum.")}
@@ -628,7 +640,7 @@ async function acceptGuestFile(file,type,duration,interruption){
   if(preparedType!==file.type&&type!=="image")file=new File([file],file.name,{type:preparedType});
   preview(file,type);selectedMedia.duration=duration;refreshGuestLimits();showCapture(interruption||"Prêt à envoyer.",!interruption);
  }catch(error){if(version===guestSelectionVersion)showCapture(error.message,false)}
- finally{if(version===guestSelectionVersion)$("guest-message").querySelector('[type="submit"]').disabled=false}
+ finally{if(version===guestSelectionVersion){delete preparationStatus.dataset.preparing;preparationStatus.style.removeProperty("--video-progress");$("guest-message").querySelector('[type="submit"]').disabled=false}}
 }
 let deliveryTouched=false;
 function chooseDelivery(choice){
@@ -650,7 +662,7 @@ function initGuestControls(){
  window.addEventListener("la-suite-guest-home",()=>{window.SuiteVideoImport?.cancel();interruptCapture("L’enregistrement a été arrêté. Votre aperçu reste disponible.");});
  document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy&&b.dataset.memoryType!==guestType)chooseGuestType(b.dataset.memoryType)}));
  document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy){setGuestMode(b.dataset.mediaMode);if(b.dataset.mediaMode==="upload")$("media-file").click();else if(b.dataset.mediaMode==="photo")$("photo-file").click();else if(["video","audio"].includes(b.dataset.mediaMode)){guestSelectionVersion++;resetPreview();guestTransaction=null;prepareRecorder(b.dataset.mediaMode).catch(error=>showCapture(captureError(error,b.dataset.mediaMode),false))}}}));
- $("media-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],guestType));
+ $("media-file").addEventListener("change",e=>{const file=e.target.files?.[0];e.target.value="";if(file)acceptGuestFile(file,guestType);});
  $("photo-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],"image"));
  for(const kind of ["video","audio"]){
   $("prepare-"+kind).addEventListener("click",()=>startRecorder(kind).catch(error=>showCapture(captureError(error,kind),false)));

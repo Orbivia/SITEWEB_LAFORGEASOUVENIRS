@@ -724,3 +724,8 @@ body.guest-preview-editor #guest-deposit,body.guest-preview-editor .guest-home-t
 .guest-preview-editor #capsule-title[contenteditable=true]{display:block;overflow:auto;overflow-wrap:anywhere;white-space:pre-wrap}
 .guest-landing #guest-event-date{max-width:100%;overflow-wrap:anywhere}
 .guest-landing .guest-host-zone,.guest-landing .guest-greeting{min-width:0;max-width:100%;box-sizing:border-box}
+
+/* Keep preparation feedback visible while the selected video is decoded/converted. */
+.guest-deposit-dialog #capture-status[data-preparing=true]:not(.err){display:block!important;flex:none;position:relative;margin:8px 0 0;padding:14px 14px 20px;overflow:hidden;border-radius:12px;background:var(--home-paper,#fffdf9);color:var(--home-ink,#302725);font-size:14px;line-height:1.5}
+.guest-deposit-dialog #capture-status[data-preparing=true]:not(.err)::after{content:"";position:absolute;left:0;bottom:0;height:4px;width:var(--video-progress,0%);background:var(--home-accent,#8c173b);transition:width .2s linear}
+.guest-deposit-dialog #capture-status[data-preparing=true] button{display:block;width:100%;margin-top:12px}
