@@ -3,7 +3,8 @@
     "@supabase/supabase-js": "2.58.0",
     "qrcodejs": "1.0.0",
     "tus-js-client": "4.3.1",
-    "@fortawesome/fontawesome-free": "6.5.0"
+    "@fortawesome/fontawesome-free": "6.5.0",
+    "@ffmpeg/core": "0.12.10"
   },
   "font_stylesheets": [
     "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;700&family=Playfair+Display:wght@400;600&family=Quicksand:wght@400;700&family=Great+Vibes&family=Abril+Fatface&family=Cinzel:wght@400;600&family=Oswald:wght@400;600&family=Caveat:wght@400;700&family=Pacifico&family=Amatic+SC:wght@400;700&family=Josefin+Sans:wght@400;600&family=Special+Elite&family=Inter:wght@400;500;600;700&display=swap",
@@ -527,6 +528,41 @@
       "path": "vendor/tus-4.3.1.min.js",
       "bytes": 86773,
       "sha256": "8cbb1b63fccc3bba0ae73ad1deb160ce046c3750851d0c3e94921ae3ef070eb8"
+    },
+    {
+      "path": "vendor/ffmpeg-core-0.12.10/COPYING.GPLv2",
+      "bytes": 18092,
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+    },
+    {
+      "path": "vendor/ffmpeg-core-0.12.10/README.md",
+      "bytes": 1226,
+      "sha256": "215724ffa35b036d9a713190bed4b05a7fb1b65dc3a4caa736ec960e43f80a42"
+    },
+    {
+      "path": "vendor/ffmpeg-core-0.12.10/ffmpeg-core.js",
+      "bytes": 112059,
+      "sha256": "b266ab5b952555881dd6310663986994a182acb2b7ff25cf10a25f7a37ac2b21"
+    },
+    {
+      "path": "vendor/ffmpeg-core-0.12.10/ffmpeg-core.wasm.part1",
+      "bytes": 8388576,
+      "sha256": "216cacdcbd405df3538865b6009c57b0335b6904166c7551acde5990cc0a9478"
+    },
+    {
+      "path": "vendor/ffmpeg-core-0.12.10/ffmpeg-core.wasm.part2",
+      "bytes": 8388576,
+      "sha256": "6e5f90e9bd970580d89e67b81c03df72aa314435c1625ce6aeae91aa7badc63c"
+    },
+    {
+      "path": "vendor/ffmpeg-core-0.12.10/ffmpeg-core.wasm.part3",
+      "bytes": 8388576,
+      "sha256": "024dd88221f9c1176451b4ab44833e986e8010f25e2ef5dec246d8e73df40750"
+    },
+    {
+      "path": "vendor/ffmpeg-core-0.12.10/ffmpeg-core.wasm.part4",
+      "bytes": 7066691,
+      "sha256": "9759d9562a610b8ed072104f67ad144f889daa42968587d1249956f9dcc43a6a"
     }
   ]
 }
