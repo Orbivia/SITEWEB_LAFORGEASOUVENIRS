@@ -546,7 +546,7 @@ function chooseGuestType(type){
  document.querySelectorAll("[data-memory-type]").forEach(b=>{const selected=b.dataset.memoryType===type;b.classList.toggle("active",selected);b.setAttribute("aria-pressed",String(selected))});
  $("capture-choices").hidden=type==="text";$("file-help").hidden=type==="text";
  const importButton=document.querySelector('[data-media-mode="upload"]');
- importButton.hidden=type==='audio'||type==='video';
+ importButton.hidden=type==='audio';
  importButton.querySelector('.media-action-label').textContent=type==="image"?"Choisir une photo":type==="audio"?"Choisir un audio":"Choisir une vidéo";
  importButton.querySelector('i').className=type==="image"?'fa-solid fa-images':type==="audio"?'fa-solid fa-microphone':'fa-solid fa-video';
  $('import-memory-help').textContent=type==='image'?'Depuis votre galerie':'Depuis vos fichiers';$("message_text").required=type==="text";
@@ -561,8 +561,8 @@ function chooseGuestType(type){
  capture.querySelector('i').className=type==='image'?'fa-solid fa-camera':type==='audio'?'fa-solid fa-microphone':'fa-solid fa-video';
  $("media-file").accept=type==="image"?"image/jpeg,image/png,image/webp,image/heic,image/heif":type==="audio"?"audio/webm,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/ogg":"video/mp4,video/quicktime,video/webm";
  $("media-file").value="";$("photo-file").value="";
- $("file-help").textContent=type==="image"?"Photo · 10 Mo maximum.":type==="audio"?"Audio · 3 minutes et 20 Mo maximum.":"Vidéo · 1 minute et 50 Mo maximum.";
- setGuestMode(type==="text"?"text":["audio","video"].includes(type)?type:"upload");
+ $("file-help").textContent=type==="image"?"Photo · 10 Mo maximum.":type==="audio"?"Audio · 3 minutes et 20 Mo maximum.":"Vidéo · 1 minute, 50 Mo et HD 720p maximum.";
+ setGuestMode(type==="text"?"text":type==="audio"?type:"upload");
 }
 async function optimizeGuestPhoto(file){
  // HEIC/HEIF must also decode and optimize; never pass through originals.

@@ -613,7 +613,7 @@ body.guest-sending #guest-message{visibility:hidden}
 .guest-capture-dialog #audio-panel.active{margin:0}
 
 /* One round record/stop action; permission is requested only on its first click. */
-.guest-capture-dialog:is([data-type=audio],[data-type=video]) #capture-choices,
+.guest-capture-dialog[data-type=audio] #capture-choices,
 .guest-capture-dialog #start-audio,.guest-capture-dialog #start-video,
 .guest-capture-dialog #audio-indicator,.guest-capture-dialog .record-remaining{display:none!important}
 .guest-capture-dialog .recorder-actions{display:flex;justify-content:center;margin:12px 0 4px}
