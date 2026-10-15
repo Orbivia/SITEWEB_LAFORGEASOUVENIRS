@@ -57,7 +57,7 @@
   active = controller;
   const video = document.createElement('video'), canvas = document.createElement('canvas');
   const Audio = window.AudioContext || window.webkitAudioContext;
-  let context, source, destination, stream, recorder, url, frame, videoFrame, timer, bytes = 0, paintedFrames = 0, poster = '';
+  let context, source, destination, stream, recorder, url, frame, videoFrame, timer, bytes = 0, paintedFrames = 0, poster = '', readbackVerified = false, failedDraws = 0;
   const listeners = [];
   const listen = (target, event, handler) => { target.addEventListener(event, handler); listeners.push(() => target.removeEventListener(event, handler)); };
   const check = () => { if (signal.aborted) throw cancelled(); };
@@ -96,7 +96,7 @@
    if (context.state !== 'running' && !onPlaybackBlocked) throw unsupported();
    source = context.createMediaElementSource(video);
    destination = context.createMediaStreamDestination(); source.connect(destination);
-   const ctx = canvas.getContext('2d', { alpha: false });
+   const ctx = canvas.getContext('2d', { alpha: false, willReadFrequently: true });
    if (!ctx) throw unsupported();
    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
    stream = canvas.captureStream(30);
@@ -132,14 +132,28 @@
      if (done || signal.aborted) return;
      try {
       if (video.readyState >= 2) {
-       ctx.drawImage(video, 0, 0, canvas.width, canvas.height); paintedFrames++;
+       // Firefox Android may silently ignore drawImage(video) for hardware-decoded
+       // files. A successful call alone does not mean an image was copied.
+       const probe = !readbackVerified && video.currentTime > Math.min(0.15, video.duration / 4);
+       if (probe) { ctx.fillStyle = 'rgb(1,254,3)'; ctx.fillRect(0, 0, canvas.width, canvas.height); }
+       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+       if (probe) {
+        const untouched = [[0, 0], [canvas.width >> 1, canvas.height >> 1], [canvas.width - 1, canvas.height - 1]].every(([x, y]) => {
+         const pixel = ctx.getImageData(x, y, 1, 1).data;
+         return pixel[0] === 1 && pixel[1] === 254 && pixel[2] === 3;
+        });
+        if (untouched) {
+         if (++failedDraws >= 3) throw new Error('Ce navigateur lit la vidéo mais ne permet pas de convertir ses images.');
+        } else readbackVerified = true;
+       }
+       paintedFrames++;
        stream.getVideoTracks()[0]?.requestFrame?.();
-       if (!poster && video.currentTime > 0 && canvas.toDataURL) poster = canvas.toDataURL('image/jpeg', 0.82);
+       if (!poster && readbackVerified && canvas.toDataURL) poster = canvas.toDataURL('image/jpeg', 0.82);
       }
       const progress = Math.min(99, Math.floor(video.currentTime / video.duration * 100));
       if (progress !== lastProgress) { lastProgress = progress; onProgress(progress); }
      }
-     catch { finish(unsupported()); return; }
+     catch (error) { finish(error); return; }
      if (video.requestVideoFrameCallback) videoFrame = video.requestVideoFrameCallback(draw);
      else frame = requestAnimationFrame(draw);
     };

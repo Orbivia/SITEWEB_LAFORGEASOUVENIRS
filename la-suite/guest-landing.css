@@ -746,3 +746,9 @@ body.guest-preview-editor #guest-deposit,body.guest-preview-editor .guest-home-t
 .guest-memory-card[data-ready=true][data-type=video] .guest-content-pencil{top:8px;right:8px;width:34px;height:34px;padding:8px}
 .guest-video-playback-error{margin:8px 0 0;padding:12px;border-radius:12px;background:#fff0ee;color:#8b2132;font:500 13px/1.5 Inter,sans-serif}
 .guest-video-playback-error[hidden]{display:none!important}
+
+/* Keep the explicit original-file alternative readable after conversion fails. */
+.guest-deposit-dialog #capture-status[data-original-choice=true]{display:block!important;max-height:none;overflow:visible;white-space:normal}
+.guest-deposit-dialog #capture-status[data-original-choice=true] p{margin:10px 0;line-height:1.5}
+.guest-deposit-dialog #capture-status[data-original-choice=true] button{display:block;width:100%;margin-top:12px;white-space:normal}
+.guest-original-video-notice{margin:8px 0 0;font-size:13px;line-height:1.5}

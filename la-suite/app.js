@@ -57,10 +57,10 @@ async function user(){if(!sb)return null;await sb.auth.getSession();const{data}=
 async function capsuleAccess(){const{data,error}=await sb.rpc("owner_capsule_access");if(error||!data)throw error||new Error("Impossible de vérifier votre capsule. Réessayez.");return data}
 let mediaRequestVersion=0;
 function stopStream(){mediaRequestVersion++;if(activeStream){activeStream.getTracks().forEach(t=>t.stop());activeStream=null}}
-function resetPreview(){if(selectedMedia?.url)URL.revokeObjectURL(selectedMedia.url);selectedMedia=null;["preview-video","preview-audio","preview-image"].forEach(id=>{const e=$(id);if(e){e.pause?.();e.hidden=true;e.removeAttribute("src");e.removeAttribute("poster");e.load?.()}});if($("media-preview"))$("media-preview").hidden=true}
+function resetPreview(){$("guest-original-video-notice")?.remove();if(selectedMedia?.url)URL.revokeObjectURL(selectedMedia.url);selectedMedia=null;["preview-video","preview-audio","preview-image"].forEach(id=>{const e=$(id);if(e){e.pause?.();e.hidden=true;e.removeAttribute("src");e.removeAttribute("poster");e.load?.()}});if($("media-preview"))$("media-preview").hidden=true}
 function preview(file,type,poster=""){resetPreview();const url=URL.createObjectURL(file);selectedMedia={file,type,url};$("media-preview").hidden=false;const el=$(type==="video"?"preview-video":type==="audio"?"preview-audio":"preview-image");if(type==="video"){el.poster=poster;el.preload="auto";}el.src=url;el.hidden=false}
 async function countdown(el,valid){el.hidden=false;for(let i=3;i>0;i--){if(!valid())return false;el.textContent=i;await new Promise(r=>setTimeout(r,1000))}if(!valid())return false;el.textContent="●";await new Promise(r=>setTimeout(r,250));if(!valid())return false;el.hidden=true;return true}
-function showCapture(message,ok=true){show($("capture-status"),message,ok);show($("status"),"");if(message&&!ok)$("capture-status").scrollIntoView({behavior:"smooth",block:"nearest"})}
+function showCapture(message,ok=true){delete $("capture-status").dataset.originalChoice;show($("capture-status"),message,ok);show($("status"),"");if(message&&!ok)$("capture-status").scrollIntoView({behavior:"smooth",block:"nearest"})}
 function captureError(error,kind){return error?.name==="NotAllowedError"?"Autorisez l’accès "+(kind==="video"?"à la caméra":"au microphone")+" dans votre navigateur, puis réessayez. Vous pouvez aussi choisir un fichier.":error?.name==="NotFoundError"?"Aucun appareil disponible. Choisissez un fichier.":"La caméra ou le micro est indisponible. Fermez les autres applications qui l’utilisent, puis réessayez ou choisissez un fichier."}
 function interruptCapture(message){
  if(recorder?.state==="recording"){recorder.interruptionText=message;stopRecorder();return}
@@ -544,7 +544,7 @@ function setGuestMode(mode){
 function chooseGuestType(type){
  window.SuiteVideoImport?.cancel();
  guestType=type;guestSelectionVersion++;resetPreview();guestTransaction=null;
- const preparationStatus=$("capture-status");delete preparationStatus.dataset.preparing;preparationStatus.style.removeProperty("--video-progress");
+ const preparationStatus=$("capture-status");delete preparationStatus.dataset.originalChoice;delete preparationStatus.dataset.preparing;preparationStatus.style.removeProperty("--video-progress");
  if(!guestBusy)$("guest-message").querySelector('[type="submit"]').disabled=false;show($("status"),"");
  document.querySelectorAll("[data-memory-type]").forEach(b=>{const selected=b.dataset.memoryType===type;b.classList.toggle("active",selected);b.setAttribute("aria-pressed",String(selected))});
  $("capture-choices").hidden=type==="text";$("file-help").hidden=type==="text";
@@ -583,12 +583,12 @@ async function optimizeGuestPhoto(file){
  }finally{URL.revokeObjectURL(url)}
 }
 // Validate encoded video dimensions, including portrait orientation.
-function validateVideoDimensions(file){
+function validateVideoDimensions(file,original=false){
  return new Promise((resolve,reject)=>{
   const video=document.createElement("video"),url=URL.createObjectURL(file);let finished=false;
   const timeout=setTimeout(()=>finish(new Error("Impossible de vérifier la qualité vidéo. Réessayez.")),10000);
   function finish(error){if(finished)return;finished=true;clearTimeout(timeout);video.onloadedmetadata=null;video.onerror=null;video.removeAttribute("src");video.load();URL.revokeObjectURL(url);error?reject(error):resolve();}
-  video.onloadedmetadata=()=>{const long=Math.max(video.videoWidth,video.videoHeight),short=Math.min(video.videoWidth,video.videoHeight);finish(!short||long>1280||short>720?new Error("La vidéo doit être en HD 720p maximum (1280 × 720, ou portrait)."):null);};
+  video.onloadedmetadata=()=>{const long=Math.max(video.videoWidth,video.videoHeight),short=Math.min(video.videoWidth,video.videoHeight);finish(!short||long>(original?1920:1280)||short>(original?1080:720)?new Error(original?"La vidéo d’origine doit être en Full HD maximum (1920 × 1080, ou portrait).":"La vidéo doit être en HD 720p maximum (1280 × 720, ou portrait)."):null);};
   video.onerror=()=>finish(new Error("Cette vidéo ne peut pas être vérifiée. Essayez un autre format."));video.preload="metadata";video.src=url;
  });
 }
@@ -602,7 +602,23 @@ function guestMediaDuration(file){
   media.onerror=()=>finish(new Error("Ce fichier ne peut pas être lu. Essayez un autre format."));media.src=url;
  });
 }
-async function acceptGuestFile(file,type,duration,interruption){
+// Offer the original only after a failed conversion, with an explicit choice.
+// The uploaded file and the preview always refer to the same accepted bytes.
+async function offerGuestOriginalVideo(file,version){
+ if(!file?.size||file.size>GUEST_LIMITS.video||!/^video\/(mp4|webm|quicktime)$/.test(file.type.split(";")[0]))return;
+ try{
+  const duration=await guestMediaDuration(file);
+  if(duration>60.1)return;
+  await validateVideoDimensions(file,true);
+  if(version!==guestSelectionVersion)return;
+  const status=$("capture-status"),help=document.createElement("p"),button=document.createElement("button");
+  help.textContent="Vous pouvez conserver cette vidéo sans compression ("+(file.size/1024/1024).toLocaleString("fr-FR",{maximumFractionDigits:1})+" Mo). Elle prendra davantage de place. La conversion reste disponible depuis un autre navigateur.";
+  button.type="button";button.className="btn primary";button.textContent="Conserver la vidéo d’origine";
+  button.onclick=()=>{button.disabled=true;acceptGuestFile(file,"video",duration,undefined,{original:true});};
+  status.dataset.originalChoice="true";status.append(help,button);
+ }catch{/* Keep the original error when the source cannot be safely accepted. */}
+}
+async function acceptGuestFile(file,type,duration,interruption,options={}){
  const version=++guestSelectionVersion;guestTransaction=null;
  window.SuiteVideoImport?.cancel();
  if(!file)return;
@@ -635,13 +651,22 @@ async function acceptGuestFile(file,type,duration,interruption){
   }else if(type==="image")file=await optimizeGuestPhoto(file);
   else{duration=duration||await guestMediaDuration(file);if(duration>(type==="video"?60.1:180.1))throw new Error(type==="video"?"Choisissez une vidéo d’une minute maximum.":"Choisissez un audio de 3 minutes maximum.")}
   if(version!==guestSelectionVersion)return;
-  if(type==="video")await validateVideoDimensions(file);
+  if(type==="video")await validateVideoDimensions(file,options.original===true);
   if(version!==guestSelectionVersion)return;
   if(file.size>GUEST_LIMITS[type])throw new Error("Ce souvenir dépasse la taille autorisée.");
   const preparedType=file.type.split(";")[0];
   if(preparedType!==file.type&&type!=="image")file=new File([file],file.name,{type:preparedType});
-  preview(file,type,previewPoster);selectedMedia.duration=duration;refreshGuestLimits();showCapture(interruption||"Prêt à envoyer.",!interruption);
- }catch(error){if(version===guestSelectionVersion)showCapture(error.message,false)}
+  preview(file,type,previewPoster);selectedMedia.duration=duration;
+  if(options.original){
+   const notice=document.createElement("p");notice.id="guest-original-video-notice";notice.className="help guest-original-video-notice";notice.setAttribute("role","status");
+   notice.textContent="Vidéo d’origine conservée sans compression · "+(file.size/1024/1024).toLocaleString("fr-FR",{maximumFractionDigits:1})+" Mo";
+   const video=$("preview-video");(video.closest(".guest-memory-card")||video).after(notice);
+  }
+  refreshGuestLimits();showCapture(interruption||"Prêt à envoyer.",!interruption);
+ }catch(error){if(version===guestSelectionVersion){
+  showCapture(error.message,false);
+  if(type==="video"&&!duration&&error.name!=="AbortError")await offerGuestOriginalVideo(file,version);
+ }}
  finally{if(version===guestSelectionVersion){delete preparationStatus.dataset.preparing;preparationStatus.style.removeProperty("--video-progress");$("guest-message").querySelector('[type="submit"]').disabled=false}}
 }
 let deliveryTouched=false;
