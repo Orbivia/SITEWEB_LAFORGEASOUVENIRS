@@ -18,7 +18,7 @@
   active = controller;
   const video = document.createElement('video'), canvas = document.createElement('canvas');
   const Audio = window.AudioContext || window.webkitAudioContext;
-  let context, source, destination, stream, recorder, url, frame, timer, bytes = 0;
+  let context, source, destination, stream, recorder, url, frame, videoFrame, timer, bytes = 0, paintedFrames = 0;
   const listeners = [];
   const listen = (target, event, handler) => { target.addEventListener(event, handler); listeners.push(() => target.removeEventListener(event, handler)); };
   const check = () => { if (signal.aborted) throw cancelled(); };
@@ -38,10 +38,11 @@
    // Handle an early rejection even while metadata is loading.
    resumed.catch(() => {});
    video.playsInline = true; video.preload = 'auto'; video.loop = false;
-   // Some mobile browsers do not decode a detached media element reliably.
+   // Keep the source in the visible dialog: offscreen video may be throttled on mobile.
    video.setAttribute('aria-hidden', 'true');
-   video.style.cssText = 'position:fixed;left:-10000px;top:0;width:2px;height:2px;pointer-events:none';
-   document.body.append(video);
+   video.className = 'guest-conversion-video';
+   video.style.cssText = 'display:block;width:100%;height:160px;max-height:25dvh;object-fit:contain;background:#141414;border-radius:12px;flex:none';
+   (document.querySelector('.guest-capture-dialog[open] .guest-media-dialog-body') || document.body).append(video);
    url = URL.createObjectURL(file);
    onProgress(0);
    const metadata = waitFor('loadedmetadata'); video.src = url; await metadata; check();
@@ -61,7 +62,7 @@
    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
    stream = canvas.captureStream(30);
    for (const track of destination.stream.getAudioTracks()) stream.addTrack(track);
-   const mime = ['video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/mp4', 'video/webm;codecs=vp8,opus', 'video/webm'].find(type => MediaRecorder.isTypeSupported(type));
+   const mime = ['video/webm;codecs=vp8,opus', 'video/mp4;codecs=avc1.42E01E,mp4a.40.2', 'video/webm', 'video/mp4'].find(type => MediaRecorder.isTypeSupported(type));
    if (!mime) throw unsupported();
    recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 1500000, audioBitsPerSecond: 64000 });
    const chunks = [];
@@ -91,12 +92,16 @@
     const draw = () => {
      if (done || signal.aborted) return;
      try {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      if (video.readyState >= 2) {
+       ctx.drawImage(video, 0, 0, canvas.width, canvas.height); paintedFrames++;
+       stream.getVideoTracks()[0]?.requestFrame?.();
+      }
       const progress = Math.min(99, Math.floor(video.currentTime / video.duration * 100));
       if (progress !== lastProgress) { lastProgress = progress; onProgress(progress); }
      }
      catch { finish(unsupported()); return; }
-     frame = requestAnimationFrame(draw);
+     if (video.requestVideoFrameCallback) videoFrame = video.requestVideoFrameCallback(draw);
+     else frame = requestAnimationFrame(draw);
     };
     let prompted = false, starting = false;
     const startPlayback = () => {
@@ -122,6 +127,7 @@
     try { startPlayback(); } catch { finish(unsupported()); }
    });
    await encoded; check();
+   if (!paintedFrames) throw new Error('Les images de cette vidéo ne peuvent pas être converties sur ce navigateur. Essayez une autre vidéo ou un autre navigateur.');
    if (video.currentTime < video.duration - 0.25) throw new Error('La conversion est incomplète. Réessayez en gardant la page ouverte.');
    const type = recorder.mimeType.split(';')[0];
    const output = new File(chunks, 'souvenir.' + (type === 'video/mp4' ? 'mp4' : 'webm'), { type });
@@ -130,6 +136,7 @@
    return { file: output, duration: video.duration };
   } finally {
    clearTimeout(timer); cancelAnimationFrame(frame);
+   if (videoFrame !== undefined) video.cancelVideoFrameCallback?.(videoFrame);
    for (const remove of listeners) remove();
    if (recorder && recorder.state !== 'inactive') { try { recorder.stop(); } catch {} }
    video.pause(); video.removeAttribute('src'); video.load(); video.remove();
