@@ -27,7 +27,7 @@
 .legal-page [hidden]{display:none!important}
 .legal-trap{position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden}
 .legal-page :focus-visible{outline:3px solid #c7a052;outline-offset:3px}
-.legal-admin-dialog{width:min(760px,calc(100vw - 32px));max-height:86dvh;padding:22px;border:1px solid #e4dbd0;border-radius:14px;background:#fffdf9;color:#302725;overflow:auto}
+.legal-admin-dialog{box-sizing:border-box;width:min(760px,calc(100vw - 32px));max-height:86dvh;padding:22px;border:1px solid #e4dbd0;border-radius:14px;background:#fffdf9;color:#302725;overflow:auto}
 .legal-admin-dialog::backdrop{background:#30272566}
 .legal-admin-dialog header{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .legal-admin-dialog h2{margin:0;font-size:21px}
