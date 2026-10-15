@@ -57,8 +57,8 @@ async function user(){if(!sb)return null;await sb.auth.getSession();const{data}=
 async function capsuleAccess(){const{data,error}=await sb.rpc("owner_capsule_access");if(error||!data)throw error||new Error("Impossible de vérifier votre capsule. Réessayez.");return data}
 let mediaRequestVersion=0;
 function stopStream(){mediaRequestVersion++;if(activeStream){activeStream.getTracks().forEach(t=>t.stop());activeStream=null}}
-function resetPreview(){if(selectedMedia?.url)URL.revokeObjectURL(selectedMedia.url);selectedMedia=null;["preview-video","preview-audio","preview-image"].forEach(id=>{const e=$(id);if(e){e.pause?.();e.hidden=true;e.removeAttribute("src");e.load?.()}});if($("media-preview"))$("media-preview").hidden=true}
-function preview(file,type){resetPreview();const url=URL.createObjectURL(file);selectedMedia={file,type,url};$("media-preview").hidden=false;const el=$(type==="video"?"preview-video":type==="audio"?"preview-audio":"preview-image");el.src=url;el.hidden=false}
+function resetPreview(){if(selectedMedia?.url)URL.revokeObjectURL(selectedMedia.url);selectedMedia=null;["preview-video","preview-audio","preview-image"].forEach(id=>{const e=$(id);if(e){e.pause?.();e.hidden=true;e.removeAttribute("src");e.removeAttribute("poster");e.load?.()}});if($("media-preview"))$("media-preview").hidden=true}
+function preview(file,type,poster=""){resetPreview();const url=URL.createObjectURL(file);selectedMedia={file,type,url};$("media-preview").hidden=false;const el=$(type==="video"?"preview-video":type==="audio"?"preview-audio":"preview-image");if(type==="video"){el.poster=poster;el.preload="auto";}el.src=url;el.hidden=false}
 async function countdown(el,valid){el.hidden=false;for(let i=3;i>0;i--){if(!valid())return false;el.textContent=i;await new Promise(r=>setTimeout(r,1000))}if(!valid())return false;el.textContent="●";await new Promise(r=>setTimeout(r,250));if(!valid())return false;el.hidden=true;return true}
 function showCapture(message,ok=true){show($("capture-status"),message,ok);show($("status"),"");if(message&&!ok)$("capture-status").scrollIntoView({behavior:"smooth",block:"nearest"})}
 function captureError(error,kind){return error?.name==="NotAllowedError"?"Autorisez l’accès "+(kind==="video"?"à la caméra":"au microphone")+" dans votre navigateur, puis réessayez. Vous pouvez aussi choisir un fichier.":error?.name==="NotFoundError"?"Aucun appareil disponible. Choisissez un fichier.":"La caméra ou le micro est indisponible. Fermez les autres applications qui l’utilisent, puis réessayez ou choisissez un fichier."}
@@ -606,6 +606,7 @@ async function acceptGuestFile(file,type,duration,interruption){
  const version=++guestSelectionVersion;guestTransaction=null;
  window.SuiteVideoImport?.cancel();
  if(!file)return;
+ let previewPoster="";
  const preparationStatus=$("capture-status");
  preparationStatus.dataset.preparing="true";preparationStatus.setAttribute("role","status");preparationStatus.setAttribute("aria-live","polite");
  try{
@@ -630,7 +631,7 @@ async function acceptGuestFile(file,type,duration,interruption){
     start.onclick=()=>{start.disabled=true;retry();};
     preparationStatus.append(start);
    });
-   file=prepared.file;duration=prepared.duration;
+   file=prepared.file;duration=prepared.duration;previewPoster=prepared.poster||"";
   }else if(type==="image")file=await optimizeGuestPhoto(file);
   else{duration=duration||await guestMediaDuration(file);if(duration>(type==="video"?60.1:180.1))throw new Error(type==="video"?"Choisissez une vidéo d’une minute maximum.":"Choisissez un audio de 3 minutes maximum.")}
   if(version!==guestSelectionVersion)return;
@@ -639,7 +640,7 @@ async function acceptGuestFile(file,type,duration,interruption){
   if(file.size>GUEST_LIMITS[type])throw new Error("Ce souvenir dépasse la taille autorisée.");
   const preparedType=file.type.split(";")[0];
   if(preparedType!==file.type&&type!=="image")file=new File([file],file.name,{type:preparedType});
-  preview(file,type);selectedMedia.duration=duration;refreshGuestLimits();showCapture(interruption||"Prêt à envoyer.",!interruption);
+  preview(file,type,previewPoster);selectedMedia.duration=duration;refreshGuestLimits();showCapture(interruption||"Prêt à envoyer.",!interruption);
  }catch(error){if(version===guestSelectionVersion)showCapture(error.message,false)}
  finally{if(version===guestSelectionVersion){delete preparationStatus.dataset.preparing;preparationStatus.style.removeProperty("--video-progress");$("guest-message").querySelector('[type="submit"]').disabled=false}}
 }

@@ -11,6 +11,45 @@
   const ratio = Math.min(1, 1280 / Math.max(width, height), 720 / Math.min(width, height));
   return { width: Math.max(2, Math.floor(width * ratio / 2) * 2), height: Math.max(2, Math.floor(height * ratio / 2) * 2) };
  }
+ // MediaRecorder writes live WebM with no Duration. Finalize its small Info header
+ // without copying the video payload, so mobile players can seek and display time.
+ async function finalizeWebm(file, seconds) {
+  if (file.type !== 'video/webm') return file;
+  const bytes = new Uint8Array(await file.slice(0, 65536).arrayBuffer());
+  function element(offset) {
+   const first = bytes[offset]; if (!first) return null;
+   let idLength = 1; while (idLength <= 4 && !(first & (1 << (8 - idLength)))) idLength++;
+   if (idLength > 4 || offset + idLength >= bytes.length) return null;
+   let id = 0; for (let i = 0; i < idLength; i++) id = id * 256 + bytes[offset + i];
+   const sizePos = offset + idLength, lead = bytes[sizePos]; if (!lead) return null;
+   let width = 1; while (width <= 8 && !(lead & (1 << (8 - width)))) width++;
+   if (width > 8 || sizePos + width > bytes.length) return null;
+   let size = lead & ((1 << (8 - width)) - 1), unknown = size === ((1 << (8 - width)) - 1);
+   for (let i = 1; i < width; i++) { size = size * 256 + bytes[sizePos + i]; unknown = unknown && bytes[sizePos + i] === 255; }
+   const start = sizePos + width;
+   return { id, sizePos, width, size, start, end: start + size, unknown };
+  }
+  const ebml = element(0); if (ebml?.id !== 0x1a45dfa3) return file;
+  const segment = element(ebml.end); if (segment?.id !== 0x18538067 || !segment.unknown) return file;
+  const info = element(segment.start);
+  if (info?.id !== 0x1549a966 || info.unknown || info.end > bytes.length) return file;
+  let scale = 1000000;
+  for (let pos = info.start; pos < info.end;) {
+   const child = element(pos); if (!child || child.unknown || child.end > info.end) return file;
+   if (child.id === 0x4489) return file;
+   if (child.id === 0x2ad7b1) { scale = 0; for (let p = child.start; p < child.end; p++) scale = scale * 256 + bytes[p]; }
+   pos = child.end;
+  }
+  if (!(scale > 0 && Number.isFinite(seconds) && seconds > 0)) return file;
+  const duration = new Uint8Array(11); duration.set([0x44, 0x89, 0x88]);
+  new DataView(duration.buffer).setFloat64(3, seconds * 1e9 / scale, false);
+  let size = info.size + duration.length;
+  if (size >= 2 ** (7 * info.width) - 1) return file;
+  const encodedSize = new Uint8Array(info.width);
+  for (let p = info.width - 1; p >= 0; p--) { encodedSize[p] = size % 256; size = Math.floor(size / 256); }
+  encodedSize[0] |= 1 << (8 - info.width);
+  return new File([bytes.slice(0, info.sizePos), encodedSize, bytes.slice(info.start, info.end), duration, file.slice(info.end)], file.name, { type: file.type });
+ }
  async function prepare(file, onProgress = () => {}, onPlaybackBlocked) {
   cancel();
   if (!file?.size || file.size > INPUT_LIMIT) throw new Error('Choisissez une vidéo de 500 Mo maximum.');
@@ -18,7 +57,7 @@
   active = controller;
   const video = document.createElement('video'), canvas = document.createElement('canvas');
   const Audio = window.AudioContext || window.webkitAudioContext;
-  let context, source, destination, stream, recorder, url, frame, videoFrame, timer, bytes = 0, paintedFrames = 0;
+  let context, source, destination, stream, recorder, url, frame, videoFrame, timer, bytes = 0, paintedFrames = 0, poster = '';
   const listeners = [];
   const listen = (target, event, handler) => { target.addEventListener(event, handler); listeners.push(() => target.removeEventListener(event, handler)); };
   const check = () => { if (signal.aborted) throw cancelled(); };
@@ -95,6 +134,7 @@
       if (video.readyState >= 2) {
        ctx.drawImage(video, 0, 0, canvas.width, canvas.height); paintedFrames++;
        stream.getVideoTracks()[0]?.requestFrame?.();
+       if (!poster && video.currentTime > 0 && canvas.toDataURL) poster = canvas.toDataURL('image/jpeg', 0.82);
       }
       const progress = Math.min(99, Math.floor(video.currentTime / video.duration * 100));
       if (progress !== lastProgress) { lastProgress = progress; onProgress(progress); }
@@ -130,10 +170,11 @@
    if (!paintedFrames) throw new Error('Les images de cette vidéo ne peuvent pas être converties sur ce navigateur. Essayez une autre vidéo ou un autre navigateur.');
    if (video.currentTime < video.duration - 0.25) throw new Error('La conversion est incomplète. Réessayez en gardant la page ouverte.');
    const type = recorder.mimeType.split(';')[0];
-   const output = new File(chunks, 'souvenir.' + (type === 'video/mp4' ? 'mp4' : 'webm'), { type });
+   const output = await finalizeWebm(new File(chunks, 'souvenir.' + (type === 'video/mp4' ? 'mp4' : 'webm'), { type }), video.duration);
+   check();
    if (!output.size || output.size > OUTPUT_LIMIT) throw unsupported();
    onProgress(100);
-   return { file: output, duration: video.duration };
+   return { file: output, duration: video.duration, poster };
   } finally {
    clearTimeout(timer); cancelAnimationFrame(frame);
    if (videoFrame !== undefined) video.cancelVideoFrameCallback?.(videoFrame);
