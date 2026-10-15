@@ -35,5 +35,12 @@
   "organizer-desktop.css",
   "organizer-desktop.js",
   "a-propos.html",
-  "account-preferences.css"
+  "account-preferences.css",
+  "mentions-legales.html",
+  "retractation.html",
+  "supprimer-compte.html",
+  "legal-requests.js",
+  "legal-admin.js",
+  "legal.css",
+  "cgv-2026-10-15.txt"
 ]

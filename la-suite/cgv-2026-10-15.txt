@@ -1,0 +1,124 @@
+LA SUITE — CONDITIONS GÉNÉRALES DE VENTE — 15 OCTOBRE 2026
+Conditions générales de vente — La Suite← À propos de La Suite
+Conditions générales de vente
+
+Version du 15 octobre 2026
+
+
+La Suite — capsule temporelle. Les présentes conditions concernent les achats effectués sur le site. Télécharger cette version des conditions.
+
+
+1. Le vendeur
+
+Pierre Charlier, entrepreneur individuel ORBIVIA, sous la marque La Forge à Souvenirs. SIREN : 815 101 050 · SIRET : 815 101 050 00046. Adresse : 27 rue du Maréchal Boufflers, 59139 Wattignies, France. E-mail : pierre.charlier@orbivia.fr. Voir les mentions légales.
+
+
+2. Service, prix et durée
+
+La Suite permet de personnaliser une capsule liée à un événement, partager un QR code et recueillir des souvenirs dont les invités choisissent la date de révélation. Essentiel : 9,90 €, 1 Go, photos et textes. Plus : 14,90 €, 2 Go, photos, textes et audio. Premium : 24,90 €, 5 Go, tous les formats. Prix total à payer, paiement unique sans abonnement. La TVA n’est pas facturée. Les conditions particulières et offres gratuites sont précisées avant activation. L’espace organisateur est destiné aux personnes majeures.
+
+
+En fonctionnement normal, les dépôts sont ouverts le jour de l’événement et le lendemain jusqu’à 23 h 59, heure de Paris. La révélation peut être immédiate ou différée jusqu’à 30 mois après l’événement, dans les limites affichées. L’accès aux souvenirs prend fin au troisième anniversaire de l’événement. La préparation et la fourniture du service peuvent commencer avant cette date d’événement. Une échéance différente expressément accordée pour une capsule prévaut.
+
+
+3. Compatibilité et limites
+
+Le service nécessite une connexion Internet et un navigateur récent prenant en charge JavaScript, HTTPS et le stockage local. Caméra et microphone sont demandés uniquement pour les fonctions qui en ont besoin ; leurs formats et autorisations dépendent de l’appareil. Les fichiers peuvent être téléchargés dans les formats proposés. L’application Android utilise Android System WebView ; elle nécessite Android 8 ou une version ultérieure et un WebView à jour. Les fonctionnalités natives peuvent varier selon l’appareil.
+
+
+Photos : 10 Mo maximum par fichier. Audio enregistré : 3 minutes et 20 Mo maximum. Vidéo enregistrée : 1 minute et 50 Mo maximum. Le stockage total dépend de la formule. Les protections contre les envois excessifs peuvent imposer une attente annoncée. Les mises à jour nécessaires au maintien de la conformité sont fournies pendant la période contractuelle de service.
+
+
+4. Commande, paiement et activation
+
+L’organisateur peut vérifier et corriger sa préparation, la formule, le prix et la date avant de commander. Il accepte les CGV et, pour une activation immédiate, demande expressément le début du service avant la fin du délai de rétractation. Le paiement sur le site est traité par Stripe. La confirmation effective du paiement, et non le simple retour du navigateur, permet l’activation. La personnalisation reste possible après activation. Une activation gratuite ne requiert pas de paiement.
+
+
+L’activation immédiate n’entraîne pas de perte automatique du droit de rétractation. La version acceptée des conditions et la demande de début anticipé sont enregistrées pour les nouvelles commandes. Le bouton de paiement indique le montant et l’obligation de payer. Les justificatifs Stripe et la confirmation de commande doivent être conservés avec la version téléchargeable des conditions.
+
+
+5. Rétractation et remboursement
+
+Le consommateur dispose de 14 jours à compter de la conclusion du contrat pour se rétracter sans justification. Le délai se calcule dans les conditions des articles L. 221-18 et suivants du code de la consommation ; lorsqu’il expire un samedi, dimanche ou jour férié ou chômé, les règles légales de prolongation s’appliquent.
+
+
+Renoncer au contrat ici
+
+
+La déclaration peut être transmise directement par ce formulaire, sans connexion : indiquez vos nom et prénom, les éléments identifiant le contrat et le mode électronique de réception de l’accusé. Une étape de vérification précède le bouton « Confirmer la rétractation ». Un accusé personnel contenant la déclaration, sa référence, sa date et son heure de réception est immédiatement fourni sous forme de fichier téléchargeable, selon le mode proposé et choisi. Conservez-le sur votre appareil.
+
+
+Vous pouvez également envoyer le formulaire type ci-dessous ou une déclaration claire à pierre.charlier@orbivia.fr ou à l’adresse postale du vendeur. L’usage du formulaire en ligne n’est pas imposé. La réception de la déclaration ne signifie pas que le remboursement a déjà été exécuté. Les sommes dues sont remboursées sans retard injustifié et au plus tard dans les 14 jours suivant l’information du vendeur, par le moyen de paiement initial sauf accord exprès différent sans frais. Pour ce service, aucune retenue proportionnelle liée au début anticipé n’est appliquée par ces conditions.
+
+
+Formulaire type de rétractation
+
+
+À l’attention de Pierre Charlier — ORBIVIA — La Forge à Souvenirs, 27 rue du Maréchal Boufflers, 59139 Wattignies, France, pierre.charlier@orbivia.fr.
+
+Je vous notifie par la présente ma rétractation du contrat portant sur la prestation de service ci-dessous : [capsule / référence].
+Commandé le : [date].
+Nom du consommateur : [nom].
+Adresse du consommateur : [adresse].
+Date : [date].
+Signature du consommateur, uniquement en cas de notification sur papier.
+
+
+6. Garanties légales
+
+
+Garantie légale de conformité — service numérique fourni de manière continue
+
+
+Le consommateur a droit à la mise en œuvre de la garantie légale de conformité en cas d’apparition d’un défaut de conformité durant la période de fourniture du service, de son activation jusqu’au troisième anniversaire de l’événement, ou jusqu’à l’échéance particulière expressément accordée pour la capsule. Durant ce délai, le consommateur n’est tenu d’établir que l’existence du défaut de conformité et non la date d’apparition de celui-ci.
+
+
+La garantie légale de conformité emporte obligation de fournir toutes les mises à jour nécessaires au maintien de la conformité du contenu numérique ou du service numérique durant la période de fourniture du service, de son activation jusqu’au troisième anniversaire de l’événement, ou jusqu’à l’échéance particulière expressément accordée pour la capsule. La garantie légale de conformité donne au consommateur droit à la mise en conformité du contenu numérique ou du service numérique sans retard injustifié suivant sa demande, sans frais et sans inconvénient majeur pour lui.
+
+
+Le consommateur peut obtenir une réduction du prix en conservant le contenu numérique ou le service numérique, ou il peut mettre fin au contrat en se faisant rembourser intégralement contre renoncement au contenu numérique ou au service numérique, si :
+
+Le professionnel refuse de mettre le contenu numérique ou le service numérique en conformité ;
+
+La mise en conformité du contenu numérique ou du service numérique est retardée de manière injustifiée ;
+
+La mise en conformité du contenu numérique ou du service numérique ne peut intervenir sans frais imposés au consommateur ;
+
+La mise en conformité du contenu numérique ou du service numérique occasionne un inconvénient majeur pour le consommateur ;
+
+La non-conformité du contenu numérique ou du service numérique persiste en dépit de la tentative de mise en conformité du professionnel restée infructueuse.
+
+
+Le consommateur a également droit à une réduction du prix ou à la résolution du contrat lorsque le défaut de conformité est si grave qu’il justifie que la réduction du prix ou la résolution du contrat soit immédiate. Le consommateur n’est alors pas tenu de demander la mise en conformité du contenu numérique ou du service numérique au préalable. Dans les cas où le défaut de conformité est mineur, le consommateur n’a droit à l’annulation du contrat que si le contrat ne prévoit pas le paiement d’un prix.
+
+
+Toute période d’indisponibilité du contenu numérique ou du service numérique en vue de sa remise en conformité suspend la garantie qui restait à courir jusqu’à la fourniture du contenu numérique ou du service numérique de nouveau conforme. Ces droits résultent de l’application des articles L. 224-25-1 à L. 224-25-31 du code de la consommation.
+
+
+Le professionnel qui fait obstacle de mauvaise foi à la mise en œuvre de la garantie légale de conformité encourt une amende civile d’un montant maximal de 300 000 euros, qui peut être porté jusqu’à 10 % du chiffre d’affaires moyen annuel (article L. 242-18-1 du code de la consommation).
+
+
+Le consommateur bénéficie également de la garantie légale des vices cachés en application des articles 1641 à 1649 du code civil, pendant une durée de deux ans à compter de la découverte du défaut. Cette garantie donne droit à une réduction de prix si le contenu numérique ou le service numérique est conservé, ou à un remboursement intégral contre renonciation au contenu numérique ou au service numérique.
+
+
+7. Contenus, accès et fin de conservation
+
+Les utilisateurs conservent leurs droits sur leurs contenus et autorisent leur hébergement et leur traitement uniquement pour fournir le service. Ils doivent disposer des droits et autorisations nécessaires, notamment pour les personnes représentées et les mineurs. Les identifiants organisateur restent confidentiels ; le lien invité doit être partagé avec les personnes souhaitées. Les contenus ne sont pas destinés à être rendus publics. Les contenus illicites ou abus peuvent faire l’objet de mesures proportionnées ; les droits légaux des consommateurs restent applicables.
+
+
+Une date de révélation rend le souvenir accessible ; elle ne garantit pas un envoi de notification. Téléchargez les souvenirs ouverts avant l’expiration de l’accès. Après cette échéance, aucun accès aux souvenirs n’est promis et une purge technique est engagée selon la politique de conservation. Les restrictions d’accès ne limitent pas les droits légaux du consommateur.
+
+
+8. Réclamations, médiation et juridiction
+
+Pour une difficulté ou réclamation, écrivez à pierre.charlier@orbivia.fr en indiquant la référence de la capsule. Le consommateur dispose du droit de recourir gratuitement à un médiateur de la consommation compétent après une réclamation préalable restée sans solution. Le choix et les coordonnées du médiateur doivent encore être finalisés par l’éditeur ; cette information reste à compléter avant la commercialisation définitive du service.
+
+
+Le droit français s’applique sans priver le consommateur des protections impératives ni des règles de compétence applicables à sa situation. Aucune compétence exclusive d’un tribunal n’est imposée au consommateur par les présentes conditions.
+
+
+9. Données personnelles
+
+Les usages, destinataires, durées, transferts et modalités d’exercice des droits sont décrits dans la politique de confidentialité. La demande de suppression d’un compte et la rétractation d’un achat sont deux démarches distinctes.
+
+Mentions légalesConfidentialitéConditions généralesRenoncer au contrat iciSupprimer mon compte

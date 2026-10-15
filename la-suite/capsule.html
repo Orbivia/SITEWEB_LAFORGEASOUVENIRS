@@ -50,6 +50,7 @@ body.guest-loading{background:#fffdf8!important}
 <p id="guest-state" class="guest-state" role="status" aria-live="polite">Chargement de la capsule…</p>
 <button id="guest-retry" class="btn secondary" type="button" hidden>Réessayer</button>
 <form class="form-shell guest-form" id="guest-message" hidden>
+
  <div class="guest-personalization guest-date-first guest-date-feature">
  <div class="delivery-box">
   <button type="button" id="delivery-summary" class="delivery-summary" aria-label="Modifier la date de découverte" aria-describedby="delivery-value" aria-haspopup="dialog" aria-controls="delivery-dialog"><span class="delivery-caption"><i class="fa-solid fa-calendar" aria-hidden="true"></i><small>Quand découvrir ce souvenir ?</small></span><span class="delivery-invitation">Choisissez le moment de la surprise</span><strong id="delivery-value">Maintenant</strong><span class="delivery-edit">Modifier <i class="fa-solid fa-chevron-right" aria-hidden="true"></i></span></button>
@@ -105,7 +106,7 @@ body.guest-loading{background:#fffdf8!important}
 
  <div id="guest-text-content"><div class="field" id="guest-message-field"><label for="message_text" id="message-label">Votre message</label><textarea id="message_text" minlength="10" maxlength="1000" rows="4" placeholder="Votre petit mot (10 caractères minimum)…"></textarea></div></div>
  <details id="guest-extras" class="guest-extras" hidden><summary>Ajouter un petit mot <span class="optional">Facultatif</span></summary><div id="guest-extras-body"></div></details>
- <div class="field guest-signature"><label for="guest_name"><i class="fa-solid fa-user" aria-hidden="true"></i> Votre prénom <span class="optional">(obligatoire)</span></label><input id="guest_name" maxlength="30" autocomplete="given-name" required placeholder="Ex. Pierre, Mamie"></div>
+ <div class="field guest-signature"><p class="hint legal-collection-notice">Votre prénom et votre souvenir seront transmis à l’organisateur de cette capsule, selon la date de découverte choisie. Ne partagez que des contenus que vous êtes autorisé à transmettre. <a href="confidentialite.html" target="_blank" rel="noopener">Confidentialité et vos droits</a>.</p><label for="guest_name"><i class="fa-solid fa-user" aria-hidden="true"></i> Votre prénom <span class="optional">(obligatoire)</span></label><input id="guest_name" maxlength="30" autocomplete="given-name" required placeholder="Ex. Pierre, Mamie"></div>
  <button class="btn primary submit-memory" type="submit"><span>Envoyer mon souvenir</span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
  <progress id="upload-progress" max="100" value="0" hidden aria-label="Progression de l’envoi"></progress>
  <div id="status" class="status" role="status" aria-live="polite"></div>
@@ -128,7 +129,7 @@ body.guest-loading{background:#fffdf8!important}
 </main>
 <footer class="forge-style-footer">
   <div class="suite-container footerbar">
-    <div class="legal"><a href="cgv.html">Conditions générales de vente</a> · © 2023–2026 La Forge à Souvenirs</div>
+    <div class="legal"><a href="cgv.html">Conditions générales de vente</a> · <a href="confidentialite.html">Confidentialité</a> · <a href="mentions-legales.html">Mentions légales</a> · <a href="retractation.html">Renoncer au contrat ici</a> · © 2023–2026 La Forge à Souvenirs</div>
     <div class="social">
       <a href="https://www.facebook.com/people/La-Forge-%C3%A0-Souvenirs/100095037515785/" target="_blank" rel="noopener" aria-label="Facebook La Forge à Souvenirs">
         <i class="fa-brands fa-facebook"></i>
@@ -142,5 +143,5 @@ body.guest-loading{background:#fffdf8!important}
 <script src="vendor/tus-4.3.1.min.js"></script>
 <script src="capsule-design.js?v=20261012-theme-logo-safe1"></script><script src="typography.js?v=20261012-cleanup1"></script><script src="welcome-ui.js?v=20261012-cleanup1"></script>
 <script src="guest-calendar.js?v=20261010-opening1"></script><script src="guest-landing.js?v=20261014-field-bounds1"></script>
-<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="memory-reader.js?v=20261012-cleanup1"></script><script src="card-artwork.js?v=20261014-modules1"></script><script src="app.js?v=20261014-small-note1"></script>
+<script src="qr-drawing.js?v=20261010-eyes1"></script><script src="memory-reader.js?v=20261012-cleanup1"></script><script src="card-artwork.js?v=20261014-modules1"></script><script src="app.js?v=20261015-legal-consent1"></script>
 </body></html>
