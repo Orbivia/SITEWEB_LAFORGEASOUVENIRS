@@ -583,12 +583,12 @@ async function optimizeGuestPhoto(file){
  }finally{URL.revokeObjectURL(url)}
 }
 // Validate encoded video dimensions, including portrait orientation.
-function validateVideoDimensions(file,original=false){
+function validateVideoDimensions(file){
  return new Promise((resolve,reject)=>{
   const video=document.createElement("video"),url=URL.createObjectURL(file);let finished=false;
   const timeout=setTimeout(()=>finish(new Error("Impossible de vérifier la qualité vidéo. Réessayez.")),10000);
   function finish(error){if(finished)return;finished=true;clearTimeout(timeout);video.onloadedmetadata=null;video.onerror=null;video.removeAttribute("src");video.load();URL.revokeObjectURL(url);error?reject(error):resolve();}
-  video.onloadedmetadata=()=>{const long=Math.max(video.videoWidth,video.videoHeight),short=Math.min(video.videoWidth,video.videoHeight);finish(!short||long>(original?1920:1280)||short>(original?1080:720)?new Error(original?"La vidéo d’origine doit être en Full HD maximum (1920 × 1080, ou portrait).":"La vidéo doit être en HD 720p maximum (1280 × 720, ou portrait)."):null);};
+  video.onloadedmetadata=()=>{const long=Math.max(video.videoWidth,video.videoHeight),short=Math.min(video.videoWidth,video.videoHeight);finish(!short||long>1280||short>720?new Error("La vidéo doit être en HD 720p maximum (1280 × 720, ou portrait)."):null);};
   video.onerror=()=>finish(new Error("Cette vidéo ne peut pas être vérifiée. Essayez un autre format."));video.preload="metadata";video.src=url;
  });
 }
@@ -602,23 +602,7 @@ function guestMediaDuration(file){
   media.onerror=()=>finish(new Error("Ce fichier ne peut pas être lu. Essayez un autre format."));media.src=url;
  });
 }
-// Offer the original only after a failed conversion, with an explicit choice.
-// The uploaded file and the preview always refer to the same accepted bytes.
-async function offerGuestOriginalVideo(file,version){
- if(!file?.size||file.size>GUEST_LIMITS.video||!/^video\/(mp4|webm|quicktime)$/.test(file.type.split(";")[0]))return;
- try{
-  const duration=await guestMediaDuration(file);
-  if(duration>60.1)return;
-  await validateVideoDimensions(file,true);
-  if(version!==guestSelectionVersion)return;
-  const status=$("capture-status"),help=document.createElement("p"),button=document.createElement("button");
-  help.textContent="Vous pouvez conserver cette vidéo sans compression ("+(file.size/1024/1024).toLocaleString("fr-FR",{maximumFractionDigits:1})+" Mo). Elle prendra davantage de place. La conversion reste disponible depuis un autre navigateur.";
-  button.type="button";button.className="btn primary";button.textContent="Conserver la vidéo d’origine";
-  button.onclick=()=>{button.disabled=true;acceptGuestFile(file,"video",duration,undefined,{original:true});};
-  status.dataset.originalChoice="true";status.append(help,button);
- }catch{/* Keep the original error when the source cannot be safely accepted. */}
-}
-async function acceptGuestFile(file,type,duration,interruption,options={}){
+async function acceptGuestFile(file,type,duration,interruption){
  const version=++guestSelectionVersion;guestTransaction=null;
  window.SuiteVideoImport?.cancel();
  if(!file)return;
@@ -632,40 +616,29 @@ async function acceptGuestFile(file,type,duration,interruption,options={}){
   const videoImport=type==="video"&&!duration;
   const videoCandidate=videoImport&&(normalizedType.startsWith("video/")||(!normalizedType||normalizedType==="application/octet-stream")&&/\.(mp4|mov|m4v|webm|ogv|mkv|avi)$/i.test(file.name));
   if(group(normalizedType)!==type&&!videoCandidate)throw new Error("Choisissez un fichier correspondant au type de souvenir sélectionné.");
-  const inputLimit=videoImport?500*1024*1024:GUEST_LIMITS[type];
-  if(file.size>inputLimit)throw new Error(type==="image"?"La photo dépasse 10 Mo.":type==="audio"?"L’audio dépasse 20 Mo.":videoImport?"Choisissez une vidéo de 500 Mo maximum.":"La vidéo dépasse 50 Mo.");
+  const inputLimit=videoImport?100*1024*1024:GUEST_LIMITS[type];
+  if(file.size>inputLimit)throw new Error(type==="image"?"La photo dépasse 10 Mo.":type==="audio"?"L’audio dépasse 20 Mo.":videoImport?"Choisissez une vidéo de 100 Mo maximum.":"La vidéo dépasse 50 Mo.");
   if(videoImport){
    if(!window.SuiteVideoImport)throw new Error("Rechargez la page pour préparer votre vidéo.");
    const prepared=await SuiteVideoImport.prepare(file,percent=>{
     if(version!==guestSelectionVersion)return;
     preparationStatus.style.setProperty("--video-progress",percent+"%");
-    showCapture(percent===0?"Lecture de votre vidéo…\nGardez cette fenêtre ouverte.":"Préparation de votre vidéo… "+percent+" %\nGardez cette fenêtre ouverte.");
-   },retry=>{
-    if(version!==guestSelectionVersion)return;
-    showCapture("Votre navigateur demande un appui pour démarrer la conversion.");
-    const start=document.createElement("button");start.type="button";start.className="btn primary";start.textContent="Démarrer la préparation";
-    start.onclick=()=>{start.disabled=true;retry();};
-    preparationStatus.append(start);
+    showCapture(percent===0?"Chargement de la compression…\nGardez cette fenêtre ouverte.":"Compression de votre vidéo… "+percent+" %\nGardez cette fenêtre ouverte. Cela peut prendre plusieurs minutes.");
    });
    file=prepared.file;duration=prepared.duration;previewPoster=prepared.poster||"";
   }else if(type==="image")file=await optimizeGuestPhoto(file);
   else{duration=duration||await guestMediaDuration(file);if(duration>(type==="video"?60.1:180.1))throw new Error(type==="video"?"Choisissez une vidéo d’une minute maximum.":"Choisissez un audio de 3 minutes maximum.")}
   if(version!==guestSelectionVersion)return;
-  if(type==="video")await validateVideoDimensions(file,options.original===true);
+  if(type==="video")await validateVideoDimensions(file);
   if(version!==guestSelectionVersion)return;
   if(file.size>GUEST_LIMITS[type])throw new Error("Ce souvenir dépasse la taille autorisée.");
   const preparedType=file.type.split(";")[0];
   if(preparedType!==file.type&&type!=="image")file=new File([file],file.name,{type:preparedType});
   preview(file,type,previewPoster);selectedMedia.duration=duration;
-  if(options.original){
-   const notice=document.createElement("p");notice.id="guest-original-video-notice";notice.className="help guest-original-video-notice";notice.setAttribute("role","status");
-   notice.textContent="Vidéo d’origine conservée sans compression · "+(file.size/1024/1024).toLocaleString("fr-FR",{maximumFractionDigits:1})+" Mo";
-   const video=$("preview-video");(video.closest(".guest-memory-card")||video).after(notice);
-  }
   refreshGuestLimits();showCapture(interruption||"Prêt à envoyer.",!interruption);
  }catch(error){if(version===guestSelectionVersion){
   showCapture(error.message,false);
-  if(type==="video"&&!duration&&error.name!=="AbortError")await offerGuestOriginalVideo(file,version);
+
  }}
  finally{if(version===guestSelectionVersion){delete preparationStatus.dataset.preparing;preparationStatus.style.removeProperty("--video-progress");$("guest-message").querySelector('[type="submit"]').disabled=false}}
 }
