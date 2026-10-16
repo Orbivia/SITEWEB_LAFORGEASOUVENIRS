@@ -210,7 +210,7 @@ async function initAuth(){
   form.querySelectorAll("input").forEach(input=>input.removeAttribute("aria-invalid"));
   const recovery=mode==="recovery",reset=mode==="reset";
   form.hidden=false;
-  $("auth-title").textContent=({login:"Bienvenue dans votre espace",signup:"Créez votre compte",reset:"Retrouver votre accès",recovery:"Choisissez votre mot de passe"})[mode];
+  $("auth-title").textContent=({login:"Connexion",signup:"Créez votre compte",reset:"Retrouver votre accès",recovery:"Choisissez votre mot de passe"})[mode];
   if(qs.get("next")==="create"&&mode==="login")$("auth-title").textContent="Vous avez déjà un compte ?";
   if(adminAccess&&mode==="login")$("auth-title").textContent="Connexion à l’administration";
   $("auth-description").textContent=reset?"Recevez un lien pour définir ou réinitialiser votre mot de passe.":recovery?"Utilisez au moins 10 caractères pour sécuriser votre espace.":adminAccess?"Connectez-vous pour accéder à votre administration.":qs.get("next")==="create"?mode==="login"?"Connectez-vous pour continuer. Votre préparation est conservée.":"Créez votre compte pour continuer. Votre préparation est conservée.":"Retrouvez vos capsules et vos souvenirs.";

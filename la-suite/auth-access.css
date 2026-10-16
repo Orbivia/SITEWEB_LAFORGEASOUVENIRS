@@ -1,0 +1,14 @@
+/* Compact access screen, shared by the web page and the Android shell. */
+.organizer-access-page{padding-block:28px 40px}
+.organizer-access-card{padding:12px 0;box-shadow:none;transform:none}
+.organizer-access-card:hover{box-shadow:none;transform:none}
+.organizer-access-heading h1{font-size:clamp(1.9rem,4vw,2.15rem);line-height:1.15;margin:0 0 8px}
+.organizer-access-heading p{font-size:.9rem;line-height:1.5;margin:0 auto 24px}
+.organizer-login-form .field{margin-bottom:16px}
+.organizer-login-form .field label{font-size:.9rem}
+.organizer-login-form input{min-height:48px}
+.organizer-access-card .auth-options{gap:12px 24px;margin-top:18px;flex-wrap:wrap}
+.organizer-access-card .auth-options button{font-size:.85rem}
+.organizer-access-card .auth-privacy{max-width:470px;margin:24px auto 0;text-align:left;color:#706a65;font-size:.75rem;line-height:1.55}
+.auth-privacy summary{cursor:pointer;text-align:center;text-decoration:underline;text-underline-offset:3px}
+.auth-privacy .legal-collection-notice{font-size:inherit;line-height:inherit;margin:12px 0 0}
