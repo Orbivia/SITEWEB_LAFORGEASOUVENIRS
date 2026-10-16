@@ -2527,3 +2527,14 @@ body.collection-ready main.dashboard-page{padding-left:0;max-width:1440px}
 
 
 #workspace-capsule-settings .studio-sheet-body{display:grid;gap:14px}
+
+/* Free text offer and pre-event upgrades. */
+@media(min-width:761px){.pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(min-width:1200px){.pricing-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+#change-capsule-plan{margin-top:12px;max-width:100%;white-space:normal}
+#upgrade-dialog{border:1px solid #e4dace;border-radius:22px;padding:28px;width:min(540px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;box-sizing:border-box;color:#302920;background:#fffdf9}
+#upgrade-dialog::backdrop{background:#211a15aa}
+#upgrade-dialog select{width:100%;box-sizing:border-box}
+#upgrade-dialog .activation-terms{display:flex;align-items:flex-start;gap:10px;margin:16px 0;font-size:14px;line-height:1.5}
+#upgrade-dialog input[type=checkbox]{flex:0 0 auto;margin-top:4px}
+#upgrade-pay{width:100%;white-space:normal}

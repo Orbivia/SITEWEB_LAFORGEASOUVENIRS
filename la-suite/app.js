@@ -145,17 +145,17 @@ async function startRecorder(kind){
 }
 function stopRecorder(){clearInterval(recorderTimer);clearTimeout(recorderStopTimer);if(recorder&&recorder.state!=="inactive")recorder.stop()}
 
-const PLAN_NAMES={photo:"Essentiel",audio:"Plus",premium:"Premium"};
-const PLAN_PRICES={photo:990,audio:1490,premium:2490};
+const PLAN_NAMES={text:"Petit mot",photo:"Essentiel",audio:"Plus",premium:"Premium"};
+const PLAN_PRICES={text:0,photo:990,audio:1490,premium:2490};
 const money=cents=>(cents/100).toLocaleString("fr-FR",{style:"currency",currency:"EUR"});
 function customizationHeading(icon,title){return `<div class="customization-heading"><img src="assets/customization/${icon}.webp" alt="" width="48" height="48"><h3>${title}</h3></div>`;}
-async function openCheckout(c){
+async function openCheckout(c,plan=c.plan,prefix="activation"){
  // Match the server's paid-activation rule using the Paris calendar day.
  const dayParts=Object.fromEntries(new Intl.DateTimeFormat("fr-FR",{timeZone:"Europe/Paris",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date()).filter(part=>["year","month","day"].includes(part.type)).map(part=>[part.type,part.value]));
  const today=dayParts.year+"-"+dayParts.month+"-"+dayParts.day;
  if(c.wedding_date<=today)throw new Error(c.wedding_date<today?"La date de votre événement est passée. Modifiez-la pour choisir une date à partir de demain, puis réessayez.":"L’activation payante doit être effectuée avant le jour de l’événement. Choisissez une date à partir de demain, puis réessayez.");
- if(!$("accept-cgv")?.checked||!$("activation-start-now")?.checked)throw new Error("Acceptez les conditions et demandez l’activation immédiate pour continuer.");
- const {data,error}=await sb.functions.invoke("suite-billing",{body:{action:"checkout",capsule_id:c.id,plan:c.plan,terms_accepted:true,terms_version:"2026-10-15",immediate_start:true}});
+ if(!$(prefix==="activation"?"accept-cgv":"upgrade-accept-cgv")?.checked||!$(prefix+"-start-now")?.checked)throw new Error("Acceptez les conditions et demandez l’activation immédiate pour continuer.");
+ const {data,error}=await sb.functions.invoke("suite-billing",{body:{action:"checkout",capsule_id:c.id,plan,terms_accepted:true,terms_version:"2026-10-16",immediate_start:true}});
  if(error||!data?.url)throw new Error(data?.error||"Le paiement est momentanément indisponible. Votre préparation est conservée.");
  const target=new URL(data.url);if(target.protocol!=="https:"||target.hostname!=="checkout.stripe.com")throw new Error("Lien de paiement invalide.");
  location.href=target.href;
@@ -437,7 +437,7 @@ async function initCreate(){
  if(currentUser){emailInput.value=currentUser.email;emailInput.readOnly=true}
  if(pending){$("couple").value=pending.couple;dateInput.value=pending.wedding;dateDisplay.value=frFromIso(pending.wedding);if(!currentUser)emailInput.value=pending.email}
  $("plan").value=PLAN_NAMES[qs.get("plan")]?qs.get("plan"):(pending?.plan||"premium");
- const planDetails={photo:"1 Go · Photos et textes.",audio:"2 Go · Photos, textes et audio.",premium:"5 Go · Photos, textes, audio et vidéo."};
+ const planDetails={text:"Messages texte · Gratuit, sans carte bancaire.",photo:"1 Go · Photos et textes.",audio:"2 Go · Photos, textes et audio.",premium:"5 Go · Photos, textes, audio et vidéo."};
  const updatePlanDetails=()=>{$("plan-details").textContent=planDetails[$("plan").value]||planDetails.premium};
  $("plan").addEventListener("change",updatePlanDetails);updatePlanDetails();
  if(qs.get("resume")==="1"&&currentUser&&pending){
@@ -705,7 +705,7 @@ function renderGuestState(state){
  };
  el.textContent=messages[state.state]||"Cette capsule n’est pas disponible.";el.dataset.state=state.state;
  $("guest-message").hidden=!["open","full"].includes(state.state);
- const allowed=state.effective_plan==="photo"?["image","text"]:state.effective_plan==="audio"?["image","audio","text"]:["image","audio","video","text"];
+ const allowed=state.effective_plan==="text"?["text"]:state.effective_plan==="photo"?["image","text"]:state.effective_plan==="audio"?["image","audio","text"]:["image","audio","video","text"];
  document.querySelectorAll("[data-memory-type]").forEach(b=>b.hidden=!allowed.includes(b.dataset.memoryType)||(state.state==="full"&&b.dataset.memoryType!=="text"));
  if(!allowed.includes(guestType)||state.state==="full")chooseGuestType("text");
  const max=parisDay(new Date(new Date(state.delivery_before).getTime()-1000));$("delivery_date").max=max;
@@ -947,7 +947,7 @@ const DEFAULT_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard.";
 const OLD_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard, à la date que vous choisissez.";
 const OLD_CARD_EXPLANATIONS=["une photo ou un texte","une photo, un audio ou un texte","une photo, un audio, une vidéo ou un texte"].map(formats=>"Flashez ce QR code et déposez-y "+formats+". Choisissez la manière la plus naturelle de partager un souvenir avec nous.");
 function capsulePlan(c){return window.SuiteDesign.effectivePlan(c)}
-function defaultCardExplanation(plan){return "Scannez ce QR code pour déposer une photo, un audio, une vidéo ou un texte.";
+function defaultCardExplanation(plan){return "Scannez ce QR code pour déposer "+({text:"un petit mot",photo:"une photo ou un petit mot",audio:"une photo, un audio ou un petit mot",premium:"une photo, un audio, une vidéo ou un petit mot"}[plan]||"un souvenir")+".";
 }
 function cardDefault(value,old,fallback,optional=false){return value==null||(!optional&&!value)||value===old?fallback:String(value)}
 
@@ -1777,7 +1777,7 @@ function updateEventDateControls(c){
 }
 function setupCapsuleSettings(c){
  const panel=document.createElement('div');panel.className='capsule-settings';
- panel.innerHTML=`<div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain.</small></div><div class="field"><label for="capsule-plan">Formule</label><input id="capsule-plan" type="hidden" value="${esc(capsulePlan(c))}"><span id="capsule-plan-name">${esc(PLAN_NAMES[capsulePlan(c)])}</span><small class="field-help">${!c.admin_plan_override&&['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':'Formule choisie à la création.'}</small></div><div class="field" id="notification-preference"><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les notifications par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div></div>`;
+ panel.innerHTML=`<div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain.</small></div><div class="field"><label for="capsule-plan">Formule</label><input id="capsule-plan" type="hidden" value="${esc(capsulePlan(c))}"><span id="capsule-plan-name">${esc(PLAN_NAMES[capsulePlan(c)])}</span><small class="field-help">${!c.admin_plan_override&&['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':'Vous pouvez passer à une formule supérieure à tout moment avant le jour J, en payant uniquement la différence.'}</small></div><div class="field" id="notification-preference"><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les notifications par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div></div>`;
  const settings=document.createElement("section");settings.id="capsule-settings-panel";settings.className="owner-panel studio-settings-panel";settings.dataset.ownerPanel="settings";settings.hidden=true;
  settings.innerHTML='<h2>Paramètres de la capsule</h2><p id="settings-save-error" class="status" role="alert" hidden></p><button id="settings-save-retry" class="btn secondary" type="button" hidden>Réessayer</button>';
  settings.append(panel);
@@ -1861,11 +1861,23 @@ async function exportOpenedMemories(c,sourceButton,sourceStatus){
 async function setupOfferServices(c){
  try{
   const {data,error}=await sb.functions.invoke('suite-billing',{body:{action:'status',capsule_id:c.id}});if(error||!data)return;
-  $("notification-preference").hidden=false;
-  if(c.status==='draft'&&!data.payments_enabled){const access=await capsuleAccess();if(!access.free_launch){$("activate-capsule").disabled=true;show($("activation-status"),"Le paiement est momentanément indisponible. Votre préparation est conservée.",false);}}
+  $("notification-preference").hidden=false;c.paymentsEnabled=Boolean(data.payments_enabled);
+  if(c.status==='draft'&&!data.payments_enabled&&c.plan!=='text'){const access=await capsuleAccess();if(!access.free_launch){$("activate-capsule").disabled=true;show($("activation-status"),"Le paiement est momentanément indisponible. Vous pouvez choisir Petit mot pour activer gratuitement.",false);}}
   c.pendingPayment=Boolean(data.pending_payment);if(c.pendingPayment)$("capsule-plan").disabled=true;updateEventDateControls(c);
+  if(c.status!=='active'||!data.upgrades?.length)return;
+  const button=document.createElement('button');button.type='button';button.className='btn secondary';button.id='change-capsule-plan';button.textContent='Changer de formule';button.disabled=c.pendingPayment||!data.payments_enabled;
+  $("capsule-plan-name").parentElement.append(button);
+  const dialog=document.createElement('dialog');dialog.id='upgrade-dialog';dialog.setAttribute('aria-labelledby','upgrade-title');
+  dialog.innerHTML='<form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><h2 id="upgrade-title">Changer de formule</h2><p>Avant le jour J, passez à une formule supérieure en payant uniquement la différence. Votre lien, votre personnalisation et vos souvenirs sont conservés.</p><div class="field"><label for="upgrade-plan">Nouvelle formule</label><select id="upgrade-plan"></select></div><label class="activation-terms"><input id="upgrade-accept-cgv" type="checkbox"><span>J’accepte les <a href="cgv.html" target="_blank" rel="noopener">conditions générales de vente</a>.</span></label><label class="activation-terms"><input id="upgrade-start-now" type="checkbox"><span>Je demande le début immédiat du service. Je conserve mon droit de rétractation de 14 jours.</span></label><button id="upgrade-pay" type="button" class="btn primary"></button><p id="upgrade-status" class="status" role="status"></p>';
+  document.body.append(dialog);
+  for(const offer of data.upgrades){if(!Object.hasOwn(PLAN_PRICES,offer.plan))continue;const option=document.createElement('option');option.value=offer.plan;option.textContent=PLAN_NAMES[offer.plan]+' · +'+money(offer.cents);option.dataset.cents=offer.cents;$("upgrade-plan").append(option);}
+  const refresh=()=>{$("upgrade-pay").textContent='Payer '+money(Number($("upgrade-plan").selectedOptions[0]?.dataset.cents||0))+' et changer de formule';};refresh();$("upgrade-plan").onchange=refresh;
+  for(const id of ['upgrade-accept-cgv','upgrade-start-now'])$(id).onchange=()=>show($('upgrade-status'),'');
+  button.onclick=()=>dialog.showModal();
+  $("upgrade-pay").onclick=async()=>{const pay=$("upgrade-pay");pay.disabled=true;try{await openCheckout(c,$("upgrade-plan").value,'upgrade');}catch(e){show($("upgrade-status"),e.message,false);pay.disabled=false;}};
  }catch(_){}
 }
+
 
 
 function updateOwnerScreenScroll(){
@@ -2071,22 +2083,29 @@ async function initDashboard(){
  if(ownerSessionEnded)return;
  const freeLaunch=access.free_launch===true;
  const stage=document.createElement("section");stage.className="activation-panel";
- stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>La période d’accès est terminée. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div class="activation-intro"><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><p class="atelier-customization-note">Votre carte QR et la page d’accueil restent personnalisables après activation.</p><button class="btn primary" id="review-activation" type="button">Valider ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Activer ma capsule</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong></p><div class="activation-event-row"><div><span>Date de l’événement</span><strong data-activation-date>${esc(fdate(c.wedding_date))}</strong></div><button id="activation-edit-date" type="button" class="btn secondary">Modifier la date</button></div>${freeLaunch?'<p>Votre capsule reste gratuite pendant ses 3 ans d’accès, avec tous les formats et 5 Go.</p>':'<p data-activation-price hidden></p><div class="activation-plan-choice"><label for="activation-plan">Votre formule</label><select id="activation-plan"><option value="photo">Essentiel — 9,90 € · 1 Go · photos et textes</option><option value="audio">Plus — 14,90 € · 2 Go · photos, textes et audio</option><option value="premium">Premium — 24,90 € · 5 Go · tous les formats</option></select></div>'}<p class="hint">Votre fiche reste modifiable après activation.</p><label class="activation-terms"><input id="accept-cgv" type="checkbox"> <span>J’ai lu et j’accepte les <a href="cgv.html" target="_blank" rel="noopener">conditions générales de vente</a>.</span></label>${freeLaunch?'':'<label class="activation-terms"><input id="activation-start-now" type="checkbox"><span>Je demande l’activation immédiate avant la fin du délai de rétractation. Je conserve mon droit de rétractation de 14 jours.</span></label>'}<button id="activate-capsule" class="btn primary" type="button">${freeLaunch?"Activer gratuitement":"Continuer vers le paiement"}</button><p id="activation-status" class="status" role="status"></p></dialog>`;
+ stage.innerHTML=capsuleExpired(c)?'<span class="capsule-badge">Conservation terminée</span><p>La période d’accès est terminée. Vos fichiers déjà téléchargés restent à votre disposition.</p>':c.status==="active"?'<span class="capsule-badge">Capsule active</span><p>Votre lien invité et votre carte QR sont prêts à être partagés.</p>':`<div class="activation-intro"><span class="capsule-badge">En préparation</span><h2>Votre capsule est prête ?</h2><p>Votre QR code sera utilisable par vos invités après l’activation.</p></div><p class="atelier-customization-note">Votre carte QR et la page d’accueil restent personnalisables après activation.</p><button class="btn primary" id="review-activation" type="button">Valider ma capsule</button><dialog id="activation-dialog"><form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><div class="eyebrow">Dernière étape · Activation</div><h2>Activer ma capsule</h2><p data-activation-summary><strong>${esc(c.couple_name)}</strong></p><div class="activation-event-row"><div><span>Date de l’événement</span><strong data-activation-date>${esc(fdate(c.wedding_date))}</strong></div><button id="activation-edit-date" type="button" class="btn secondary">Modifier la date</button></div>${freeLaunch?'<p>Votre capsule reste gratuite pendant ses 3 ans d’accès, avec tous les formats et 5 Go.</p>':'<p data-activation-price hidden></p><div class="activation-plan-choice"><label for="activation-plan">Votre formule</label><select id="activation-plan"><option value="text">Petit mot — Gratuit · messages texte</option><option value="photo">Essentiel — 9,90 € · 1 Go · photos et textes</option><option value="audio">Plus — 14,90 € · 2 Go · photos, textes et audio</option><option value="premium">Premium — 24,90 € · 5 Go · tous les formats</option></select></div>'}<p class="hint">Votre fiche reste modifiable après activation. Vous pouvez passer à une formule supérieure avant le jour J.</p><label class="activation-terms"><input id="accept-cgv" type="checkbox"> <span>J’ai lu et j’accepte les <a href="cgv.html" target="_blank" rel="noopener">conditions générales de vente</a>.</span></label>${freeLaunch?'':'<label class="activation-terms"><input id="activation-start-now" type="checkbox"><span>Je demande l’activation immédiate avant la fin du délai de rétractation. Je conserve mon droit de rétractation de 14 jours.</span></label>'}<button id="activate-capsule" class="btn primary" type="button">${freeLaunch?"Activer gratuitement":"Continuer vers le paiement"}</button><p id="activation-status" class="status" role="status"></p></dialog>`;
  document.querySelector(".qr-designer-controls").insertBefore(stage,document.querySelector(".design-mobile-footer"));if(c.status==="active"&&!capsuleExpired(c))stage.hidden=true;
  if(c.status!=="active"||capsuleExpired(c)){
   ["share-link","download-print-card","print-print-card"].forEach(id=>{$(id).disabled=true;$(id).title=capsuleExpired(c)?"La période de conservation est terminée":"Activez votre capsule pour partager votre carte"});
   const guestLink=$("open-guest-link");if(guestLink)guestLink.hidden=capsuleExpired(c);
  }
  if(c.status!=="active"&&!capsuleExpired(c)){
-  const refreshActivationOffer=plan=>{if(freeLaunch)return;$("activation-dialog").querySelector("[data-activation-summary]").textContent=c.couple_name;$("activation-dialog").querySelector("[data-activation-price]").textContent=PLAN_NAMES[plan]+" · "+money(PLAN_PRICES[plan])+" · "+({photo:"1 Go · photos et textes",audio:"2 Go · photos, textes et audios",premium:"5 Go · tous les formats"})[plan];$("activate-capsule").textContent="Payer "+money(PLAN_PRICES[plan])+" et activer";};
+  const refreshActivationOffer=plan=>{
+   if(freeLaunch)return;
+   $("activation-dialog").querySelector("[data-activation-summary]").textContent=c.couple_name;
+   $("activation-dialog").querySelector("[data-activation-price]").textContent=PLAN_NAMES[plan]+" · "+(plan==='text'?"Gratuit":money(PLAN_PRICES[plan]));
+   $("activate-capsule").textContent=plan==='text'?"Activer gratuitement":"Payer "+money(PLAN_PRICES[plan])+" et activer";
+   $("activation-start-now").closest('label').hidden=plan==='text';
+   $("activate-capsule").disabled=Boolean(c.pendingPayment)||(plan!=='text'&&c.paymentsEnabled===false);
+  };
   if(!freeLaunch)$("activation-plan").addEventListener('change',()=>{if(c.pendingPayment){$("activation-plan").value=c.plan;return;}$("capsule-plan").value=$("activation-plan").value;$("capsule-plan").dispatchEvent(new Event('input',{bubbles:true}));refreshActivationOffer($("activation-plan").value);});
-  $("review-activation").addEventListener("click",async()=>{if(await saveAll()){if(!freeLaunch){$("activation-plan").value=c.plan;$("activation-plan").disabled=Boolean(c.pendingPayment);} $("activation-dialog").querySelector('[data-activation-summary]').textContent=c.couple_name;$("activation-dialog").querySelector("[data-activation-date]").textContent=fdate(c.wedding_date);if(!freeLaunch){$("activation-dialog").querySelector("[data-activation-price]").textContent=PLAN_NAMES[c.plan]+" · "+money(PLAN_PRICES[c.plan])+" · "+({photo:"1 Go · photos et textes",audio:"2 Go · photos, textes et audios",premium:"5 Go · tous les formats"})[c.plan];$("activate-capsule").textContent="Payer "+money(PLAN_PRICES[c.plan])+" et activer";}$("activation-dialog").showModal()}});
+  $("review-activation").addEventListener("click",async()=>{if(await saveAll()){if(!freeLaunch){$("activation-plan").value=c.plan;$("activation-plan").disabled=Boolean(c.pendingPayment);refreshActivationOffer(c.plan);}$("activation-dialog").querySelector('[data-activation-summary]').textContent=c.couple_name;$("activation-dialog").querySelector("[data-activation-date]").textContent=fdate(c.wedding_date);$("activation-dialog").showModal();}});
   $("activation-edit-date").addEventListener("click",()=>{$("activation-dialog").close();if(welcomeDesigner?.editDate)welcomeDesigner.editDate(()=>{$("review-activation").click()},{activation:true});else openCapsuleSettings();});
   $("activate-capsule").addEventListener("click",async()=>{
    const button=$("activate-capsule");if(!$("accept-cgv").checked){show($("activation-status"),"Acceptez les conditions générales de vente pour continuer.",false);$("accept-cgv").focus();return;}button.disabled=true;
    try{
     if(!await saveAll())throw new Error("Enregistrez toutes les modifications avant de réessayer.");
-    if(!freeLaunch){await openCheckout(c);return;}
+    if(!freeLaunch&&c.plan!=="text"){await openCheckout(c);return;}
     const{error}=await sb.rpc("activate_capsule",{p_capsule_id:c.id});if(error)throw error;
     location.href="dashboard.html?slug="+encodeURIComponent(c.slug)+"&activated=1";
    }catch(e){show($("activation-status"),"Activation impossible : "+e.message,false);button.disabled=false}
@@ -2095,6 +2114,10 @@ async function initDashboard(){
  setupCapsuleSettings(c);
  setupOfferServices(c);
  if(qs.get("payment")==="cancel")show($("activation-status"),"Paiement annulé. Votre préparation est conservée ; vous pouvez réessayer.",false);
+ if(qs.get("payment")==="return"&&c.status==="active"&&PLAN_NAMES[qs.get('purchased_plan')]&&c.plan!==qs.get('purchased_plan')){
+  const note=document.createElement('p');note.className='notice status show';note.setAttribute('role','status');note.textContent='Confirmation du changement de formule en cours…';$("capsule-plan-name").after(note);
+  let attempts=0;const timer=setInterval(async()=>{if(ownerSessionEnded||++attempts>20){clearInterval(timer);note.textContent='La confirmation prend plus de temps que prévu. Actualisez pour vérifier votre formule.';return;}const {data}=await sb.from('capsules').select('plan').eq('id',c.id).maybeSingle();if(data?.plan===qs.get('purchased_plan')){clearInterval(timer);location.replace('dashboard.html?slug='+encodeURIComponent(c.slug)+'#settings');}},3000);
+ }
  if(qs.get("payment")==="return"&&c.status!=="active"){
   const note=document.createElement("p");note.className="notice status show";note.setAttribute("role","status");note.textContent="Confirmation du paiement en cours. Votre capsule s’activera après confirmation par Stripe.";stage.prepend(note);
   let attempts=0;const timer=setInterval(async()=>{if(ownerSessionEnded||++attempts>20){clearInterval(timer);if(!ownerSessionEnded){note.textContent='La confirmation prend plus de temps que prévu. Actualisez pour vérifier l’activation de votre capsule.';const retry=document.createElement('button');retry.type='button';retry.className='btn secondary';retry.textContent='Vérifier l’activation';retry.onclick=()=>location.reload();note.append(document.createElement('br'),retry);}return;}try{const {data}=await sb.from("capsules").select("status").eq("id",c.id).maybeSingle();if(data?.status==="active"){clearInterval(timer);location.replace("dashboard.html?slug="+encodeURIComponent(c.slug)+"&activated=1");}}catch{}},3000);
@@ -2224,3 +2247,4 @@ async function initDashboard(){
 initAuth();initCreate();initCapsule();initDashboard();
 window.addEventListener("beforeunload",stopStream);
 })();
+

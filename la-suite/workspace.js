@@ -32,7 +32,7 @@
   accountButton.setAttribute('aria-controls',account.id);
   const body=choose.querySelector('.studio-sheet-body');body.innerHTML='<div id="workspace-mine"><div id="workspace-capsule-list"></div><div class="workspace-create-actions"><a id="workspace-create" class="btn primary" href="create.html"><i class="fa-solid fa-plus" aria-hidden="true"></i>Créer une capsule</a><p id="workspace-create-help" class="hint"></p></div></div><p id="workspace-selection-status" class="status" role="status"></p>';
   $('workspace-create').hidden=!access.can_create;$('workspace-create-help').textContent=access.can_create?'':access.reason||'';
-  const planNames={photo:'Essentiel',audio:'Plus',premium:'Premium'};
+  const planNames={text:'Petit mot',photo:'Essentiel',audio:'Plus',premium:'Premium'};
   const summaries=new Map(),states={draft:'En préparation',scheduled:'Prête à partager',open:'Dépôts ouverts',closed:'Dépôts terminés',full:'Stockage rempli',expired:'Conservation terminée',suspended:'Dépôts en pause',missing_date:'Date à compléter'};
   const downloadIcon='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 2h2v11l4-4 1.4 1.4L12 16l-6.4-5.6L7 9l4 4V2zM4 16h2v4h12v-4h2v6H4z"></path></svg>';
   const trash='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#supprimer"></use></svg>';
