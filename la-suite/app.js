@@ -849,6 +849,15 @@ async function initCapsule(){
 
 function videoDuration(file){return guestMediaDuration(file)}
 
+function introFormatAllowed(c,kind){
+ const plan=capsulePlan(c);
+ return kind==='none'||kind==='text'||kind==='image'&&['photo','audio','premium'].includes(plan)||kind==='video'&&plan==='premium';
+}
+function syncIntroFormats(c){
+ const select=$("intro-kind");if(!select)return;
+ for(const option of select.options){option.disabled=!introFormatAllowed(c,option.value);option.hidden=option.disabled;}
+ const help=$("intro-plan-help");if(help)help.textContent=({text:'Accueil texte · 2 000 caractères maximum.',photo:'Accueil texte ou image · 10 Mo maximum.',audio:'Accueil texte ou image · 10 Mo maximum.',premium:'Accueil texte, image ou vidéo · vidéo de 12 secondes maximum.'})[capsulePlan(c)];
+}
 function introKind(c){return c.intro_path?(/\.(jpg|jpeg|png|webp)$/i.test(c.intro_path)?"image":"video"):c.welcome_message?"text":"none"}
 let introPreviewRevision=0;
 async function renderIntroPreview(c){
@@ -876,6 +885,7 @@ async function optimizeIntroPhoto(file){return optimizeGuestPhoto(file)}
 async function performIntroSave(c){
  const kind=$("intro-kind").value,s=$("intro-status"),button=$("upload-intro");let f=$("intro-file")?.files?.[0];
  const text=$("intro-text").value.trim();
+ if(!introFormatAllowed(c,kind)){show(s,"Ce format d’accueil n’est pas inclus dans votre formule. Modifiez la formule depuis les paramètres.",false);return false}
  if(kind==="text"&&!text){show(s,"Écrivez votre message d’accueil.",false);return false}
  let path=null,introFinalized=false;
  button.disabled=true;organizerState.saving++;saveIndicator();
@@ -927,8 +937,10 @@ function renderIntroDraft(c){
  }else{const hint=document.createElement("p");hint.textContent=kind==="none"?"Les invités accéderont directement au dépôt de souvenirs.":"Choisissez un fichier compatible pour afficher son aperçu.";wrap.append(hint)}
 }
 function setupIntro(c){
- const kind=$("intro-kind"),file=$("intro-file");kind.value=introKind(c);
+ const kind=$("intro-kind"),file=$("intro-file");syncIntroFormats(c);kind.value=introKind(c);
  function update(){
+  syncIntroFormats(c);
+  if(!introFormatAllowed(c,kind.value))kind.value="none";
   $("intro-text-field").hidden=kind.value!=="text";
   $("intro-media-field").hidden=kind.value!=="image"&&kind.value!=="video";
   file.accept=kind.value==="image"?"image/jpeg,image/png,image/webp":"video/mp4,video/quicktime,video/webm";
@@ -1413,7 +1425,7 @@ function ownerShell(c,url,count){
 <section class="qr-designer-panel intro-video-panel">
  <div class="intro-video-body intro-editor-grid">
   <div class="intro-editor-fields">
-   <div class="field"><label for="intro-kind">Votre message d’accueil</label><select id="intro-kind"><option value="none">Sans message d’accueil</option><option value="text">Un texte</option><option value="video">Une vidéo</option><option value="image">Une image</option></select><small class="field-help">Facultatif · modifiable à tout moment.</small></div>
+   <div class="field"><label for="intro-kind">Votre message d’accueil</label><select id="intro-kind"><option value="none">Sans message d’accueil</option><option value="text">Un texte</option><option value="video">Une vidéo</option><option value="image">Une image</option></select><small class="field-help" id="intro-plan-help">Facultatif · modifiable à tout moment.</small></div>
    <div class="field" id="intro-text-field" hidden><label for="intro-text">Votre message</label><textarea id="intro-text" rows="4" maxlength="2000" placeholder="Bienvenue dans notre capsule ! Laissez-nous un petit mot, une émotion, un souvenir…">${esc(c.welcome_message||"")}</textarea><small class="field-help">2 000 caractères maximum.</small></div>
    <div class="field" id="intro-media-field" hidden><label id="intro-file-label" for="intro-file">Votre fichier</label><input id="intro-file" type="file" class="intro-file-native" tabindex="-1"><button id="choose-intro-file" class="btn secondary intro-file-picker" type="button" aria-controls="intro-file">Choisir un fichier</button><span id="intro-file-name" class="intro-file-name" role="status" hidden></span><small class="field-help" id="intro-file-help"></small></div>
    <button id="upload-intro" class="btn primary" type="button">Enregistrer mon message d’accueil</button>
@@ -1827,7 +1839,7 @@ async function saveCapsuleSettings(c){
  if(c.status==='draft'&&plan!==c.plan){if(!Object.hasOwn(PLAN_PRICES,plan)||c.pendingPayment)throw new Error("La formule ne peut pas être modifiée pendant un paiement en cours.");payload.plan=plan;}
  const oldDefault=defaultCardExplanation(capsulePlan(c));
  try{await updateOwnedCapsule(c,payload)}catch(error){await renderOrganizerLifecycle(c);if($("capsule-date").disabled)$("capsule-date").value=c.wedding_date;throw error}
- Object.assign(c,payload);$("capsule-plan-name").textContent=PLAN_NAMES[capsulePlan(c)];$("dashboard-title").textContent=name;$("plan-explanation-help").textContent="Texte proposé pour la formule "+PLAN_NAMES[capsulePlan(c)]+".";
+ Object.assign(c,payload);syncIntroFormats(c);$("capsule-plan-name").textContent=PLAN_NAMES[capsulePlan(c)];$("dashboard-title").textContent=name;$("plan-explanation-help").textContent="Texte proposé pour la formule "+PLAN_NAMES[capsulePlan(c)]+".";
  if($("print-explanation").value===oldDefault){$("print-explanation").value=defaultCardExplanation(capsulePlan(c));organizerState.qr=true}
  await renderOrganizerLifecycle(c);
  window.SuiteOrganizerLayout?.syncDate?.();
@@ -2247,4 +2259,3 @@ async function initDashboard(){
 initAuth();initCreate();initCapsule();initDashboard();
 window.addEventListener("beforeunload",stopStream);
 })();
-
