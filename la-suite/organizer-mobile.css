@@ -499,3 +499,18 @@ body.owner-no-tabs{padding-bottom:0!important}
  .organizer-layout-ready .deposit-open-gallery .memory-meta .memory-row-countdown{white-space:normal;font:500 11px/1.4 Inter,sans-serif}
 }
 .memory-row-countdown{display:block;margin-top:3px;font-size:12px;font-variant-numeric:tabular-nums;color:#690c29}
+
+/* Keep the La Suite wordmark readable in the phone/app header. */
+@media(max-width:760px){
+ body.organizer-layout-ready .forge-style-header .suite-brand img{width:180px;max-width:min(180px,60vw);height:auto;max-height:76px;object-fit:contain}
+}
+@media(max-width:480px){
+ .event-date-confirmation .event-date-confirmation-header{gap:12px;padding:20px 18px 18px}
+ .event-date-confirmation h2{font-size:27px}
+ .event-date-confirmation .event-date-confirmation-body{padding:18px 18px 6px}
+ .event-date-confirmation .event-date-comparison{gap:8px}
+ .event-date-confirmation .event-date-comparison>div{padding:12px 8px}
+ .event-date-confirmation .event-date-comparison strong{font-size:17px}
+ .event-date-confirmation .event-date-confirmation-actions{flex-direction:column-reverse;padding:8px 18px 18px}
+ .event-date-confirmation .event-date-confirmation-actions button{width:100%}
+}

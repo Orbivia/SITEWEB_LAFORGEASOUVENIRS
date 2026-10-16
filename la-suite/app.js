@@ -1788,6 +1788,32 @@ function setupCapsuleSettings(c){
  queueMicrotask(()=>{syncError();if($("organizer-save-error"))new MutationObserver(syncError).observe($("organizer-save-error"),{childList:true,subtree:true,characterData:true})});
  ['capsule-name','capsule-date','capsule-plan','capsule-notify'].forEach(id=>$(id).addEventListener('input',()=>markDirty('settings')));
 }
+let eventDateConfirmation=null;
+function confirmEventDateChange(c,date){
+ if(eventDateConfirmation)return eventDateConfirmation;
+ const dialog=document.createElement('dialog');
+ dialog.className='event-date-confirmation';
+ dialog.setAttribute('aria-labelledby','event-date-confirmation-title');
+ dialog.setAttribute('aria-describedby','event-date-confirmation-impact');
+ dialog.innerHTML='<header class="event-date-confirmation-header"><span class="event-date-confirmation-icon" aria-hidden="true"><i class="fa-solid fa-calendar-days"></i></span><h2 id="event-date-confirmation-title">Changer la date de l’événement ?</h2></header><div class="event-date-confirmation-body"><div class="event-date-comparison"><div><span>Date actuelle</span><strong data-event-date-current></strong></div><div class="event-date-new"><span>Nouvelle date</span><strong data-event-date-new></strong></div></div><p id="event-date-confirmation-impact">Les dépôts ouvriront à la nouvelle date et le lendemain. Les trois ans de conservation seront recalculés.</p><p class="event-date-preserved"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i><span>Votre paiement et votre QR code sont conservés.</span></p></div><footer class="event-date-confirmation-actions"><button type="button" data-event-date-cancel autofocus>Annuler</button><button type="button" data-event-date-confirm>Confirmer le changement</button></footer>';
+ dialog.querySelector('[data-event-date-current]').textContent=fdate(c.wedding_date);
+ dialog.querySelector('[data-event-date-new]').textContent=fdate(date);
+ let resolveDecision,settled=false;
+ const decision=new Promise(resolve=>{resolveDecision=resolve});
+ eventDateConfirmation=decision;
+ const finish=accepted=>{
+  if(settled)return;settled=true;
+  if(dialog.open)dialog.close();
+  dialog.remove();eventDateConfirmation=null;resolveDecision(accepted);
+ };
+ dialog.querySelector('[data-event-date-cancel]').onclick=()=>finish(false);
+ dialog.querySelector('[data-event-date-confirm]').onclick=()=>finish(true);
+ dialog.addEventListener('cancel',event=>{event.preventDefault();finish(false)});
+ dialog.addEventListener('close',()=>finish(false));
+ document.body.append(dialog);
+ try{dialog.showModal()}catch{finish(false)}
+ return decision;
+}
 async function saveCapsuleSettings(c){
  if(!organizerState.settings)return true;
  const name=$("capsule-name").value.trim(),plan=$("capsule-plan").value;let date=$("capsule-date").value;
@@ -1795,7 +1821,7 @@ async function saveCapsuleSettings(c){
  const dateChanged=date!==c.wedding_date;
  if((c.status==='draft'||dateChanged&&c.status==='active'&&c.guest_rules_version===1)&&date<tomorrowParis()){show($("organizer-save-error"),'Choisissez une date d’événement à partir de demain.',false);openCapsuleSettings();return false}
  if(dateChanged&&date>latestEventDate()){show($("organizer-save-error"),'Choisissez une date au plus tard le '+fdate(latestEventDate())+' (deux ans maximum).',false);openCapsuleSettings();return false}
- if(dateChanged&&c.status==='active'&&c.guest_rules_version===1&&!confirm("Déplacer l’événement du "+fdate(c.wedding_date)+" au "+fdate(date)+" ?\nLes dépôts seront ouverts à la nouvelle date et le lendemain. Les trois ans de conservation seront recalculés. Votre paiement et votre QR code sont conservés.")){date=c.wedding_date;$("capsule-date").value=date}
+ if(dateChanged&&c.status==='active'&&c.guest_rules_version===1&&!await confirmEventDateChange(c,date)){date=c.wedding_date;$("capsule-date").value=date}
  const notify=$("capsule-notify").checked;
  const payload={couple_name:name,wedding_date:date,notify_by_email:notify};
  if(c.status==='draft'&&plan!==c.plan){if(!Object.hasOwn(PLAN_PRICES,plan)||c.pendingPayment)throw new Error("La formule ne peut pas être modifiée pendant un paiement en cours.");payload.plan=plan;}
@@ -2198,7 +2224,3 @@ async function initDashboard(){
 initAuth();initCreate();initCapsule();initDashboard();
 window.addEventListener("beforeunload",stopStream);
 })();
-
-
-
-
