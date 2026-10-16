@@ -115,10 +115,14 @@
   new MutationObserver(syncTextLauncher).observe(button,{attributes:true,attributeFilter:['aria-pressed']});
  }
  $('message_text').addEventListener('input',syncTextLauncher);$('message_text').addEventListener('invalid',event=>{if(!textLaunch.hidden){event.preventDefault();openTextDialog();}});form.addEventListener('reset',()=>queueMicrotask(syncTextLauncher));syncTextLauncher();
- const nameDialog=document.createElement('dialog');nameDialog.className='guest-name-dialog';nameDialog.setAttribute('aria-labelledby','guest-name-title');nameDialog.innerHTML='<header><h2 id="guest-name-title">Signez votre souvenir</h2><button type="button" class="guest-media-close" aria-label="Fermer">×</button></header><div class="guest-media-dialog-body"></div><button type="button" class="btn primary guest-name-send">Envoyer mon souvenir</button>';form.append(nameDialog);nameDialog.querySelector('.guest-media-dialog-body').append(signature);nameDialog.querySelector('.guest-media-close').onclick=()=>nameDialog.close();
+ const nameDialog=document.createElement('dialog');nameDialog.className='guest-name-dialog';nameDialog.setAttribute('aria-labelledby','guest-name-title');nameDialog.innerHTML='<header><h2 id="guest-name-title">Votre prénom</h2><button type="button" class="guest-media-close" aria-label="Fermer">×</button></header><div class="guest-media-dialog-body"></div><button type="button" class="btn primary guest-name-send">Envoyer mon souvenir</button>';form.append(nameDialog);const nameBody=nameDialog.querySelector('.guest-media-dialog-body');nameBody.append(signature);
+ const privacy=signature.querySelector('.legal-collection-notice');if(privacy){const details=document.createElement('details'),summary=document.createElement('summary');details.className='guest-name-privacy';summary.textContent='Confidentialité et vos droits';details.append(summary,privacy);nameBody.append(details);}
+ signature.querySelector('label').textContent='Prénom ou surnom';$('guest_name').setAttribute('enterkeyhint','send');
+ nameDialog.querySelector('.guest-media-close').onclick=()=>nameDialog.close();
  const sendButton=form.querySelector('.submit-memory');
  sendButton.addEventListener('click',event=>{event.preventDefault();highlightMissing();const type=form.querySelector('[data-memory-type][aria-pressed=true]')?.dataset.memoryType;if(type==='text'&&!$('message_text').value.trim()){openTextDialog();return;}if(type!=='text'&&$('media-preview').hidden){mediaLaunch.focus();return;}if(!$('deliver-now').checked&&!$('delivery_date').value){deliveryPopup.showModal();return;}if(window.SuiteGuestLimits?.remaining()>0||sendButton.disabled)return;markMissing($('guest_name'),false);nameDialog.showModal();$('guest_name').focus({preventScroll:true});requestAnimationFrame(fitDepositDialogs);});
  nameDialog.querySelector('.guest-name-send').onclick=()=>{if(!$('guest_name').value.trim()){markMissing($('guest_name'),true);$('guest_name').focus();return;}if(!$('guest_name').reportValidity())return;nameDialog.close();form.requestSubmit(sendButton);};
+ $('guest_name').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing&&nameDialog.open){event.preventDefault();nameDialog.querySelector('.guest-name-send').click();}});
  form.addEventListener('submit',()=>{if(nameDialog.open)nameDialog.close();},true);
  // Highlight missing required values together before native form validation.
  function markMissing(node,missing){node.classList.toggle('guest-required-missing',missing);node.setAttribute('aria-invalid',String(missing));}
@@ -184,7 +188,7 @@
   syncMedia();document.body.classList.remove('guest-loading','guest-load-error');landing.setAttribute('aria-busy','false');requestAnimationFrame(syncMedia);
  }
  const observer=new MutationObserver(()=>{if(!$('guest-success').hidden)body.dataset.guestView='success';});observer.observe($('guest-success'),{attributes:true,attributeFilter:['hidden']});
- $('another-memory').addEventListener('click',()=>{body.dataset.guestView='home';});
+ $('another-memory').addEventListener('click',()=>{body.dataset.guestView='compose';window.scrollTo(0,0);});
  new MutationObserver(()=>{$('guest-deposit').hidden=form.hidden;for(const b of types.children)b.hidden=form.hidden||Boolean(form.querySelector('[data-memory-type="'+b.dataset.landingType+'"]').hidden);}).observe(form,{attributes:true,subtree:true,attributeFilter:['hidden']});
  document.fonts?.ready.then(syncMedia);
  window.addEventListener('resize',syncMedia);
@@ -196,3 +200,4 @@
 
 
 (function(){for(const footer of document.querySelectorAll('.guest-home-footer,.guest-compose-footer,.guest-success-footer')){const image=footer.querySelector('img');if(!image)continue;let link=image.closest('a');if(!link){link=document.createElement('a');link.className='guest-home-brand';image.before(link);link.append(image);}link.href='index.html#principe';link.target='_blank';link.rel='noopener';link.setAttribute('aria-label','Découvrir La Suite — La Forge à Souvenirs');}})();
+

@@ -752,3 +752,39 @@ body.guest-preview-editor #guest-deposit,body.guest-preview-editor .guest-home-t
 .guest-deposit-dialog #capture-status[data-original-choice=true] p{margin:10px 0;line-height:1.5}
 .guest-deposit-dialog #capture-status[data-original-choice=true] button{display:block;width:100%;margin-top:12px;white-space:normal}
 .guest-original-video-notice{margin:8px 0 0;font-size:13px;line-height:1.5}
+
+
+/* Final guest step: readable on a light surface, including with the keyboard open. */
+body.guest-landing-ready .guest-name-dialog[open]{height:auto;max-height:var(--deposit-dialog-height,calc(100dvh - 24px));background:#fffdf8;color:#302725;padding:20px;gap:0;border:1px solid #b3935733}
+body.guest-landing-ready .guest-name-dialog>header{align-items:center;margin:0 0 16px;padding:0 0 12px;border-bottom:1px solid #e8e1d7}
+body.guest-landing-ready .guest-name-dialog #guest-name-title{font:500 26px/1.2 var(--welcome-font,Georgia,serif);color:#302725;margin:0;min-width:0}
+body.guest-landing-ready .guest-name-dialog .guest-media-close{width:40px;height:40px;min-height:40px;flex:none;border:1px solid #ded8ce;border-radius:50%;background:transparent;color:#51483e;font-size:26px}
+body.guest-landing-ready .guest-name-dialog .guest-media-dialog-body{display:flex;flex-direction:column;gap:14px;flex:0 1 auto;overflow:auto;padding:0 2px 2px}
+body.guest-landing-ready .guest-name-dialog .field.guest-signature{margin:0;padding:0;border:0;background:transparent;outline:none}
+body.guest-landing-ready .guest-name-dialog .guest-signature label{display:block;margin:0 0 8px;color:#302725;font:500 14px/1.4 Inter,sans-serif}
+body.guest-landing-ready .guest-name-dialog #guest_name{display:block;width:100%;height:50px;min-height:50px;box-sizing:border-box;border:1px solid #b9a98d;border-radius:12px;background:#fff;color:#302725;padding:12px 14px;font:400 16px/1.4 Inter,sans-serif}
+body.guest-landing-ready .guest-name-dialog #guest_name::placeholder{color:#81776b;opacity:1;font-size:16px}
+body.guest-landing-ready .guest-name-dialog #guest_name:focus-visible{outline:2px solid #927138;outline-offset:2px}
+body.guest-landing-ready .guest-name-dialog #guest_name[aria-invalid=true]{border-color:#a72e36}
+body.guest-landing-ready .guest-name-dialog .guest-name-privacy{margin:0;color:#6d6258;font:400 12px/1.5 Inter,sans-serif}
+body.guest-landing-ready .guest-name-dialog .guest-name-privacy summary{cursor:pointer;padding:2px 0;min-height:24px;color:#665b4e}
+body.guest-landing-ready .guest-name-dialog .legal-collection-notice{margin:8px 0 0;padding:0;color:#6d6258;font:400 12px/1.5 Inter,sans-serif}
+body.guest-landing-ready .guest-name-dialog .legal-collection-notice a{color:#665035;text-decoration:underline}
+body.guest-landing-ready .guest-name-dialog>.guest-name-send{margin:16px 0 0;min-height:48px;background:var(--home-accent,#8b2730);color:var(--home-button-ink,#fff);border:0;border-radius:12px;font:600 15px/1.4 Inter,sans-serif}
+
+/* Confirmation remains usable at short viewport heights and enlarged text sizes. */
+body.guest-landing-ready[data-guest-view=success]{height:auto;min-height:100dvh;overflow-y:auto}
+body.guest-landing-ready[data-guest-view=success] .guest-page{height:auto;min-height:100dvh;max-height:none;overflow:visible}
+body.guest-landing-ready[data-guest-view=success] #guest-success{height:auto;min-height:100dvh;max-height:none;overflow:visible;justify-content:center;gap:18px;padding:28px 24px max(24px,env(safe-area-inset-bottom))}
+body.guest-landing-ready[data-guest-view=success] .guest-success-animation{flex:none;width:min(240px,65vw);height:clamp(140px,26svh,230px);max-height:none;margin:0}
+body.guest-landing-ready[data-guest-view=success] #guest-success h2{max-width:390px;font-size:clamp(25px,6.8vw,34px);line-height:1.2}
+body.guest-landing-ready[data-guest-view=success] #guest-success-date{max-width:390px;margin:0;padding:12px 16px;font-size:14px;line-height:1.5}
+body.guest-landing-ready[data-guest-view=success] #another-memory{display:inline-flex;align-items:center;justify-content:center;flex:none;width:100%;max-width:390px;min-height:52px;margin:8px 0 0;padding:12px 18px;white-space:normal;background:var(--home-accent,#8b2730);color:var(--home-button-ink,#fff)}
+body.guest-landing-ready[data-guest-view=success] .guest-success-footer{position:static!important;top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;transform:none!important;margin:16px auto 0!important}
+body.guest-landing-ready .guest-reveal-card .guest-reveal-tagline{color:#746750!important}
+
+/* Once processing starts, the dialog presents the current task instead of file choices. */
+body.guest-landing-ready .guest-capture-dialog:has(#capture-status[data-preparing=true])[open]{height:auto;top:calc(var(--deposit-dialog-top,12px) + var(--deposit-dialog-height,500px)/2);transform:translate(-50%,-50%)}
+body.guest-landing-ready .guest-capture-dialog:has(#capture-status[data-preparing=true]) #capture-choices,
+body.guest-landing-ready .guest-capture-dialog:has(#capture-status[data-preparing=true]) #file-help{display:none!important}
+body.guest-landing-ready .guest-capture-dialog #capture-status[data-preparing=true]:not(.err){margin:0;padding:18px 16px 24px;background:#fffdf8;color:#302725;border:1px solid #d6c7aa}
