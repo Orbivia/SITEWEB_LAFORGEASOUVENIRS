@@ -511,7 +511,7 @@ function notifyGuestLimits(){window.dispatchEvent(new Event('la-suite-guest-limi
 async function refreshGuestLimits(){
  if(guestIsPreview)return true;const token=qs.get('t')||qs.get('token');if(!token)return false;
  if(guestLimitCheck)return guestLimitCheck;
- guestLimitCheck=(async()=>{try{const data=await guestInvoke({action:'get_guest_limits',guest_token:token,file_size:selectedMedia?.file?.size||0});guestLimitDeadlines={text:Date.now()+Math.max(0,Number(data.text_retry_after_seconds)||0)*1000,media:Date.now()+Math.max(0,Number(data.media_retry_after_seconds)||0)*1000};notifyGuestLimits();return true;}catch{return false}finally{guestLimitCheck=null}})();return guestLimitCheck;
+ guestLimitCheck=(async()=>{try{const data=await guestInvoke({action:'get_guest_limits',guest_token:token,file_size:selectedMedia?.file?.size||0});const now=Date.now(),deadline=seconds=>{const wait=Number(seconds);return Number.isFinite(wait)&&wait>0?now+wait*1000:0};guestLimitDeadlines={text:deadline(data.text_retry_after_seconds),media:deadline(data.media_retry_after_seconds)};notifyGuestLimits();return true;}catch{return false}finally{guestLimitCheck=null}})();return guestLimitCheck;
 }
 window.SuiteGuestLimits={refresh:refreshGuestLimits,remaining:guestWaitSeconds};
 setInterval(()=>{if(guestLimitDeadlines.text>Date.now()||guestLimitDeadlines.media>Date.now()){notifyGuestLimits();}else if(guestLimitDeadlines.text||guestLimitDeadlines.media){guestLimitDeadlines={text:0,media:0};notifyGuestLimits();refreshGuestLimits();}},1000);
@@ -620,10 +620,10 @@ async function acceptGuestFile(file,type,duration,interruption){
   if(file.size>inputLimit)throw new Error(type==="image"?"La photo dépasse 10 Mo.":type==="audio"?"L’audio dépasse 20 Mo.":videoImport?"Choisissez une vidéo de 100 Mo maximum.":"La vidéo dépasse 50 Mo.");
   if(videoImport){
    if(!window.SuiteVideoImport)throw new Error("Rechargez la page pour préparer votre vidéo.");
-   const prepared=await SuiteVideoImport.prepare(file,percent=>{
+   const prepared=await SuiteVideoImport.prepare(file,(percent,phase)=>{
     if(version!==guestSelectionVersion)return;
     preparationStatus.style.setProperty("--video-progress",percent+"%");
-    showCapture(percent===0?"Chargement de la compression…\nGardez cette fenêtre ouverte.":"Compression de votre vidéo… "+percent+" %\nGardez cette fenêtre ouverte. Cela peut prendre plusieurs minutes.");
+    showCapture(phase==="loading"?"Chargement de la compression… "+percent+" %\nGardez cette fenêtre ouverte.":"Compression de votre vidéo… "+percent+" %\nGardez cette fenêtre ouverte. Cela peut prendre plusieurs minutes.");
    });
    file=prepared.file;duration=prepared.duration;previewPoster=prepared.poster||"";
   }else if(type==="image")file=await optimizeGuestPhoto(file);

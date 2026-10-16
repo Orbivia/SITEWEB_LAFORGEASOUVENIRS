@@ -4,15 +4,29 @@ self.onmessage = async ({data}) => {
  try {
   importScripts('vendor/ffmpeg-core-0.12.10/ffmpeg-core.js');
   const coreURL = new URL('vendor/ffmpeg-core-0.12.10/ffmpeg-core.js', self.location.href).href;
-  // Split static assets keep repository uploads small; the browser assembles the codec locally.
-  const wasmBinary = new Uint8Array(32232419);
-  let offset = 0;
-  for (let part = 1; part <= 4; part++) {
-   const response = await fetch(new URL('vendor/ffmpeg-core-0.12.10/ffmpeg-core.wasm.part' + part, self.location.href));
-   if (!response.ok) throw new Error('Impossible de charger la compression. Vérifiez votre connexion et réessayez.');
-   const bytes = new Uint8Array(await response.arrayBuffer()); wasmBinary.set(bytes, offset); offset += bytes.length;
+  // Two bounded streams fill the destination directly, without retaining whole part copies.
+  // Versioned static assets may be reused from the browser cache on subsequent imports.
+  const sizes=[8388576,8388576,8388576,7066691],wasmBinary=new Uint8Array(32232419);
+  let loaded=0,lastLoadingPercent=-1,codecCache=null;
+  try{codecCache=await self.caches?.open('la-suite-video-codec-0.12.10');}catch{/* Private browsing or storage restrictions: use ordinary HTTP caching. */}
+  const reportLoading=bytes=>{loaded+=bytes;const percent=Math.floor(loaded/wasmBinary.length*100);if(percent!==lastLoadingPercent){lastLoadingPercent=percent;self.postMessage({phase:'loading',progress:percent/100});}};
+  async function loadPart(index){
+   const url=new URL('vendor/ffmpeg-core-0.12.10/ffmpeg-core.wasm.part'+(index+1),self.location.href).href;
+   let response;try{response=await codecCache?.match(url);}catch{}
+   const cached=Boolean(response);response=response||await fetch(url,{cache:'force-cache'});
+   if(!response.ok)throw new Error('Impossible de charger la compression. Vérifiez votre connexion et réessayez.');
+   const cacheWrite=!cached&&codecCache?codecCache.put(url,response.clone()).catch(()=>{}):Promise.resolve();
+   const start=sizes.slice(0,index).reduce((sum,size)=>sum+size,0);let count=0;
+   const append=bytes=>{if(count+bytes.length>sizes[index])throw new Error('Chargement incorrect. Rechargez la page et réessayez.');wasmBinary.set(bytes,start+count);count+=bytes.length;reportLoading(bytes.length);};
+   try{
+   if(response.body?.getReader){
+    const reader=response.body.getReader();try{while(true){const {done,value}=await reader.read();if(done)break;append(value);}}finally{reader.releaseLock();}
+   }else append(new Uint8Array(await response.arrayBuffer()));
+   if(count!==sizes[index])throw new Error('Chargement incomplet. Rechargez la page et réessayez.');
+   await cacheWrite;
+   }catch(error){await cacheWrite;try{await codecCache?.delete(url);}catch{}throw error;}
   }
-  if (offset !== wasmBinary.length) throw new Error('Chargement incomplet. Rechargez la page et réessayez.');
+  for(let index=0;index<sizes.length;index+=2)await Promise.all([loadPart(index),loadPart(index+1)]);
   const ffmpeg = await createFFmpegCore({wasmBinary, mainScriptUrlOrBlob: coreURL + '#' + btoa(JSON.stringify({wasmURL: coreURL + '.wasm'}))});
   let duration = 0;
   ffmpeg.setLogger(({message}) => {
@@ -20,6 +34,7 @@ self.onmessage = async ({data}) => {
    if (match) duration = Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3]);
   });
   ffmpeg.FS.writeFile('input.bin', new Uint8Array(data.buffer));
+  data.buffer=null;
   ffmpeg.exec('-i', 'input.bin');
   if (!(duration > 0)) throw new Error('Ce fichier vidéo ne peut pas être lu. Choisissez une autre vidéo.');
   if (duration > 60.1) throw new Error('Choisissez une vidéo d’une minute maximum.');
