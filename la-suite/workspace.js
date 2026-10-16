@@ -160,6 +160,33 @@
   const accountBack=document.createElement('button');accountBack.type='button';accountBack.className='workspace-account-back';accountBack.innerHTML='<i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Mon compte';accountViews.append(accountBack,$('workspace-email-form'),$('workspace-password-form'));
   const accountStatus=$('workspace-account-status'),accountLogout=$('logout');
   accountBody.replaceChildren(accountMenu,accountViews,accountStatus,accountLogout);
+  // APK 0.2.0 appends legacy rows after logout. Keep its nodes so its own
+  // observer does not recreate them, and integrate only configured phone alerts.
+  let nativeNotificationsConfigured=false;
+  function syncNativeAccountRows(){
+   if(ended)return;
+   const privacy=account.querySelector('#android-privacy');
+   if(privacy)privacy.hidden=true;
+   const phone=account.querySelector('#android-notifications');
+   if(!phone)return;
+   phone.hidden=!nativeNotificationsConfigured;
+   if(phone.dataset.workspaceNativeRow!=='1'){
+    phone.innerHTML='<i class="fa-solid fa-mobile-screen-button" aria-hidden="true"></i><span>Notifications du téléphone</span><i class="fa-solid fa-chevron-right" aria-hidden="true"></i>';
+    phone.dataset.workspaceNativeRow='1';
+   }
+   if(phone.parentElement!==accountMenu)accountMenu.insertBefore(phone,aboutLink);
+  }
+  const nativeAccountObserver=new MutationObserver(syncNativeAccountRows);
+  nativeAccountObserver.observe(accountBody,{childList:true,subtree:true});
+  const nativeNotificationState=event=>{nativeNotificationsConfigured=event.detail?.configured===true;syncNativeAccountRows()};
+  window.addEventListener('la-suite-native-notifications',nativeNotificationState);
+  function stopNativeAccountSync(){
+   nativeAccountObserver.disconnect();
+   window.removeEventListener('la-suite-native-notifications',nativeNotificationState);
+   const phone=account.querySelector('#android-notifications');if(phone)phone.hidden=true;
+  }
+  syncNativeAccountRows();
+  try{window.LaSuiteAndroid?.notificationState?.()}catch{/* Native bridge not ready yet. */}
   function showAccountView(kind){
    const editing=Boolean(kind);accountMenu.hidden=editing;accountViews.hidden=!editing;accountLogout.hidden=editing;$('workspace-email-current').hidden=editing;
    accountHeading.textContent=kind==='email'?'Modifier mon adresse e-mail':kind==='password'?'Modifier mon mot de passe':'Mon compte';
@@ -184,11 +211,10 @@
    const {error}=await sb.auth.updateUser({password});if(error)throw error;if(!ended){e.target.reset();showAccountView(null);$('workspace-edit-password').focus();report('Votre mot de passe a été modifié.');}
   }catch(e){if(!ended)report('Modification impossible : '+e.message,true)}finally{busy(false)}};
   $('logout').onclick=async()=>{if(accountBusy)return report('Patientez jusqu’à la fin de l’opération.',true);await logout();};
-  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==user.id){ended=true;notificationLoad++;notifications.close();choose.close();account.close();deletion.close();queueMicrotask(()=>{choose.replaceChildren();account.replaceChildren();deletion.replaceChildren();notifications.replaceChildren()});document.querySelectorAll('.owner-tabs').forEach(n=>n.remove());}else if(event==='USER_UPDATED'&&session?.user?.email){currentEmail=session.user.email;$('workspace-email-current').textContent=currentEmail;}});
+  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==user.id){ended=true;stopNativeAccountSync();notificationLoad++;notifications.close();choose.close();account.close();deletion.close();queueMicrotask(()=>{choose.replaceChildren();account.replaceChildren();deletion.replaceChildren();notifications.replaceChildren()});document.querySelectorAll('.owner-tabs').forEach(n=>n.remove());}else if(event==='USER_UPDATED'&&session?.user?.email){currentEmail=session.user.email;$('workspace-email-current').textContent=currentEmail;}});
   // Follow the visual viewport while Android browser bars expand/collapse.
   const viewport=window.visualViewport;let frame;
   function align(){cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(ended)return;const visible=window.visualViewport,zoomed=visible&&Math.abs(visible.scale-1)>.05;const gap=visible&&!zoomed?Math.max(0,innerHeight-visible.height-visible.offsetTop):0;document.documentElement.style.setProperty('--workspace-bottom',gap+'px');document.documentElement.style.setProperty('--workspace-viewport-height',(visible&&!zoomed?visible.height:innerHeight)+'px');document.body.classList.toggle('workspace-keyboard',!!visible&&!zoomed&&innerHeight-visible.height>150);if(account.open&&account.contains(document.activeElement)&&document.activeElement.matches('input'))document.activeElement.scrollIntoView({block:'nearest'});});}
   viewport?.addEventListener('resize',align);viewport?.addEventListener('scroll',align);window.addEventListener('resize',align);window.addEventListener('scroll',align,{passive:true});align();
  }};
 })();
-
