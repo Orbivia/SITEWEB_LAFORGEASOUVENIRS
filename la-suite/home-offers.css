@@ -68,8 +68,24 @@
 .suite-public .principle-card{width:100%;max-width:480px;margin-inline:auto}
 }
 
-/* Explanatory format labels, separate from the illustrated guest welcome screen. */
-.suite-public .home-memory-formats{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:12px 0 8px;padding:0;list-style:none}
-.suite-public .home-memory-formats li{display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 9px;border:1px solid #e6ddd0;border-radius:9px;background:#fffdf9;color:#34302a;font-size:.74rem;line-height:1.35}
-.suite-public .home-memory-formats i{color:#99722c;font-size:.9rem}
-.suite-public .principle-card .home-memory-plan-note{font-size:.78rem;color:#686058}
+
+/* Compact homepage benefits and clearly separated time windows. */
+.suite-public .home-included-panel{margin:28px 0 0;padding:26px 28px;background:#fffdf9;border:1px solid #e6ddd0;border-radius:18px}
+.suite-public .home-included-panel h3{margin-bottom:22px;font-size:1.8rem}
+.suite-public .home-included-panel ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px 34px}
+.suite-public .home-included-panel li{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding-left:14px;border-left:2px solid #d0b57e;font-size:.88rem;line-height:1.5}
+.suite-public .home-included-panel strong{color:#302b25;font-size:.92rem;font-weight:600}
+.suite-public .home-included-panel li span{color:#686058}
+.suite-public .home-timing-panel{margin-top:30px}
+.suite-public .home-timing-panel>h3{font-size:1.8rem;margin-bottom:18px}
+.suite-public .home-timing-panel .pricing-timing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.suite-public .home-timing-panel article{min-width:0;padding:22px;background:#fffdf9;border:1px solid #e6ddd0;border-top:3px solid #c3a46a;border-radius:12px}
+.suite-public .home-timing-panel .pricing-timing-label{display:inline-block;padding:4px 9px;margin:0 0 13px;border-radius:6px;background:#f3ecdf;color:#755b2b;font-size:.68rem;font-weight:700;letter-spacing:.08em}
+.suite-public .home-timing-panel h4{margin:0 0 10px;font-size:1rem;line-height:1.4;color:#302b25}
+.suite-public .home-timing-panel p{margin:0;color:#686058;font-size:.85rem;line-height:1.6}
+@media(max-width:900px){.suite-public .home-timing-panel .pricing-timing-grid{grid-template-columns:1fr}}
+@media(max-width:600px){
+.suite-public .home-included-panel{padding:22px 20px}
+.suite-public .home-included-panel ul{grid-template-columns:1fr;gap:18px}
+.suite-public .home-timing-panel article{padding:20px}
+}
