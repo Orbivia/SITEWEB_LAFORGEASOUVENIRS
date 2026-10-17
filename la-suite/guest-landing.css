@@ -836,3 +836,7 @@ body.guest-landing-ready #guest-text-dialog .guest-message-counter.is-too-short{
 
 /* Recorder symbols have one vector path and do not depend on icon fonts. */
 body.guest-landing-ready .guest-capture-dialog .recorder-actions .guest-recorder-icon{display:block;width:28px;height:28px;overflow:visible;pointer-events:none;filter:none;transform:none;animation:none}
+
+/* Countdown has no action icon; reserve the slot until one stop button is ready. */
+body.guest-landing-ready .guest-capture-dialog:has(#video-countdown:not([hidden]),#audio-countdown:not([hidden])) .recorder-actions button{visibility:hidden!important;pointer-events:none!important}
+body.guest-landing-ready .guest-capture-dialog[data-phase=recording] .recorder-actions button:is(#prepare-audio,#start-audio,#prepare-video,#start-video){display:none!important}
