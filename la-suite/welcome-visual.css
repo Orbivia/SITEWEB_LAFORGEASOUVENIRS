@@ -941,3 +941,5 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-intro-info-only>.visual-welcome-done{display:none!important}
 .visual-intro-info-only .visual-welcome-plan-note,
 .visual-intro-info-only .visual-welcome-plan-note p{margin-bottom:0}
+
+.visual-welcome-plan-note [data-welcome-plan-change]{display:flex;width:fit-content;max-width:100%;margin:14px auto 0;justify-content:center}
