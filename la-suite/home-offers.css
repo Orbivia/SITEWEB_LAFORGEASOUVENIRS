@@ -89,3 +89,17 @@
 .suite-public .home-included-panel ul{grid-template-columns:1fr;gap:18px}
 .suite-public .home-timing-panel article{padding:20px}
 }
+
+/* The mobile homepage uses large illustrations, not the former icon/text grid. */
+@media(max-width:760px){
+.suite-public #principe,.suite-public #tarifs{scroll-margin-top:100px}
+.suite-public .principle-section{padding:28px 0}
+.suite-public .principle-section h2{font-size:clamp(1.9rem,7.8vw,2.5rem);line-height:1.15;margin:0 0 12px}
+.suite-public .principle-lead{font-size:.92rem;line-height:1.5;margin:0 auto 22px;max-width:330px}
+.suite-public ol.principle-grid{grid-template-columns:minmax(0,1fr);gap:16px;margin:0;padding:0}
+.suite-public ol.principle-grid>.principle-card{display:grid;grid-template-columns:28px minmax(0,1fr);grid-template-areas:"illustration illustration" "number title" "text text";column-gap:10px;row-gap:10px;align-items:center;box-sizing:border-box;min-height:0;width:100%;max-width:420px;margin:0 auto;padding:16px;background:#fffdf9;border:1px solid #e9e0d5;border-radius:16px;text-align:left;transform:none}
+.suite-public .principle-card>.home-step-illustration{grid-area:illustration;display:block;width:100%;max-width:320px;height:auto;aspect-ratio:3/2;object-fit:contain;justify-self:center;margin:0 0 2px;border-radius:10px}
+.suite-public .principle-card>.home-step-number{grid-area:number;align-self:center;margin:0;width:28px;height:28px}
+.suite-public .principle-card>h3{grid-area:title;margin:0;font-size:1rem;line-height:1.35}
+.suite-public .principle-card>p{grid-area:text;margin:0;font-size:.9rem;line-height:1.55}
+}
