@@ -659,6 +659,7 @@ function updateDeliveryHelp(){
  $('delivery-value').textContent=$('deliver-now').checked?'Maintenant':$('delivery_date').value?fdate($('delivery_date').value):'Choisir une date';
 }
 function initGuestControls(){
+ window.addEventListener("la-suite-guest-edit-media",event=>{if(guestBusy)return;const type=event.detail?.type;if(["image","audio","video"].includes(type))setGuestMode(type==="audio"?"audio":"upload");});
  window.addEventListener("la-suite-guest-home",()=>{window.SuiteVideoImport?.cancel();interruptCapture("L’enregistrement a été arrêté. Votre aperçu reste disponible.");});
  document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy&&guestType!==b.dataset.memoryType)chooseGuestType(b.dataset.memoryType)}));
  document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy){setGuestMode(b.dataset.mediaMode);if(b.dataset.mediaMode==="upload")$("media-file").click();else if(b.dataset.mediaMode==="photo")$("photo-file").click();else if(["video","audio"].includes(b.dataset.mediaMode)){guestSelectionVersion++;resetPreview();guestTransaction=null;prepareRecorder(b.dataset.mediaMode).catch(error=>showCapture(captureError(error,b.dataset.mediaMode),false))}}}));

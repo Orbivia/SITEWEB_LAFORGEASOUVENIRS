@@ -805,3 +805,28 @@ body.guest-landing-ready .guest-capture-dialog #video-panel.active{display:flex;
 body.guest-landing-ready .guest-capture-dialog #video-panel.active .recorder-stage{flex:1 1 0;height:0;min-height:0;max-height:none;overflow:hidden}
 body.guest-landing-ready .guest-capture-dialog #video-panel.active #live-video{display:block;width:100%;height:100%;min-height:0;max-height:100%;object-fit:contain}
 body.guest-landing-ready .guest-capture-dialog #video-panel.active .recorder-actions{flex:none}
+
+/* One capture state model: source choice, recorder, processing, accepted preview. */
+body.guest-landing-ready .guest-capture-dialog .recorder-actions button:not([hidden]){display:grid!important}
+body.guest-landing-ready .guest-capture-dialog .recorder-actions button[hidden]{display:none!important}
+body.guest-landing-ready .guest-capture-dialog .recorder-actions button:disabled{opacity:.55}
+body.guest-landing-ready .guest-capture-dialog[data-replacing=true] #media-preview{display:none!important}
+body.guest-landing-ready .guest-capture-dialog[data-ready=false] #audio-panel.active{display:flex!important}
+body.guest-landing-ready .guest-capture-dialog[data-ready=false] #video-panel.active{display:flex!important}
+body.guest-landing-ready .guest-capture-dialog[data-phase=choose][open],
+body.guest-landing-ready .guest-capture-dialog[data-phase=processing][open]{height:auto}
+body.guest-landing-ready .guest-capture-dialog[data-phase=processing]>.guest-media-dialog-body{flex:0 1 auto;overflow-y:auto!important;max-height:calc(var(--deposit-dialog-height,500px) - 110px)}
+body.guest-landing-ready .guest-capture-dialog[data-phase=processing] .media-panel,
+body.guest-landing-ready .guest-capture-dialog[data-phase=processing] #capture-choices{display:none!important}
+body.guest-landing-ready .guest-capture-dialog[data-phase=processing] #capture-status{flex:none;max-height:none}
+body.guest-landing-ready .guest-capture-dialog[data-type=video]:is([data-phase=capture],[data-phase=countdown],[data-phase=recording])[open]{height:var(--deposit-dialog-height,calc(100dvh - 24px))}
+body.guest-landing-ready .guest-capture-dialog[data-type=video]:is([data-phase=capture],[data-phase=countdown],[data-phase=recording])>.guest-media-dialog-body{display:grid;grid-template-rows:minmax(0,1fr);flex:1 1 0;min-height:0;overflow:hidden!important}
+body.guest-landing-ready .guest-capture-dialog[data-type=video] #video-panel.active{display:grid!important;grid-template-rows:minmax(0,1fr) 80px;gap:8px;height:100%;min-height:0;max-height:100%;box-sizing:border-box;overflow:hidden}
+body.guest-landing-ready .guest-capture-dialog[data-type=video] #video-panel.active .recorder-stage{height:100%;min-height:0;max-height:100%;box-sizing:border-box}
+body.guest-landing-ready .guest-capture-dialog[data-type=video] #video-panel.active .recorder-actions{height:80px;min-height:80px;margin:0}
+body.guest-landing-ready .guest-capture-dialog .recorder-limit-help{display:none!important}
+body.guest-landing-ready .guest-capture-dialog[data-type=audio] #audio-panel.active{height:auto;min-height:0}
+body.guest-landing-ready .guest-capture-dialog[data-type=audio]>.guest-media-dialog-body{overflow:hidden!important}
+body.guest-landing-ready .guest-capture-dialog[data-phase=countdown] .guest-record-elapsed,
+body.guest-landing-ready .guest-capture-dialog[data-phase=countdown] .guest-record-remaining{visibility:hidden}
+body.guest-landing-ready .guest-capture-dialog #capture-status.err{overflow-y:auto;max-height:72px}
