@@ -935,3 +935,10 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-card-overlays .visual-card-text:focus{min-height:0;max-height:100%;box-sizing:border-box;overflow:auto;overflow-wrap:anywhere}
 #visual-welcome [data-field=capsule-name]{max-width:100%;max-height:3.6em;line-height:1.2;overflow:auto;overflow-wrap:anywhere;box-sizing:border-box}
 #visual-welcome [data-field=welcome-date-title]{min-width:0;max-width:100%;overflow-wrap:anywhere}
+
+/* Petit mot: this popup only explains the formula. */
+.visual-intro-info-only [data-panel=intro]>:not([data-welcome-plan-notice]),
+.visual-intro-info-only [data-welcome-plan-change],
+.visual-intro-info-only>.visual-welcome-done{display:none!important}
+.visual-intro-info-only .visual-welcome-plan-note,
+.visual-intro-info-only .visual-welcome-plan-note p{margin-bottom:0}

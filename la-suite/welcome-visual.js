@@ -228,6 +228,7 @@
   let choosingPlan=false;
   function syncWelcomePlanNotice(panel){
    const currentPlan=window.SuiteDesign.effectivePlan(c)||'premium';
+   settingsPopups.get('intro')?.classList.toggle('visual-intro-info-only',currentPlan==='text');
    const descriptions={
     text:'Petit mot : accueil texte uniquement.',
     photo:'Essentiel : texte ou photo. Vidéo avec Premium.',
