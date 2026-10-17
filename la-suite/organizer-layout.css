@@ -1,7 +1,7 @@
 /* Organizer: compact desktop composition, separate settings/preview on mobile. */
 .organizer-layout-ready{--organizer-burgundy:#650f25;background:#fcfaf6;color:#302725}
-.organizer-layout-ready .forge-style-header{background:#fcfaf6;border-bottom:1px solid #eee6dc}
-.organizer-layout-ready .suite-topbar{max-width:1480px;min-height:76px!important;height:auto!important;gap:24px;flex-wrap:nowrap}
+:is(.organizer-layout-ready,.organizer-shell) .forge-style-header{background:#fcfaf6;border-bottom:1px solid #eee6dc}
+:is(.organizer-layout-ready,.organizer-shell) .suite-topbar{max-width:1480px;min-height:76px!important;height:auto!important;gap:24px;flex-wrap:nowrap}
 .organizer-wordmark{font:600 30px 'Cormorant Garamond',serif;color:var(--organizer-burgundy);white-space:nowrap}
 .organizer-layout-ready .owner-tabs{border:0!important;border-radius:0;background:none;box-shadow:none;padding:0!important;margin:0!important;flex:1;gap:20px;width:auto!important;min-width:0}
 .organizer-layout-ready .owner-tabs button{flex:0 1 auto;min-height:76px;padding:12px 8px;border-radius:0;font:600 17px 'Cormorant Garamond',serif;background:transparent!important;color:#302725;border-bottom:2px solid transparent}
@@ -76,7 +76,7 @@
 .organizer-layout-ready #print-download-dialog small{font-size:10px}
 }
 @media(max-width:1100px) and (min-width:761px){
-.organizer-layout-ready .suite-topbar{gap:12px}
+:is(.organizer-layout-ready,.organizer-shell) .suite-topbar{gap:12px}
 .organizer-wordmark{display:none}
 .organizer-layout-ready main.dashboard-page{width:calc(100% - 36px)}
 .organizer-layout-ready .qr-designer-grid{gap:20px!important}
@@ -84,9 +84,9 @@
 .organizer-layout-ready .owner-tabs button{font-size:15px}
 }
 @media(max-width:760px){
-.organizer-layout-ready .suite-topbar{flex-wrap:wrap;padding:8px 16px}
+:is(.organizer-layout-ready,.organizer-shell) .suite-topbar{flex-wrap:wrap;padding:8px 16px}
 .organizer-wordmark{display:none}
-.organizer-layout-ready .suite-brand{margin-right:auto}
+:is(.organizer-layout-ready,.organizer-shell) .suite-brand{margin-right:auto}
 .organizer-layout-ready .owner-tabs{order:5;flex:1 0 100%}
 .organizer-layout-ready .owner-tabs button{flex:1;min-height:42px;font:500 12px Inter,sans-serif;padding:6px}
 .organizer-layout-ready main.dashboard-page{width:calc(100% - 28px);padding-top:16px!important}
@@ -139,16 +139,16 @@
 .organizer-layout-ready .qr-designer-controls{padding-top:4px}
 }
 .organizer-layout-ready .owner-tabs button span{font-size:inherit;line-height:inherit}
-.organizer-layout-ready .suite-brand img{height:54px;width:156px;max-width:156px;object-fit:contain}
+:is(.organizer-layout-ready,.organizer-shell) .suite-brand img{height:54px;width:156px;max-width:156px;object-fit:contain}
 .organizer-layout-ready #design-import .qr-theme-thumbnail{object-fit:contain}
 .organizer-layout-ready .qr-theme-gallery .qr-style-choice.is-selected>.qr-theme-name{background:transparent;color:var(--organizer-burgundy)}
 .organizer-layout-ready .organizer-capsule-selector:focus-visible{outline:2px solid var(--organizer-burgundy);outline-offset:4px}
 @media(max-width:760px){
-.organizer-layout-ready .suite-brand img{width:104px;max-width:104px;height:42px}
+:is(.organizer-layout-ready,.organizer-shell) .suite-brand img{width:104px;max-width:104px;height:42px}
 .organizer-layout-ready .organizer-capsule-selector{font-size:10px}
 }
 @media(min-width:761px) and (max-height:850px){
-.organizer-layout-ready .suite-topbar,.organizer-layout-ready .owner-tabs button{min-height:64px!important}
+:is(.organizer-layout-ready,.organizer-shell) .suite-topbar,.organizer-layout-ready .owner-tabs button{min-height:64px!important}
 .organizer-layout-ready main.dashboard-page{padding-top:14px!important;padding-bottom:18px!important}
 .organizer-layout-ready .qr-designer-preview{margin-top:82px}
 .organizer-layout-ready #qr-artwork-preview{height:max(320px,calc(100vh - 370px))!important}
@@ -205,7 +205,7 @@
 .organizer-layout-ready #design-welcome-preview{height:clamp(410px,calc(100dvh - 350px),740px)}
 }
 @media(min-width:761px) and (max-height:850px){
-.organizer-layout-ready .suite-topbar,.organizer-layout-ready .owner-tabs button{min-height:54px!important}
+:is(.organizer-layout-ready,.organizer-shell) .suite-topbar,.organizer-layout-ready .owner-tabs button{min-height:54px!important}
 .organizer-layout-ready main.dashboard-page{padding-top:10px!important}
 .organizer-layout-ready .qr-designer-preview{margin-top:66px}
 .organizer-layout-ready .qr-designer-head h2{font-size:32px;line-height:1.1}
@@ -255,7 +255,7 @@
 .organizer-card-dialog>img{display:block;width:auto;max-width:100%;height:auto;max-height:calc(96dvh - 125px);margin:auto;object-fit:contain}
 .organizer-card-dialog>p{text-align:center;font:400 11px Inter,sans-serif;color:#706359;margin:10px 0 0}
 @media(min-width:761px){
-.organizer-layout-ready .suite-topbar,.organizer-layout-ready .owner-tabs button{min-height:64px!important}
+:is(.organizer-layout-ready,.organizer-shell) .suite-topbar,.organizer-layout-ready .owner-tabs button{min-height:64px!important}
 .organizer-layout-ready main.dashboard-page{max-width:1520px;padding-top:12px!important}
 .organizer-layout-ready .qr-designer-head{width:calc(42.5% - 19px)}
 .organizer-layout-ready .qr-designer-head h2{font-size:34px}
@@ -297,9 +297,9 @@
 .organizer-layout-ready [data-owner-panel=settings] input:not([type=checkbox]):not([type=hidden]){min-height:44px;font-size:16px}
 .organizer-layout-ready #capsule-plan-name{display:inline-block;align-self:start;padding:8px 12px;border-radius:8px;background:#f2eae5;color:var(--organizer-burgundy);font:600 14px/1.5 Inter,sans-serif}
 @media(max-width:760px){
-.organizer-layout-ready .suite-topbar{display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:4px 12px;padding:8px 14px 0;min-height:0!important}
-.organizer-layout-ready .suite-brand{margin:0;min-width:0}
-.organizer-layout-ready .suite-brand img{width:100px;max-height:44px}
+:is(.organizer-layout-ready,.organizer-shell) .suite-topbar{display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:4px 12px;padding:8px 14px 0;min-height:0!important}
+:is(.organizer-layout-ready,.organizer-shell) .suite-brand{margin:0;min-width:0}
+:is(.organizer-layout-ready,.organizer-shell) .suite-brand img{width:100px;max-height:44px}
 .organizer-layout-ready .owner-tabs{grid-column:1/-1;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));min-height:0!important;height:44px!important;gap:0;overflow:visible}
 .organizer-layout-ready .owner-tabs [role=tab]{width:100%;height:44px!important;min-height:44px!important;display:flex;flex-direction:row;align-items:center;justify-content:center;padding:6px 2px}
 .organizer-layout-ready .owner-tabs .owner-unread-badge{position:static;flex:none;margin-left:0}
@@ -442,7 +442,7 @@
 .organizer-layout-ready .organizer-modify{display:none}
 @media(max-width:760px){
 .organizer-layout-ready .design-mobile-tabs{display:none!important}
-.organizer-layout-ready .suite-topbar{padding-bottom:8px}
+:is(.organizer-layout-ready,.organizer-shell) .suite-topbar{padding-bottom:8px}
 .organizer-layout-ready main.dashboard-page{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))!important}
 .organizer-layout-ready .owner-tabs{position:fixed!important;top:auto!important;bottom:0!important;left:0;right:0;z-index:30;background:#fffdf9;box-sizing:border-box;width:100%!important;height:auto!important;min-height:64px!important;padding:4px 10px calc(4px + env(safe-area-inset-bottom,0px))!important;border-top:1px solid #e4dbd0!important}
 .organizer-layout-ready .owner-tabs [role=tab]{height:56px!important;min-height:56px!important;flex-direction:column;gap:5px;padding:6px;border:0!important;border-radius:10px;font:500 12px/1.3 Inter,sans-serif}
@@ -514,7 +514,7 @@
 .organizer-layout-ready .activation-panel>.atelier-customization-note{display:none}
 }
 @media(max-width:760px){
-.organizer-layout-ready .suite-brand img{width:126px;max-width:126px;height:auto;max-height:52px}
+:is(.organizer-layout-ready,.organizer-shell) .suite-brand img{width:126px;max-width:126px;height:auto;max-height:52px}
 }
 /* Two primary destinations; capsule settings live in the capsule chooser. */
 .organizer-layout-ready .owner-tabs .owner-nav-icon{width:24px;height:24px;flex:none;overflow:visible}
@@ -525,7 +525,7 @@
 }
 /* Account is the only header entry; each capsule owns its action buttons. */
 @media(max-width:760px){
-.organizer-layout-ready .suite-topbar{grid-template-columns:minmax(0,1fr) 44px;gap:8px;padding:8px 14px}
+:is(.organizer-layout-ready,.organizer-shell) .suite-topbar{grid-template-columns:minmax(0,1fr) 44px;gap:8px;padding:8px 14px}
 }
 #workspace-capsule-list{display:grid;gap:12px}
 .workspace-capsule-entry{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:10px;padding:12px;border:1px solid #e5ded4;border-radius:14px;background:#fffdf9}

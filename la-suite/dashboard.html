@@ -7,12 +7,18 @@
 <link rel="stylesheet" href="vendor/fonts.css?v=20261014-local1">
 <link rel="stylesheet" href="vendor/fontawesome/css/all.min.css" crossorigin="anonymous">
 <link rel="stylesheet" href="styles.css?v=20261017-activation-popup1">
-<link rel="stylesheet" href="organizer-layout.css?v=20261016-date-confirm1">
+<link rel="stylesheet" href="organizer-layout.css?v=20261017-stable-header1">
 <link rel="stylesheet" href="welcome-visual.css?v=20261017-welcome-info1">
-<link rel="stylesheet" href="organizer-mobile.css?v=20261016-date-confirm1">
+<link rel="stylesheet" href="organizer-mobile.css?v=20261017-stable-header1">
 <link rel="stylesheet" href="organizer-desktop.css?v=20261014-reader-position1" media="(min-width:761px)">
 <style>
-/* Present from the first paint; visibility keeps editor measurements available. */
+/* The final header is present before session and capsule requests finish. */
+body.organizer-shell{background:#fcfaf6}
+.organizer-shell .forge-style-header [data-suite-burger],
+.organizer-shell .forge-style-header [data-suite-nav]{display:none}
+.organizer-shell .workspace-account-button:disabled{opacity:1}
+.organizer-shell .workspace-account-button i{width:20px;text-align:center}
+/* Visibility keeps editor measurements available during initialization. */
 body.organizer-initializing .dashboard-head,
 body.organizer-initializing #dashboard-content,
 body.organizer-initializing .forge-style-footer{visibility:hidden}
@@ -25,12 +31,13 @@ body.organizer-initializing .forge-style-footer{visibility:hidden}
 <link rel="stylesheet" href="account-preferences.css?v=20261016-native-account1">
 <link rel="stylesheet" href="legal.css?v=20261015-legal1">
 </head>
-<body class="suite-shell-page organizer-initializing">
+<body class="suite-shell-page organizer-shell organizer-initializing">
 <header class="forge-style-header">
   <div class="suite-container suite-topbar">
     <a class="suite-brand" href="index.html" aria-label="La Suite — Accueil">
-      <img src="assets/la-suite-logo.webp?v=20261010-forge-type" alt="Logo La Suite — Capsule temporelle">
+      <img src="assets/la-suite-logo.webp?v=20261010-forge-type" alt="Logo La Suite — Capsule temporelle" width="1000" height="397" fetchpriority="high">
     </a>
+    <button id="workspace-account" class="workspace-account-button" type="button" aria-label="Mon compte" aria-haspopup="dialog" disabled><i class="fa-solid fa-user" aria-hidden="true"></i><span>Mon compte</span></button>
     <button class="suite-burger" data-suite-burger type="button" aria-label="Ouvrir le menu" aria-expanded="false">
       <i class="fa-solid fa-bars"></i>
     </button>
@@ -62,5 +69,5 @@ body.organizer-initializing .forge-style-footer{visibility:hidden}
 <script src="vendor/qrcode-1.0.0.min.js"></script>
 <script src="vendor/supabase-2.58.0.js"></script>
 <script src="supabase-config.js"></script>
-<script src="souvenir-zip.js?v=20261003-offer2"></script><script src="workspace.js?v=20261016-free-text1"></script><script src="card-pdf.js?v=20261008-rules1"></script><script src="capsule-design.js?v=20261014-night-default1"></script><script src="typography.js?v=20261012-cleanup1"></script><script src="editor-lifecycle.js?v=20261014-cleanup1"></script><script src="welcome-ui.js?v=20261014-cleanup1"></script><script src="welcome-visual.js?v=20261017-free-no-reminder1"></script><script src="organizer-desktop.js?v=20261014-pc-editor-fit1"></script><script src="organizer-layout.js?v=20261011-standard-fullscreen1"></script><script src="qr-drawing.js?v=20261010-eyes1"></script><script src="suite-memory-state.js?v=20261011-clean-state1"></script><script src="memory-reader.js?v=20261014-discovery-countdowns2"></script><script src="card-artwork.js?v=20261014-modules1"></script><script src="app.js?v=20261017-activation-popup1"></script>
+<script src="souvenir-zip.js?v=20261003-offer2"></script><script src="workspace.js?v=20261017-stable-header1"></script><script src="card-pdf.js?v=20261008-rules1"></script><script src="capsule-design.js?v=20261014-night-default1"></script><script src="typography.js?v=20261012-cleanup1"></script><script src="editor-lifecycle.js?v=20261014-cleanup1"></script><script src="welcome-ui.js?v=20261014-cleanup1"></script><script src="welcome-visual.js?v=20261017-free-no-reminder1"></script><script src="organizer-desktop.js?v=20261014-pc-editor-fit1"></script><script src="organizer-layout.js?v=20261011-standard-fullscreen1"></script><script src="qr-drawing.js?v=20261010-eyes1"></script><script src="suite-memory-state.js?v=20261011-clean-state1"></script><script src="memory-reader.js?v=20261014-discovery-countdowns2"></script><script src="card-artwork.js?v=20261014-modules1"></script><script src="app.js?v=20261017-activation-popup1"></script>
 </body></html>

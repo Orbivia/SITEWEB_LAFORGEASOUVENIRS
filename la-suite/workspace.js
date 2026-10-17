@@ -25,7 +25,7 @@
   const deviceInset=Math.min(34,Math.max(0,parseFloat(getComputedStyle(insetProbe).paddingBottom)||0));insetProbe.remove();
   document.documentElement.style.setProperty('--workspace-device-inset',deviceInset+'px');
   const header=document.querySelector('.suite-topbar');header.querySelector('[data-suite-burger]')?.remove();header.querySelector('[data-suite-nav]')?.remove();
-  const accountButton=document.createElement('button');accountButton.id='workspace-account';accountButton.className='workspace-account-button';accountButton.type='button';accountButton.setAttribute('aria-label','Mon compte');accountButton.setAttribute('aria-haspopup','dialog');accountButton.innerHTML='<i class="fa-solid fa-user" aria-hidden="true"></i><span>Mon compte</span>';header.append(accountButton);
+  const accountButton=header.querySelector('#workspace-account')||document.createElement('button');accountButton.disabled=false;accountButton.id='workspace-account';accountButton.className='workspace-account-button';accountButton.type='button';accountButton.setAttribute('aria-label','Mon compte');accountButton.setAttribute('aria-haspopup','dialog');accountButton.innerHTML='<i class="fa-solid fa-user" aria-hidden="true"></i><span>Mon compte</span>';header.append(accountButton);
   const title=$('dashboard-title');
   if(!selected)title.textContent='Mon espace';
   const choose=sheet('workspace-capsules','Mes capsules'),account=sheet('workspace-account-dialog','Mon compte'),deletion=sheet('workspace-delete-capsule','Supprimer la capsule ?'),settingsDialog=sheet('workspace-capsule-settings','Paramètres de la capsule');
