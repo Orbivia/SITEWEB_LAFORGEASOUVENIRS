@@ -24,3 +24,46 @@
 .suite-public .home-plan-text .pricing-button{background:#4d6045;color:white;border-color:#4d6045}
 .suite-public .pricing-included{margin-top:36px;padding:24px 0}
 .suite-public .pricing-included ul{gap:14px}
+
+/* Homepage review: compact comparison and an example of the printable card. */
+.suite-public .home-product-preview{margin:0;display:grid;justify-items:center;gap:12px;min-width:0}
+.suite-public .home-example-card{width:min(100%,300px);box-sizing:border-box;aspect-ratio:2/3;padding:26px 24px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;color:#f8eed8;background:#172238 url("assets/themes/backgrounds/nuit-etoilee.webp") center/cover;border:1px solid #d5c59c;border-radius:8px;box-shadow:0 16px 40px #30261b18}
+.suite-public .home-example-initials{font-family:"Cormorant Garamond",Georgia,serif;font-size:2.8rem;line-height:1}
+.suite-public .home-example-title{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.9rem;line-height:1.05}
+.suite-public .home-example-invite{font-size:.78rem;line-height:1.5}
+.suite-public .home-example-qr{width:142px;max-width:100%;background:#fff;border-radius:3px;line-height:0}
+.suite-public .home-example-qr svg{display:block;width:100%;height:auto}
+.suite-public .home-example-scan{font-size:.65rem;line-height:1.4}
+.suite-public .home-example-logo{width:100px;height:auto;background:#fffdf8;padding:6px 10px;border-radius:4px;margin-top:2px}
+.suite-public .home-product-preview figcaption{font-size:.75rem;line-height:1.5;color:#686058;text-align:center}
+.suite-public .principle-lead{margin-bottom:28px}
+.suite-public .pricing-heading{margin-bottom:16px;max-width:850px}
+.suite-public .pricing-purchase-note{max-width:760px;margin-bottom:24px;line-height:1.5}
+.suite-public .pricing-card{padding:20px}
+.suite-public .pricing-icon.pricing-icons{margin:8px 0 10px;height:42px}
+.suite-public .pricing-icons i{width:42px;height:42px;flex-basis:42px;font-size:20px}
+.suite-public .pricing-subtitle{min-height:26px;margin-bottom:12px}
+.suite-public .pricing-price{min-height:68px;margin-bottom:14px;padding-bottom:12px}
+.suite-public .pricing-features{gap:9px;margin-bottom:18px}
+.suite-public .pricing-included{margin-top:24px;padding:20px 0}
+.suite-public .pricing-timing{margin-top:24px}
+.suite-public .pricing-faq{margin-top:28px}
+.suite-public .suite-final p{max-width:650px;margin:0 auto 20px}
+@media(min-width:761px){
+.suite-public .suite-hero{min-height:0;padding-top:40px;padding-bottom:40px;grid-template-columns:minmax(280px,.85fr) minmax(0,1.15fr);gap:48px}
+.suite-public .suite-hero-copy h1{font-size:clamp(2.8rem,4.3vw,4.3rem);line-height:1.02}
+.suite-public .principle-section{padding:38px 0}
+.suite-public .pricing-section{padding:40px 0 44px}
+.suite-public .suite-final{padding-top:36px;padding-bottom:40px}
+}
+@media(max-width:760px){
+.suite-public .suite-hero{grid-template-columns:1fr}
+.suite-public .home-product-preview{order:2;margin-top:8px}
+.suite-public .home-example-card{width:240px;padding:20px;gap:8px}
+.suite-public .home-example-initials{font-size:2.2rem}
+.suite-public .home-example-title{font-size:1.65rem}
+.suite-public .home-example-qr{width:116px}
+}
+@media(min-width:761px) and (max-width:1100px){
+.suite-public .pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
