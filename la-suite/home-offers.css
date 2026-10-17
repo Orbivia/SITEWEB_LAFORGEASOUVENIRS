@@ -67,3 +67,9 @@
 .suite-public .principle-grid{grid-template-columns:1fr;gap:28px}
 .suite-public .principle-card{width:100%;max-width:480px;margin-inline:auto}
 }
+
+/* Explanatory format labels, separate from the illustrated guest welcome screen. */
+.suite-public .home-memory-formats{display:flex;flex-wrap:wrap;justify-content:center;gap:7px;margin:12px 0 8px;padding:0;list-style:none}
+.suite-public .home-memory-formats li{display:flex;align-items:center;justify-content:center;gap:6px;padding:7px 9px;border:1px solid #e6ddd0;border-radius:9px;background:#fffdf9;color:#34302a;font-size:.74rem;line-height:1.35}
+.suite-public .home-memory-formats i{color:#99722c;font-size:.9rem}
+.suite-public .principle-card .home-memory-plan-note{font-size:.78rem;color:#686058}
