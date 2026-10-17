@@ -103,3 +103,50 @@
 .suite-public .principle-card>h3{grid-area:title;margin:0;font-size:1rem;line-height:1.35}
 .suite-public .principle-card>p{grid-area:text;margin:0;font-size:.9rem;line-height:1.55}
 }
+
+/* Shorter mobile landing page without horizontal carousels. */
+@media(max-width:760px){
+.suite-public .suite-hero{padding-top:22px;padding-bottom:26px;gap:16px}
+.suite-public .suite-home-brand{max-width:210px}
+.suite-public .suite-hero-copy h1{font-size:clamp(1.95rem,7.8vw,2.6rem);line-height:1.08}
+.suite-public .suite-hero-copy>p{font-size:.9rem;line-height:1.5;margin-bottom:18px}
+.suite-public .principle-section{padding:24px 0}
+.suite-public .principle-lead{margin-bottom:16px}
+.suite-public ol.principle-grid{gap:10px}
+.suite-public ol.principle-grid>.principle-card{grid-template-columns:clamp(96px,28vw,124px) minmax(0,1fr);grid-template-areas:"illustration title" "illustration text";padding:12px;column-gap:12px;row-gap:6px;align-items:start;max-width:520px}
+.suite-public .principle-card>.home-step-illustration{width:100%;max-width:none;align-self:center;margin:0;border-radius:8px}
+.suite-public .principle-card>.home-step-number{display:none}
+.suite-public .principle-card>h3{font-size:.92rem;line-height:1.3;align-self:end}
+.suite-public .principle-card>p{font-size:.8rem;line-height:1.45}
+.suite-public .pricing-section{padding:26px 0}
+.suite-public .pricing-heading h2{font-size:1.95rem}
+.suite-public .pricing-purchase-note{font-size:.84rem;margin-bottom:18px}
+.suite-public .pricing-grid{gap:10px}
+.suite-public .pricing-card{padding:14px 12px;border-radius:14px}
+.suite-public .home-plan-badge{font-size:.62rem;min-height:16px}
+.suite-public .pricing-icon.pricing-icons{height:32px;margin:7px 0 8px}
+.suite-public .pricing-icons i{height:32px;width:32px;flex-basis:32px;font-size:16px}
+.suite-public .pricing-card h3{font-size:1.35rem;margin-bottom:8px}
+.suite-public .pricing-subtitle{display:none}
+.suite-public .pricing-price{min-height:62px;margin-bottom:10px;padding-bottom:10px}
+.suite-public .pricing-price strong{font-size:1.55rem}
+.suite-public .pricing-price span{font-size:.65rem;line-height:1.35}
+.suite-public .pricing-features{font-size:.73rem;line-height:1.4;gap:7px;margin-bottom:14px}
+.suite-public .pricing-features li{gap:5px}
+.suite-public .pricing-button{font-size:.74rem;line-height:1.3;min-height:44px;padding:8px 5px}
+.suite-public .home-included-panel{margin-top:20px;padding:18px}
+.suite-public .home-included-panel h3,.suite-public .home-timing-panel>h3{font-size:1.6rem;margin-bottom:16px}
+.suite-public .home-included-panel ul{gap:14px}
+.suite-public .home-included-panel li{font-size:.8rem;line-height:1.45;gap:3px}
+.suite-public .home-included-panel strong{font-size:.84rem}
+.suite-public .home-timing-panel{margin-top:22px}
+.suite-public .home-timing-panel .pricing-timing-grid{gap:10px}
+.suite-public .home-timing-panel article{padding:15px 16px}
+.suite-public .home-timing-panel .pricing-timing-label{margin-bottom:7px}
+.suite-public .home-timing-panel h4{font-size:.94rem;margin-bottom:6px}
+.suite-public .home-timing-panel p{font-size:.8rem;line-height:1.45}
+.suite-public .pricing-faq{margin-top:22px}
+.suite-public .pricing-faq summary{padding:13px 0;font-size:.85rem}
+.suite-public .suite-final{padding-top:26px;padding-bottom:30px}
+}
+@media(min-width:360px) and (max-width:760px){.suite-public .pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
