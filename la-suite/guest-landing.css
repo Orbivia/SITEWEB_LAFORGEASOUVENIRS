@@ -891,3 +891,27 @@ body.guest-compose-refined .guest-text-dialog #guest-text-error{flex:none;margin
  body.guest-compose-refined[data-guest-view=compose] .guest-submit-fields .guest-reveal-card #delivery-value{grid-column:1;grid-row:2}
  body.guest-compose-refined[data-guest-view=compose] .guest-reveal-arrow{grid-column:2;grid-row:1/3}
 }
+
+/* Keep the brand against the visible bottom edge, independently of artwork clearance. */
+body.guest-compose-refined .guest-home-footer,
+body.guest-compose-refined .guest-compose-footer,
+body.guest-compose-refined .guest-success-footer{bottom:calc(env(safe-area-inset-bottom,0px) + 4px)!important;height:40px!important;min-height:0!important;padding:0!important;margin:0!important;align-items:flex-end}
+body.guest-compose-refined .guest-home-footer a,
+body.guest-compose-refined .guest-compose-footer a,
+body.guest-compose-refined .guest-success-footer a{height:40px;min-height:0;align-items:flex-end}
+body.guest-compose-refined .guest-home-footer img,
+body.guest-compose-refined .guest-compose-footer img,
+body.guest-compose-refined .guest-success-footer img{height:34px!important;max-height:34px;width:auto!important;max-width:110px;object-fit:contain}
+body.guest-compose-refined>.guest-fullscreen{bottom:calc(env(safe-area-inset-bottom,0px) + 8px)!important}
+@media(max-width:899px){
+ body.guest-compose-refined[data-guest-view=compose] #guest-message{height:100dvh;min-height:100dvh;max-height:none;padding-top:24px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 64px);gap:16px}
+ body.guest-compose-refined[data-guest-view=compose] .guest-composer-body{flex:1 0 180px;justify-content:center;min-height:180px}
+ body.guest-compose-refined[data-guest-view=compose] .guest-composer-body>.guest-media-launch,
+ body.guest-compose-refined[data-guest-view=compose] .guest-memory-card{flex:0 0 auto}
+ body.guest-compose-refined[data-guest-view=compose] .guest-submit-fields{flex:none;gap:12px}
+}
+@media(max-width:899px) and (max-height:600px){
+ body.guest-compose-refined[data-guest-view=compose] #guest-message{height:auto;min-height:100dvh;gap:12px;padding-top:16px}
+ body.guest-compose-refined[data-guest-view=compose] .guest-composer-body{flex:0 0 auto;min-height:140px}
+ body.guest-compose-refined[data-guest-view=compose] .guest-media-launch{min-height:140px}
+}
