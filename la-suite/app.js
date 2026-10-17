@@ -960,8 +960,8 @@ const DEFAULT_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard.";
 const OLD_CARD_NOTE="Laissez-nous un souvenir à découvrir plus tard, à la date que vous choisissez.";
 const OLD_CARD_EXPLANATIONS=["une photo ou un texte","une photo, un audio ou un texte","une photo, un audio, une vidéo ou un texte"].map(formats=>"Flashez ce QR code et déposez-y "+formats+". Choisissez la manière la plus naturelle de partager un souvenir avec nous.");
 function capsulePlan(c){return window.SuiteDesign.effectivePlan(c)}
-function defaultCardExplanation(plan){return "Scannez ce QR code pour déposer "+({text:"un petit mot",photo:"une photo ou un petit mot",audio:"une photo, un audio ou un petit mot",premium:"une photo, un audio, une vidéo ou un petit mot"}[plan]||"un souvenir")+".";
-}
+function defaultCardExplanation(){return "Scannez pour déposer un souvenir.";}
+
 function cardDefault(value,old,fallback,optional=false){return value==null||(!optional&&!value)||value===old?fallback:String(value)}
 
 function defaultInitials(name){
