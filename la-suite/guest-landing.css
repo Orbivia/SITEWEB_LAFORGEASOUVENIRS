@@ -844,3 +844,50 @@ body.guest-landing-ready .guest-capture-dialog[data-phase=recording] .recorder-a
 /* Validation remains legible independently of a light or dark capsule theme. */
 body.guest-landing-ready .guest-deposit-dialog .btn.primary{background:#9f0909!important;color:#ffffff!important}
 body.guest-landing-ready #guest-text-dialog .guest-message-counter{background:#fffdf7;color:#48443e;padding:2px 6px;border-radius:4px;align-self:flex-end}
+
+/* Deposit composition: content first, compact reveal date, then signature. */
+body.guest-compose-refined[data-guest-view=compose] #guest-message{display:flex;flex-direction:column;gap:18px;padding-top:28px;min-height:100svh;height:auto}
+body.guest-compose-refined[data-guest-view=compose] .guest-compose-heading h2{font-size:28px;line-height:1.2;margin-bottom:4px}
+body.guest-compose-refined[data-guest-view=compose] .memory-type-choices{padding-bottom:8px;margin:0;gap:4px}
+body.guest-compose-refined[data-guest-view=compose] .memory-type{min-height:52px;font-size:12px}
+body.guest-compose-refined[data-guest-view=compose] .guest-composer-body{height:auto;max-height:none;min-height:0;flex:0 0 auto;overflow:visible;gap:10px}
+body.guest-compose-refined[data-guest-view=compose] .guest-memory-card{height:auto;min-height:0;display:flex}
+body.guest-compose-refined[data-guest-view=compose] .guest-media-launch{height:auto;min-height:150px;padding:24px 18px;gap:10px;border:1px dashed color-mix(in srgb,var(--home-accent),transparent 30%);border-radius:14px}
+body.guest-compose-refined[data-guest-view=compose] .guest-media-launch strong{font-size:15px}
+body.guest-compose-refined[data-guest-view=compose] .guest-media-launch span{font-size:13px;line-height:1.5}
+body.guest-compose-refined[data-guest-view=compose] .guest-text-launch[data-ready=true]{min-height:150px;max-height:320px;padding:38px 18px 18px}
+body.guest-compose-refined[data-guest-view=compose] .guest-memory-card[data-ready=true]{min-height:0;max-height:360px}
+body.guest-compose-refined[data-guest-view=compose] .guest-memory-card[data-ready=true][data-type=image] .guest-media-launch{height:auto;min-height:0;padding:12px}
+body.guest-compose-refined[data-guest-view=compose] .guest-media-launch[data-ready=true] .guest-media-thumbnail{height:auto;max-height:300px;object-fit:contain}
+body.guest-compose-refined[data-guest-view=compose] .guest-memory-card>.guest-media-video{height:auto;max-height:360px;aspect-ratio:var(--guest-video-ratio,16/9);object-fit:contain}
+body.guest-compose-refined[data-guest-view=compose] .guest-memory-card[data-ready=true]:is([data-type=audio],[data-type=video])>.guest-media-launch{height:100%;min-height:0;padding:0;border:0}
+body.guest-compose-refined[data-guest-view=compose] .guest-memory-card[data-type=audio]>audio{width:100%;margin:38px 0 8px}
+body.guest-compose-refined[data-guest-view=compose] .guest-submit-fields{display:flex;flex-direction:column;align-items:stretch;gap:14px;margin:0!important}
+body.guest-compose-refined[data-guest-view=compose] .guest-submit-fields .guest-personalization{padding:0!important;border:0;background:transparent}
+body.guest-compose-refined[data-guest-view=compose] .guest-submit-fields .guest-reveal-card{display:grid;grid-template-columns:auto minmax(0,1fr) 18px;grid-template-rows:auto;align-items:center;gap:10px;min-height:60px;height:auto;padding:14px 16px;background:#fffdf8;color:#302725;border:1px solid #ded7c9;border-radius:12px;box-shadow:none}
+body.guest-compose-refined[data-guest-view=compose] .guest-reveal-caption{grid-column:1;grid-row:1;font:400 13px/1.4 Inter,sans-serif;color:#5b554c}
+body.guest-compose-refined[data-guest-view=compose] .guest-submit-fields .guest-reveal-card #delivery-value{grid-column:2;grid-row:1;font:600 14px/1.4 Inter,sans-serif;color:#302725;white-space:normal;overflow-wrap:anywhere}
+body.guest-compose-refined[data-guest-view=compose] .guest-reveal-arrow{grid-column:3;grid-row:1;font:26px/1 Arial,sans-serif;color:#635643;text-align:right}
+body.guest-compose-refined[data-guest-view=compose] .submit-memory{margin:0!important;min-height:50px}
+body.guest-compose-refined .guest-home-footer,body.guest-compose-refined .guest-compose-footer,body.guest-compose-refined .guest-success-footer{width:110px;height:34px!important}
+body.guest-compose-refined .guest-text-dialog[open]{height:min(400px,var(--deposit-dialog-height,calc(100dvh - 24px)));top:var(--deposit-dialog-top,12px)}
+body.guest-compose-refined .guest-text-dialog>.guest-media-dialog-body{display:flex;flex-direction:column;gap:8px}
+body.guest-compose-refined .guest-text-dialog #guest-text-content,body.guest-compose-refined .guest-text-dialog #guest-message-field{height:auto;flex:1 1 auto;min-height:0}
+body.guest-compose-refined[data-guest-view=compose] .guest-text-dialog #message_text{height:auto!important;min-height:90px!important;flex:1 1 auto}
+body.guest-compose-refined .guest-text-dialog #guest-text-error{flex:none;margin:0;font-size:13px;line-height:1.4}
+@media(min-width:900px){
+ body.guest-compose-refined[data-guest-view=compose] .guest-page{width:min(1040px,100%);max-width:1040px}
+ body.guest-compose-refined[data-guest-view=compose] #guest-message{display:grid;grid-template-columns:minmax(0,1fr) 300px;grid-template-rows:auto auto 1fr;grid-template-areas:"heading heading" "formats formats" "content actions";align-content:start;align-items:start;gap:22px 32px;padding:48px 52px 100px}
+ body.guest-compose-refined[data-guest-view=compose] .guest-compose-heading{grid-area:heading}
+ body.guest-compose-refined[data-guest-view=compose] .memory-type-choices{grid-area:formats;width:min(520px,100%);justify-self:center}
+ body.guest-compose-refined[data-guest-view=compose] .guest-composer-body{grid-area:content}
+ body.guest-compose-refined[data-guest-view=compose] .guest-submit-fields{grid-area:actions}
+ body.guest-compose-refined[data-guest-view=compose] .guest-wait-notice{grid-column:1/-1}
+ body.guest-compose-refined[data-guest-view=compose] #status,body.guest-compose-refined[data-guest-view=compose] #upload-progress{grid-column:1/-1}
+ body.guest-compose-refined[data-guest-view=compose] .guest-media-launch{min-height:230px}
+ body.guest-compose-refined[data-guest-view=compose] .guest-text-launch[data-ready=true]{min-height:230px}
+ body.guest-compose-refined[data-guest-view=compose] .guest-submit-fields .guest-reveal-card{grid-template-columns:minmax(0,1fr) 18px;gap:4px 10px}
+ body.guest-compose-refined[data-guest-view=compose] .guest-reveal-caption{grid-column:1;grid-row:1}
+ body.guest-compose-refined[data-guest-view=compose] .guest-submit-fields .guest-reveal-card #delivery-value{grid-column:1;grid-row:2}
+ body.guest-compose-refined[data-guest-view=compose] .guest-reveal-arrow{grid-column:2;grid-row:1/3}
+}
