@@ -840,3 +840,7 @@ body.guest-landing-ready .guest-capture-dialog .recorder-actions .guest-recorder
 /* Countdown has no action icon; reserve the slot until one stop button is ready. */
 body.guest-landing-ready .guest-capture-dialog:has(#video-countdown:not([hidden]),#audio-countdown:not([hidden])) .recorder-actions button{visibility:hidden!important;pointer-events:none!important}
 body.guest-landing-ready .guest-capture-dialog[data-phase=recording] .recorder-actions button:is(#prepare-audio,#start-audio,#prepare-video,#start-video){display:none!important}
+
+/* Validation remains legible independently of a light or dark capsule theme. */
+body.guest-landing-ready .guest-deposit-dialog .btn.primary{background:#9f0909!important;color:#ffffff!important}
+body.guest-landing-ready #guest-text-dialog .guest-message-counter{background:#fffdf7;color:#48443e;padding:2px 6px;border-radius:4px;align-self:flex-end}
