@@ -614,7 +614,6 @@ body.guest-sending #guest-message{visibility:hidden}
 
 /* One round record/stop action; permission is requested only on its first click. */
 .guest-capture-dialog[data-type=audio] #capture-choices,
-.guest-capture-dialog #start-audio,.guest-capture-dialog #start-video,
 .guest-capture-dialog #audio-indicator,.guest-capture-dialog .record-remaining{display:none!important}
 .guest-capture-dialog .recorder-actions{display:flex;justify-content:center;margin:12px 0 4px}
 .guest-capture-dialog .recorder-actions button:not([hidden]){display:grid;place-items:center;flex:none;width:72px;height:72px;min-height:72px;padding:0;border:0;border-radius:50%;background:#ad1730;color:white;box-shadow:0 4px 12px #ad173026;font-size:28px}
@@ -830,3 +829,7 @@ body.guest-landing-ready .guest-capture-dialog[data-type=audio]>.guest-media-dia
 body.guest-landing-ready .guest-capture-dialog[data-phase=countdown] .guest-record-elapsed,
 body.guest-landing-ready .guest-capture-dialog[data-phase=countdown] .guest-record-remaining{visibility:hidden}
 body.guest-landing-ready .guest-capture-dialog #capture-status.err{overflow-y:auto;max-height:72px}
+
+/* Live minimum-length feedback follows the same trimmed count as submission. */
+body.guest-landing-ready #guest-text-dialog #message_text.is-too-short{color:#a51e35!important}
+body.guest-landing-ready #guest-text-dialog .guest-message-counter.is-too-short{color:#a51e35!important;font-weight:600}
