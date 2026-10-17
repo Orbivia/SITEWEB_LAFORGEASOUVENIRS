@@ -42,7 +42,7 @@ function mount(article,item,available,depositedAt,{fParis,fdate,memoryWasRead,ma
  const restorePosition=()=>{if(!readingPosition)return;for(const {node,top,left} of readingPosition.nodes){node.scrollTop=top;node.scrollLeft=left;}window.scrollTo(readingPosition.x,readingPosition.y);};
  open.onclick=()=>{readingPosition=capturePosition();document.body.append(dialog);dialog.showModal();markMemoryRead(item.id);updateReadState();applyMemoryFilter({preserveOrder:true});article.refreshMemoryMedia?.()};
  close.onclick=()=>dialog.close();
- dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(dialog);open.focus({preventScroll:true});restorePosition();requestAnimationFrame(restorePosition);document.dispatchEvent(new Event('suite-memory-reader-closed'))});
+ dialog.addEventListener('close',()=>{content.querySelectorAll('audio,video').forEach(media=>media.pause());article.append(dialog);applyMemoryFilter();open.focus({preventScroll:true});restorePosition();requestAnimationFrame(restorePosition);document.dispatchEvent(new Event('suite-memory-reader-closed'))});
  actions.append(open);
  article.classList.add('memory-row-clickable');article.tabIndex=0;article.setAttribute('role','button');article.setAttribute('aria-label',open.getAttribute('aria-label'));
  article.addEventListener('click',event=>{if(event.target.closest('button,a,dialog'))return;open.click()});
