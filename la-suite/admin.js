@@ -83,6 +83,14 @@ async function initSuiteAdmin(){
   if(!u){root.innerHTML='<p class="hint">Informations Supabase momentanément indisponibles.</p>';return;}
   const storage=Number(u.storage_used_bytes),quota=Number(u.storage_quota_bytes),dbUsed=Number(u.database_used_bytes),dbQuota=Number(u.database_quota_bytes);
   root.innerHTML='<div><strong>Supabase '+esc(u.plan)+'</strong><small>Formule vérifiée le '+date(u.plan_verified_at)+'</small></div><div><strong>'+bytes(Math.max(0,quota-storage))+' disponibles</strong><small>Fichiers : '+bytes(storage)+' / '+bytes(quota)+' · dont sauvegardes '+bytes(u.backup_used_bytes)+'</small><progress max="'+quota+'" value="'+Math.min(quota,storage)+'" aria-label="Stockage des fichiers utilisé"></progress></div><div><strong>'+bytes(Math.max(0,dbQuota-dbUsed))+' disponibles</strong><small>Base de données : '+bytes(dbUsed)+' / '+bytes(dbQuota)+'</small><progress max="'+dbQuota+'" value="'+Math.min(dbQuota,dbUsed)+'" aria-label="Base de données utilisée"></progress></div>';
+  for(const [label,used,limit] of [['fichiers',storage,quota],['base de données',dbUsed,dbQuota]]){
+   if(!(limit>0)||!Number.isFinite(used))continue;
+   const ratio=used/limit;if(ratio<.7)continue;
+   const warning=document.createElement('p');warning.className=ratio>=.9?'status show err':'status show';
+   warning.setAttribute('role',ratio>=.9?'alert':'status');
+   warning.textContent=(ratio>=.9?'Capacité presque atteinte':'Capacité à surveiller')+' : '+label+' à '+Math.round(ratio*100)+' %. Anticipez le nettoyage ou une capacité supérieure.';
+   root.append(warning);
+  }
  }
  function selectView(next){
   if(!authorized||busy||!['overview','capsules','settings'].includes(next))return;
