@@ -150,3 +150,14 @@
 .suite-public .suite-final{padding-top:26px;padding-bottom:30px}
 }
 @media(min-width:360px) and (max-width:760px){.suite-public .pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+/* Mobile timing: one compact list instead of three stacked cards. */
+@media(max-width:760px){
+.suite-public .home-timing-panel>h3{font-size:1.5rem;margin-bottom:12px}
+.suite-public .home-timing-panel .pricing-timing-grid{display:block;overflow:hidden;border:1px solid #e6ddd0;border-radius:12px;background:#fffdf9}
+.suite-public .home-timing-panel article{display:grid;grid-template-columns:76px minmax(0,1fr);gap:12px;align-items:center;padding:15px 16px;border:0;border-radius:0;background:transparent}
+.suite-public .home-timing-panel article:not(:last-child){border-bottom:1px solid #eee6db}
+.suite-public .home-timing-panel .pricing-timing-label{display:block;margin:0;padding:0;background:none;border-radius:0;font-size:.7rem;letter-spacing:.02em}
+.suite-public .home-timing-panel h4{margin:0;font-size:.88rem;font-weight:600;line-height:1.45}
+.suite-public .home-timing-panel article p{display:none}
+}
