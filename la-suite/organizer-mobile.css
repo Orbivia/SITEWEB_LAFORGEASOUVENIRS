@@ -533,3 +533,9 @@ body.owner-no-tabs{padding-bottom:0!important}
  .deposit-open-unified:not(.deposit-open-has-memories) .deposit-open-main{overflow-y:auto}
  .deposit-open-unified .deposit-open-heading p{max-width:40em;margin-inline:auto}
 }
+
+@media(max-width:760px){
+ .visual-primary .visual-head .visual-return-memories{display:inline-flex;align-items:center;flex:none;min-height:44px;margin:0;padding:6px 8px;border:1px solid #d5ddd5;border-radius:8px;background:#fffefa;color:#365748;font:600 12px/1.25 Inter,sans-serif;white-space:nowrap}
+ .visual-primary .visual-head .visual-return-memories[hidden]{display:none!important}
+ .visual-primary .visual-head h2{flex:1;min-width:0}
+}
