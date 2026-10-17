@@ -1499,6 +1499,13 @@ function ownerDefaultPanel(c){
  return c?.status==='active'&&['open','full','closed','expired'].includes(c?.usage?.state)?'messages':'configuration';
 }
 function setupOwnerTabs(c,manifest){
+ // Keep a visible return path inside the editor, where mobile navigation may be hidden.
+ const editorHeading=document.querySelector('.qr-designer-head>div');
+ if(c.status==='active'&&editorHeading&&!document.getElementById('owner-return-memories')){
+  const back=document.createElement('button');back.type='button';back.id='owner-return-memories';back.className='btn secondary';back.dataset.ownerTabLink='messages';
+  back.innerHTML='<i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Retour aux souvenirs';
+  editorHeading.prepend(back);
+ }
  const settingsLink=$("owner-tab-settings"),capsulesMenu=$("workspace-capsules");
  if(settingsLink&&capsulesMenu){
   settingsLink.addEventListener("click",()=>capsulesMenu.close());
