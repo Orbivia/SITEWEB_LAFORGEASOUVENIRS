@@ -780,7 +780,8 @@ body.guest-landing-ready[data-guest-view=success] .guest-success-animation{flex:
 body.guest-landing-ready[data-guest-view=success] #guest-success h2{max-width:390px;font-size:clamp(25px,6.8vw,34px);line-height:1.2}
 body.guest-landing-ready[data-guest-view=success] #guest-success-date{max-width:390px;margin:0;padding:12px 16px;font-size:14px;line-height:1.5}
 body.guest-landing-ready[data-guest-view=success] #another-memory{display:inline-flex;align-items:center;justify-content:center;flex:none;width:100%;max-width:390px;min-height:52px;margin:8px 0 0;padding:12px 18px;white-space:normal;background:var(--home-accent,#8b2730);color:var(--home-button-ink,#fff)}
-body.guest-landing-ready[data-guest-view=success] .guest-success-footer{position:static!important;top:auto!important;bottom:auto!important;left:auto!important;right:auto!important;transform:none!important;margin:16px auto 0!important}
+/* Confirmation uses the same anchored brand footer as welcome and compose. */
+body.guest-landing-ready[data-guest-view=success] #guest-success{padding-bottom:max(80px,calc(env(safe-area-inset-bottom) + 64px))}
 body.guest-landing-ready .guest-reveal-card .guest-reveal-tagline{color:#746750!important}
 
 /* Once processing starts, the dialog presents the current task instead of file choices. */
