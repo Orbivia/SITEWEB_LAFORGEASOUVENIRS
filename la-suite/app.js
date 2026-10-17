@@ -660,7 +660,7 @@ function updateDeliveryHelp(){
 }
 function initGuestControls(){
  window.addEventListener("la-suite-guest-home",()=>{window.SuiteVideoImport?.cancel();interruptCapture("L’enregistrement a été arrêté. Votre aperçu reste disponible.");});
- document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy)chooseGuestType(b.dataset.memoryType)}));
+ document.querySelectorAll("[data-memory-type]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy&&guestType!==b.dataset.memoryType)chooseGuestType(b.dataset.memoryType)}));
  document.querySelectorAll("[data-media-mode]").forEach(b=>b.addEventListener("click",()=>{if(!guestBusy){setGuestMode(b.dataset.mediaMode);if(b.dataset.mediaMode==="upload")$("media-file").click();else if(b.dataset.mediaMode==="photo")$("photo-file").click();else if(["video","audio"].includes(b.dataset.mediaMode)){guestSelectionVersion++;resetPreview();guestTransaction=null;prepareRecorder(b.dataset.mediaMode).catch(error=>showCapture(captureError(error,b.dataset.mediaMode),false))}}}));
  $("media-file").addEventListener("change",e=>{const file=e.target.files?.[0];e.target.value="";if(file)acceptGuestFile(file,guestType);});
  $("photo-file").addEventListener("change",e=>acceptGuestFile(e.target.files?.[0],"image"));
@@ -851,12 +851,12 @@ function videoDuration(file){return guestMediaDuration(file)}
 
 function introFormatAllowed(c,kind){
  const plan=capsulePlan(c);
- return kind==='none'||kind==='text'||kind==='image'&&['photo','audio','premium'].includes(plan)||kind==='video'&&plan==='premium';
+ return kind==='none'||kind==='text'&&['photo','audio','premium'].includes(plan)||kind==='image'&&['photo','audio','premium'].includes(plan)||kind==='video'&&plan==='premium';
 }
 function syncIntroFormats(c){
  const select=$("intro-kind");if(!select)return;
  for(const option of select.options){option.disabled=!introFormatAllowed(c,option.value);option.hidden=option.disabled;}
- const help=$("intro-plan-help");if(help)help.textContent=({text:'Accueil texte · 2 000 caractères maximum.',photo:'Accueil texte ou image · 10 Mo maximum.',audio:'Accueil texte ou image · 10 Mo maximum.',premium:'Accueil texte, image ou vidéo · vidéo de 12 secondes maximum.'})[capsulePlan(c)];
+ const help=$("intro-plan-help");if(help)help.textContent=({text:'La personnalisation du message d’accueil nécessite une formule payante.',photo:'Accueil texte ou image · 10 Mo maximum.',audio:'Accueil texte ou image · 10 Mo maximum.',premium:'Accueil texte, image ou vidéo · vidéo de 12 secondes maximum.'})[capsulePlan(c)];
 }
 function introKind(c){return c.intro_path?(/\.(jpg|jpeg|png|webp)$/i.test(c.intro_path)?"image":"video"):c.welcome_message?"text":"none"}
 let introPreviewRevision=0;
