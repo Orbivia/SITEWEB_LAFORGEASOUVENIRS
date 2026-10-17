@@ -26,16 +26,6 @@
 .suite-public .pricing-included ul{gap:14px}
 
 /* Homepage review: compact comparison and an example of the printable card. */
-.suite-public .home-product-preview{margin:0;display:grid;justify-items:center;gap:12px;min-width:0}
-.suite-public .home-example-card{width:min(100%,300px);box-sizing:border-box;aspect-ratio:2/3;padding:26px 24px 20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;color:#f8eed8;background:#172238 url("assets/themes/backgrounds/nuit-etoilee.webp") center/cover;border:1px solid #d5c59c;border-radius:8px;box-shadow:0 16px 40px #30261b18}
-.suite-public .home-example-initials{font-family:"Cormorant Garamond",Georgia,serif;font-size:2.8rem;line-height:1}
-.suite-public .home-example-title{font-family:"Cormorant Garamond",Georgia,serif;font-size:1.9rem;line-height:1.05}
-.suite-public .home-example-invite{font-size:.78rem;line-height:1.5}
-.suite-public .home-example-qr{width:142px;max-width:100%;background:#fff;border-radius:3px;line-height:0}
-.suite-public .home-example-qr svg{display:block;width:100%;height:auto}
-.suite-public .home-example-scan{font-size:.65rem;line-height:1.4}
-.suite-public .home-example-logo{width:100px;height:auto;background:#fffdf8;padding:6px 10px;border-radius:4px;margin-top:2px}
-.suite-public .home-product-preview figcaption{font-size:.75rem;line-height:1.5;color:#686058;text-align:center}
 .suite-public .principle-lead{margin-bottom:28px}
 .suite-public .pricing-heading{margin-bottom:16px;max-width:850px}
 .suite-public .pricing-purchase-note{max-width:760px;margin-bottom:24px;line-height:1.5}
@@ -58,12 +48,22 @@
 }
 @media(max-width:760px){
 .suite-public .suite-hero{grid-template-columns:1fr}
-.suite-public .home-product-preview{order:2;margin-top:8px}
-.suite-public .home-example-card{width:240px;padding:20px;gap:8px}
-.suite-public .home-example-initials{font-size:2.2rem}
-.suite-public .home-example-title{font-size:1.65rem}
-.suite-public .home-example-qr{width:116px}
 }
 @media(min-width:761px) and (max-width:1100px){
 .suite-public .pricing-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+/* Four illustrated steps; the organizer and guest screens are unaffected. */
+.suite-public .suite-home-brand{max-width:390px;margin-inline:auto}
+.suite-public .home-step-illustration{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;border-radius:12px;margin:0 0 14px}
+.suite-public ol.principle-grid{padding:0;list-style:none;margin-bottom:0}
+.suite-public .principle-card{min-width:0;position:relative}
+.suite-public .home-step-number{display:flex;align-items:center;justify-content:center;width:28px;height:28px;margin:0 auto 10px;border-radius:50%;background:#f0e5cf;color:#795920;font-size:.8rem;font-weight:700}
+.suite-public .principle-card h3{margin:0 0 8px;font-size:1.05rem}
+.suite-public .principle-card p{margin:0;font-size:.9rem;line-height:1.6}
+@media(min-width:761px) and (max-width:1100px){.suite-public .principle-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:28px}}
+@media(max-width:760px){
+.suite-public .suite-home-brand{max-width:280px}
+.suite-public .principle-grid{grid-template-columns:1fr;gap:28px}
+.suite-public .principle-card{width:100%;max-width:480px;margin-inline:auto}
 }
