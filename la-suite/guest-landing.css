@@ -846,7 +846,7 @@ body.guest-landing-ready .guest-deposit-dialog .btn.primary{background:#9f0909!i
 body.guest-landing-ready #guest-text-dialog .guest-message-counter{background:#fffdf7;color:#48443e;padding:2px 6px;border-radius:4px;align-self:flex-end}
 
 /* Deposit composition: content first, compact reveal date, then signature. */
-body.guest-compose-refined[data-guest-view=compose] #guest-message{display:flex;flex-direction:column;gap:18px;padding-top:28px;min-height:100svh;height:auto}
+body.guest-compose-refined[data-guest-view=compose] #guest-message{width:100%;max-width:none;display:flex;flex-direction:column;gap:18px;padding-top:28px;min-height:100svh;height:auto}
 body.guest-compose-refined[data-guest-view=compose] .guest-compose-heading h2{font-size:28px;line-height:1.2;margin-bottom:4px}
 body.guest-compose-refined[data-guest-view=compose] .memory-type-choices{padding-bottom:8px;margin:0;gap:4px}
 body.guest-compose-refined[data-guest-view=compose] .memory-type{min-height:52px;font-size:12px}
