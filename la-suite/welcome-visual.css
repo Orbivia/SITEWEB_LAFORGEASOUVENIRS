@@ -938,7 +938,6 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 
 /* Petit mot: this popup only explains the formula. */
 .visual-intro-info-only [data-panel=intro]>:not([data-welcome-plan-notice]),
-.visual-intro-info-only [data-welcome-plan-change],
 .visual-intro-info-only>.visual-welcome-done{display:none!important}
 .visual-intro-info-only .visual-welcome-plan-note,
 .visual-intro-info-only .visual-welcome-plan-note p{margin-bottom:0}

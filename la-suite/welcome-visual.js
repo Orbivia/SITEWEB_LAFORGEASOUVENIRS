@@ -230,7 +230,7 @@
    const currentPlan=window.SuiteDesign.effectivePlan(c)||'premium';
    settingsPopups.get('intro')?.classList.toggle('visual-intro-info-only',currentPlan==='text');
    const descriptions={
-    text:'Petit mot : souvenirs et accueil texte uniquement. Essentiel ajoute les photos, Plus l’audio et Premium la vidéo. Accueil photo dès Essentiel, vidéo avec Premium.',
+    text:'La formule gratuite Petit mot ne permet pas de personnaliser le message d’accueil. Passez à une formule payante pour ajouter votre texte ou une photo, et à Premium pour une vidéo.',
     photo:'Essentiel : texte ou photo. Vidéo avec Premium.',
     audio:'Plus : texte ou photo. Vidéo avec Premium.',
     premium:'Premium : texte, photo ou vidéo.'
@@ -250,7 +250,7 @@
    notice.querySelector('[data-welcome-plan-description]').textContent=descriptions[currentPlan]||descriptions.premium;
    const upgrade=$('change-capsule-plan'),change=notice.querySelector('[data-welcome-plan-change]');
    const draft=c.status==='draft',available=Boolean(upgrade&&!upgrade.disabled);
-   change.textContent=draft?'Choisir ma formule':available?'Changer de formule':'Voir ma formule';
+   change.textContent=currentPlan==='text'&&(draft||available)?'Faire évoluer ma formule':draft?'Choisir ma formule':available?'Changer de formule':'Voir ma formule';
    change.hidden=currentPlan==='premium';
    change.disabled=Boolean(c.pendingPayment);
   }
