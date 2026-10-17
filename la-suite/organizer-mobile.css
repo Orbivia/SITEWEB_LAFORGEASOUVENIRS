@@ -514,3 +514,22 @@ body.owner-no-tabs{padding-bottom:0!important}
  .event-date-confirmation .event-date-confirmation-actions{flex-direction:column-reverse;padding:8px 18px 18px}
  .event-date-confirmation .event-date-confirmation-actions button{width:100%}
 }
+
+/* Stable discovery surface, including the empty state and persistent actions. */
+@media (max-width:760px){
+ .organizer-layout-ready .owner-deposit-open.deposit-open-unified{padding:16px 12px;border:0;border-radius:0;background-image:none!important}
+ .deposit-open-unified .deposit-open-content{grid-template-rows:auto minmax(0,1fr) auto auto;gap:10px}
+ .deposit-open-unified .deposit-open-badge{display:inline-flex}
+ .owner-deposit-open.deposit-open-unified [data-open-until]{display:block!important}
+ .deposit-open-unified .deposit-open-heading h2{margin:4px 0;font-size:28px}
+ .deposit-open-unified .deposit-open-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .deposit-open-unified .deposit-card-actions{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+ .deposit-open-unified [hidden]{display:none!important}
+ .deposit-open-unified .deposit-open-actions .btn{font-size:12px;min-height:44px}
+ .deposit-open-unified .deposit-open-empty{min-height:100%;padding:20px 12px;gap:10px}
+ .deposit-open-unified .deposit-open-empty h3{font:600 19px/1.3 Inter,sans-serif}
+ .deposit-open-unified .deposit-open-empty>i{display:none}
+ .deposit-open-unified.deposit-open-has-memories .deposit-open-empty{display:none}
+ .deposit-open-unified:not(.deposit-open-has-memories) .deposit-open-main{overflow-y:auto}
+ .deposit-open-unified .deposit-open-heading p{max-width:40em;margin-inline:auto}
+}

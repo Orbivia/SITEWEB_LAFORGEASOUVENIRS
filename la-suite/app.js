@@ -1937,45 +1937,37 @@ function renderOwnerDepositOpen(c,manifest){
  const root=document.querySelector('[data-owner-panel="messages"]'),frame=$('owner-deposit-open');
  if(!root||!frame)return;
  const active=c.status==='active'&&['open','full','closed'].includes(c.usage?.state);
- root.classList.toggle('is-deposits-open',active);frame.hidden=!active;
+ frame.classList.toggle('deposit-open-unified',true);root.classList.toggle('is-deposits-open',active);frame.hidden=!active;
  const hero=root.querySelector('.owner-messages-hero'),memories=root.querySelector('.memories-section');
  if(!active){const exportButton=$('export-memories');if(exportButton&&memories?.querySelector('.memory-tools'))memories.querySelector('.memory-tools').append(exportButton);if(frame.contains(hero))root.append(hero,memories);return}
  if(!frame.firstElementChild){
-  frame.innerHTML='<div class="deposit-open-content"><header class="deposit-open-heading"><span class="deposit-open-badge"><i class="fa-solid fa-circle" aria-hidden="true"></i> Dépôts ouverts</span><h2 data-open-title></h2><p data-open-until></p></header><div class="deposit-open-main"><div class="deposit-open-empty"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i><h3>Place aux souvenirs</h3><p>Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.</p></div><div class="deposit-open-summary" aria-live="polite"><span data-open-count></span><span data-open-available></span></div><div class="deposit-open-gallery"></div></div><div class="deposit-open-export"></div><footer class="deposit-open-actions"><button type="button" class="btn primary" data-open-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-open-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger</button><button type="button" class="btn secondary" data-open-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer</button></div><button type="button" class="btn secondary" data-open-tips><i class="fa-solid fa-list-check" aria-hidden="true"></i> Conseils de préparation</button></footer><div class="deposit-open-brand"><img src="assets/la-suite-logo.webp?v=20261010-forge-type" alt="La Suite — capsule temporelle"></div></div>'+DEPOSIT_PREPARATION_HTML;
+  frame.innerHTML='<div class="deposit-open-content"><header class="deposit-open-heading"><span class="deposit-open-badge"><i class="fa-solid fa-circle" aria-hidden="true"></i> Dépôts ouverts</span><h2 data-open-title></h2><p data-open-until></p></header><div class="deposit-open-main"><div class="deposit-open-empty"><i class="fa-solid fa-envelope-open-text" aria-hidden="true"></i><h3>Aucun souvenir reçu pour le moment</h3><p>Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.</p></div><div class="deposit-open-summary" aria-live="polite"><span data-open-count></span><span data-open-available></span></div><div class="deposit-open-gallery"></div></div><div class="deposit-open-export"></div><footer class="deposit-open-actions"><button type="button" class="btn secondary" data-open-edit><i class="fa-solid fa-pen" aria-hidden="true"></i> Personnaliser</button><button type="button" class="btn primary" data-open-share><i class="fa-solid fa-share-nodes" aria-hidden="true"></i> Partager le lien invités</button><div class="deposit-card-actions"><button type="button" class="btn secondary" data-open-download><i class="fa-solid fa-download" aria-hidden="true"></i> Télécharger la fiche QR</button><button type="button" class="btn secondary" data-open-print><i class="fa-solid fa-print" aria-hidden="true"></i> Imprimer la fiche QR</button></div></footer><div class="deposit-open-brand"><img src="assets/la-suite-logo.webp?v=20261010-forge-type" alt="La Suite — capsule temporelle"></div></div>'+DEPOSIT_PREPARATION_HTML;
 
   frame.querySelector('[data-open-share]').onclick=()=>$('share-link').click();
   frame.querySelector('[data-open-download]').onclick=()=>$('download-print-card').click();
   frame.querySelector('[data-open-print]').onclick=()=>$('print-print-card').click();
-  const dialog=frame.querySelector('dialog');
-  // Use separate title IDs from the waiting dialog.
-  dialog.querySelector('#deposit-preparation-title').id='deposit-open-preparation-title';
-  dialog.querySelector('#deposit-preparation-intro').id='deposit-open-preparation-intro';
-  dialog.setAttribute('aria-labelledby','deposit-open-preparation-title');dialog.setAttribute('aria-describedby','deposit-open-preparation-intro');
-  frame.querySelector('[data-open-tips]').onclick=()=>dialog.showModal();
-  frame.querySelector('[data-wait-close]').onclick=()=>dialog.close();
-  frame.querySelector('[data-wait-understood]').onclick=()=>dialog.close();
-  dialog.addEventListener('close',()=>frame.querySelector('[data-open-tips]').focus());
+  frame.querySelector('[data-open-edit]').onclick=()=>document.querySelector('[data-owner-tab-link="configuration"]')?.click();
  }
  const badge=frame.querySelector('.deposit-open-badge');badge.textContent=c.usage.state==='closed'?'Dépôts terminés':c.usage.state==='full'?'Stockage rempli':'Dépôts ouverts';
  frame.querySelector('[data-open-share]').hidden=c.usage.state==='closed';
- const depositActions=frame.querySelector('.deposit-open-actions');if(depositActions)depositActions.hidden=c.usage.state==='closed';
+ const depositActions=frame.querySelector('.deposit-open-actions');if(depositActions)depositActions.hidden=false;
+ frame.querySelector('.deposit-card-actions').hidden=c.usage.state==='closed';
  const emptyMessage=frame.querySelector('.deposit-open-empty p');if(emptyMessage)emptyMessage.textContent=c.usage.state==='closed'?'Les dépôts sont terminés. Vos souvenirs restent accessibles selon leur date d’ouverture.':'Vos invités peuvent maintenant déposer leurs photos, petits mots et autres souvenirs.';
  const count=manifest.length,available=manifest.filter(m=>m.is_available).length;
  frame.classList.toggle('deposit-open-has-memories',count>0);
  frame.classList.toggle('deposit-open-all-available',count>0&&available===count);
  const exportSlot=frame.querySelector('.deposit-open-export'),exportButton=$('export-memories');
  if(exportSlot&&exportButton)(count?exportSlot:memories.querySelector('.memory-tools')).append(exportButton);
- frame.querySelector('[data-open-title]').textContent=count?'Vos souvenirs':c.usage.state==='closed'?'Vos souvenirs':'Les dépôts sont ouverts';
+ frame.querySelector('[data-open-title]').textContent='Vos souvenirs';
  frame.querySelector('[data-open-until]').textContent=c.usage.state==='closed'?'Les dépôts sont terminés. Les souvenirs se dévoilent aux dates choisies.':c.usage.closes_at?'Jusqu’au '+fParis(new Date(new Date(c.usage.closes_at).getTime()-1000).toISOString())+' · heure de Paris':'';
  frame.querySelector('[data-open-count]').textContent=memoryCountLabel(count);
  const availableLabel=frame.querySelector('[data-open-available]');if(availableLabel)availableLabel.textContent=available+' disponible'+(available>1?'s':'')+' maintenant';
  frame.querySelector('.deposit-open-gallery').append(hero,memories);
  const exportLabel=$('export-memories');if(exportLabel)exportLabel.textContent='Tout télécharger';
  applyMemoryFilter();
- const config={...c.welcome_config,...window.SuiteDesign.fields(c)},style=$('qr-style')?.value||config.style||c.qr_style||'fond-blanc';
- const preset=window.SuiteDesign.styles.find(s=>s.id===style),art=window.SuiteDesign.artwork(style,config);
- frame.style.backgroundImage=count?'none':window.SuiteDesign.logoBackground(style,config);frame.style.backgroundColor=count?'#fffdf9':preset?.background||'#fcf8ef';
- frame.classList.toggle('deposit-open-dark',!count&&Boolean(preset?.dark));
+ // Keep the discovery surface stable as memories arrive.
+ frame.style.backgroundImage='none';frame.style.backgroundColor='#fffdf9';
+ frame.classList.toggle('deposit-open-dark',false);
 }
 
 let ownerWaitingTimer=null;
