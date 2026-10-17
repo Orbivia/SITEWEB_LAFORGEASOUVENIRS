@@ -833,3 +833,6 @@ body.guest-landing-ready .guest-capture-dialog #capture-status.err{overflow-y:au
 /* Live minimum-length feedback follows the same trimmed count as submission. */
 body.guest-landing-ready #guest-text-dialog #message_text.is-too-short{color:#a51e35!important}
 body.guest-landing-ready #guest-text-dialog .guest-message-counter.is-too-short{color:#a51e35!important;font-weight:600}
+
+/* Recorder symbols have one vector path and do not depend on icon fonts. */
+body.guest-landing-ready .guest-capture-dialog .recorder-actions .guest-recorder-icon{display:block;width:28px;height:28px;overflow:visible;pointer-events:none;filter:none;transform:none;animation:none}
