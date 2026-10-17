@@ -115,13 +115,27 @@
   new MutationObserver(syncTextLauncher).observe(button,{attributes:true,attributeFilter:['aria-pressed']});
  }
  $('message_text').addEventListener('input',syncTextLauncher);$('message_text').addEventListener('invalid',event=>{if(!textLaunch.hidden){event.preventDefault();openTextDialog();}});form.addEventListener('reset',()=>queueMicrotask(syncTextLauncher));syncTextLauncher();
+ // Validate the text before advancing to the signature, including trimmed Unicode length.
+ const textError=document.createElement('p');textError.className='status err';textError.id='guest-text-error';textError.setAttribute('role','alert');textError.hidden=true;textDialog.querySelector('.guest-media-dialog-body').append(textError);
+ $('message_text').setAttribute('aria-describedby','guest-text-error');
+ function validateGuestText(){
+  const selected=form.querySelector('[data-memory-type][aria-pressed=true]')?.dataset.memoryType;
+  if(selected!=='text')return true;
+  const field=$('message_text'),length=Array.from(field.value.trim()).length;
+  const message=length<10?'Votre petit mot doit contenir au moins 10 caractères.':length>1000?'Votre petit mot doit contenir au maximum 1 000 caractères.':'';
+  textError.textContent=message;textError.hidden=!message;textError.classList.toggle('show',Boolean(message));field.setAttribute('aria-invalid',String(Boolean(message)));
+  if(!message)return true;
+  if(nameDialog.open)nameDialog.close();openTextDialog();return false;
+ }
+ textDialog.querySelector('.guest-media-done').onclick=()=>{if(validateGuestText())textDialog.close();};
+ $('message_text').addEventListener('input',()=>{textError.hidden=true;textError.classList.remove('show');$('message_text').removeAttribute('aria-invalid');});
  const nameDialog=document.createElement('dialog');nameDialog.className='guest-name-dialog';nameDialog.setAttribute('aria-labelledby','guest-name-title');nameDialog.innerHTML='<header><h2 id="guest-name-title">Votre prénom</h2><button type="button" class="guest-media-close" aria-label="Fermer">×</button></header><div class="guest-media-dialog-body"></div><button type="button" class="btn primary guest-name-send">Envoyer mon souvenir</button>';form.append(nameDialog);const nameBody=nameDialog.querySelector('.guest-media-dialog-body');nameBody.append(signature);
  const privacy=signature.querySelector('.legal-collection-notice');if(privacy){const details=document.createElement('details'),summary=document.createElement('summary');details.className='guest-name-privacy';summary.textContent='Confidentialité et vos droits';details.append(summary,privacy);nameBody.append(details);}
  signature.querySelector('label').textContent='Prénom ou surnom';$('guest_name').setAttribute('enterkeyhint','send');
  nameDialog.querySelector('.guest-media-close').onclick=()=>nameDialog.close();
  const sendButton=form.querySelector('.submit-memory');
- sendButton.addEventListener('click',event=>{event.preventDefault();highlightMissing();const type=form.querySelector('[data-memory-type][aria-pressed=true]')?.dataset.memoryType;if(type==='text'&&!$('message_text').value.trim()){openTextDialog();return;}if(type!=='text'&&$('media-preview').hidden){mediaLaunch.focus();return;}if(!$('deliver-now').checked&&!$('delivery_date').value){deliveryPopup.showModal();return;}if(window.SuiteGuestLimits?.remaining()>0||sendButton.disabled)return;markMissing($('guest_name'),false);nameDialog.showModal();$('guest_name').focus({preventScroll:true});requestAnimationFrame(fitDepositDialogs);});
- nameDialog.querySelector('.guest-name-send').onclick=()=>{if(!$('guest_name').value.trim()){markMissing($('guest_name'),true);$('guest_name').focus();return;}if(!$('guest_name').reportValidity())return;nameDialog.close();form.requestSubmit(sendButton);};
+ sendButton.addEventListener('click',event=>{event.preventDefault();highlightMissing();const type=form.querySelector('[data-memory-type][aria-pressed=true]')?.dataset.memoryType;if(type==='text'&&!validateGuestText())return;if(type!=='text'&&$('media-preview').hidden){mediaLaunch.focus();return;}if(!$('deliver-now').checked&&!$('delivery_date').value){deliveryPopup.showModal();return;}if(window.SuiteGuestLimits?.remaining()>0||sendButton.disabled)return;markMissing($('guest_name'),false);nameDialog.showModal();$('guest_name').focus({preventScroll:true});requestAnimationFrame(fitDepositDialogs);});
+ nameDialog.querySelector('.guest-name-send').onclick=()=>{if(!validateGuestText())return;if(!$('guest_name').value.trim()){markMissing($('guest_name'),true);$('guest_name').focus();return;}if(!$('guest_name').reportValidity())return;nameDialog.close();form.requestSubmit(sendButton);};
  $('guest_name').addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.isComposing&&nameDialog.open){event.preventDefault();nameDialog.querySelector('.guest-name-send').click();}});
  form.addEventListener('submit',()=>{if(nameDialog.open)nameDialog.close();},true);
  // Highlight missing required values together before native form validation.
