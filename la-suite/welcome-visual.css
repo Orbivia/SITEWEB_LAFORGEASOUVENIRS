@@ -818,7 +818,11 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-intro-popup>.visual-popup-body{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scroll-padding-block:12px}
 .visual-intro-popup>.visual-welcome-done{flex:none;position:relative;margin-top:12px;min-height:44px}
 @media(max-width:760px){
-.visual-intro-popup[open]{height:var(--popup-height,calc(100dvh - 24px))}
+.visual-intro-popup[open]{height:auto}
+.visual-intro-popup>.visual-popup-body{flex:0 1 auto}
+.visual-welcome-plan-note{margin-bottom:14px;color:#756b61;font-size:.85rem;line-height:1.45}
+.visual-welcome-plan-note p{margin:0 0 10px}
+.visual-welcome-plan-note .btn{min-height:40px;padding:8px 12px;font-size:.82rem}
 .visual-primary .visual-intro-popup .visual-intro-host #intro-text{height:clamp(80px,calc(var(--popup-height,100dvh) * .28),180px);min-height:80px}
 }
 

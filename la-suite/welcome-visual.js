@@ -228,15 +228,14 @@
   let choosingPlan=false;
   function syncWelcomePlanNotice(panel){
    const currentPlan=window.SuiteDesign.effectivePlan(c)||'premium';
-   const names={text:'Petit mot',photo:'Essentiel',audio:'Plus',premium:'Premium'};
    const descriptions={
-    text:'Votre formule Petit mot inclut un accueil texte. La photo n’est pas incluse : choisissez Essentiel ou Plus. Pour une vidéo, choisissez Premium.',
-    photo:'Votre formule Essentiel inclut un accueil texte ou photo. La vidéo n’est pas incluse : choisissez Premium.',
-    audio:'Votre formule Plus inclut un accueil texte ou photo. La vidéo n’est pas incluse : choisissez Premium.',
-    premium:'Votre formule Premium inclut un accueil texte, photo ou vidéo.'
+    text:'Petit mot : accueil texte uniquement.',
+    photo:'Essentiel : texte ou photo. Vidéo avec Premium.',
+    audio:'Plus : texte ou photo. Vidéo avec Premium.',
+    premium:'Premium : texte, photo ou vidéo.'
    };
    let notice=panel.querySelector('[data-welcome-plan-notice]');
-   if(!notice){notice=document.createElement('div');notice.dataset.welcomePlanNotice='';notice.className='notice';const title=document.createElement('strong'),description=document.createElement('p'),timing=document.createElement('p'),change=document.createElement('button');title.dataset.welcomePlanTitle='';description.dataset.welcomePlanDescription='';timing.dataset.welcomePlanTiming='';change.dataset.welcomePlanChange='';change.type='button';change.className='btn secondary';notice.append(title,description,timing,change);panel.prepend(notice);
+   if(!notice){notice=document.createElement('div');notice.dataset.welcomePlanNotice='';notice.className='visual-welcome-plan-note';const description=document.createElement('p'),change=document.createElement('button');description.dataset.welcomePlanDescription='';change.dataset.welcomePlanChange='';change.type='button';change.className='btn secondary';notice.append(description,change);panel.prepend(notice);
     change.onclick=async()=>{
      normalizeEmptyWelcome();change.disabled=true;
      try{if(!await context.saveAll()||lifetime.destroyed)return;
@@ -247,15 +246,12 @@
      }finally{change.disabled=false;}
     };
    }
-   notice.querySelector('[data-welcome-plan-title]').textContent='Accueil · '+(names[currentPlan]||'Premium');
    notice.querySelector('[data-welcome-plan-description]').textContent=descriptions[currentPlan]||descriptions.premium;
-   const upgrade=$('change-capsule-plan'),change=notice.querySelector('[data-welcome-plan-change]'),timing=notice.querySelector('[data-welcome-plan-timing]');
+   const upgrade=$('change-capsule-plan'),change=notice.querySelector('[data-welcome-plan-change]');
    const draft=c.status==='draft',available=Boolean(upgrade&&!upgrade.disabled);
    change.textContent=draft?'Choisir ma formule':available?'Changer de formule':'Voir ma formule';
    change.hidden=currentPlan==='premium';
    change.disabled=Boolean(c.pendingPayment);
-   timing.textContent=currentPlan==='premium'?'':draft?'Choisissez votre formule à l’activation. Vous pourrez ensuite passer à une formule supérieure avant le jour J.':available?'Avant le jour J, vous payez uniquement la différence.':'Le changement de formule se fait avant le jour J, depuis les paramètres de la capsule.';
-   timing.hidden=!timing.textContent;
   }
   function openSettingsPopup(name){let popup=settingsPopups.get(name);if(!popup){const panel=studio.querySelector('[data-panel="'+name+'"]');popup=document.createElement('dialog');popup.className='visual-settings-popup visual-action-popup';popup.setAttribute('aria-label',name==='intro'?'Contenu d’accueil':name==='details'?'Réglages du QR code':'Date de l’événement');const heading=document.createElement('header');const title=document.createElement('h2');title.textContent=name==='intro'?'Votre accueil':name==='details'?'Votre QR code':'Date de l’événement';const close=document.createElement('button');close.type='button';close.className='visual-popup-close';close.setAttribute('aria-label','Fermer');close.textContent='×';close.onclick=()=>popup.close();heading.append(title,close);popup.append(heading);if(name==='intro')popup.classList.add('visual-intro-popup');{const content=document.createElement('div');content.className='visual-popup-body';content.append(panel);popup.append(content);}{const done=document.createElement('button');done.type='button';done.className='btn primary visual-welcome-done';done.textContent='Valider';done.onclick=async()=>{if(![...panel.querySelectorAll('input,textarea')].every(field=>field.disabled||field.reportValidity()))return;done.disabled=true;try{if(name==='intro')await finishWelcome();else if(await context.saveAll()){document.activeElement?.blur();popup.close();render()}}finally{done.disabled=false}};popup.append(done);}studio.append(popup);settingsPopups.set(name,popup);lifetime.listen(popup,'close',()=>{if(name==='intro')normalizeEmptyWelcome();panel.hidden=true;expanded();tab(['options','intro','date'].includes(activeTool)?'theme':activeTool||'theme');context.scheduleSave();lifetime.frame(fitPreview)});lifetime.listen(popup,'click',e=>{if(e.target!==popup)return;const box=popup.getBoundingClientRect();if(e.clientX<box.left||e.clientX>box.right||e.clientY<box.top||e.clientY>box.bottom)popup.close();});}for(const other of settingsPopups.values())if(other!==popup&&other.open)other.close();studio.dataset.panelOpen='false';studio.querySelector('.visual-drawer').hidden=true;$('visual-settings').hidden=true;popup.querySelector('[data-panel]').hidden=false;if(name==='intro')syncWelcomePlanNotice(popup.querySelector('[data-panel]'));if(!popup.open)popup.showModal();lifetime.frame(fitSettingsPopup);}
   function tab(name){colorEditor.hidden=true;studio.querySelector('.visual-colors').hidden=false;if(name==='options')name=target==='card'?'details':'intro';if(name==='intro'||name==='date'||name==='details'){openSettingsPopup(name);return;}const key=['details','intro','date'].includes(name)?'options':name;activeTool=key;expanded(true);studio.dataset.tool=key;studio.querySelectorAll('[data-tab]').forEach(b=>{const active=b.dataset.tab===name;b.setAttribute('aria-selected',String(active));b.tabIndex=active?0:-1});studio.querySelectorAll('[data-panel]').forEach(p=>p.hidden=p.dataset.panel!==name);const viewport=$('visual-settings');viewport.scrollTop=0;lifetime.frame(fitPreview);studio.querySelectorAll('[data-tool]').forEach(b=>{b.setAttribute('aria-pressed',String(b.dataset.tool===key));b.setAttribute('aria-expanded',String(b.dataset.tool===key))});}
