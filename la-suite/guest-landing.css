@@ -941,3 +941,12 @@ body.guest-landing-ready :is(#guest-landing .guest-home-footer,#guest-message .g
 
 /* Match fullscreen to the shared branding baseline; avoid small-viewport top offsets. */
 html body.guest-compose-refined.guest-landing-ready>.guest-fullscreen{top:auto!important;bottom:max(8px,env(safe-area-inset-bottom,0px))!important;right:max(12px,env(safe-area-inset-right,0px))!important}
+
+/* Both guest steps share one primary-action position above the bottom branding. */
+@media(max-width:760px){
+ body.guest-compose-refined.guest-landing-ready{--guest-action-bottom:calc(max(8px,env(safe-area-inset-bottom,0px)) + 68px);--guest-action-inset:clamp(24px,6vw,36px)}
+ body.guest-compose-refined.guest-landing-ready[data-guest-view=home] #guest-deposit,
+ body.guest-compose-refined.guest-landing-ready[data-guest-view=compose] #guest-message .submit-memory{position:fixed!important;top:auto!important;bottom:var(--guest-action-bottom)!important;left:50%!important;right:auto!important;transform:translateX(-50%);width:calc(100% - 2*var(--guest-action-inset))!important;max-width:640px;min-height:50px!important;height:50px!important;box-sizing:border-box;margin:0!important;z-index:20}
+ body.guest-compose-refined.guest-landing-ready[data-guest-view=home] #guest-landing .guest-home-content,
+ body.guest-compose-refined.guest-landing-ready[data-guest-view=compose] #guest-message{padding-bottom:calc(var(--guest-action-bottom) + 74px)!important}
+}
