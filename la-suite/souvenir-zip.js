@@ -30,6 +30,18 @@
   await emit(header(22,v=>{v.setUint32(0,0x06054b50,true);v.setUint16(8,65535,true);v.setUint16(10,65535,true);v.setUint32(12,0xffffffff,true);v.setUint32(16,0xffffffff,true);}));
   check();await writable.close();
  }
- root.SouvenirZip={write};
+ // Include ZIP64 headers and UTF-8 names in the memory budget.
+ function partition(entries,limit=100000000){
+  const groups=[];let group=[],size=98;
+  for(const entry of entries){
+   if(!Number.isSafeInteger(entry.size)||entry.size<0)throw Error('Taille de fichier invalide.');
+   const bytes=entry.size+enc.encode(entry.name).length*2+168;
+   if(bytes+98>limit)throw Error('Un fichier dépasse la taille maximale d’une archive mobile. Téléchargez ce souvenir individuellement.');
+   if(group.length&&size+bytes>limit){groups.push(group);group=[];size=98;}
+   group.push(entry);size+=bytes;
+  }
+  if(group.length)groups.push(group);return groups;
+ }
+ root.SouvenirZip={write,partition};
 })(typeof window==='undefined'?globalThis:window);
 

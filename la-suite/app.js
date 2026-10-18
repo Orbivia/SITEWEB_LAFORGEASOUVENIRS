@@ -1849,9 +1849,36 @@ async function saveCapsuleSettings(c){
 
 let exportingMemories=false;
 window.addEventListener('beforeunload',e=>{if(exportingMemories&&!ownerSessionEnded){e.preventDefault();e.returnValue=''}});
+function memoryArchiveWriter(name){
+ let parts=[],size=0;
+ return {write:async bytes=>{size+=bytes.byteLength;if(size>150000000)throw Error('Archive trop volumineuse pour ce navigateur.');parts.push(bytes)},close:async()=>{const url=URL.createObjectURL(new Blob(parts,{type:'application/zip'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);parts=[]},abort:async()=>{parts=[]}};
+}
+function showMobileArchiveParts(c,groups,name){
+ $('mobile-archive-parts')?.remove();
+ const dialog=document.createElement('dialog');dialog.id='mobile-archive-parts';dialog.className='guest-dialog';dialog.setAttribute('aria-labelledby','mobile-archive-title');
+ dialog.innerHTML='<div class="guest-dialog-head"><h2 id="mobile-archive-title">Télécharger vos souvenirs</h2><button type="button" class="guest-dialog-close" aria-label="Fermer">×</button></div><div class="guest-dialog-body"><p>Votre capsule est répartie en petites archives pour votre téléphone. Téléchargez chaque partie ; vos textes sont dans la première.</p><div data-archive-parts></div><p class="status" role="status"></p></div>';
+ const status=dialog.querySelector('[role=status]'),close=dialog.querySelector('.guest-dialog-close'),buttons=[];
+ close.onclick=()=>dialog.close();dialog.addEventListener('cancel',event=>{if(exportingMemories)event.preventDefault()});dialog.addEventListener('close',()=>{dialog.remove();$('export-memories')?.focus()});
+ groups.forEach((entries,index)=>{
+  const button=document.createElement('button');button.type='button';button.className='btn secondary';button.style.marginBottom='8px';button.style.width='100%';
+  const label='Partie '+(index+1)+' / '+groups.length+' · '+Math.ceil(entries.reduce((sum,e)=>sum+e.size,0)/1000000)+' Mo';button.textContent=label;buttons.push(button);dialog.querySelector('[data-archive-parts]').append(button);
+  button.onclick=async()=>{
+   if(exportingMemories)return;
+   const writer=memoryArchiveWriter(name.replace(/\.zip$/,'-partie-'+(index+1)+'.zip'));
+   exportingMemories=true;close.disabled=true;buttons.forEach(b=>b.disabled=true);
+   try{
+    if(ownerSessionEnded)throw Error('Votre session est terminée. Reconnectez-vous.');
+    if(capsuleExpired(c))throw Error('La période de conservation est terminée.');
+    await SouvenirZip.write(entries,writer,(i,total)=>show(status,'Partie '+(index+1)+' : '+i+' / '+total+' fichiers…'),{signal:ownerDownloadSession.signal});
+    button.textContent=label+' — téléchargée';show(status,'Partie '+(index+1)+' prête. Vérifiez son enregistrement dans vos téléchargements.');
+   }catch(error){await writer.abort();show(status,error.message||'Téléchargement interrompu. Réessayez cette partie.',false)}
+   finally{exportingMemories=false;close.disabled=false;buttons.forEach(b=>b.disabled=ownerSessionEnded||capsuleExpired(c))}
+  };
+ });document.body.append(dialog);dialog.showModal();
+}
 async function exportOpenedMemories(c,sourceButton,sourceStatus){
  if(exportingMemories)return;
- let writable,parts=[],size=0;const button=sourceButton||$("export-memories"),status=sourceStatus||$("export-status"),name='souvenirs-'+slugify(c.couple_name)+'.zip';
+ let writable;const button=sourceButton||$("export-memories"),status=sourceStatus||$("export-status"),name='souvenirs-'+slugify(c.couple_name)+'.zip';
  exportingMemories=true;button.disabled=true;
  try{
   // Keep the native picker inside the click gesture, before the first request.
@@ -1861,8 +1888,10 @@ async function exportOpenedMemories(c,sourceButton,sourceStatus){
   const text=new Blob([bundle.name+' — '+fdate(bundle.date)+'\n\n'+bundle.messages.map(m=>(m.guest_name||'Invité')+' · '+fdate(m.delivery_at)+'\n'+(m.message_text||'Souvenir '+m.media_type)+'\n').join('\n')],{type:'text/plain;charset=utf-8'});
   const entries=[{name:'Vos-messages.txt',size:text.size,load:async()=>text}];
   bundle.messages.filter(m=>m.path).forEach((m,i)=>{const ext=m.path.split('.').pop().replace(/[^a-z0-9]/gi,'').slice(0,8)||'bin';entries.push({name:String(i+1).padStart(4,'0')+'-'+(slugify(m.guest_name||'invite')||'invite')+'.'+ext,size:Number(m.bytes),load:async()=>{const {data,error}=await sb.storage.from('capsule-media').download(m.path);if(error||!data)throw error||Error('Fichier indisponible.');return data}})});
-  if(!writable){if(entries.reduce((sum,e)=>sum+e.size+500,0)>150000000)throw Error('Vos souvenirs dépassent 150 Mo. Téléchargez-les depuis Chrome ou Edge sur ordinateur pour les enregistrer directement sur disque.');
-   writable={write:async bytes=>{size+=bytes.byteLength;if(size>150000000)throw Error('Archive trop volumineuse pour ce navigateur. Utilisez Chrome ou Edge sur ordinateur.');parts.push(bytes)},close:async()=>{const url=URL.createObjectURL(new Blob(parts,{type:'application/zip'})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);parts=[]},abort:async()=>{parts=[]}};
+  if(!writable){
+   const groups=SouvenirZip.partition(entries);
+   if(groups.length>1){showMobileArchiveParts(c,groups,name);show(status,'Choisissez les parties à télécharger dans la fenêtre.');return;}
+   writable=memoryArchiveWriter(name);
   }
   if(ownerSessionEnded)throw Error("Votre session est terminée. Reconnectez-vous.");
   if(capsuleExpired(c))throw Error("La période de conservation est terminée.");
@@ -2024,9 +2053,9 @@ async function renderOrganizerLifecycle(c){
 
 function setupOrganizerGuestPreview(c,saveAll){
  const link=$('open-guest-link');if(!link)return;
- link.removeAttribute('target');link.setAttribute('role','button');link.setAttribute('aria-haspopup','dialog');link.setAttribute('aria-controls','organizer-guest-preview');link.title='Prévisualiser le parcours invité avant l’événement';
+ link.removeAttribute('target');link.setAttribute('role','button');link.setAttribute('aria-haspopup','dialog');link.setAttribute('aria-controls','organizer-guest-preview');link.title='Tester le parcours invité sans enregistrer de souvenir';link.innerHTML='<i class="fa-solid fa-flask" aria-hidden="true"></i> Tester ma capsule';
  const dialog=document.createElement('dialog');dialog.id='organizer-guest-preview';dialog.className='organizer-guest-preview';dialog.setAttribute('aria-labelledby','organizer-guest-preview-title');
- dialog.innerHTML='<div class="guest-preview-heading"><div><h2 id="organizer-guest-preview-title">Aperçu côté invité</h2><p>Simulation · disponible avant l’événement</p></div><button type="button" class="guest-dialog-close" aria-label="Fermer l’aperçu invité">×</button></div><p id="guest-preview-loading" role="status">Préparation de votre aperçu…</p><iframe title="Aperçu de la page de dépôt" allow="camera; microphone"></iframe>';
+ dialog.innerHTML='<div class="guest-preview-heading"><div><h2 id="organizer-guest-preview-title">Aperçu côté invité</h2><p>Mode test · aucun souvenir ne sera enregistré</p></div><button type="button" class="guest-dialog-close" aria-label="Fermer l’aperçu invité">×</button></div><p id="guest-preview-loading" role="status">Préparation de votre aperçu…</p><iframe title="Aperçu de la page de dépôt" allow="camera; microphone"></iframe>';
  $('dashboard-content').append(dialog);
  const frame=dialog.querySelector('iframe'),loading=dialog.querySelector('[role=status]');let generation=0,receive=null;
  const close=()=>dialog.close();dialog.querySelector('button').onclick=close;
