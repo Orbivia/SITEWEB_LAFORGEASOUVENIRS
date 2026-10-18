@@ -1132,7 +1132,7 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
  const qr=makeQrCanvas(url,o);
  if(document.fonts?.load)try{await Promise.all([document.fonts.load(qrFontWeight(o.font)+' 72px "'+qrFontFamily(o.font)+'"'),document.fonts.load(qrFontWeight(o.font)+' 56px "'+qrFontFamily(o.font)+'"'),document.fonts.load('400 44px "'+qrFontFamily(o.font)+'"'),document.fonts.load('400 25px Inter'),document.fonts.load('700 32px Inter')])}catch(e){}
  const canvas=document.createElement("canvas"),ctx=canvas.getContext("2d");
- const W=1181,H=1772,contentInset=200,frameMargin=84;canvas.width=W;canvas.height=H;
+ const W=1181,H=1772,contentInset=200;canvas.width=W;canvas.height=H;
  const issues=[];canvas.cardTextIssues=issues;
  const config=c.welcome_config||{},artwork=window.SuiteDesign.artwork(o.style,{...config,background:window.SuiteDesign.background(c)});
  if(artwork){const image=await loadCanvasImage(artwork);const scale=Math.max(W/image.naturalWidth,H/image.naturalHeight),iw=image.naturalWidth*scale,ih=image.naturalHeight*scale;ctx.drawImage(image,(W-iw)*window.SuiteDesign.position(config.cardX)/100,(H-ih)*window.SuiteDesign.position(config.cardY)/100,iw,ih);}else{drawQrBackdrop(ctx,{...o,color:qrThemes[o.style].accent},W,H);drawQrDecor(ctx,{...o,color:qrThemes[o.style].accent},W,H);}
@@ -1156,8 +1156,8 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
 
  if(o.showInitials)drawQrMonogram(ctx,o,W/2,qy+qsize/2,qsize,background);
 
- // Leave about 7 mm of clear space inside a 10 × 15 cm frame; artwork stays full bleed.
- const mobileLogo=matchMedia("(max-width:760px)").matches,logoMaxH=mobileLogo?144:104,logoTop=Math.min(H-(mobileLogo?(o.style==="gatsby"?240:180):150),H-frameMargin-logoMaxH);
+ // Match the small natural logo opening: bottom 1.5–6% of the full-bleed card.
+ const logoMaxH=80,logoTop=H-logoMaxH-18;
  const explanationBottom=Math.min(1540,logoTop-32);
  const textBox={x:contentInset,y:1220,width:W-contentInset*2,height:150};
  ctx.fillStyle=dark?'#eee2cc':'#554e49';
@@ -1172,16 +1172,10 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
 
 
 
- // Brand sits in the unadorned footer already present in the theme artwork.
- // A small plain cartouche is part of the brand layout, never a blurred mask.
- if(o.showBrand){
-  const brandWidth=mobileLogo?400:300;
-  ctx.save();ctx.fillStyle=window.SuiteDesign.styles.find(s=>s.id===o.style)?.background||'#ffffff';
-  ctx.beginPath();ctx.roundRect((W-brandWidth)/2,logoTop-12,brandWidth,logoMaxH+24,12);ctx.fill();ctx.restore();
- }
+ // Theme motifs naturally frame the transparent mark at the bottom center.
  if(o.showBrand)try{
   const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20261010-forge-type");
-  const maxW=mobileLogo?360:260,maxH=logoMaxH,scale=Math.min(maxW/logo.naturalWidth,maxH/logo.naturalHeight);
+  const maxW=260,maxH=logoMaxH,scale=Math.min(maxW/logo.naturalWidth,maxH/logo.naturalHeight);
   const lw=Math.round(logo.naturalWidth*scale),lh=Math.round(logo.naturalHeight*scale);
   // Keep the original alpha, with a light monochrome mark on dark designs.
   const mark=document.createElement('canvas');mark.width=lw;mark.height=lh;

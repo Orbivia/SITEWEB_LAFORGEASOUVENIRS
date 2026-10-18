@@ -944,5 +944,8 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 
 .visual-welcome-plan-note [data-welcome-plan-change]{display:flex;width:fit-content;max-width:100%;margin:14px auto 0;justify-content:center}
 
-/* Plain logo cartouche matches guest pages and exported QR cards. */
-.visual-primary .visual-page footer{width:max-content;max-width:100%;margin-inline:auto;padding:10px 16px!important;border-radius:8px;background:var(--visual-paper,#fcf8ef)!important}
+/* Theme motifs frame the mark directly; no added logo panel. */
+.visual-primary .visual-page footer{background:transparent!important;border:0!important;box-shadow:none!important}
+.visual-primary .visual-page{padding-bottom:60px}
+.visual-primary .visual-page footer{position:absolute;left:50%;bottom:1.5%;width:18%;margin:0;padding:0!important;transform:translateX(-50%)}
+.visual-primary .visual-page footer img{width:100%;height:auto}

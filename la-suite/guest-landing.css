@@ -930,6 +930,6 @@ body.guest-compose-refined[data-guest-view=compose] .guest-reveal-arrow{grid-col
  body.guest-compose-refined[data-guest-view=compose] .guest-submit-fields .guest-reveal-card #delivery-value{font-size:22px}
 }
 
-/* Small untextured logo cartouche; the artwork provides natural clearance. */
-body.guest-compose-refined.guest-landing-ready :is(.guest-home-footer,.guest-compose-footer,.guest-success-footer){width:136px!important;height:44px!important;top:calc(100dvh - 48px - env(safe-area-inset-bottom,0px))!important}
-body.guest-compose-refined.guest-landing-ready :is(.guest-home-footer,.guest-compose-footer,.guest-success-footer) a{width:136px;height:44px;padding:5px 12px;box-sizing:border-box;background:var(--home-paper,#fcf8ef);border-radius:6px;justify-content:center;align-items:center}
+/* The logo sits directly on the theme's small natural opening. */
+body.guest-compose-refined.guest-landing-ready :is(.guest-home-footer,.guest-compose-footer,.guest-success-footer) a{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0}
+body.guest-compose-refined.guest-landing-ready :is(.guest-home-footer,.guest-compose-footer,.guest-success-footer) img{width:min(18vw,105px)!important;height:auto!important;max-height:34px}
