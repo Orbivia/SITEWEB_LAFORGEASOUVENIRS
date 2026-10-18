@@ -943,3 +943,6 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-intro-info-only .visual-welcome-plan-note p{margin-bottom:0}
 
 .visual-welcome-plan-note [data-welcome-plan-change]{display:flex;width:fit-content;max-width:100%;margin:14px auto 0;justify-content:center}
+
+/* Plain logo cartouche matches guest pages and exported QR cards. */
+.visual-primary .visual-page footer{width:max-content;max-width:100%;margin-inline:auto;padding:10px 16px!important;border-radius:8px;background:var(--visual-paper,#fcf8ef)!important}

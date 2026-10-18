@@ -1172,10 +1172,12 @@ async function buildPrintCardCanvas(c,url,{preview=false}={}){
 
 
 
- if(o.showBrand&&artwork){
-  ctx.save();ctx.translate(W/2,logoTop+logoMaxH/2);ctx.scale(W*.27,logoMaxH*1.1);
-  const paper=window.SuiteDesign.styles.find(s=>s.id===o.style)?.background||'#ffffff';
-  const fade=ctx.createRadialGradient(0,0,0,0,0,1);fade.addColorStop(0,paper);fade.addColorStop(.65,paper);fade.addColorStop(1,paper+'00');ctx.fillStyle=fade;ctx.fillRect(-1,-1,2,2);ctx.restore();
+ // Brand sits in the unadorned footer already present in the theme artwork.
+ // A small plain cartouche is part of the brand layout, never a blurred mask.
+ if(o.showBrand){
+  const brandWidth=mobileLogo?400:300;
+  ctx.save();ctx.fillStyle=window.SuiteDesign.styles.find(s=>s.id===o.style)?.background||'#ffffff';
+  ctx.beginPath();ctx.roundRect((W-brandWidth)/2,logoTop-12,brandWidth,logoMaxH+24,12);ctx.fill();ctx.restore();
  }
  if(o.showBrand)try{
   const logo=await loadCanvasImage("assets/la-suite-logo.webp?v=20261010-forge-type");
