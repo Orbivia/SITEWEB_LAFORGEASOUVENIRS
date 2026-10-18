@@ -959,7 +959,8 @@ body .visual-primary[data-tool=theme] .visual-drawer .visual-themes button{displ
 body .visual-primary[data-tool=theme] .visual-drawer .visual-themes button span:not(.visual-theme-motif){min-width:0;text-align:left;overflow-wrap:anywhere}
 body .visual-primary[data-tool=theme] .visual-drawer .visual-themes .visual-theme-motif,body .visual-primary[data-tool=theme] .visual-drawer .visual-themes img{display:block;width:var(--theme-thumbnail-size,28px);height:var(--theme-thumbnail-size,28px);min-width:0;max-width:100%;max-height:100%;flex-basis:auto;object-fit:cover;border-radius:5px}
 
-/* Web-only four-by-four catalog; Android keeps its existing layout. */
+/* Desktop web uses a grid; smartphone web and Android keep a list. */
+@media(min-width:761px){
 html:not([data-la-suite-android="1"]) .welcome-visual-editor.visual-primary[data-tool=theme]{--visual-panel-width:clamp(168px,44%,360px)}
 html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] .visual-drawer .visual-themes{grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-template-rows:repeat(4,minmax(0,1fr))!important;grid-auto-flow:row;gap:4px!important;overflow:hidden}
 html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] .visual-drawer .visual-themes button{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;justify-items:center;align-items:center;gap:3px;padding:3px;font-size:9px;line-height:1.1}
@@ -969,3 +970,4 @@ html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] .vis
 /* Fit the complete web theme catalog inside the settings viewport. */
 html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] #visual-settings{overflow:hidden!important;scrollbar-gutter:auto!important;min-width:0}
 html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] .visual-drawer [data-panel=theme]{min-height:0;min-width:0;box-sizing:border-box}
+}
