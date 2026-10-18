@@ -157,7 +157,9 @@
   function fitPanel(){
    if(matchMedia('(min-width:761px)').matches&&studio.dataset.tool!=='theme')return;
    const drawer=studio.querySelector('.visual-drawer'),settings=$('visual-settings');if(drawer.hidden)return;
-   const available=Math.max(1,drawer.clientHeight-studio.querySelector('.visual-tools').offsetHeight-8);
+   const isWebTheme=studio.dataset.tool==='theme'&&!window.LaSuiteAndroid&&!/LaSuiteOrganizer\//.test(navigator.userAgent);
+   const settingsStyle=isWebTheme?getComputedStyle(settings):null;
+   const available=Math.max(1,isWebTheme?settings.clientHeight-(parseFloat(settingsStyle.paddingTop)||0)-(parseFloat(settingsStyle.paddingBottom)||0):drawer.clientHeight-studio.querySelector('.visual-tools').offsetHeight-8);
    const panel=settings.querySelector('[data-panel]:not([hidden])');if(!panel)return;
    const nativeAndroid=Boolean(window.LaSuiteAndroid||/LaSuiteOrganizer\//.test(navigator.userAgent));
    const list=panel.querySelector('.visual-themes:not([hidden]),.visual-colors:not([hidden]),.visual-font-samples:not([hidden])'),count=list?.classList.contains('visual-themes')?(nativeAndroid?list.children.length:4):list?.children.length||1,extra=list?[...panel.children].filter(el=>el!==list&&!el.hidden).reduce((sum,el)=>sum+el.offsetHeight,0):0;

@@ -965,3 +965,7 @@ html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] .vis
 html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] .visual-drawer .visual-themes button{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr) auto;justify-items:center;align-items:center;gap:3px;padding:3px;font-size:9px;line-height:1.1}
 html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] .visual-drawer .visual-themes button span:not(.visual-theme-motif){display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;text-align:center;max-height:2.2em;overflow:hidden;width:100%;overflow-wrap:anywhere}
 html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] .visual-drawer .visual-themes .visual-theme-motif,html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] .visual-drawer .visual-themes img{width:var(--theme-thumbnail-size,30px);height:var(--theme-thumbnail-size,30px);justify-self:center;align-self:center;max-width:100%;max-height:100%}
+
+/* Fit the complete web theme catalog inside the settings viewport. */
+html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] #visual-settings{overflow:hidden!important;scrollbar-gutter:auto!important;min-width:0}
+html:not([data-la-suite-android="1"]) body .visual-primary[data-tool=theme] .visual-drawer [data-panel=theme]{min-height:0;min-width:0;box-sizing:border-box}
