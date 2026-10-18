@@ -949,3 +949,11 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-primary .visual-page{padding-bottom:60px}
 .visual-primary .visual-page footer{position:absolute;left:50%;bottom:1.5%;width:18%;margin:0;padding:0!important;transform:translateX(-50%)}
 .visual-primary .visual-page footer img{width:100%;height:auto}
+
+/* Paginated themes keep the settings surface the same height as the catalog grows. */
+.visual-primary .visual-themes>button[hidden]{display:none!important}
+.visual-primary .visual-theme-pages{display:flex;align-items:center;justify-content:space-between;gap:8px;height:44px;min-height:44px;flex:none;margin:4px 0 0;padding:0;box-sizing:border-box}
+.visual-primary .visual-theme-pages button{display:grid;place-items:center;width:44px;min-width:44px;height:40px;min-height:40px;margin:0;padding:0;border:1px solid #ddd7cd;border-radius:10px;background:#fffdf8;color:#365748;font-size:20px}
+.visual-primary .visual-theme-pages button:disabled{opacity:.35}
+.visual-primary .visual-theme-pages span{font:500 13px/1.2 Inter,sans-serif;color:#5b554c}
+.visual-primary .visual-page[data-welcome-style=velours-bordeaux] footer img{filter:brightness(0) invert(1)}
