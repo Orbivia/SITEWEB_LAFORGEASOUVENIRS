@@ -555,7 +555,7 @@ function chooseGuestType(type){
  $('import-memory-help').textContent=type==='image'?'Depuis votre galerie':'Depuis vos fichiers';$("message_text").required=type==="text";
  $("message-label").innerHTML=type==="text"?"Votre message":'Un petit mot <span class="optional">(facultatif)</span>';
  $("message_text").minLength=type==="text"?10:0;
- $("message_text").placeholder=type==="text"?"Votre petit mot (10 caractères minimum)…":"Quelques mots pour accompagner votre souvenir…";
+ $("message_text").placeholder=type==="text"?"Écrivez ici (10 caractères minimum)…":"Quelques mots pour accompagner votre souvenir…";
  const messageField=$('guest-message-field'),extras=$('guest-extras');
  (type==='text'?$('guest-text-content'):$('guest-extras-body')).prepend(messageField);extras.open=false;
  extras.hidden=true;if(type!=='text')$('message_text').value='';$('guest-limits').hidden=type==='text';

@@ -950,3 +950,6 @@ html body.guest-compose-refined.guest-landing-ready>.guest-fullscreen{top:auto!i
  body.guest-compose-refined.guest-landing-ready[data-guest-view=home] #guest-landing .guest-home-content,
  body.guest-compose-refined.guest-landing-ready[data-guest-view=compose] #guest-message{padding-bottom:calc(var(--guest-action-bottom) + 74px)!important}
 }
+
+/* The dialog title names the text field; avoid a second visible heading. */
+.guest-text-dialog #message-label{display:none}
