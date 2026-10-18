@@ -502,7 +502,7 @@ body.owner-no-tabs{padding-bottom:0!important}
 
 /* Keep the La Suite wordmark readable in the phone/app header. */
 @media(max-width:760px){
- body:is(.organizer-layout-ready,.organizer-shell) .forge-style-header .suite-brand img{width:180px;max-width:min(180px,60vw);height:auto;max-height:76px;object-fit:contain}
+ body:is(.organizer-layout-ready,.organizer-shell) .forge-style-header .suite-brand img{width:112px;max-width:min(112px,42vw);height:auto;max-height:46px;object-fit:contain}
 }
 @media(max-width:480px){
  .event-date-confirmation .event-date-confirmation-header{gap:12px;padding:20px 18px 18px}

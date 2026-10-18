@@ -952,8 +952,9 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 
 .visual-primary .visual-page[data-welcome-style=velours-bordeaux] footer img{filter:brightness(0) invert(1)}
 
-/* Every theme stays visible on one settings page: two columns, no pagination. */
-.visual-primary .visual-themes{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(var(--visual-choice-count,8),minmax(0,1fr));grid-auto-flow:row;gap:3px;min-height:0;min-width:0;overflow:hidden}
-.visual-primary .visual-themes button,.visual-primary[data-tool=theme] .visual-themes button{display:flex;align-items:center;gap:4px;font-size:10px;line-height:1.15;min-width:0;min-height:0;padding:3px;white-space:normal}
-.visual-primary .visual-themes button span:not(.visual-theme-motif){min-width:0;overflow-wrap:anywhere;text-align:left}
-.visual-primary .visual-themes .visual-theme-motif,.visual-primary .visual-themes img,.visual-primary[data-tool=theme] .visual-themes .visual-theme-motif,.visual-primary[data-tool=theme] .visual-themes img{width:18px;height:18px;flex:0 0 18px}
+
+/* One explicit row per theme prevents implicit tracks with uneven spacing. */
+body .visual-primary[data-tool=theme] .visual-drawer .visual-themes{display:grid;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:repeat(var(--visual-choice-count,15),minmax(0,1fr))!important;grid-auto-rows:minmax(0,1fr);gap:3px!important;align-content:stretch;height:var(--visual-choice-list-height);max-height:var(--visual-choice-list-height);min-height:0;overflow:hidden}
+body .visual-primary[data-tool=theme] .visual-drawer .visual-themes button{display:grid;grid-template-columns:var(--theme-thumbnail-size,28px) minmax(0,1fr);align-items:center;column-gap:5px;width:100%;height:100%;min-height:0;min-width:0;margin:0;padding:2px 3px;box-sizing:border-box;font-size:11px;line-height:1.15;overflow:hidden}
+body .visual-primary[data-tool=theme] .visual-drawer .visual-themes button span:not(.visual-theme-motif){min-width:0;text-align:left;overflow-wrap:anywhere}
+body .visual-primary[data-tool=theme] .visual-drawer .visual-themes .visual-theme-motif,body .visual-primary[data-tool=theme] .visual-drawer .visual-themes img{display:block;width:var(--theme-thumbnail-size,28px);height:var(--theme-thumbnail-size,28px);min-width:0;max-width:100%;max-height:100%;flex-basis:auto;object-fit:cover;border-radius:5px}
