@@ -743,6 +743,11 @@ function uploadGuestFile(file,transaction){
   transaction.upload.start();
  });
 }
+function completeGuestSubmission(form,name,instant,date){
+ lastGuestName=name;
+ $("guest-success-date").textContent=instant||date<=parisDay()?"Votre souvenir peut être découvert dès maintenant.":"Il restera secret jusqu’au "+fdate(date)+".";
+ document.body.dataset.guestView="success";$("guest-message").hidden=true;form.reset();resetPreview();guestTransaction=null;$("guest-success").hidden=false;$("guest-success").focus();$("guest-success").scrollIntoView({behavior:"smooth",block:"center"});
+}
 async function initCapsule(){
  if(!$("capsule-title"))return;
  const token=qs.get("t")||qs.get("token");
@@ -817,12 +822,7 @@ async function initCapsule(){
   if(guestType!=="text"&&!selectedMedia)return showCapture("Ajoutez votre souvenir, ou choisissez « Petit mot ».",false);
   if(guestType==="text"&&Array.from(text).length<10){show(status,"Votre petit mot doit contenir au moins 10 caractères.",false);$("message_text").focus();return;}
   if(!instant&&(!date||date<$("delivery_date").min||date>$("delivery_date").max))return show(status,"Choisissez une date entre aujourd’hui et le "+fdate($("delivery_date").max)+".",false);
-  if(guestIsPreview){
-   lastGuestName=name;
-   $('guest-success').querySelector('h2').textContent='Aperçu de la confirmation';
-   $('guest-success-date').textContent='Simulation : aucun souvenir n’a été enregistré.'+(instant?'':' Découverte choisie : '+fdate(date)+'.');
-   e.target.reset();resetPreview();$('guest-message').hidden=true;$('guest-success').hidden=false;$('guest-success').focus();return;
-  }
+  if(guestIsPreview){completeGuestSubmission(e.target,name,instant,date);return;}
   const key=JSON.stringify([name,text,instant,date,selectedMedia?.url]);
   if(!guestTransaction||guestTransaction.key!==key)guestTransaction={key,requestId:crypto.randomUUID(),delivery:instant?new Date().toISOString():date};
   const transaction=guestTransaction,button=e.target.querySelector('[type="submit"]');
@@ -841,9 +841,7 @@ async function initCapsule(){
      await guestInvoke({action:"finalize_media",guest_token:token,message_id:transaction.reserved.message_id,path:transaction.reserved.path});
     }
    }
-   lastGuestName=name;
-   $("guest-success-date").textContent=instant||date<=parisDay()?"Votre souvenir peut être découvert dès maintenant.":"Il restera secret jusqu’au "+fdate(date)+".";
-   document.body.dataset.guestView="success";$("guest-message").hidden=true;e.target.reset();resetPreview();guestTransaction=null;$("guest-success").hidden=false;$("guest-success").focus();$("guest-success").scrollIntoView({behavior:"smooth",block:"center"});
+   completeGuestSubmission(e.target,name,instant,date);
   }catch(error){if(/trop vite|beaucoup de|Patientez|20 petits mots|200 Mo ou 20/i.test(error.message)){await refreshGuestLimits();show(status,guestWaitSeconds()>0?"":error.message,false);notifyGuestLimits();}else show(status,error.message,false);button.querySelector("span").textContent="Réessayer l’envoi"}
   finally{guestBusy=false;document.body.classList.remove('guest-sending');fields.forEach((f,i)=>f.disabled=disabled[i]);$("upload-progress").hidden=true;refreshGuestLimits();if(!$("guest-success").hidden)button.querySelector("span").textContent="Envoyer mon souvenir"}
  });
@@ -2055,7 +2053,7 @@ async function renderOrganizerLifecycle(c){
 
 function setupOrganizerGuestPreview(c,saveAll){
  const link=$('open-guest-link');if(!link)return;
- link.removeAttribute('target');link.setAttribute('role','button');link.setAttribute('aria-haspopup','dialog');link.setAttribute('aria-controls','organizer-guest-preview');link.title='Tester le parcours invité sans enregistrer de souvenir';link.innerHTML='<i class="fa-solid fa-flask" aria-hidden="true"></i> Tester ma capsule';
+ link.removeAttribute('target');link.setAttribute('role','button');link.setAttribute('aria-haspopup','dialog');link.setAttribute('aria-controls','organizer-guest-preview');link.title='Tester le parcours invité sans enregistrer de souvenir';link.innerHTML='<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="vertical-align:middle;flex:none"><circle cx="12" cy="12" r="9"/><path d="m10 8 6 4-6 4z"/></svg> Tester ma capsule';
  const dialog=document.createElement('dialog');dialog.id='organizer-guest-preview';dialog.className='organizer-guest-preview';dialog.style.border='3px solid #8b2730';dialog.setAttribute('aria-labelledby','organizer-guest-preview-title');
  dialog.innerHTML='<div class="guest-preview-heading"><div><h2 id="organizer-guest-preview-title">Mode test</h2><p>Parcours invité · aucun souvenir ne sera enregistré</p></div><button type="button" class="guest-dialog-close" aria-label="Fermer l’aperçu invité">×</button></div><p id="guest-preview-loading" role="status">Préparation de votre aperçu…</p><iframe title="Aperçu de la page de dépôt" allow="camera; microphone"></iframe>';
  $('dashboard-content').append(dialog);
