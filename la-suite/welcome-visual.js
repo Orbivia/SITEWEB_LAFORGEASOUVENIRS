@@ -249,7 +249,7 @@
       const upgrade=$('change-capsule-plan'),activation=$('review-activation');
       if(c.status==='draft'&&activation){settingsPopups.get('intro')?.close();choosingPlan=true;activation.click();}
       else if(upgrade&&!upgrade.disabled){settingsPopups.get('intro')?.close();upgrade.click();}
-      else{settingsPopups.get('intro')?.close();$('owner-tab-settings')?.click();}
+      else{settingsPopups.get('intro')?.close();window.SuiteWorkspace.openSelectedSettings?.();}
      }finally{change.disabled=false;}
     };
    }
@@ -317,7 +317,7 @@
   const retry=document.createElement('button');retry.type='button';retry.className='visual-retry';retry.textContent='Réessayer';retry.hidden=true;retry.onclick=()=>context.saveAll();studio.append(retry);
   for(const source of [$('organizer-save-state'),$('organizer-save-error')])if(source)lifetime.mutation(syncSaveState).observe(source,{childList:true,subtree:true,attributes:true,attributeFilter:['data-state']});syncSaveState();
   queueMicrotask(()=>{if(lifetime.destroyed)return;
-   const panel=document.querySelector('.qr-designer-panel');panel.prepend(studio);document.body.classList.add('visual-primary-ready');window.SuiteDesign.retireLegacyPreview?.();
+   const panel=document.querySelector('.qr-designer-panel');panel.prepend(studio);document.body.classList.add('visual-primary-ready');
    studio.querySelector('.visual-intro-host').append(document.querySelector('.intro-video-panel'));$('intro-kind').closest('.field').hidden=true;
    const none=document.createElement('button');none.type='button';none.innerHTML='<i class="fa-solid fa-ban" aria-hidden="true"></i><span>Aucun</span>';none.dataset.introFormat='none';none.onclick=async()=>{$('intro-kind').value='none';dispatch('intro-kind');render();await finishWelcome()};studio.querySelector('.visual-intro-actions [role=group]').append(none);
    const crop=$('design-crop');studio.querySelector('.visual-background-host').append(crop);previewResize.observe(crop);const uploadStatus=$('design-upload-status');studio.querySelector('.visual-background-host').append(uploadStatus);
@@ -327,7 +327,7 @@
    const placeActivation=()=>{if(lifetime.destroyed)return;const activation=document.querySelector('.activation-panel');if(activation&&activation.parentElement!==actions)actions.append(activation)};
    window.SuiteOrganizerLayout.placeActivation=placeActivation;lifetime.onDestroy(()=>{if(window.SuiteOrganizerLayout.placeActivation===placeActivation)window.SuiteOrganizerLayout.placeActivation=previousPlacement});
    $('customize-welcome').onclick=()=>{selectTarget('welcome');studio.scrollIntoView({block:'start'})};
-   const testLink=$('open-guest-link');testLink.className='btn secondary';testLink.style.cssText='width:100%;max-width:420px;min-height:44px;flex:none;align-self:center;margin:0';const testStage=studio.querySelector('.visual-stage');testStage.style.flexDirection='column';studio.querySelector('.visual-card').after(testLink);$('organizer-modify').hidden=true;
+   const testLink=$('open-guest-link');testLink.className='btn secondary';testLink.style.cssText='width:100%;max-width:420px;min-height:44px;flex:none;align-self:center;margin:0';const testStage=studio.querySelector('.visual-stage');testStage.style.flexDirection='column';studio.querySelector('.visual-card').after(testLink);
    const validate=$('review-activation');if(validate){let continueWithoutWelcome=false;const reminder=document.createElement('dialog');reminder.className='visual-welcome-reminder';reminder.setAttribute('aria-labelledby','welcome-reminder-title');reminder.innerHTML='<form method="dialog"><button class="dialog-close" aria-label="Fermer">×</button></form><h2 id="welcome-reminder-title">Un mot pour vos invités ?</h2><p>Vous n’avez pas encore ajouté d’accueil. Personnalisez votre message avec les formats inclus dans votre formule.</p><button type="button" class="btn primary" data-reminder-edit>Personnaliser l’accueil</button><button type="button" class="btn secondary" data-reminder-continue>Continuer sans accueil</button>';document.body.append(reminder);lifetime.onDestroy(()=>{reminder.close();reminder.remove()});lifetime.listen(validate,'click',event=>{if(continueWithoutWelcome||choosingPlan){continueWithoutWelcome=false;choosingPlan=false;return}if(window.SuiteDesign.effectivePlan(c)==='text')return;const kind=$('intro-kind').value,hasWelcome=kind==='text'?Boolean($('intro-text').value.trim()):['image','video'].includes(kind)&&Boolean($('intro-file').files?.length||c.intro_path);if(!hasWelcome){event.preventDefault();event.stopImmediatePropagation();reminder.showModal()}},true);reminder.querySelector('[data-reminder-edit]').onclick=()=>{reminder.close();selectTarget('welcome');tab('intro');introEdit.focus()};reminder.querySelector('[data-reminder-continue]').onclick=()=>{reminder.close();continueWithoutWelcome=true;validate.click()};}
    lifetime.mutation(()=>{if(!studio.isConnected)editor.destroy()}).observe($('dashboard-content'),{childList:true,subtree:true});
    selectTarget('card');lifetime.frame(fitPreview);expanded(false);render();
@@ -336,7 +336,7 @@
   lifetime.listen(window,'pagehide',event=>{if(!event.persisted)editor.destroy()});
   lifetime.onDestroy(()=>{if(mediaUrl){URL.revokeObjectURL(mediaUrl);mediaUrl=null}});
   lifetime.onDestroy(()=>{if(expandedPreview&&previewHome?.parentNode)previewHome.replaceWith(expandedPreview);expandedPreview=null;previewHome=null;if(document.fullscreenElement===previewSurface)document.exitFullscreen().catch(()=>{});previewDialog.close()});
-  lifetime.onDestroy(()=>designer.destroy?.());
+  lifetime.onDestroy(()=>{if(window.SuiteWelcome.collectShared===designer.collect)delete window.SuiteWelcome.collectShared;designer.destroy?.()});
   const editor={...designer,editDate(onClose,options={}){if(lifetime.destroyed)return;editDate(options);if(onClose)settingsPopups.get('date').addEventListener('close',onClose,{once:true});},syncShared(){if(!lifetime.destroyed){designer.syncShared();render()}},close(){if(!lifetime.destroyed)designer.close()},destroy(){lifetime.destroy();if(activeEditor===editor)activeEditor=null}};
   activeEditor=editor;return editor;
  };

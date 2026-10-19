@@ -1298,7 +1298,6 @@ function ownerShell(c,url,count){
  <button id="owner-tab-configuration" type="button" role="tab" aria-controls="owner-panel-configuration" data-owner-tab-link="configuration"><svg class="owner-nav-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#personaliser"></use></svg><span>Personnaliser</span></button>
  <button id="owner-tab-messages" type="button" role="tab" aria-controls="owner-panel-messages" data-owner-tab-link="messages"><svg class="owner-nav-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#decouvrir"></use></svg><span>Découvrir</span> <span id="owner-unread-badge" class="owner-unread-badge" hidden></span></button>
 </nav>
-<button id="owner-tab-settings" type="button" class="organizer-settings-button" aria-label="Paramètres de cette capsule" title="Paramètres de cette capsule" aria-controls="owner-panel-settings" aria-pressed="false" data-owner-tab-link="settings" hidden><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#parametres"></use></svg></button>
 <div class="owner-panel" data-owner-panel="configuration">
 <div class="owner-card-and-intro">
 <section class="qr-designer-panel">
@@ -1495,10 +1494,6 @@ function ownerDefaultPanel(c){
  return c?.status==='active'&&['open','full','closed','expired'].includes(c?.usage?.state)?'messages':'configuration';
 }
 function setupOwnerTabs(c,manifest){
- const settingsLink=$("owner-tab-settings"),capsulesMenu=$("workspace-capsules");
- if(settingsLink&&capsulesMenu){
-  settingsLink.addEventListener("click",()=>capsulesMenu.close());
- }
  const links=[...document.querySelectorAll("[data-owner-tab-link]")];
  const discoveryUnavailable=c.status==='draft';
  document.body.classList.toggle('owner-capsule-draft',discoveryUnavailable);const ownerNavigation=document.querySelector('.owner-tabs');if(ownerNavigation)ownerNavigation.hidden=true;document.body.classList.add('owner-no-tabs');
@@ -1510,21 +1505,22 @@ function setupOwnerTabs(c,manifest){
  if(!links.length||!panels.length)return;
 
  const activate=async(name,updateHash=true)=>{
-  const target=discoveryUnavailable&&name==='messages'?'configuration':["configuration","messages","settings"].includes(name)?name:ownerDefaultPanel(c);
+  const target=discoveryUnavailable&&name==='messages'?'configuration':["configuration","messages"].includes(name)?name:ownerDefaultPanel(c);
   if(discoveryUnavailable&&name==='messages')history.replaceState(null,"","#configuration");
   links.forEach(link=>{
    const active=link.dataset.ownerTabLink===target;
    link.classList.toggle("is-active",active);
    if(link.getAttribute("role")==="tab"){
-    link.setAttribute("aria-selected",String(active));link.tabIndex=active||(target==="settings"&&link===tabLinks[0])?0:-1;
+    link.setAttribute("aria-selected",String(active));link.tabIndex=active?0:-1;
    }else{link.setAttribute("aria-pressed",String(active));if(active)link.setAttribute("aria-current","page");else link.removeAttribute("aria-current");}
   });
   panels.forEach(panel=>{panel.hidden=panel.dataset.ownerPanel!==target});
   if(name==="accueil")$("organizer-welcome").open=true;
-  const activation=document.querySelector(".activation-panel");if(activation)activation.hidden=target==="settings"||(c.status==="active"&&!capsuleExpired(c));
+  const activation=document.querySelector(".activation-panel");if(activation)activation.hidden=c.status==="active"&&!capsuleExpired(c);
   if(updateHash&&matchMedia("(max-width:760px)").matches)window.scrollTo({top:0,behavior:"instant"});
   if(updateHash&&location.hash!=="#"+target)history.replaceState(null,"","#"+target);
   document.body.classList.toggle("studio-card-active",target==="configuration");window.dispatchEvent(new Event("studio-layout"));
+  if(name==="settings")window.SuiteWorkspace.openSelectedSettings?.();
   if(target==="messages")await markOwnerMessagesSeen(c,manifest)
  };
 
@@ -1539,7 +1535,7 @@ function setupOwnerTabs(c,manifest){
   let next;if(e.key==="ArrowRight")next=(index+1)%tabLinks.length;else if(e.key==="ArrowLeft")next=(index+tabLinks.length-1)%tabLinks.length;else if(e.key==="Home")next=0;else if(e.key==="End")next=tabLinks.length-1;else return;
   e.preventDefault();tabLinks[next].focus();activate(tabLinks[next].dataset.ownerTabLink);
  }));
- panels.forEach(panel=>{panel.id="owner-panel-"+panel.dataset.ownerPanel;panel.setAttribute("role",panel.dataset.ownerPanel==="settings"?"region":"tabpanel");panel.setAttribute("aria-labelledby","owner-tab-"+panel.dataset.ownerPanel)});
+ panels.forEach(panel=>{panel.id="owner-panel-"+panel.dataset.ownerPanel;panel.setAttribute("role","tabpanel");panel.setAttribute("aria-labelledby","owner-tab-"+panel.dataset.ownerPanel)});
  window.addEventListener("hashchange",()=>activate(location.hash.slice(1),false));
  activate(location.hash.slice(1)||(c.status==='active'&&parisDay()>=c.wedding_date?'messages':'configuration'),false)
 }
@@ -1774,7 +1770,9 @@ function latestEventDate(today=parisDay()){
 }
 function tomorrowParis(){const d=new Date(parisDay()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)}
 function openCapsuleSettings(){
- $("owner-tab-settings")?.click();
+ document.querySelector('[data-owner-tab-link="configuration"]')?.click();
+ if(!$("capsule-name")?.value.trim())document.querySelector('.visual-primary [data-field="capsule-name"]')?.focus();
+ else window.SuiteWorkspace.openSelectedSettings?.();
 }
 function updateEventDateControls(c){
  const input=$("capsule-date");if(!input)return;
@@ -1789,14 +1787,8 @@ function updateEventDateControls(c){
 function setupCapsuleSettings(c){
  const panel=document.createElement('div');panel.className='capsule-settings';
  panel.innerHTML=`<div class="settings-grid"><div class="field"><label for="capsule-name">Nom de la capsule</label><input id="capsule-name" maxlength="50" required value="${esc(c.couple_name)}"></div><div class="field"><label for="capsule-date">Date de l’événement</label><input id="capsule-date" type="date" required ${c.status==='draft'?'min="'+tomorrowParis()+'"':''} ${c.status==="active"&&c.guest_rules_version===1?"disabled":""} value="${esc(c.wedding_date)}"><small class="field-help">Dépôts le jour J et le lendemain.</small></div><div class="field"><label for="capsule-plan">Formule</label><input id="capsule-plan" type="hidden" value="${esc(capsulePlan(c))}"><span id="capsule-plan-name">${esc(PLAN_NAMES[capsulePlan(c)])}</span><small class="field-help">${!c.admin_plan_override&&['free_beta','legacy'].includes(c.activation_source)?'Capsule offerte lors du lancement · tous les formats · 5 Go.':'Vous pouvez passer à une formule supérieure à tout moment avant le jour J, en payant uniquement la différence.'}</small></div><div class="field" id="notification-preference"><label><input id="capsule-notify" type="checkbox" ${c.notify_by_email!==false?'checked':''}> Recevoir les notifications par e-mail</label><small class="field-help">Un récapitulatif par jour maximum, puis des rappels à 30 et 7 jours de l’échéance.</small></div></div>`;
- const settings=document.createElement("section");settings.id="capsule-settings-panel";settings.className="owner-panel studio-settings-panel";settings.dataset.ownerPanel="settings";settings.hidden=true;
- settings.innerHTML='<h2>Paramètres de la capsule</h2><p id="settings-save-error" class="status" role="alert" hidden></p><button id="settings-save-retry" class="btn secondary" type="button" hidden>Réessayer</button>';
- settings.append(panel);
- $("dashboard-content").append(settings);
+ const state=document.createElement('div');state.id='capsule-settings-state';state.hidden=true;state.append(panel);$("dashboard-content").append(state);
  updateEventDateControls(c);
- $("settings-save-retry").addEventListener("click",()=>$("save-organizer").click());
- const syncError=()=>{const source=$("organizer-save-error"),target=$("settings-save-error");target.textContent=source?.textContent||"";target.hidden=!target.textContent;$("settings-save-retry").hidden=!target.textContent;};
- queueMicrotask(()=>{syncError();if($("organizer-save-error"))new MutationObserver(syncError).observe($("organizer-save-error"),{childList:true,subtree:true,characterData:true})});
  ['capsule-name','capsule-date','capsule-plan','capsule-notify'].forEach(id=>$(id).addEventListener('input',()=>markDirty('settings')));
 }
 let eventDateConfirmation=null;
@@ -2092,7 +2084,7 @@ async function initDashboard(){
  if(adminMember===true)return location.replace('admin.html'+location.hash);
 
  let welcomeDesigner=null;
- sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;ownerDownloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));welcomeDesigner?.destroy();$('organizer-guest-preview')?.close();$('welcome-editor')?.close();$('print-download-dialog')?.close();$('organizer-card-preview-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
+ sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==u.id){ownerSessionEnded=true;ownerDownloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));welcomeDesigner?.destroy();$('organizer-guest-preview')?.close();$('print-download-dialog')?.close();clearInterval(countdownTimer);memoryMediaObserver?.disconnect();Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false,saving:0});$("dashboard-content").replaceChildren();$("dashboard-title").textContent='Connexion requise';queueMicrotask(()=>location.replace('auth.html'))}});
  const logout=async()=>{if(organizerState.saving)return false;if(organizerDirty()&&!confirm("Des modifications ne sont pas enregistrées. Quitter quand même ?"))return false;Object.assign(organizerState,{qr:false,intro:false,welcome:false,settings:false});await sb.auth.signOut();location.href="index.html";return true;};
  const{data:caps,error}=await sb.from("capsules").select("id,owner_id,slug,status,plan,admin_plan_override,activation_source,guest_rules_version,guest_token,couple_name,wedding_date,welcome_message,welcome_config,intro_path,qr_initials,qr_color,print_title,print_note,print_explanation,qr_font,qr_style,qr_size,qr_show_initials,qr_show_brand,suggested_delivery_months,suggested_delivery_date,notify_by_email,owner_messages_seen_at,created_at").order("created_at",{ascending:false});
  if(ownerSessionEnded)return;

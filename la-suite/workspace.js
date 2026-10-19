@@ -34,8 +34,6 @@
   $('workspace-create').hidden=!access.can_create;$('workspace-create-help').textContent=access.can_create?'':access.reason||'';
   const planNames={text:'Petit mot',photo:'Essentiel',audio:'Plus',premium:'Premium'};
   const summaries=new Map(),states={draft:'En préparation',scheduled:'Prête à partager',open:'Dépôts ouverts',closed:'Dépôts terminés',full:'Stockage rempli',expired:'Conservation terminée',suspended:'Dépôts en pause',missing_date:'Date à compléter'};
-  const downloadIcon='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11 2h2v11l4-4 1.4 1.4L12 16l-6.4-5.6L7 9l4 4V2zM4 16h2v4h12v-4h2v6H4z"></path></svg>';
-  const trash='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><use href="assets/icons/solid/sprite.svg?v=20261011-icons1#supprimer"></use></svg>';
   function render(){
    $('workspace-capsule-list').innerHTML=caps.map(c=>{
     const info=summaries.get(c.id),state=info?.state||(c.status==='active'?'scheduled':'draft'),current=c.slug===selected?.slug,artwork=window.SuiteDesign.artwork(c.qr_style||'minimal',{background:window.SuiteDesign.background(c)})||window.SuiteDesign.thumbnail(c.qr_style||'minimal');
@@ -66,6 +64,7 @@
     try{const{data,error}=await sb.from('capsules').update({wedding_date:date}).eq('id',c.id).eq('owner_id',user.id).select('id,wedding_date').single();if(error)throw error;c.wedding_date=data.wedding_date;render();status.textContent='Date enregistrée.';if(c.id===selected?.id)location.reload();}catch(error){status.textContent='Impossible de changer la date : '+error.message;}finally{dateBusy=false;settingsDialog.querySelectorAll('button,input').forEach(el=>el.disabled=false);settingsDialog.querySelector('[data-capsule-download]').disabled=c.status!=='active';}
    };
   });
+  window.SuiteWorkspace.openSelectedSettings=()=>{if(!ended&&selected)body.querySelector('[data-capsule-settings="'+selected.id+'"]')?.click();};
   const capsuleAction=async e=>{
    const settings=e.target.closest('[data-capsule-download]'),remove=e.target.closest('[data-capsule-delete]');
    if(!settings&&!remove||ended||deleteBusy||downloadBusy||dateBusy)return;
@@ -211,7 +210,7 @@
    const {error}=await sb.auth.updateUser({password});if(error)throw error;if(!ended){e.target.reset();showAccountView(null);$('workspace-edit-password').focus();report('Votre mot de passe a été modifié.');}
   }catch(e){if(!ended)report('Modification impossible : '+e.message,true)}finally{busy(false)}};
   $('logout').onclick=async()=>{if(accountBusy)return report('Patientez jusqu’à la fin de l’opération.',true);await logout();};
-  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==user.id){ended=true;stopNativeAccountSync();notificationLoad++;notifications.close();choose.close();account.close();deletion.close();queueMicrotask(()=>{choose.replaceChildren();account.replaceChildren();deletion.replaceChildren();notifications.replaceChildren()});document.querySelectorAll('.owner-tabs').forEach(n=>n.remove());}else if(event==='USER_UPDATED'&&session?.user?.email){currentEmail=session.user.email;$('workspace-email-current').textContent=currentEmail;}});
+  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||session?.user?.id&&session.user.id!==user.id){ended=true;stopNativeAccountSync();notificationLoad++;notifications.close();choose.close();account.close();deletion.close();settingsDialog.close();queueMicrotask(()=>{choose.replaceChildren();account.replaceChildren();deletion.replaceChildren();settingsDialog.replaceChildren();notifications.replaceChildren()});document.querySelectorAll('.owner-tabs').forEach(n=>n.remove());}else if(event==='USER_UPDATED'&&session?.user?.email){currentEmail=session.user.email;$('workspace-email-current').textContent=currentEmail;}});
   // Follow the visual viewport while Android browser bars expand/collapse.
   const viewport=window.visualViewport;let frame;
   function align(){cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{if(ended)return;const visible=window.visualViewport,zoomed=visible&&Math.abs(visible.scale-1)>.05;const gap=visible&&!zoomed?Math.max(0,innerHeight-visible.height-visible.offsetTop):0;document.documentElement.style.setProperty('--workspace-bottom',gap+'px');document.documentElement.style.setProperty('--workspace-viewport-height',(visible&&!zoomed?visible.height:innerHeight)+'px');document.body.classList.toggle('workspace-keyboard',!!visible&&!zoomed&&innerHeight-visible.height>150);if(account.open&&account.contains(document.activeElement)&&document.activeElement.matches('input'))document.activeElement.scrollIntoView({block:'nearest'});});}
