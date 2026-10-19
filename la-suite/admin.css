@@ -82,3 +82,6 @@
 .admin-service-usage progress{display:block;width:100%;height:6px;margin-top:8px;accent-color:#8b2730}
 .admin-console[data-admin-view="overview"] #admin-sales-chart{min-height:140px}
 @media(max-width:650px){.admin-console .admin-service-usage{grid-template-columns:1fr;gap:12px}}
+
+/* Administration-only, read-only scheduled-work health summary. */
+.admin-health-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}.admin-health-item{background:#f8f6f1;border:1px solid #e5ded4;border-radius:10px;padding:14px;min-width:0}.admin-health-item strong{display:block;font-size:.88rem}.admin-health-item small{display:block;margin-top:5px;color:#665b50;line-height:1.5;overflow-wrap:anywhere}.admin-health-warning{border-color:#bf8463;background:#fff7ee}.admin-health-warning strong{color:#873d27}#admin-health-check{margin:12px 0 0}@media(max-width:700px){.admin-health-grid{grid-template-columns:1fr}}
