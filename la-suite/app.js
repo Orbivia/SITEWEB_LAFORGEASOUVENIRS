@@ -715,6 +715,7 @@ function renderGuestState(state){
  window.SuiteGuestLanding?.render(state);
 }
 function uploadGuestFile(file,transaction){
+ if(guestIsPreview)throw new Error("Mode test : aucun fichier ne peut être envoyé.");
  if(transaction.uploaded)return Promise.resolve();
  if(!window.tus)throw new Error("Le service d’envoi n’a pas chargé. Gardez cette page ouverte et réessayez.");
  return new Promise((resolve,reject)=>{
@@ -2055,8 +2056,8 @@ async function renderOrganizerLifecycle(c){
 function setupOrganizerGuestPreview(c,saveAll){
  const link=$('open-guest-link');if(!link)return;
  link.removeAttribute('target');link.setAttribute('role','button');link.setAttribute('aria-haspopup','dialog');link.setAttribute('aria-controls','organizer-guest-preview');link.title='Tester le parcours invité sans enregistrer de souvenir';link.innerHTML='<i class="fa-solid fa-flask" aria-hidden="true"></i> Tester ma capsule';
- const dialog=document.createElement('dialog');dialog.id='organizer-guest-preview';dialog.className='organizer-guest-preview';dialog.setAttribute('aria-labelledby','organizer-guest-preview-title');
- dialog.innerHTML='<div class="guest-preview-heading"><div><h2 id="organizer-guest-preview-title">Aperçu côté invité</h2><p>Mode test · aucun souvenir ne sera enregistré</p></div><button type="button" class="guest-dialog-close" aria-label="Fermer l’aperçu invité">×</button></div><p id="guest-preview-loading" role="status">Préparation de votre aperçu…</p><iframe title="Aperçu de la page de dépôt" allow="camera; microphone"></iframe>';
+ const dialog=document.createElement('dialog');dialog.id='organizer-guest-preview';dialog.className='organizer-guest-preview';dialog.style.border='3px solid #8b2730';dialog.setAttribute('aria-labelledby','organizer-guest-preview-title');
+ dialog.innerHTML='<div class="guest-preview-heading"><div><h2 id="organizer-guest-preview-title">Mode test</h2><p>Parcours invité · aucun souvenir ne sera enregistré</p></div><button type="button" class="guest-dialog-close" aria-label="Fermer l’aperçu invité">×</button></div><p id="guest-preview-loading" role="status">Préparation de votre aperçu…</p><iframe title="Aperçu de la page de dépôt" allow="camera; microphone"></iframe>';
  $('dashboard-content').append(dialog);
  const frame=dialog.querySelector('iframe'),loading=dialog.querySelector('[role=status]');let generation=0,receive=null;
  const close=()=>dialog.close();dialog.querySelector('button').onclick=close;
