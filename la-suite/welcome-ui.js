@@ -2,8 +2,6 @@
 (function(){
  'use strict';
  const $=id=>document.getElementById(id);
- const colors=['#8B2730','#6B5635','#52634D','#42556D','#9C6571','#2D2926','#3D7370','#946044','#74628B','#A16C28','#4C647D','#556246'];
- const colorNames=['Bordeaux','Doré','Sauge','Bleu ardoise','Rose poudré','Noir doux','Bleu lagon','Terracotta','Lavande','Miel','Bleu nuit','Olivier'];
  const fonts=Object.fromEntries(Object.entries(window.SuiteTypography.catalog).map(([key,font])=>[key,[font.family,font.css]]));
  // All surfaces and illustrations are local, fixed presets. Saved settings never contain CSS or HTML.
  const themes={

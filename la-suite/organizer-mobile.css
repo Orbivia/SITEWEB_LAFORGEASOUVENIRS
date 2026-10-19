@@ -123,7 +123,7 @@ body.organizer-layout-ready.owner-screen-fits{overflow-y:auto;overscroll-behavio
 @media(max-width:760px){
 body.organizer-layout-ready.owner-pinch-zoom .forge-style-header{position:relative;top:auto}
 body.organizer-layout-ready.owner-pinch-zoom .owner-tabs{position:absolute!important;top:var(--owner-zoom-nav-top)!important;bottom:auto!important}
-body.organizer-layout-ready.owner-pinch-zoom .design-mobile-tabs{position:relative;top:auto}
+
 }
 @media(max-width:760px){
 .owner-deposit-waiting{-webkit-text-size-adjust:100%;text-size-adjust:100%}

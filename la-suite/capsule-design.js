@@ -23,27 +23,9 @@
   const legacy=['minimal','editorial','signature','chic','palace','arch','botanical','olive','pressed','romantic','boho','seaside','riviera','dolce','confetti','celestial','pearl'];
   return legacy.includes(style)?'assets/themes/'+style+'.webp':'assets/themes/previews/fond-blanc.webp';
  }
- function introUrlCache(storage){
-  let path=null,url=null,signedAt=0,pending=null;
-  return async nextPath=>{
-   if(nextPath!==path){path=nextPath;url=null;pending=null;}
-   if(!nextPath)return null;
-   if(url&&Date.now()-signedAt<240000)return url;
-   if(!pending){
-    const requestedAt=Date.now();
-    const request=storage.from('capsule-media').createSignedUrl(nextPath,300).then(({data,error})=>{
-     if(error||!data?.signedUrl)throw Error('Accueil indisponible');
-     if(path===nextPath&&pending===request){url=data.signedUrl;signedAt=requestedAt;}
-     return data.signedUrl;
-    }).finally(()=>{if(pending===request)pending=null;});
-    pending=request;
-   }
-   return pending;
-  };
- }
  function mount(c){
   document.body.classList.add('collection-ready','studio-ready');
-  const panel=document.querySelector('.qr-designer-panel'),controls=document.querySelector('.qr-designer-controls'),preview=document.querySelector('.qr-designer-preview');
+  const panel=document.querySelector('.qr-designer-panel'),controls=document.querySelector('.qr-designer-controls');
   panel.querySelector('h2').textContent='Personnaliser ma capsule';
   const gallery=document.querySelector('.qr-theme-gallery');gallery.setAttribute('aria-label',styles.length+' styles et import de votre design');gallery.innerHTML=styles.map(s=>'<button type="button" class="qr-style-choice" data-qr-style="'+s.id+'" aria-pressed="false"><img class="qr-theme-thumbnail" src="assets/themes/previews/'+s.id+'.webp?v=20261018-clearance2" width="256" height="256" alt=""><span class="qr-theme-name">'+s.name+'</span></button>').join('')+'<button type="button" id="design-import" class="qr-style-choice" aria-controls="design-file"><img class="qr-theme-thumbnail" src="assets/themes/previews/importer.webp" width="256" height="256" alt=""><span class="qr-theme-name">Importer mon design</span></button>';
   const custom=document.createElement('div');custom.className='design-custom';custom.innerHTML='<input id="design-file" type="file" accept="image/jpeg,image/png,image/webp" hidden><p id="design-upload-status" role="status" aria-live="polite"></p><div id="design-crop" hidden><p>Position du fond</p><label>Fiche : horizontal<input type="range" data-design-crop="cardX" min="0" max="100"></label><label>Fiche : vertical<input type="range" data-design-crop="cardY" min="0" max="100"></label><label>Accueil : horizontal<input type="range" data-design-crop="welcomeX" min="0" max="100"></label><label>Accueil : vertical<input type="range" data-design-crop="welcomeY" min="0" max="100"></label></div>';gallery.after(custom);
@@ -58,5 +40,5 @@
   const sync=()=>{const style=$('qr-style').value;$('design-crop').hidden=style!=='custom';$('design-import').setAttribute('aria-pressed',String(style==='custom'));};$('qr-style').addEventListener('change',sync);sync();
   return {};
  }
- window.SuiteDesign={logoBackground,styles,colors,position,validBackground,background,fields,artwork,effectivePlan,thumbnail,mount,storage:null};
+ window.SuiteDesign={logoBackground,styles,colors,position,validBackground,background,fields,artwork,effectivePlan,thumbnail,mount};
 })();

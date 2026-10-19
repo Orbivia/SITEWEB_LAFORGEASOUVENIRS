@@ -32,7 +32,7 @@
 .visual-media span{display:block;padding:8px;font-size:11px}
 .visual-drawer{background:#fffefa;border-radius:18px 18px 0 0;box-shadow:0 -5px 24px #263a2310;max-height:49dvh;overflow:auto;z-index:2}
 .visual-drawer-toggle{width:100%;padding:16px 20px 10px;border:0;background:none;display:flex;justify-content:space-between;font:600 15px Inter,Arial,sans-serif;min-height:48px}
-.visual-drawer-toggle:before{content:'';width:34px;height:4px;background:#bcc5ba;position:absolute;left:calc(50% - 17px);margin-top:-10px;border-radius:5px}
+.visual-drawer-toggle:before{content:"";width:34px;height:4px;background:#bcc5ba;position:absolute;left:calc(50% - 17px);margin-top:-10px;border-radius:5px}
 .visual-tabs{display:flex;justify-content:space-around;padding:0 12px;border-bottom:1px solid #e3e5de}
 .visual-tabs button{background:none;border:0;padding:12px 5px;color:#566052;font-size:12px;min-height:44px}
 .visual-tabs [aria-selected=true]{border-bottom:2px solid #365748;color:#365748;font-weight:600}
@@ -67,7 +67,7 @@
 .visual-head{padding-top:6px;padding-bottom:6px}
 }
 /* Main studio replaces the former settings/preview split. */
-.visual-primary-ready .qr-designer-head,.visual-primary-ready .design-mobile-tabs,.visual-primary-ready .qr-designer-grid{display:none!important}
+.visual-primary-ready .qr-designer-head,.visual-primary-ready .qr-designer-grid{display:none!important}
 .visual-primary-ready .qr-designer-panel{padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
 .welcome-visual-editor.visual-primary{position:relative;inset:auto;width:100%;max-width:none;height:calc(100svh - var(--organizer-header-height,70px) - 104px);min-height:410px;max-height:none;margin:0;padding:0;border:1px solid #e3e5dd;border-radius:16px;display:grid;overflow:hidden;background:#f3f1ec;color:#27352e}
 .visual-primary .visual-head{padding:10px 14px}
@@ -105,7 +105,7 @@
 .visual-card-text[data-field=print-title]{font-family:var(--visual-font,Georgia,serif)}
 .visual-card-text:focus{background:var(--visual-paper,#fffefa);color:var(--visual-ink,#20372e);border:2px solid #55745e;overflow:auto;z-index:3;box-shadow:0 0 0 3px #55745e20}
 .visual-card-text.has-error{border-color:#a33232}
-.visual-card-text.is-empty:not(:focus):before{content:attr(aria-label) ' +';display:block;color:var(--visual-ink,#20372e);opacity:.65;font:500 10px/1.4 Inter,Arial,sans-serif}
+.visual-card-text.is-empty:not(:focus):before{content:attr(aria-label) " +";display:block;color:var(--visual-ink,#20372e);opacity:.65;font:500 10px/1.4 Inter,Arial,sans-serif}
 .visual-card-date{cursor:pointer}
 .visual-card-date:focus-visible{border:2px solid #55745e}
 .visual-actions{padding:12px 0}
@@ -294,7 +294,7 @@
 .visual-qr-label{width:32px;flex-shrink:0;font:500 10px Inter,Arial,sans-serif}
 .visual-qr-row .visual-qr-shapes{flex:1;margin:0}
 .visual-eye{display:block;width:17px;height:17px;border:3px solid currentColor;position:relative}
-.visual-eye:after{content:'';position:absolute;inset:3px;background:currentColor}
+.visual-eye:after{content:"";position:absolute;inset:3px;background:currentColor}
 .visual-qr-shapes [data-qr-eyes=rounded] .visual-eye{border-radius:5px}
 .visual-qr-shapes [data-qr-eyes=rounded] .visual-eye:after{border-radius:2px}
 .visual-qr-shapes [data-qr-eyes=circle] .visual-eye,.visual-qr-shapes [data-qr-eyes=circle] .visual-eye:after{border-radius:50%}
@@ -726,11 +726,11 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 /* Styled host note matches the guest invitation rather than a form field. */
 .visual-primary #visual-welcome .visual-welcome-content[data-content=text]{background:color-mix(in srgb,var(--visual-paper),transparent 82%);border-color:color-mix(in srgb,var(--guest-accent),transparent 45%);border-radius:12px;padding:20px 24px;gap:14px;box-shadow:0 4px 18px #00000008}
 #visual-welcome .visual-host-label{font:500 17px/1.2 Inter,Arial,sans-serif;color:var(--visual-ink);margin:0}
-#visual-welcome .visual-host-label::after{content:'';display:block;width:42px;height:1px;margin:10px auto 0;background:var(--guest-accent);opacity:.65}
+#visual-welcome .visual-host-label::after{content:"";display:block;width:42px;height:1px;margin:10px auto 0;background:var(--guest-accent);opacity:.65}
 .visual-primary #visual-welcome .visual-message{font-family:var(--welcome-font);font-weight:var(--welcome-weight,500);font-size:20px;line-height:1.4;text-align:center;width:100%;box-sizing:border-box;padding:0;color:var(--visual-ink);max-height:92px}
 
 .visual-primary #visual-welcome .visual-welcome-content[data-content=text]{background:transparent;border:0;box-shadow:none;border-radius:0;position:relative;padding:24px 22px}
-#visual-welcome .visual-welcome-content[data-content=text]::before,#visual-welcome .visual-welcome-content[data-content=text]::after{content:'';position:absolute;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,var(--guest-accent),transparent);opacity:.5}
+#visual-welcome .visual-welcome-content[data-content=text]::before,#visual-welcome .visual-welcome-content[data-content=text]::after{content:"";position:absolute;left:12%;right:12%;height:1px;background:linear-gradient(90deg,transparent,var(--guest-accent),transparent);opacity:.5}
 #visual-welcome .visual-welcome-content[data-content=text]::before{top:10px}
 #visual-welcome .visual-welcome-content[data-content=text]::after{bottom:10px}
 .visual-primary #visual-welcome .visual-host-label{font:500 18px/1.25 Inter,Arial,sans-serif}
@@ -758,7 +758,7 @@ body.visual-primary-ready main.dashboard-page{width:calc(100% - 16px);max-width:
 .visual-primary .visual-intro-actions [data-intro-format] i{font-size:18px}
 .visual-primary .visual-intro-actions>button:last-child{align-self:center;width:auto;min-height:32px;padding:4px 12px;font-size:12px;border:0;background:transparent;text-decoration:underline}
 .visual-primary #visual-welcome .visual-empty-welcome{display:none!important}
-.visual-primary #visual-welcome .visual-message:empty::before{content:'Écrivez votre message…';font-size:16px;opacity:.5}
+.visual-primary #visual-welcome .visual-message:empty::before{content:"Écrivez votre message…";font-size:16px;opacity:.5}
 
 /* Four welcome content choices in one vertical column. */
 .visual-primary .visual-intro-actions>[role=group]{grid-template-columns:minmax(0,1fr)}
