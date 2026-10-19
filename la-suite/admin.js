@@ -55,7 +55,7 @@ async function initSuiteAdmin(){
  const sb=window.supabase.createClient(cfg.SUPABASE_URL,cfg.SUPABASE_ANON_KEY);
  let sessionOwner=null,currentEmail='';
  const downloadSession=new AbortController();
- function clearPrivateView(){authorized=false;if($('admin-create-dialog').open)$('admin-create-dialog').close();creationOwner=null;$('admin-create-form').reset();$('admin-create-email').textContent='';$('admin-create-error').textContent='';rowDrafts.clear();$('admin-email-form').reset();$('admin-password-form').reset();downloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));clearTimeout(timer);data={capsules:[],clients:[],backups:[]};['capsule-cards','backup-cards','admin-stats','admin-account-email','offer-services','admin-sales-totals','admin-sales-chart','admin-alerts','admin-service-usage'].forEach(id=>$(id)?.replaceChildren());$('admin-content').hidden=true;$('admin-access').hidden=false;$('access-message').textContent='Votre session est terminée. Reconnectez-vous.';$('admin-auth').hidden=false;$('admin-signup').hidden=true;if($('confirm-dialog').open)$('confirm-dialog').dispatchEvent(new Event('cancel',{cancelable:true}));}
+ function clearPrivateView(){authorized=false;if($('admin-create-dialog').open)$('admin-create-dialog').close();creationOwner=null;$('admin-create-form').reset();$('admin-create-email').textContent='';$('admin-create-error').textContent='';rowDrafts.clear();$('admin-email-form').reset();$('admin-password-form').reset();downloadSession.abort(new Error('Votre session est terminée. Reconnectez-vous.'));clearTimeout(timer);data={capsules:[],clients:[],backups:[]};['capsule-cards','backup-cards','admin-stats','admin-account-email','offer-services','admin-sales-totals','admin-sales-chart','admin-alerts','admin-service-usage','admin-automation-health','admin-health-check'].forEach(id=>$(id)?.replaceChildren());$('admin-content').hidden=true;$('admin-access').hidden=false;$('access-message').textContent='Votre session est terminée. Reconnectez-vous.';$('admin-auth').hidden=false;$('admin-signup').hidden=true;if($('confirm-dialog').open)$('confirm-dialog').dispatchEvent(new Event('cancel',{cancelable:true}));}
  sb.auth.onAuthStateChange((event,session)=>{if(event==='SIGNED_OUT'||sessionOwner&&session?.user?.id&&session.user.id!==sessionOwner)clearPrivateView();else if(event==='USER_UPDATED'&&session?.user?.email){currentEmail=session.user.email;$('admin-account-email').textContent=currentEmail;}});
  async function api(action,payload={}){if(downloadSession.signal.aborted)throw downloadSession.signal.reason;const {data,error}=await sb.functions.invoke('suite-admin',{body:{action,...payload}});if(downloadSession.signal.aborted)throw downloadSession.signal.reason;if(error){if([401,403].includes(error.context?.status))clearPrivateView();let message=error.message;try{message=(await error.context.json()).error||message;}catch{}throw Error(message);}if(data?.error)throw Error(data.error);return data;}
  async function confirmAction(title,text){$('confirm-title').textContent=title;$('confirm-text').textContent=text;$('confirm-dialog').showModal();return new Promise(resolve=>{function done(value){$('confirm-dialog').close();$('confirm-yes').onclick=null;$('confirm-no').onclick=null;$('confirm-dialog').oncancel=null;resolve(value);}$('confirm-yes').onclick=()=>done(true);$('confirm-no').onclick=()=>done(false);$('confirm-dialog').oncancel=()=>done(false);});}
@@ -92,10 +92,53 @@ async function initSuiteAdmin(){
    root.append(warning);
   }
  }
+ function healthTimestamp(value){
+  if(!value)return 'Aucune exécution connue';
+  const date=new Date(value);if(!Number.isFinite(date.getTime()))return 'Date indisponible';
+  return date.toLocaleString('fr-FR',{timeZone:'Europe/Paris',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+ }
+ async function refreshAutomationHealth(){
+  const root=$('admin-automation-health'),button=$('admin-health-refresh');
+  if(!root||!authorized||button.disabled)return;
+  button.disabled=true;root.textContent='Vérification en cours…';
+  try{
+   const {data:health,error}=await sb.rpc('admin_automation_health');
+   if(!authorized)return;
+   if(error||!health||!Array.isArray(health.tasks))throw Error('Données de suivi indisponibles.');
+   const now=Date.parse(health.checked_at)||Date.now();
+   const add=(title,description,warning=false)=>{
+    const item=document.createElement('div');item.className='admin-health-item'+(warning?' admin-health-warning':'');
+    const heading=document.createElement('strong');heading.textContent=title;
+    const details=document.createElement('small');details.textContent=description;
+    item.append(heading,details);root.append(item);
+   };
+   root.replaceChildren();
+   const labels={'la-suite-backup-worker':'Traitement des notifications','la-suite-backup-cleanup':'Nettoyage horaire','la-suite-legal-retention':'Purge quotidienne','la-suite-daily-backup':'Sauvegarde automatique'};
+   for(const job of health.tasks){
+    if(!(job.name in labels))continue;
+    if(!job.active){add(labels[job.name],'Désactivée volontairement · sauvegardes manuelles');continue;}
+    const late=!job.last_success||!Number.isFinite(Date.parse(job.last_success))||now-Date.parse(job.last_success)>Number(job.max_delay_minutes)*60000;
+    const failures=Number(job.failures_24h)||0;
+    add(labels[job.name],(late?'Exécution en retard':'Exécution récente')+' · dernière réussite : '+healthTimestamp(job.last_success)+(failures?' · '+failures+' échec(s) en 24 h':''),late||failures>0);
+   }
+   const web=health.worker_http||{},notif=health.notifications||{},backups=health.backups||{};
+   if(notif.enabled){
+    const late=!web.last_success||now-Date.parse(web.last_success)>600000;
+    add('Réponse du serveur de maintenance',(late?'Réponse récente absente':'Dernière réponse HTTP réussie : '+healthTimestamp(web.last_success))+' · '+(Number(web.failures_24h)||0)+' échec(s) HTTP en 24 h',late||Number(web.failures_24h)>0);
+   }else add('Notifications','Désactivées dans les paramètres');
+   const mailErrors=Number(notif.failed)||0,lateMails=Number(notif.overdue)||0;
+   add('Emails automatiques',Number(notif.sent_7d||0)+' accepté(s) par le fournisseur sur 7 jours · '+mailErrors+' échec(s) · '+lateMails+' en retard',mailErrors>0||lateMails>0);
+   const oldBackup=!backups.last_ready||now-Date.parse(backups.last_ready)>7*86400000;
+   add('Sauvegardes manuelles',(oldBackup?'Sauvegarde à renouveler':'Dernière sauvegarde prête : '+healthTimestamp(backups.last_ready))+' · '+(Number(backups.failed)||0)+' échec(s) · '+(Number(backups.in_progress)||0)+' en cours',oldBackup||Number(backups.failed)>0);
+   $('admin-health-check').textContent='Dernier contrôle : '+healthTimestamp(health.checked_at)+' · Les tâches planifiées et les réponses HTTP sont vérifiées séparément.';
+  }catch(error){if(authorized){root.textContent='Impossible de vérifier les tâches. Réessayez.';$('admin-health-check').textContent=error?.message||'Données temporairement indisponibles.';}}
+  finally{button.disabled=busy;}
+ }
+ $('admin-health-refresh').addEventListener('click',()=>{if(authorized)void refreshAutomationHealth()});
  function selectView(next){
   if(!authorized||busy||!['overview','capsules','settings'].includes(next))return;
   view=next;document.body.dataset.adminView=view;document.querySelectorAll('[data-admin-view]').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.adminView===view)));
-  for(const key of ['overview','capsules','settings'])$('panel-'+key).hidden=key!==view;
+  for(const key of ['overview','capsules','settings'])$('panel-'+key).hidden=key!==view;if(view==='settings')void refreshAutomationHealth();
  }
  function capsuleExpected(c){const u=c.usage;return {date:c.date,plan:c.plan,admin_plan_override:c.admin_plan_override??null,activated_at:c.activated_at??null,...Object.fromEntries(['opens_at','closes_at','delivery_before','expires_at','quota_bytes'].map(k=>[k,u[k]]))};}
  function dayCount(a,b){return Math.max(1,Math.round((new Date(b+'T12:00:00Z')-new Date(a+'T12:00:00Z'))/86400000)+1);}
