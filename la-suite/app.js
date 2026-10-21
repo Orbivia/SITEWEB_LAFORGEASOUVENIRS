@@ -465,14 +465,14 @@ async function initCreate(){
   };
   const err=validateDraft(d);if(err)return show(status,err,false);
 
-  if(!storeDraft(d)&&!currentUser){show(status,"Votre navigateur empêche de conserver la préparation. Connectez-vous ou créez votre compte, puis revenez remplir ce formulaire.",false);let link=status.querySelector('a');if(!link){link=document.createElement('a');link.href='auth.html?next=create';link.textContent='Créer mon compte ou me connecter';status.append(document.createElement('br'),link)}return}
+  if(!storeDraft(d)&&!currentUser){show(status,"Votre navigateur empêche de conserver la préparation. Connectez-vous ou créez votre compte, puis revenez remplir ce formulaire.",false);let link=status.querySelector('a');if(!link){link=document.createElement('a');link.href='auth.html?mode=signup&next=create';link.textContent='Créer mon compte ou me connecter';status.append(document.createElement('br'),link)}return}
   if(submit)submit.disabled=true;
 
   try{
    const u=await user();
 
    if(u)return await createCapsule(d,u);
-   location.href="auth.html?next=create";
+   location.href="auth.html?mode=signup&next=create";
   }catch(err){
    if(submit)submit.disabled=false;
    const msg=String(err?.message||"");
